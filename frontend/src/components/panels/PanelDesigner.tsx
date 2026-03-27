@@ -510,7 +510,7 @@ export default function PanelDesigner() {
     if (state.assignments.length > 5) setSpectraCollapsed(true)
   }, [state.assignments.length])
 
-  if (!panel) return <p className="text-gray-500">Loading panel...</p>
+  if (!panel) return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
 
   return (
     <div className="space-y-6">
@@ -531,11 +531,11 @@ export default function PanelDesigner() {
                   setEditingName(false)
                 }
               }}
-              className="rounded border border-blue-300 px-2 py-1 text-2xl font-bold focus:outline-none"
+              className="rounded border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-700 px-2 py-1 text-2xl font-bold dark:text-gray-100 focus:outline-none"
             />
           ) : (
             <h1
-              className="cursor-pointer text-2xl font-bold hover:text-blue-600"
+              className="cursor-pointer text-2xl font-bold dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400"
               onClick={() => setEditingName(true)}
               title="Click to edit name"
             >
@@ -546,7 +546,7 @@ export default function PanelDesigner() {
             <button
               onClick={handleUndo}
               disabled={!canUndo}
-              className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="rounded px-2 py-1 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
               title={canUndo ? state.past.length + ' action' + (state.past.length !== 1 ? 's' : '') + ' to undo' : 'Nothing to undo'}
             >
               Undo
@@ -554,7 +554,7 @@ export default function PanelDesigner() {
             <button
               onClick={handleRedo}
               disabled={!canRedo}
-              className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="rounded px-2 py-1 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
               title={canRedo ? state.future.length + ' action' + (state.future.length !== 1 ? 's' : '') + ' to redo' : 'Nothing to redo'}
             >
               Redo
@@ -563,14 +563,14 @@ export default function PanelDesigner() {
         </div>
 
         <div className="flex items-center gap-2">
-          <label htmlFor="instrument-select" className="text-sm font-medium text-gray-700">
+          <label htmlFor="instrument-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Instrument:
           </label>
           <select
             id="instrument-select"
             value={panel.instrument_id ?? ''}
             onChange={(e) => handleInstrumentChange(e.target.value)}
-            className="rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
           >
             <option value="">Select an instrument...</option>
             {instruments.map((inst) => (
@@ -597,22 +597,22 @@ export default function PanelDesigner() {
                 setTargetError('')
               }}
               onFocus={() => setTargetDropdownOpen(true)}
-              className="w-64 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className="w-64 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
             />
             {targetDropdownOpen && filteredAntibodies.length > 0 && (
-              <div className="absolute z-30 mt-1 max-h-48 w-80 overflow-y-auto rounded border border-gray-200 bg-white shadow-lg">
+              <div className="absolute z-30 mt-1 max-h-48 w-80 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
                 {filteredAntibodies.map((ab) => (
                   <button
                     key={ab.id}
                     onClick={() => handleAddTarget(ab)}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30"
                   >
                     <span className="font-medium">{ab.target}</span>
                     {ab.clone && (
-                      <span className="ml-2 text-gray-500">({ab.clone})</span>
+                      <span className="ml-2 text-gray-500 dark:text-gray-400">({ab.clone})</span>
                     )}
                     {ab.fluorophore_name && (
-                      <span className="ml-2 text-teal-600">— {ab.fluorophore_name}</span>
+                      <span className="ml-2 text-teal-600 dark:text-teal-400">— {ab.fluorophore_name}</span>
                     )}
                   </button>
                 ))}
@@ -628,21 +628,21 @@ export default function PanelDesigner() {
         </div>
 
         {!instrumentId && (
-          <div className="mb-4 rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-700 dark:text-blue-400">
             Select an instrument to begin designing your panel.
           </div>
         )}
 
         {/* Scrollable table */}
-        <div className="overflow-x-auto rounded border border-gray-200">
+        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
           <table className="w-full border-collapse text-left text-sm">
             <thead>
               {/* Laser group header row */}
               {state.instrument && (
-                <tr className="border-b border-gray-200">
-                  <th className="sticky left-0 z-10 bg-gray-50 px-3 py-2" />
-                  <th className="bg-gray-50 px-3 py-2" />
-                  <th className="bg-gray-50 px-3 py-2" />
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-2" />
+                  <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2" />
+                  <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2" />
                   {laserGroups.map((g) => (
                     <th
                       key={g.laser.id}
@@ -653,16 +653,16 @@ export default function PanelDesigner() {
                       {g.laser.wavelength_nm}nm {g.laser.name}
                     </th>
                   ))}
-                  <th className="bg-gray-50 px-3 py-2" />
+                  <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2" />
                 </tr>
               )}
               {/* Detector sub-header row */}
-              <tr className="border-b border-gray-200 bg-gray-50 text-gray-500">
-                <th className="sticky left-0 z-10 bg-gray-50 px-3 py-2 font-medium">
+              <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                <th className="sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">
                   Target
                 </th>
-                <th className="bg-gray-50 px-3 py-2 font-medium">Clone</th>
-                <th className="bg-gray-50 px-3 py-2 font-medium">Conjugate</th>
+                <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">Clone</th>
+                <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">Conjugate</th>
                 {laserGroups.flatMap((g) =>
                   g.detectors.map((det) => {
                     const occupied = assignmentByDetector.has(det.id)
@@ -683,7 +683,7 @@ export default function PanelDesigner() {
                     )
                   })
                 )}
-                <th className="bg-gray-50 px-3 py-2" />
+                <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2" />
               </tr>
             </thead>
             <tbody>
@@ -691,7 +691,7 @@ export default function PanelDesigner() {
                 <tr>
                   <td
                     colSpan={3 + totalDetectors + 1}
-                    className="px-3 py-6 text-center text-gray-400"
+                    className="px-3 py-6 text-center text-gray-400 dark:text-gray-500"
                   >
                     No targets added yet. Use the search above to add antibody targets.
                   </td>
@@ -706,25 +706,25 @@ export default function PanelDesigner() {
                     <tr
                       key={t.id}
                       className={
-                        'border-b border-gray-100' +
-                        (hasAssignment ? ' bg-blue-50/40' : ' hover:bg-gray-50')
+                        'border-b border-gray-100 dark:border-gray-700' +
+                        (hasAssignment ? ' bg-blue-50/40 dark:bg-blue-900/20' : ' hover:bg-gray-50 dark:hover:bg-gray-800')
                       }
                       data-assigned={hasAssignment ? 'true' : undefined}
                     >
-                      <td className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900" style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : 'white' }}>
+                      <td className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900 dark:text-gray-100" style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined }}>
                         {ab?.target ?? '—'}
                       </td>
-                      <td className="px-3 py-2 text-gray-600">
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                         {ab?.clone ?? ''}
                       </td>
                       <td className="px-3 py-2">
                         {ab?.fluorophore_name ? (
-                          <span className="inline-flex items-center gap-1 text-teal-700">
+                          <span className="inline-flex items-center gap-1 text-teal-700 dark:text-teal-400">
                             <span className="inline-block h-2 w-2 rounded-full bg-teal-500" />
                             {ab.fluorophore_name}
                           </span>
                         ) : (
-                          <span className="italic text-gray-400">Unconj.</span>
+                          <span className="italic text-gray-400 dark:text-gray-500">Unconj.</span>
                         )}
                       </td>
                       {laserGroups.flatMap((g) =>
@@ -771,7 +771,7 @@ export default function PanelDesigner() {
                             return (
                               <td
                                 key={det.id}
-                                className="cursor-not-allowed bg-gray-100 px-2 py-2 text-center text-xs text-gray-400"
+                                className="cursor-not-allowed bg-gray-100 dark:bg-gray-700 px-2 py-2 text-center text-xs text-gray-400 dark:text-gray-500"
                                 title={'Detector assigned to ' + (otherAb?.target ?? 'another target')}
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="occupied"
@@ -786,7 +786,7 @@ export default function PanelDesigner() {
                             return (
                               <td
                                 key={det.id}
-                                className="cursor-not-allowed bg-gray-50 px-2 py-2 text-center text-xs text-gray-300"
+                                className="cursor-not-allowed bg-gray-50 dark:bg-gray-800 px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600"
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="row-assigned"
                               >
@@ -799,7 +799,7 @@ export default function PanelDesigner() {
                           return (
                             <td
                               key={det.id}
-                              className="relative cursor-pointer px-2 py-2 text-center text-xs text-gray-300 hover:bg-blue-50"
+                              className="relative cursor-pointer px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                               data-testid={`cell-${t.antibody_id}-${det.id}`}
                               data-state="available"
                               title={`${det.filter_midpoint - det.filter_width / 2}\u2013${det.filter_midpoint + det.filter_width / 2} nm`}
@@ -860,21 +860,21 @@ export default function PanelDesigner() {
       })()}
 
       {/* Section C: Panel Spectra */}
-      <div className="rounded border border-gray-200 bg-white">
+      <div className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <button
           onClick={() => setSpectraCollapsed(!spectraCollapsed)}
-          className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50"
+          className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <span>{spectraCollapsed ? '\u25B6' : '\u25BC'}</span>
           Panel Spectra
-          <span className="text-xs font-normal text-gray-400">
+          <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
             ({spectraOverlayData.length} fluorophore{spectraOverlayData.length !== 1 ? 's' : ''})
           </span>
         </button>
         {!spectraCollapsed && (
-          <div className="border-t border-gray-100 px-4 pb-4">
+          <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-4">
             {spectraOverlayData.length === 0 ? (
-              <p className="py-4 text-center text-sm text-gray-400">
+              <p className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
                 Assign fluorophores to detectors to see spectra overlay
               </p>
             ) : (
@@ -895,31 +895,31 @@ export default function PanelDesigner() {
       {/* Instrument Change Modal */}
       {instrumentChangeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-[440px] rounded-lg bg-white shadow-xl">
-            <div className="border-b border-gray-200 px-6 py-4">
-              <h2 className="text-lg font-bold">Change Instrument</h2>
+          <div className="w-[440px] rounded-lg bg-white dark:bg-gray-800 shadow-xl">
+            <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+              <h2 className="text-lg font-bold dark:text-gray-100">Change Instrument</h2>
             </div>
             <div className="px-6 py-4">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
                 Changing the instrument will remove all current fluorophore assignments.
                 Your target antibodies will be preserved.
               </p>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 You can also copy your targets to a new panel with the new instrument,
                 keeping this panel unchanged.
               </p>
             </div>
-            <div className="flex justify-end gap-2 border-t border-gray-200 px-6 py-3">
+            <div className="flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700 px-6 py-3">
               <button
                 onClick={() => setInstrumentChangeModal(null)}
-                className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 onClick={handleInstrumentChangeCopy}
                 disabled={copyInProgress}
-                className="rounded border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                className="rounded border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50"
               >
                 {copyInProgress ? 'Copying...' : 'Copy to New Panel'}
               </button>

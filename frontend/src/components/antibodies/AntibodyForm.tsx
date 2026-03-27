@@ -56,6 +56,8 @@ export default function AntibodyForm({
     }
   }
 
+  const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+
   return (
     <Modal
       isOpen
@@ -64,7 +66,7 @@ export default function AntibodyForm({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="ab-target" className="mb-1 block text-sm font-medium text-gray-700">
+          <label htmlFor="ab-target" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
             Target <span className="text-red-500">*</span>
           </label>
           <input
@@ -72,7 +74,7 @@ export default function AntibodyForm({
             type="text"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className={inputClass}
           />
           {validationError && (
             <p className="mt-1 text-sm text-red-600">{validationError}</p>
@@ -81,41 +83,41 @@ export default function AntibodyForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Clone</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Clone</label>
             <input
               type="text"
               value={clone}
               onChange={(e) => setClone(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Host</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Host</label>
             <input
               type="text"
               value={host}
               onChange={(e) => setHost(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className={inputClass}
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Isotype</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Isotype</label>
           <input
             type="text"
             value={isotype}
             onChange={(e) => setIsotype(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className={inputClass}
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Conjugate</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Conjugate</label>
           <select
             value={fluorophoreId}
             onChange={(e) => setFluorophoreId(e.target.value)}
-            className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className={inputClass}
           >
             <option value="">— None (Unconjugated) —</option>
             {fluorophores.map((fl) => (
@@ -124,28 +126,28 @@ export default function AntibodyForm({
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Leave empty for unconjugated antibodies. Set for pre-conjugated antibodies (e.g., anti-CD3-FITC).
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Vendor</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Vendor</label>
             <input
               type="text"
               value={vendor}
               onChange={(e) => setVendor(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className={inputClass}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Catalog #</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog #</label>
             <input
               type="text"
               value={catalogNumber}
               onChange={(e) => setCatalogNumber(e.target.value)}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className={inputClass}
             />
           </div>
         </div>
@@ -154,7 +156,7 @@ export default function AntibodyForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Cancel
           </button>

@@ -34,7 +34,7 @@ function rgbToHex(r: number, g: number, b: number): string {
 }
 
 /**
- * Maps a spillover value (0.0–1.0) to a heatmap color.
+ * Maps a spillover value (0.0–1.0) to a heatmap color for light backgrounds.
  * white (0.0) → yellow (0.1–0.2) → orange (0.3–0.5) → red (>0.5)
  */
 export function heatmapColor(value: number): string {
@@ -72,5 +72,46 @@ export function heatmapColor(value: number): string {
     lerp(220, 185, t),
     lerp(38, 28, t),
     lerp(38, 28, t)
+  )
+}
+
+/**
+ * Maps a spillover value (0.0–1.0) to a heatmap color for dark backgrounds.
+ * dark gray (0.0) → dark blue (0.05) → blue (0.1) → amber (0.3) → orange-red (0.5+)
+ */
+export function heatmapColorDark(value: number): string {
+  if (value <= 0) return '#1F2937'
+  if (value >= 1) return '#dc2626'
+
+  if (value <= 0.1) {
+    const t = value / 0.1
+    return rgbToHex(
+      lerp(31, 30, t),
+      lerp(41, 58, t),
+      lerp(55, 138, t)
+    )
+  }
+  if (value <= 0.3) {
+    const t = (value - 0.1) / 0.2
+    return rgbToHex(
+      lerp(30, 180, t),
+      lerp(58, 120, t),
+      lerp(138, 30, t)
+    )
+  }
+  if (value <= 0.5) {
+    const t = (value - 0.3) / 0.2
+    return rgbToHex(
+      lerp(180, 220, t),
+      lerp(120, 50, t),
+      lerp(30, 30, t)
+    )
+  }
+  // 0.5 → 1.0: deep red
+  const t = (value - 0.5) / 0.5
+  return rgbToHex(
+    lerp(220, 185, t),
+    lerp(50, 28, t),
+    lerp(30, 28, t)
   )
 }

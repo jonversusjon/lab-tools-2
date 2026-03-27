@@ -51,7 +51,7 @@ export default function InstrumentEditor() {
   }, [existing, initialized])
 
   if (!isNew && isLoading) {
-    return <p className="text-gray-500">Loading...</p>
+    return <p className="text-gray-500 dark:text-gray-400">Loading...</p>
   }
 
   const updateLaser = (index: number, updated: LaserFormData) => {
@@ -129,25 +129,25 @@ export default function InstrumentEditor() {
   return (
     <div className="max-w-3xl">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl font-bold dark:text-gray-100">
           {isNew ? 'New Instrument' : 'Edit Instrument'}
         </h1>
         <button
           onClick={() => navigate('/instruments')}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
         >
           Back to list
         </button>
       </div>
 
       {error && (
-        <div className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div className="mb-4 rounded border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-2 text-sm text-red-700 dark:text-red-400">
           {error}
         </div>
       )}
 
       <div className="mb-6">
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
           Instrument Name
         </label>
         <input
@@ -155,12 +155,12 @@ export default function InstrumentEditor() {
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           placeholder="e.g. BD FACSAria III"
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100"
         />
       </div>
 
       <div className="mb-4">
-        <h2 className="mb-2 text-lg font-semibold text-gray-800">Lasers</h2>
+        <h2 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">Lasers</h2>
         <div className="space-y-3">
           {form.lasers.map((laser, i) => (
             <LaserSection
@@ -173,13 +173,13 @@ export default function InstrumentEditor() {
         </div>
         <button
           onClick={addLaser}
-          className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
+          className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
         >
           + Add Laser
         </button>
       </div>
 
-      <div className="flex items-center gap-3 border-t border-gray-200 pt-4">
+      <div className="flex items-center gap-3 border-t border-gray-200 dark:border-gray-700 pt-4">
         <button
           onClick={handleSave}
           disabled={isSaving || !form.name.trim()}
@@ -191,7 +191,7 @@ export default function InstrumentEditor() {
           <button
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            className="rounded border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            className="rounded border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
           >
             Delete Instrument
           </button>

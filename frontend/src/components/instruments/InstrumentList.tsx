@@ -34,7 +34,7 @@ export default function InstrumentList() {
     deleteMutation.mutate(id)
   }
 
-  if (isLoading) return <p className="text-gray-500">Loading instruments...</p>
+  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading instruments...</p>
   if (error) return <p className="text-red-600">Failed to load instruments.</p>
 
   const instruments = data?.items ?? []
@@ -42,7 +42,7 @@ export default function InstrumentList() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Instruments</h1>
+        <h1 className="text-2xl font-bold dark:text-gray-100">Instruments</h1>
         <button
           onClick={() => navigate('/instruments/new')}
           className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -52,11 +52,11 @@ export default function InstrumentList() {
       </div>
 
       {instruments.length === 0 ? (
-        <p className="text-gray-500">No instruments yet.</p>
+        <p className="text-gray-500 dark:text-gray-400">No instruments yet.</p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 text-gray-500">
+            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Lasers</th>
               <th className="py-2 font-medium">Detectors</th>
@@ -74,7 +74,7 @@ export default function InstrumentList() {
                   key={inst.id}
                   as="tr"
                   onClick={() => navigate('/instruments/' + inst.id)}
-                  className="border-b border-gray-100 hover:bg-gray-50"
+                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                   actions={{
                     onRename: () => {
                       setEditingInstrument({ id: inst.id, name: inst.name })
@@ -85,9 +85,9 @@ export default function InstrumentList() {
                     onDelete: () => handleDelete(inst.id, inst.name),
                   }}
                 >
-                  <td className="py-3 font-medium text-gray-900">{inst.name}</td>
-                  <td className="py-3 text-gray-600">{inst.lasers.length}</td>
-                  <td className="py-3 text-gray-600">{totalDetectors}</td>
+                  <td className="py-3 font-medium text-gray-900 dark:text-gray-100">{inst.name}</td>
+                  <td className="py-3 text-gray-600 dark:text-gray-400">{inst.lasers.length}</td>
+                  <td className="py-3 text-gray-600 dark:text-gray-400">{totalDetectors}</td>
                 </HoverActionsRow>
               )
             })}
@@ -105,7 +105,7 @@ export default function InstrumentList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-instrument" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="rename-instrument" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Instrument Name
             </label>
             <input
@@ -116,7 +116,7 @@ export default function InstrumentList() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleRename()
               }}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
               autoFocus
             />
           </div>
@@ -127,7 +127,7 @@ export default function InstrumentList() {
                 setEditingInstrument(null)
                 setRenameValue('')
               }}
-              className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>

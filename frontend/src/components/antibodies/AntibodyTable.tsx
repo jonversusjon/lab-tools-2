@@ -45,13 +45,13 @@ export default function AntibodyTable() {
     deleteMutation.mutate(ab.id)
   }
 
-  if (isLoading) return <p className="text-gray-500">Loading antibodies...</p>
+  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading antibodies...</p>
   if (error) return <p className="text-red-600">Failed to load antibodies.</p>
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Antibodies</h1>
+        <h1 className="text-2xl font-bold dark:text-gray-100">Antibodies</h1>
         <button
           onClick={() => setShowNew(true)}
           className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -65,14 +65,14 @@ export default function AntibodyTable() {
         placeholder="Search by target..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-4 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+        className="mb-4 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
       />
 
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 text-gray-500">
+          <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800"
+              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
               onClick={() => setSortDir(sortDir === 'asc' ? 'desc' : 'asc')}
             >
               Target{sortDir === 'asc' ? ' \u25B2' : ' \u25BC'}
@@ -89,7 +89,7 @@ export default function AntibodyTable() {
         <tbody>
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={8} className="py-6 text-center text-gray-400">
+              <td colSpan={8} className="py-6 text-center text-gray-400 dark:text-gray-500">
                 {search ? 'No antibodies matching your search.' : 'No antibodies yet — create one to get started.'}
               </td>
             </tr>
@@ -98,7 +98,7 @@ export default function AntibodyTable() {
             <HoverActionsRow
               key={ab.id}
               as="tr"
-              className="border-b border-gray-100 hover:bg-gray-50"
+              className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
               onClick={() => setEditingAntibody(ab)}
               actions={{
                 onRename: () => setEditingAntibody(ab),
@@ -107,10 +107,10 @@ export default function AntibodyTable() {
                 onDelete: () => handleDelete(ab),
               }}
             >
-              <td className="py-2 font-medium text-gray-900">{ab.target}</td>
-              <td className="py-2 text-gray-600">{ab.clone ?? ''}</td>
-              <td className="py-2 text-gray-600">{ab.host ?? ''}</td>
-              <td className="py-2 text-gray-600">{ab.isotype ?? ''}</td>
+              <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{ab.target}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{ab.clone ?? ''}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{ab.host ?? ''}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{ab.isotype ?? ''}</td>
               <td className="py-2">
                 {ab.fluorophore_name ? (
                   <span className="inline-flex items-center gap-1">
@@ -118,11 +118,11 @@ export default function AntibodyTable() {
                     {ab.fluorophore_name}
                   </span>
                 ) : (
-                  <span className="italic text-gray-400">Unconjugated</span>
+                  <span className="italic text-gray-400 dark:text-gray-500">Unconjugated</span>
                 )}
               </td>
-              <td className="py-2 text-gray-600">{ab.vendor ?? ''}</td>
-              <td className="py-2 text-gray-600">{ab.catalog_number ?? ''}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{ab.vendor ?? ''}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{ab.catalog_number ?? ''}</td>
             </HoverActionsRow>
           ))}
         </tbody>

@@ -11,6 +11,7 @@ import {
 import annotationPlugin from 'chartjs-plugin-annotation'
 import { Line } from 'react-chartjs-2'
 import { downsampleSpectra } from '@/utils/spectra'
+import { useTheme } from '@/components/layout/ThemeContext'
 
 ChartJS.register(
   CategoryScale,
@@ -27,6 +28,12 @@ ChartJS.register(
 const OVERLAY_COLORS = [
   '#0072B2', '#D55E00', '#009E73', '#CC79A7',
   '#E69F00', '#56B4E9', '#F0E442', '#000000',
+]
+
+// Dark mode variant — brightened for visibility on dark backgrounds
+const OVERLAY_COLORS_DARK = [
+  '#4DA6D9', '#FF8533', '#33C49E', '#E0A3C4',
+  '#FFBF33', '#7CC9F0', '#F5EE80', '#CCCCCC',
 ]
 
 interface SpectraViewerProps {
@@ -50,6 +57,14 @@ export default function SpectraViewer({
   laserLines,
   detectorWindows,
 }: SpectraViewerProps) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
+  const tickColor = isDark ? '#9CA3AF' : '#374151'
+  const gridColor = isDark ? '#374151' : '#E5E7EB'
+  const legendColor = isDark ? '#D1D5DB' : '#374151'
+  const laserAnnotationColor = isDark ? '#9CA3AF' : '#666'
+
   const datasets: Array<{
     label: string
     data: Array<{ x: number; y: number }>
@@ -61,7 +76,7 @@ export default function SpectraViewer({
 
   if (mode === 'single' && fluorophores.length > 0) {
     const fl = fluorophores[0]
-    const color = fl.color ?? '#0891b2'
+    const color = fl.color ?? (isDark ? '#22D3EE' : '#0891b2')
     const exData = downsampleSpectra(fl.spectra.excitation, 2)
     const emData = downsampleSpectra(fl.spectra.emission, 2)
 
@@ -81,8 +96,9 @@ export default function SpectraViewer({
       fill: true,
     })
   } else if (mode === 'overlay') {
+    const palette = isDark ? OVERLAY_COLORS_DARK : OVERLAY_COLORS
     fluorophores.forEach((fl, i) => {
-      const color = fl.color ?? OVERLAY_COLORS[i % OVERLAY_COLORS.length]
+      const color = fl.color ?? palette[i % palette.length]
       const emData = downsampleSpectra(fl.spectra.emission, 2)
       datasets.push({
         label: fl.name,
@@ -103,7 +119,7 @@ export default function SpectraViewer({
         type: 'line' as const,
         xMin: wl,
         xMax: wl,
-        borderColor: '#666',
+        borderColor: laserAnnotationColor,
         borderWidth: 1,
         borderDash: [4, 4],
         label: {
@@ -111,6 +127,7 @@ export default function SpectraViewer({
           content: wl + 'nm',
           position: 'start' as const,
           font: { size: 10 },
+          color: tickColor,
         },
       }
     })
@@ -139,14 +156,16 @@ export default function SpectraViewer({
         type: 'linear' as const,
         min: 350,
         max: 850,
-        ticks: { stepSize: 50 },
-        title: { display: true, text: 'Wavelength (nm)' },
+        ticks: { stepSize: 50, color: tickColor },
+        title: { display: true, text: 'Wavelength (nm)', color: tickColor },
+        grid: { color: gridColor },
       },
       y: {
         min: 0,
         max: 1,
-        ticks: { stepSize: 0.25 },
-        title: { display: true, text: 'Normalized Intensity' },
+        ticks: { stepSize: 0.25, color: tickColor },
+        title: { display: true, text: 'Normalized Intensity', color: tickColor },
+        grid: { color: gridColor },
       },
     },
     elements: {
@@ -155,6 +174,9 @@ export default function SpectraViewer({
     },
     plugins: {
       annotation: { annotations },
+      legend: {
+        labels: { color: legendColor },
+      },
       tooltip: {
         callbacks: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

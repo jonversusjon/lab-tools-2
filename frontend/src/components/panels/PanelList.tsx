@@ -52,13 +52,15 @@ export default function PanelList() {
     deleteMutation.mutate(id)
   }
 
-  if (isLoading) return <p className="text-gray-500">Loading panels...</p>
+  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading panels...</p>
   if (error) return <p className="text-red-600">Failed to load panels.</p>
+
+  const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Panels</h1>
+        <h1 className="text-2xl font-bold dark:text-gray-100">Panels</h1>
         <button
           onClick={() => setShowCreate(true)}
           className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -68,11 +70,11 @@ export default function PanelList() {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-gray-500">No panels yet. Create one to get started.</p>
+        <p className="text-gray-500 dark:text-gray-400">No panels yet. Create one to get started.</p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 text-gray-500">
+            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Instrument</th>
               <th className="py-2 font-medium">Targets</th>
@@ -85,7 +87,7 @@ export default function PanelList() {
               <HoverActionsRow
                 key={p.id}
                 as="tr"
-                className="border-b border-gray-100 hover:bg-gray-50"
+                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                 onClick={() => navigate('/panels/' + p.id)}
                 actions={{
                   onRename: () => {
@@ -97,16 +99,16 @@ export default function PanelList() {
                   onDelete: () => handleDelete(p.id, p.name),
                 }}
               >
-                <td className="py-2 font-medium text-gray-900">{p.name}</td>
-                <td className="py-2 text-gray-600">
+                <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{p.name}</td>
+                <td className="py-2 text-gray-600 dark:text-gray-400">
                   {p.instrument_id ? (
-                    <span className="text-gray-600">Configured</span>
+                    <span className="text-gray-600 dark:text-gray-400">Configured</span>
                   ) : (
-                    <span className="italic text-gray-400">No instrument</span>
+                    <span className="italic text-gray-400 dark:text-gray-500">No instrument</span>
                   )}
                 </td>
-                <td className="py-2 text-gray-600">{p.target_count}</td>
-                <td className="py-2 text-gray-600">{p.assignment_count}</td>
+                <td className="py-2 text-gray-600 dark:text-gray-400">{p.target_count}</td>
+                <td className="py-2 text-gray-600 dark:text-gray-400">{p.assignment_count}</td>
               </HoverActionsRow>
             ))}
           </tbody>
@@ -123,7 +125,7 @@ export default function PanelList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="panel-name" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="panel-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Panel Name
             </label>
             <input
@@ -134,7 +136,7 @@ export default function PanelList() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleCreate()
               }}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className={inputClass}
               autoFocus
             />
           </div>
@@ -145,7 +147,7 @@ export default function PanelList() {
                 setShowCreate(false)
                 setNewName('')
               }}
-              className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
@@ -169,7 +171,7 @@ export default function PanelList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-gray-700">
+            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Panel Name
             </label>
             <input
@@ -180,7 +182,7 @@ export default function PanelList() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleRename()
               }}
-              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className={inputClass}
               autoFocus
             />
           </div>
@@ -191,7 +193,7 @@ export default function PanelList() {
                 setEditingPanel(null)
                 setRenameValue('')
               }}
-              className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>

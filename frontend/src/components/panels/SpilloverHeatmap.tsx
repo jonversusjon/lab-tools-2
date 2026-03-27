@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
-import { heatmapColor } from '@/utils/colors'
+import { heatmapColor, heatmapColorDark } from '@/utils/colors'
+import { useTheme } from '@/components/layout/ThemeContext'
 
 interface SpilloverHeatmapProps {
   labels: string[]
@@ -7,32 +8,39 @@ interface SpilloverHeatmapProps {
 }
 
 export default function SpilloverHeatmap({ labels, matrix }: SpilloverHeatmapProps) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const n = labels.length
 
   if (n === 0) {
     return (
-      <div className="rounded border border-gray-200 bg-gray-50 px-6 py-8 text-center text-gray-400">
+      <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-8 text-center text-gray-400 dark:text-gray-500">
         Add fluorophore assignments to see spillover matrix
       </div>
     )
   }
 
+  const diagonalBg = isDark ? '#374151' : '#F3F4F6'
+  const zeroBg = isDark ? '#1F2937' : '#FFFFFF'
+  const colorFn = isDark ? heatmapColorDark : heatmapColor
+  const cellTextColor = isDark ? '#E5E7EB' : undefined
+
   if (n === 1) {
     return (
-      <div className="rounded border border-gray-200 bg-white p-4">
-        <h3 className="mb-3 text-sm font-semibold text-gray-700">Spillover Matrix</h3>
+      <div className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+        <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Spillover Matrix</h3>
         <div className="inline-grid" style={{ gridTemplateColumns: 'auto 50px' }}>
           <div />
-          <div className="px-1 py-1 text-center text-xs font-medium text-gray-500 truncate" title={labels[0]}>{labels[0]}</div>
-          <div className="px-2 py-1 text-xs font-medium text-gray-500 truncate" title={labels[0]}>{labels[0]}</div>
+          <div className="px-1 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 truncate" title={labels[0]}>{labels[0]}</div>
+          <div className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 truncate" title={labels[0]}>{labels[0]}</div>
           <div
             className="flex h-[50px] w-[50px] items-center justify-center text-xs"
-            style={{ backgroundColor: '#F3F4F6' }}
+            style={{ backgroundColor: diagonalBg, color: cellTextColor }}
           >
             1.00
           </div>
         </div>
-        <p className="mt-2 text-xs text-gray-400">
+        <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
           2 or more assignments needed for spillover analysis
         </p>
       </div>
@@ -40,8 +48,8 @@ export default function SpilloverHeatmap({ labels, matrix }: SpilloverHeatmapPro
   }
 
   return (
-    <div className="rounded border border-gray-200 bg-white p-4">
-      <h3 className="mb-3 text-sm font-semibold text-gray-700">Spillover Matrix</h3>
+    <div className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+      <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Spillover Matrix</h3>
       <div className="overflow-x-auto">
         <div
           className="inline-grid"
@@ -54,7 +62,7 @@ export default function SpilloverHeatmap({ labels, matrix }: SpilloverHeatmapPro
           {labels.map((label, j) => (
             <div
               key={'col-' + j}
-              className="px-1 py-1 text-center text-xs font-medium text-gray-500 truncate"
+              className="px-1 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 truncate"
               title={label}
             >
               {label}
@@ -65,7 +73,7 @@ export default function SpilloverHeatmap({ labels, matrix }: SpilloverHeatmapPro
           {matrix.map((row, i) => (
             <Fragment key={'row-' + i}>
               <div
-                className="flex items-center px-2 py-1 text-xs font-medium text-gray-500 truncate"
+                className="flex items-center px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 truncate"
                 title={labels[i]}
               >
                 {labels[i]}
@@ -75,16 +83,16 @@ export default function SpilloverHeatmap({ labels, matrix }: SpilloverHeatmapPro
                 const isNull = val === null
                 const isBold = val !== null && val > 0.25 && !isDiagonal
                 const bg = isDiagonal
-                  ? '#F3F4F6'
+                  ? diagonalBg
                   : isNull
-                    ? '#FFFFFF'
-                    : heatmapColor(val)
+                    ? zeroBg
+                    : colorFn(val)
 
                 return (
                   <div
                     key={'cell-' + i + '-' + j}
                     className="flex h-[50px] items-center justify-center text-xs"
-                    style={{ backgroundColor: bg }}
+                    style={{ backgroundColor: bg, color: cellTextColor }}
                     data-testid={'heatmap-cell-' + i + '-' + j}
                   >
                     <span className={isBold ? 'font-bold' : ''}>

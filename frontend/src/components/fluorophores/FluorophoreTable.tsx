@@ -63,7 +63,7 @@ export default function FluorophoreTable() {
       }))
   }, [showOverlay, items, checked])
 
-  if (isLoading) return <p className="text-gray-500">Loading fluorophores...</p>
+  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading fluorophores...</p>
   if (error) return <p className="text-red-600">Failed to load fluorophores.</p>
 
   const sortArrow = (key: SortKey) => {
@@ -74,7 +74,7 @@ export default function FluorophoreTable() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Fluorophores</h1>
+        <h1 className="text-2xl font-bold dark:text-gray-100">Fluorophores</h1>
         <div className="flex gap-2">
           {checked.size >= 2 && (
             <button
@@ -95,28 +95,28 @@ export default function FluorophoreTable() {
 
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 text-gray-500">
+          <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
             <th className="w-8 py-2" />
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800"
+              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
               onClick={() => handleSort('name')}
             >
               Name{sortArrow('name')}
             </th>
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800"
+              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
               onClick={() => handleSort('excitation_max_nm')}
             >
               Ex Max (nm){sortArrow('excitation_max_nm')}
             </th>
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800"
+              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
               onClick={() => handleSort('emission_max_nm')}
             >
               Em Max (nm){sortArrow('emission_max_nm')}
             </th>
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800"
+              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
               onClick={() => handleSort('source')}
             >
               Source{sortArrow('source')}
@@ -126,7 +126,7 @@ export default function FluorophoreTable() {
         <tbody>
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={5} className="py-6 text-center text-gray-400">
+              <td colSpan={5} className="py-6 text-center text-gray-400 dark:text-gray-500">
                 No fluorophores found.
               </td>
             </tr>
@@ -135,8 +135,8 @@ export default function FluorophoreTable() {
             <tr
               key={fl.id}
               className={
-                'border-b border-gray-100 hover:bg-gray-50' +
-                (selectedId === fl.id ? ' bg-blue-50' : '')
+                'border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800' +
+                (selectedId === fl.id ? ' bg-blue-50 dark:bg-blue-900/30' : '')
               }
             >
               <td className="py-2 text-center">
@@ -148,24 +148,24 @@ export default function FluorophoreTable() {
                 />
               </td>
               <td
-                className="cursor-pointer py-2 font-medium text-gray-900"
+                className="cursor-pointer py-2 font-medium text-gray-900 dark:text-gray-100"
                 onClick={() =>
                   setSelectedId(selectedId === fl.id ? null : fl.id)
                 }
               >
                 {fl.name}
               </td>
-              <td className="py-2 text-gray-600">{fl.excitation_max_nm}</td>
-              <td className="py-2 text-gray-600">{fl.emission_max_nm}</td>
-              <td className="py-2 text-gray-500">{fl.source}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{fl.excitation_max_nm}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">{fl.emission_max_nm}</td>
+              <td className="py-2 text-gray-500 dark:text-gray-400">{fl.source}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       {selectedId && spectraData?.spectra && (
-        <div className="mt-4 rounded border border-gray-200 bg-white p-4">
-          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+        <div className="mt-4 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+          <h3 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
             {spectraData.name} — Spectra
           </h3>
           <SpectraViewer
@@ -206,7 +206,7 @@ function OverlayPanel({
 }) {
   const { data: batchData } = useBatchSpectra(fluorophoreIds)
 
-  if (!batchData) return <p className="mt-4 text-sm text-gray-500">Loading spectra...</p>
+  if (!batchData) return <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Loading spectra...</p>
 
   const fluorophores = fluorophoreIds
     .map((id, i) => {
@@ -217,14 +217,14 @@ function OverlayPanel({
     .filter((f): f is NonNullable<typeof f> => f !== null)
 
   return (
-    <div className="mt-4 rounded border border-gray-200 bg-white p-4">
+    <div className="mt-4 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Spectra Overlay ({fluorophores.length} fluorophores)
         </h3>
         <button
           onClick={onClose}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
         >
           Close
         </button>

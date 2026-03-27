@@ -24,10 +24,10 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
             onChange({ ...detector, filter_midpoint: parseInt(e.target.value) || 0 })
           }
           placeholder="Midpoint"
-          className="w-20 rounded border border-gray-300 px-2 py-1 text-sm"
+          className="w-20 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
           min={1}
         />
-        <span className="text-gray-400">/</span>
+        <span className="text-gray-400 dark:text-gray-500">/</span>
         <input
           type="number"
           value={detector.filter_width || ''}
@@ -35,7 +35,7 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
             onChange({ ...detector, filter_width: parseInt(e.target.value) || 0 })
           }
           placeholder="Width"
-          className="w-16 rounded border border-gray-300 px-2 py-1 text-sm"
+          className="w-16 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
           min={1}
         />
       </div>
@@ -44,10 +44,10 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
         value={detector.name}
         onChange={(e) => onChange({ ...detector, name: e.target.value })}
         placeholder="Name (optional)"
-        className="w-32 rounded border border-gray-300 px-2 py-1 text-sm"
+        className="w-32 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
       />
       {detector.filter_midpoint > 0 && detector.filter_width > 0 && (
-        <span className="text-xs text-gray-400" data-testid="bandpass-range">
+        <span className="text-xs text-gray-400 dark:text-gray-500" data-testid="bandpass-range">
           {low}&ndash;{high} nm
         </span>
       )}

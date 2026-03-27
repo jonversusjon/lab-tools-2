@@ -71,29 +71,29 @@ export default function FluorophorePicker({
     const conjugatedFl = fluorophores.find((f) => f.id === antibody.fluorophore_id)
     if (!conjugatedFl) {
       content = (
-        <div ref={ref} className="w-56 rounded border border-gray-200 bg-white p-3 shadow-lg" style={style}>
-          <p className="text-sm text-gray-500">Conjugated fluorophore not found in library.</p>
+        <div ref={ref} className="w-56 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg" style={style}>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Conjugated fluorophore not found in library.</p>
         </div>
       )
     } else {
       const compat = isCompatible(conjugatedFl, laserWavelength, filterMidpoint, filterWidth)
       if (!compat) {
         content = (
-          <div ref={ref} className="w-64 rounded border border-gray-200 bg-white p-3 shadow-lg" style={style}>
-            <p className="text-sm text-amber-600">
+          <div ref={ref} className="w-64 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg" style={style}>
+            <p className="text-sm text-amber-600 dark:text-amber-400">
               Pre-conjugated fluorophore ({conjugatedFl.name}) is not compatible with this detector.
             </p>
           </div>
         )
       } else {
         content = (
-          <div ref={ref} className="w-56 rounded border border-gray-200 bg-white shadow-lg" style={style}>
+          <div ref={ref} className="w-56 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg" style={style}>
             <button
               onClick={() => onSelect(conjugatedFl.id)}
-              className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-blue-50"
+              className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30"
             >
               {conjugatedFl.name}
-              <span className="ml-2 text-xs text-gray-400">
+              <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
                 {conjugatedFl.excitation_max_nm}/{conjugatedFl.emission_max_nm}
               </span>
             </button>
@@ -108,17 +108,17 @@ export default function FluorophorePicker({
     )
 
     content = (
-      <div ref={ref} className="max-h-60 w-64 overflow-y-auto rounded border border-gray-200 bg-white shadow-lg" style={style}>
+      <div ref={ref} className="max-h-60 w-64 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg" style={style}>
         {currentAssignmentFluorophoreId && (
           <button
             onClick={onClear}
-            className="w-full border-b border-gray-100 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+            className="w-full border-b border-gray-100 dark:border-gray-700 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
           >
             Clear assignment
           </button>
         )}
         {compatible.length === 0 ? (
-          <p className="px-3 py-2 text-sm text-gray-400">No compatible fluorophores</p>
+          <p className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">No compatible fluorophores</p>
         ) : (
           compatible.map((fl) => {
             const alreadyAssigned = assignedFluorophoreIds.has(fl.id)
@@ -127,12 +127,12 @@ export default function FluorophorePicker({
                 key={fl.id}
                 onClick={() => onSelect(fl.id)}
                 className={
-                  'w-full px-3 py-2 text-left text-sm hover:bg-blue-50' +
+                  'w-full px-3 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30' +
                   (alreadyAssigned ? ' opacity-50' : '')
                 }
               >
                 <span className="font-medium">{fl.name}</span>
-                <span className="ml-2 text-xs text-gray-400">
+                <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
                   {fl.excitation_max_nm}/{fl.emission_max_nm}
                 </span>
                 {alreadyAssigned && <span className="ml-1" title="Already assigned in this panel">&#9888;&#65039;</span>}

@@ -23,7 +23,7 @@ export default function HoverActions({
       {onRename && (
         <button
           onClick={(e) => handleClick(e, onRename)}
-          className="p-1.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+          className="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
           aria-label="Rename"
           title="Rename"
         >
@@ -36,7 +36,7 @@ export default function HoverActions({
       {onDuplicate && (
         <button
           onClick={(e) => handleClick(e, onDuplicate)}
-          className="p-1.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+          className="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
           aria-label="Duplicate"
           title="Duplicate"
         >
@@ -51,7 +51,7 @@ export default function HoverActions({
       {onDelete && (
         <button
           onClick={(e) => handleClick(e, onDelete)}
-          className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50"
+          className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
           aria-label="Delete"
           title="Delete"
         >
