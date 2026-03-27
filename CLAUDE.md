@@ -17,7 +17,7 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **Seed data source field mapping** — `fluorophores.json` uses `"source": "gaussian_approximation"` but the model expects `"seed"|"fpbase"|"user"`. The seed loader MUST map `gaussian_approximation` → `"seed"` during import.
 - [ ] **Race condition immunity** — all database writes that read-then-write MUST use a single transaction. No optimistic "check then act" patterns across separate requests. See Race Condition Policy below.
 - [ ] **Mock react-chartjs-2 in vitest** — canvas isn't available in jsdom. Use: `vi.mock('react-chartjs-2', () => ({ Line: (props: any) => <canvas data-testid="chart" /> }))`
-
+- [ ] Always run npx tsc --noEmit from inside the frontend/ directory. Running it from the project root installs the wrong tsc package.
 ---
 
 ## Read First

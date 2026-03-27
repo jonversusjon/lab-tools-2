@@ -3,10 +3,7 @@ import Shell from '@/components/layout/Shell'
 import InstrumentList from '@/components/instruments/InstrumentList'
 import InstrumentEditor from '@/components/instruments/InstrumentEditor'
 import FluorophoreTable from '@/components/fluorophores/FluorophoreTable'
-
-function AntibodiesPage() {
-  return <h1 className="text-2xl font-bold">Antibodies</h1>
-}
+import AntibodyTable from '@/components/antibodies/AntibodyTable'
 
 function PanelsPage() {
   return <h1 className="text-2xl font-bold">Panels</h1>
@@ -20,7 +17,7 @@ export default function App() {
         <Route path="/instruments/new" element={<InstrumentEditor />} />
         <Route path="/instruments/:id" element={<InstrumentEditor />} />
         <Route path="/fluorophores" element={<FluorophoreTable />} />
-        <Route path="/antibodies" element={<AntibodiesPage />} />
+        <Route path="/antibodies" element={<AntibodyTable />} />
         <Route path="/panels" element={<PanelsPage />} />
         <Route path="/" element={<Navigate to="/instruments" replace />} />
       </Route>

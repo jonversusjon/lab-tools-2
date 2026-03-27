@@ -1,0 +1,140 @@
+import { useMemo, useState } from 'react'
+import { useAntibodies, useDeleteAntibody } from '@/hooks/useAntibodies'
+import { useFluorophores } from '@/hooks/useFluorophores'
+import AntibodyForm from './AntibodyForm'
+import type { Antibody } from '@/types'
+
+type SortDir = 'asc' | 'desc'
+
+export default function AntibodyTable() {
+  const { data, isLoading, error } = useAntibodies(0, 500)
+  const { data: fluorophoreData } = useFluorophores(0, 500)
+  const deleteMutation = useDeleteAntibody()
+
+  const [search, setSearch] = useState('')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [editingAntibody, setEditingAntibody] = useState<Antibody | null>(null)
+  const [showNew, setShowNew] = useState(false)
+
+  const items = data?.items ?? []
+  const fluorophores = fluorophoreData?.items ?? []
+
+  const filtered = useMemo(() => {
+    const term = search.toLowerCase()
+    return items.filter((ab) => ab.target.toLowerCase().includes(term))
+  }, [items, search])
+
+  const sorted = useMemo(() => {
+    const copy = [...filtered]
+    copy.sort((a, b) =>
+      sortDir === 'asc'
+        ? a.target.localeCompare(b.target)
+        : b.target.localeCompare(a.target)
+    )
+    return copy
+  }, [filtered, sortDir])
+
+  const handleDelete = (ab: Antibody) => {
+    if (
+      !confirm(
+        'Deleting this antibody will also remove it from any panels where it is a target or has assignments. Continue?'
+      )
+    )
+      return
+    deleteMutation.mutate(ab.id)
+  }
+
+  if (isLoading) return <p className="text-gray-500">Loading antibodies...</p>
+  if (error) return <p className="text-red-600">Failed to load antibodies.</p>
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Antibodies</h1>
+        <button
+          onClick={() => setShowNew(true)}
+          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          New Antibody
+        </button>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Search by target..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mb-4 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+      />
+
+      <table className="w-full border-collapse text-left text-sm">
+        <thead>
+          <tr className="border-b border-gray-200 text-gray-500">
+            <th
+              className="cursor-pointer py-2 font-medium hover:text-gray-800"
+              onClick={() => setSortDir(sortDir === 'asc' ? 'desc' : 'asc')}
+            >
+              Target{sortDir === 'asc' ? ' \u25B2' : ' \u25BC'}
+            </th>
+            <th className="py-2 font-medium">Clone</th>
+            <th className="py-2 font-medium">Host</th>
+            <th className="py-2 font-medium">Isotype</th>
+            <th className="py-2 font-medium">Conjugate</th>
+            <th className="py-2 font-medium">Vendor</th>
+            <th className="py-2 font-medium">Catalog #</th>
+            <th className="w-16 py-2" />
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((ab) => (
+            <tr
+              key={ab.id}
+              className="cursor-pointer border-b border-gray-100 hover:bg-gray-50"
+              onClick={() => setEditingAntibody(ab)}
+            >
+              <td className="py-2 font-medium text-gray-900">{ab.target}</td>
+              <td className="py-2 text-gray-600">{ab.clone ?? ''}</td>
+              <td className="py-2 text-gray-600">{ab.host ?? ''}</td>
+              <td className="py-2 text-gray-600">{ab.isotype ?? ''}</td>
+              <td className="py-2">
+                {ab.fluorophore_name ? (
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block h-2.5 w-2.5 rounded-full bg-teal-500" />
+                    {ab.fluorophore_name}
+                  </span>
+                ) : (
+                  <span className="italic text-gray-400">Unconjugated</span>
+                )}
+              </td>
+              <td className="py-2 text-gray-600">{ab.vendor ?? ''}</td>
+              <td className="py-2 text-gray-600">{ab.catalog_number ?? ''}</td>
+              <td className="py-2 text-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(ab)
+                  }}
+                  className="text-red-500 hover:text-red-700"
+                  aria-label="Delete"
+                >
+                  &times;
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {(showNew || editingAntibody) && (
+        <AntibodyForm
+          antibody={editingAntibody}
+          fluorophores={fluorophores}
+          onClose={() => {
+            setShowNew(false)
+            setEditingAntibody(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
