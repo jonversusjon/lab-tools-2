@@ -42,7 +42,10 @@ export async function fetchFpbase(name: string): Promise<Fluorophore> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name }),
   })
-  if (!res.ok) throw new Error('Failed to fetch from FPbase')
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new Error(body?.detail ?? 'Failed to fetch from FPbase')
+  }
   return res.json()
 }
 

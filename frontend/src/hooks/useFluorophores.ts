@@ -4,6 +4,7 @@ import {
   createFluorophore,
   getFluorophoreSpectra,
   batchSpectra,
+  fetchFpbase,
 } from '@/api/fluorophores'
 import type { FluorophoreCreate } from '@/types'
 
@@ -35,6 +36,14 @@ export function useCreateFluorophore() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: FluorophoreCreate) => createFluorophore(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['fluorophores'] }),
+  })
+}
+
+export function useFetchFromFpbase() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string) => fetchFpbase(name),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['fluorophores'] }),
   })
 }

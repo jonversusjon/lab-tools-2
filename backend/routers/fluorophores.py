@@ -62,9 +62,47 @@ def get_fluorophore_spectra(id: str, db: Session = Depends(get_db)):
     return fluorophore
 
 
-@router.post("/fetch-fpbase")
-def fetch_fpbase(request: FetchFpbaseRequest):
-    raise HTTPException(status_code=501, detail="FPbase integration not yet implemented")
+@router.post("/fetch-fpbase", response_model=FluorophoreRead)
+async def fetch_fpbase(
+    request: FetchFpbaseRequest,
+    db: Session = Depends(get_db),
+):
+    from services.fpbase import fetch_fluorophore_from_fpbase
+
+    try:
+        fpbase_data = await fetch_fluorophore_from_fpbase(request.name)
+    except HTTPException as exc:
+        if exc.status_code == 502:
+            raise HTTPException(
+                status_code=503,
+                detail="Could not reach FPbase. Try again later.",
+            )
+        raise
+
+    # Check if fluorophore already exists by name
+    existing = db.scalar(
+        select(Fluorophore).where(Fluorophore.name == fpbase_data["name"])
+    )
+    if existing is not None:
+        existing.excitation_max_nm = fpbase_data["excitation_max_nm"]
+        existing.emission_max_nm = fpbase_data["emission_max_nm"]
+        existing.spectra = fpbase_data["spectra"]
+        existing.source = "fpbase"
+        db.commit()
+        db.refresh(existing)
+        return existing
+
+    fluorophore = Fluorophore(
+        name=fpbase_data["name"],
+        excitation_max_nm=fpbase_data["excitation_max_nm"],
+        emission_max_nm=fpbase_data["emission_max_nm"],
+        spectra=fpbase_data["spectra"],
+        source="fpbase",
+    )
+    db.add(fluorophore)
+    db.commit()
+    db.refresh(fluorophore)
+    return fluorophore
 
 
 @router.post("/batch-spectra")

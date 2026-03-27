@@ -76,6 +76,24 @@ def test_batch_spectra_over_100_returns_400(client):
     assert resp.status_code == 400
 
 
+def test_batch_spectra_mixed_valid_invalid(client):
+    resp = client.get("/api/v1/fluorophores")
+    valid_id = resp.json()["items"][0]["id"]
+    batch_resp = client.post("/api/v1/fluorophores/batch-spectra", json={
+        "ids": [valid_id, "nonexistent-id"],
+    })
+    assert batch_resp.status_code == 200
+    data = batch_resp.json()
+    assert valid_id in data
+    assert "nonexistent-id" not in data
+
+
+def test_batch_spectra_empty_list(client):
+    resp = client.post("/api/v1/fluorophores/batch-spectra", json={"ids": []})
+    assert resp.status_code == 200
+    assert resp.json() == {}
+
+
 def test_seed_fluorophores_have_source_seed(client):
     resp = client.get("/api/v1/fluorophores?limit=500")
     for item in resp.json()["items"]:

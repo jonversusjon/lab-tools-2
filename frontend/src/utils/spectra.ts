@@ -41,9 +41,26 @@ export function isCompatible(
   throw new Error('not implemented')
 }
 
+/**
+ * Downsample spectra by taking every Nth point, where N = stepNm / avgStep.
+ * If the input is already sparse enough, returns a copy.
+ */
 export function downsampleSpectra(
-  _spectra: number[][],
-  _stepNm: number
+  spectra: number[][],
+  stepNm: number
 ): number[][] {
-  throw new Error('not implemented')
+  if (spectra.length <= 2) return [...spectra]
+  const avgStep =
+    (spectra[spectra.length - 1][0] - spectra[0][0]) / (spectra.length - 1)
+  const skip = Math.max(1, Math.round(stepNm / avgStep))
+  if (skip <= 1) return [...spectra]
+  const result: number[][] = []
+  for (let i = 0; i < spectra.length; i += skip) {
+    result.push(spectra[i])
+  }
+  // Always include the last point
+  if (result[result.length - 1] !== spectra[spectra.length - 1]) {
+    result.push(spectra[spectra.length - 1])
+  }
+  return result
 }

@@ -38,7 +38,11 @@ export async function updateInstrument(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to update instrument')
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    const detail = body?.detail ?? 'Failed to update instrument'
+    throw new Error(detail)
+  }
   return res.json()
 }
 
