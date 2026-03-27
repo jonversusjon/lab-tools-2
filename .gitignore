@@ -1,1 +1,9 @@
 *:Zone.Identifier
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.pytest_cache/
+node_modules/
+dist/
+.vite/
