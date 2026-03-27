@@ -7,7 +7,7 @@ import {
 } from '@/hooks/useFluorophores'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 import FpbaseFetchModal from './FpbaseFetchModal'
-import type { Fluorophore } from '@/types'
+import type { Fluorophore, SpectraData } from '@/types'
 
 const PAGE_SIZE = 50
 
@@ -18,11 +18,10 @@ export default function FluorophoreBrowser() {
   const [hasSpectraOnly, setHasSpectraOnly] = useState(false)
   const [page, setPage] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [overlayIds, setOverlayIds] = useState<Set<string>>(new Set())
-  const [showOverlay, setShowOverlay] = useState(false)
+  // Map of fluorophore id → name for all items currently in the overlay
+  const [overlayMap, setOverlayMap] = useState<Map<string, string>>(new Map())
   const [showFpbaseModal, setShowFpbaseModal] = useState(false)
 
-  // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => {
       setDebouncedSearch(search)
@@ -31,7 +30,6 @@ export default function FluorophoreBrowser() {
     return () => clearTimeout(t)
   }, [search])
 
-  // Reset page when filters change
   useEffect(() => { setPage(0) }, [typeFilter, hasSpectraOnly])
 
   const { data, isLoading, error } = useFluorophores({
@@ -46,18 +44,21 @@ export default function FluorophoreBrowser() {
   const total = data?.total ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
-  const toggleOverlay = (id: string) => {
-    setOverlayIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+  const toggleOverlay = (fl: Fluorophore) => {
+    setOverlayMap((prev) => {
+      const next = new Map(prev)
+      if (next.has(fl.id)) next.delete(fl.id)
+      else next.set(fl.id, fl.name)
       return next
     })
-    setShowOverlay(false)
   }
 
-  const handleRowClick = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id))
+  const removeFromOverlay = (id: string) => {
+    setOverlayMap((prev) => {
+      const next = new Map(prev)
+      next.delete(id)
+      return next
+    })
   }
 
   if (isLoading) {
@@ -68,19 +69,12 @@ export default function FluorophoreBrowser() {
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Fluorophores</h1>
-        <div className="flex gap-2">
-          {overlayIds.size >= 2 && (
-            <button
-              onClick={() => setShowOverlay(true)}
-              className="rounded bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-            >
-              View Overlay ({overlayIds.size})
-            </button>
-          )}
+    <div className="flex items-start gap-6">
+      {/* ── Left: table area ─────────────────────────────────────── */}
+      <div className="min-w-0 flex-1">
+        {/* Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold dark:text-gray-100">Fluorophores</h1>
           <button
             onClick={() => setShowFpbaseModal(true)}
             className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -88,158 +82,158 @@ export default function FluorophoreBrowser() {
             Fetch from FPbase
           </button>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="mb-3 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name..."
-          className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 w-52"
-        />
-        <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-sm">
-          {(['all', 'protein', 'dye'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTypeFilter(t)}
-              className={
-                'px-3 py-1.5 capitalize ' +
-                (typeFilter === t
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600')
-              }
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-        <label className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+        {/* Filters */}
+        <div className="mb-3 flex flex-wrap items-center gap-3">
           <input
-            type="checkbox"
-            checked={hasSpectraOnly}
-            onChange={(e) => setHasSpectraOnly(e.target.checked)}
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name..."
+            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 w-52"
           />
-          Has spectra
-        </label>
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-          {total.toLocaleString()} fluorophores
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
-              <th className="w-8 py-2" />
-              <th className="py-2 font-medium">Name</th>
-              <th className="py-2 font-medium">Type</th>
-              <th className="py-2 font-medium">Ex Max</th>
-              <th className="py-2 font-medium">Em Max</th>
-              <th className="py-2 font-medium">Ext Coeff</th>
-              <th className="py-2 font-medium">QY</th>
-              <th className="py-2 font-medium">Source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 && (
-              <tr>
-                <td colSpan={8} className="py-8 text-center text-gray-400 dark:text-gray-500">
-                  No fluorophores found.
-                </td>
-              </tr>
-            )}
-            {items.map((fl) => (
-              <>
-                <tr
-                  key={fl.id}
-                  className={
-                    'border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800' +
-                    (expandedId === fl.id ? ' bg-blue-50 dark:bg-blue-900/20' : '')
-                  }
-                  onClick={() => handleRowClick(fl.id)}
-                >
-                  <td className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
-                    {fl.has_spectra && (
-                      <input
-                        type="checkbox"
-                        checked={overlayIds.has(fl.id)}
-                        onChange={() => toggleOverlay(fl.id)}
-                        title="Add to overlay"
-                      />
-                    )}
-                  </td>
-                  <td className="py-2 font-medium text-gray-900 dark:text-gray-100">
-                    {fl.name}
-                    {fl.has_spectra && (
-                      <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-400" title="Has spectra" />
-                    )}
-                  </td>
-                  <td className="py-2 text-gray-500 dark:text-gray-400 capitalize">
-                    {fl.fluor_type ?? '—'}
-                  </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">
-                    {fl.ex_max_nm !== null ? fl.ex_max_nm.toFixed(0) + ' nm' : '—'}
-                  </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">
-                    {fl.em_max_nm !== null ? fl.em_max_nm.toFixed(0) + ' nm' : '—'}
-                  </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">
-                    {fl.ext_coeff !== null ? fl.ext_coeff.toLocaleString() : '—'}
-                  </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">
-                    {fl.qy !== null ? fl.qy.toFixed(2) : '—'}
-                  </td>
-                  <td className="py-2 text-gray-500 dark:text-gray-400">{fl.source}</td>
-                </tr>
-
-                {expandedId === fl.id && (
-                  <tr key={fl.id + '-detail'}>
-                    <td colSpan={8} className="p-0">
-                      <FluorophoreDetail fluorophore={fl} />
-                    </td>
-                  </tr>
-                )}
-              </>
+          <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-sm">
+            {(['all', 'protein', 'dye'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTypeFilter(t)}
+                className={
+                  'px-3 py-1.5 capitalize ' +
+                  (typeFilter === t
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600')
+                }
+              >
+                {t}
+              </button>
             ))}
-          </tbody>
-        </table>
+          </div>
+          <label className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={hasSpectraOnly}
+              onChange={(e) => setHasSpectraOnly(e.target.checked)}
+            />
+            Has spectra
+          </label>
+          <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+            {total.toLocaleString()} fluorophores
+          </span>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
+                <th className="w-8 py-2" />
+                <th className="py-2 font-medium">Name</th>
+                <th className="py-2 font-medium">Type</th>
+                <th className="py-2 font-medium">Ex Max</th>
+                <th className="py-2 font-medium">Em Max</th>
+                <th className="py-2 font-medium">Ext Coeff</th>
+                <th className="py-2 font-medium">QY</th>
+                <th className="py-2 font-medium">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-gray-400 dark:text-gray-500">
+                    No fluorophores found.
+                  </td>
+                </tr>
+              )}
+              {items.map((fl) => (
+                <>
+                  <tr
+                    key={fl.id}
+                    className={
+                      'border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800' +
+                      (expandedId === fl.id ? ' bg-blue-50 dark:bg-blue-900/20' : '')
+                    }
+                    onClick={() => setExpandedId((prev) => (prev === fl.id ? null : fl.id))}
+                  >
+                    <td className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                      {fl.has_spectra && (
+                        <input
+                          type="checkbox"
+                          checked={overlayMap.has(fl.id)}
+                          onChange={() => toggleOverlay(fl)}
+                          title="Add to spectra overlay"
+                        />
+                      )}
+                    </td>
+                    <td className="py-2 font-medium text-gray-900 dark:text-gray-100">
+                      {fl.name}
+                      {fl.has_spectra && (
+                        <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-400" title="Has spectra" />
+                      )}
+                    </td>
+                    <td className="py-2 text-gray-500 dark:text-gray-400 capitalize">
+                      {fl.fluor_type ?? '—'}
+                    </td>
+                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                      {fl.ex_max_nm !== null && fl.ex_max_nm !== undefined ? fl.ex_max_nm.toFixed(0) + ' nm' : '—'}
+                    </td>
+                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                      {fl.em_max_nm !== null && fl.em_max_nm !== undefined ? fl.em_max_nm.toFixed(0) + ' nm' : '—'}
+                    </td>
+                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                      {fl.ext_coeff !== null && fl.ext_coeff !== undefined ? fl.ext_coeff.toLocaleString() : '—'}
+                    </td>
+                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                      {fl.qy !== null && fl.qy !== undefined ? fl.qy.toFixed(2) : '—'}
+                    </td>
+                    <td className="py-2 text-gray-500 dark:text-gray-400">{fl.source}</td>
+                  </tr>
+
+                  {expandedId === fl.id && (
+                    <tr key={fl.id + '-detail'}>
+                      <td colSpan={8} className="p-0">
+                        <FluorophoreDetail fluorophore={fl} />
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <span className="text-gray-500 dark:text-gray-400">
+              Page {page + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+              className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between text-sm">
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <span className="text-gray-500 dark:text-gray-400">
-            Page {page + 1} of {totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
-          >
-            Next
-          </button>
+      {/* ── Right: overlay sidebar (appears when ≥1 item selected) ── */}
+      {overlayMap.size > 0 && (
+        <div className="w-80 shrink-0 sticky top-6">
+          <OverlaySidebar
+            overlayMap={overlayMap}
+            onRemove={removeFromOverlay}
+            onClear={() => setOverlayMap(new Map())}
+          />
         </div>
-      )}
-
-      {/* Spectra overlay panel */}
-      {showOverlay && overlayIds.size >= 2 && (
-        <OverlayPanel
-          ids={Array.from(overlayIds)}
-          names={items
-            .filter((f) => overlayIds.has(f.id))
-            .map((f) => f.name)}
-          onClose={() => setShowOverlay(false)}
-        />
       )}
 
       {showFpbaseModal && <FpbaseFetchModal onClose={() => setShowFpbaseModal(false)} />}
@@ -272,23 +266,23 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
             <MetaRow label="Source" value={fluorophore.source} />
             <MetaRow
               label="Ex Max"
-              value={fluorophore.ex_max_nm !== null ? fluorophore.ex_max_nm.toFixed(0) + ' nm' : null}
+              value={fluorophore.ex_max_nm !== null && fluorophore.ex_max_nm !== undefined ? fluorophore.ex_max_nm.toFixed(0) + ' nm' : null}
             />
             <MetaRow
               label="Em Max"
-              value={fluorophore.em_max_nm !== null ? fluorophore.em_max_nm.toFixed(0) + ' nm' : null}
+              value={fluorophore.em_max_nm !== null && fluorophore.em_max_nm !== undefined ? fluorophore.em_max_nm.toFixed(0) + ' nm' : null}
             />
             <MetaRow
               label="Ext Coeff"
-              value={fluorophore.ext_coeff !== null ? fluorophore.ext_coeff.toLocaleString() + ' M\u207bcm\u207b' : null}
+              value={fluorophore.ext_coeff !== null && fluorophore.ext_coeff !== undefined ? fluorophore.ext_coeff.toLocaleString() + ' M\u207bcm\u207b' : null}
             />
             <MetaRow
               label="Quantum Yield"
-              value={fluorophore.qy !== null ? fluorophore.qy.toFixed(3) : null}
+              value={fluorophore.qy !== null && fluorophore.qy !== undefined ? fluorophore.qy.toFixed(3) : null}
             />
             <MetaRow
               label="Lifetime"
-              value={fluorophore.lifetime_ns !== null ? fluorophore.lifetime_ns.toFixed(2) + ' ns' : null}
+              value={fluorophore.lifetime_ns !== null && fluorophore.lifetime_ns !== undefined ? fluorophore.lifetime_ns.toFixed(2) + ' ns' : null}
             />
             <MetaRow label="Oligomerization" value={fluorophore.oligomerization} />
             <MetaRow label="Switch Type" value={fluorophore.switch_type} />
@@ -397,46 +391,79 @@ function MetaRow({ label, value }: { label: string; value: string | null | undef
 }
 
 // ---------------------------------------------------------------------------
-// Overlay panel for comparing emission spectra
+// Right sidebar: spectra overlay comparison
 // ---------------------------------------------------------------------------
 
-function OverlayPanel({
-  ids,
-  names,
-  onClose,
+function OverlaySidebar({
+  overlayMap,
+  onRemove,
+  onClear,
 }: {
-  ids: string[]
-  names: string[]
-  onClose: () => void
+  overlayMap: Map<string, string>
+  onRemove: (id: string) => void
+  onClear: () => void
 }) {
-  const { data: batchData } = useBatchSpectra(ids)
-
-  if (!batchData) {
-    return <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Loading spectra...</p>
-  }
+  const ids = Array.from(overlayMap.keys())
+  const { data: batchData, isLoading } = useBatchSpectra(ids)
 
   const fluorophores = ids
-    .map((id, i) => {
-      const spectra = batchData[id]
+    .map((id) => {
+      const spectra = batchData?.[id] as SpectraData | undefined
       if (!spectra) return null
-      return { name: names[i] ?? id, spectra }
+      return { name: overlayMap.get(id) ?? id, spectra }
     })
-    .filter((f): f is NonNullable<typeof f> => f !== null)
+    .filter((f): f is { name: string; spectra: SpectraData } => f !== null)
 
   return (
-    <div className="mt-4 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Emission Overlay ({fluorophores.length} fluorophores)
+    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+          Spectra Overlay
         </h3>
         <button
-          onClick={onClose}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+          onClick={onClear}
+          className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         >
-          Close
+          Clear all
         </button>
       </div>
-      <SpectraViewer fluorophores={fluorophores} mode="overlay" />
+
+      {/* Selected fluorophore chips */}
+      <ul className="border-b border-gray-100 dark:border-gray-700 px-4 py-2 space-y-1">
+        {ids.map((id) => (
+          <li key={id} className="flex items-center justify-between gap-2 text-xs">
+            <span className="truncate text-gray-700 dark:text-gray-300">
+              {overlayMap.get(id)}
+            </span>
+            <button
+              onClick={() => onRemove(id)}
+              className="shrink-0 rounded px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              title="Remove"
+              aria-label={'Remove ' + overlayMap.get(id)}
+            >
+              ×
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* Chart area */}
+      <div className="px-4 py-3">
+        {ids.length < 2 ? (
+          <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
+            Select {2 - ids.length} more to compare.
+          </p>
+        ) : isLoading ? (
+          <p className="text-xs text-gray-400 dark:text-gray-500 py-1">Loading spectra...</p>
+        ) : fluorophores.length >= 2 ? (
+          <SpectraViewer fluorophores={fluorophores} mode="overlay" />
+        ) : (
+          <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
+            Spectra unavailable for selected fluorophores.
+          </p>
+        )}
+      </div>
     </div>
   )
 }

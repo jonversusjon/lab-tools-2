@@ -88,20 +88,24 @@ describe('Fluorophore Workflow Integration', () => {
     expect(screen.getByRole('button', { name: 'dye' })).toBeInTheDocument()
   })
 
-  it('check 3 fluorophores → overlay button appears', () => {
+  it('check 3 fluorophores → overlay sidebar appears', () => {
     renderTable()
 
-    // Initially no overlay button
-    expect(screen.queryByText(/View Overlay/)).not.toBeInTheDocument()
+    // Initially no sidebar
+    expect(screen.queryByText('Spectra Overlay')).not.toBeInTheDocument()
 
-    // Check 3 fluorophores using title-based selector (skips filter checkbox)
-    const overlayCheckboxes = screen.getAllByTitle('Add to overlay')
+    const overlayCheckboxes = screen.getAllByTitle('Add to spectra overlay')
     fireEvent.click(overlayCheckboxes[0])
     fireEvent.click(overlayCheckboxes[1])
     fireEvent.click(overlayCheckboxes[2])
 
-    // Overlay button appears
-    expect(screen.getByText(/View Overlay/)).toBeInTheDocument()
+    // Sidebar appears; each selected name appears in both the table and the sidebar chip list
+    expect(screen.getByText('Spectra Overlay')).toBeInTheDocument()
+    expect(screen.getAllByText('FITC').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('PE').length).toBeGreaterThanOrEqual(2)
+    expect(screen.getAllByText('APC').length).toBeGreaterThanOrEqual(2)
+    // Three remove buttons in sidebar
+    expect(screen.getAllByRole('button', { name: /Remove/ }).length).toBe(3)
   })
 
   it('clicking fluorophore row expands detail section', () => {

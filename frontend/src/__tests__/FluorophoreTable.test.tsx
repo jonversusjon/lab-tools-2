@@ -57,15 +57,21 @@ describe('FluorophoreTable', () => {
     expect(screen.getByRole('button', { name: 'dye' })).toBeInTheDocument()
   })
 
-  it('selecting checkboxes shows View Overlay button', () => {
+  it('selecting checkboxes opens overlay sidebar', () => {
     render(<FluorophoreTable />, { wrapper })
-    expect(screen.queryByText(/View Overlay/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Spectra Overlay')).not.toBeInTheDocument()
 
-    // Use title-based selector to target row checkboxes, not the filter checkbox
-    const overlayCheckboxes = screen.getAllByTitle('Add to overlay')
+    const overlayCheckboxes = screen.getAllByTitle('Add to spectra overlay')
     fireEvent.click(overlayCheckboxes[0])
+
+    // Sidebar appears after first selection
+    expect(screen.getByText('Spectra Overlay')).toBeInTheDocument()
+    expect(screen.getByText('Select 1 more to compare.')).toBeInTheDocument()
+
     fireEvent.click(overlayCheckboxes[1])
 
-    expect(screen.getByText(/View Overlay/)).toBeInTheDocument()
+    // Sidebar still visible, prompt gone
+    expect(screen.getByText('Spectra Overlay')).toBeInTheDocument()
+    expect(screen.queryByText(/Select .* more to compare/)).not.toBeInTheDocument()
   })
 })
