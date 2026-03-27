@@ -117,6 +117,13 @@ export interface FluorophoreCreate {
   spectra?: Record<string, number[][]> | null
 }
 
+export interface FluorophoreWithSpectra extends Fluorophore {
+  spectra: {
+    excitation: number[][]
+    emission: number[][]
+  } | null
+}
+
 export interface AntibodyCreate {
   target: string
   clone?: string | null

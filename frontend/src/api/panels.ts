@@ -90,7 +90,13 @@ export async function addAssignment(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to add assignment')
+  if (!res.ok) {
+    if (res.status === 409) {
+      const body = await res.json()
+      throw new Error(body.detail ?? 'Assignment conflict')
+    }
+    throw new Error('Failed to add assignment')
+  }
   return res.json()
 }
 

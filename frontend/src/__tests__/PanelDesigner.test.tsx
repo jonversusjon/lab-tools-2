@@ -74,6 +74,8 @@ vi.mock('@/hooks/usePanels', () => ({
   useUpdatePanel: () => ({ mutate: mockUpdateMutate }),
   useAddTarget: () => ({ mutateAsync: mockAddTargetMutateAsync }),
   useRemoveTarget: () => ({ mutateAsync: mockRemoveTargetMutateAsync }),
+  useAddAssignment: () => ({ mutateAsync: vi.fn() }),
+  useRemoveAssignment: () => ({ mutateAsync: vi.fn() }),
 }))
 
 vi.mock('@/hooks/useInstruments', () => ({
@@ -93,6 +95,15 @@ vi.mock('@/hooks/useAntibodies', () => ({
     isLoading: false,
     error: null,
   }),
+}))
+
+vi.mock('@/hooks/useFluorophores', () => ({
+  useFluorophores: () => ({
+    data: { items: [{ id: 'fl-1', name: 'FITC', excitation_max_nm: 494, emission_max_nm: 519, source: 'seed' }], total: 1, skip: 0, limit: 500 },
+    isLoading: false,
+    error: null,
+  }),
+  useBatchSpectra: () => ({ data: null }),
 }))
 
 import PanelDesigner from '@/components/panels/PanelDesigner'

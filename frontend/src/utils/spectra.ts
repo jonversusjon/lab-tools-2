@@ -1,44 +1,112 @@
+import type { FluorophoreWithSpectra } from '@/types'
+
 /**
- * Linearly interpolates a spectrum at the given wavelength.
- *
- * The `spectra` parameter is an array of [wavelength, intensity] pairs sorted
- * by wavelength. Returns 0 if the wavelength is outside the spectrum range.
- * Between two data points, performs linear interpolation.
- *
- * @param spectra - Array of [wavelength, intensity] pairs
- * @param wavelength - The wavelength to interpolate at
- * @returns The interpolated intensity value
+ * Linear interpolation: given a spectrum as [[wavelength, intensity], ...],
+ * return the intensity at the given wavelength.
+ * Returns 0 if wavelength is outside the spectrum range.
+ * Spectrum must be sorted by wavelength (ascending).
  */
 export function interpolateAt(
-  _spectra: number[][],
-  _wavelength: number
+  spectra: number[][],
+  wavelength: number
 ): number {
-  throw new Error('not implemented')
+  if (spectra.length === 0) return 0
+  if (wavelength <= spectra[0][0]) return wavelength === spectra[0][0] ? spectra[0][1] : 0
+  if (wavelength >= spectra[spectra.length - 1][0]) {
+    return wavelength === spectra[spectra.length - 1][0]
+      ? spectra[spectra.length - 1][1]
+      : 0
+  }
+
+  // Binary search for the interval
+  let lo = 0
+  let hi = spectra.length - 1
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1
+    if (spectra[mid][0] <= wavelength) lo = mid
+    else hi = mid
+  }
+
+  const [x0, y0] = spectra[lo]
+  const [x1, y1] = spectra[hi]
+  const t = (wavelength - x0) / (x1 - x0)
+  return y0 + (y1 - y0) * t
 }
 
+/**
+ * Can this fluorophore be excited by the given laser?
+ * If full excitation spectrum available: use interpolateAt to get
+ * intensity at laser wavelength, compare to max intensity in spectrum.
+ * Threshold: >= 15% of peak.
+ * Fallback (no spectra or empty): laser within ±40nm of excitation max.
+ */
 export function isExcitable(
-  _excitationSpectra: number[][],
-  _laserWavelength: number
+  fluorophore: FluorophoreWithSpectra,
+  laserWavelength: number
 ): boolean {
-  throw new Error('not implemented')
+  const ex = fluorophore.spectra?.excitation
+  if (ex && ex.length > 0) {
+    const intensity = interpolateAt(ex, laserWavelength)
+    const peak = Math.max(...ex.map((p) => p[1]))
+    if (peak <= 0) return false
+    return intensity / peak >= 0.15
+  }
+  // Fallback: within ±40nm of excitation max
+  return Math.abs(fluorophore.excitation_max_nm - laserWavelength) <= 40
 }
 
+/**
+ * Can this detector collect meaningful signal from this fluorophore?
+ * If full emission spectrum available: compute integral of emission
+ * over bandpass [midpoint - width/2, midpoint + width/2] at 1nm steps.
+ * Compare to total emission integral. Threshold: >= 5% of total.
+ * Fallback (no spectra): emission max within [midpoint - width, midpoint + width].
+ */
 export function isDetectable(
-  _emissionSpectra: number[][],
-  _filterMidpoint: number,
-  _filterWidth: number
+  fluorophore: FluorophoreWithSpectra,
+  filterMidpoint: number,
+  filterWidth: number
 ): boolean {
-  throw new Error('not implemented')
+  const em = fluorophore.spectra?.emission
+  if (em && em.length > 0) {
+    const low = filterMidpoint - filterWidth / 2
+    const high = filterMidpoint + filterWidth / 2
+
+    let bandpassIntegral = 0
+    for (let wl = Math.round(low); wl <= Math.round(high); wl++) {
+      bandpassIntegral += interpolateAt(em, wl)
+    }
+
+    let totalIntegral = 0
+    const startWl = Math.round(em[0][0])
+    const endWl = Math.round(em[em.length - 1][0])
+    for (let wl = startWl; wl <= endWl; wl++) {
+      totalIntegral += interpolateAt(em, wl)
+    }
+
+    if (totalIntegral <= 0) return false
+    return bandpassIntegral / totalIntegral >= 0.05
+  }
+  // Fallback: generous 2× window
+  return (
+    fluorophore.emission_max_nm >= filterMidpoint - filterWidth &&
+    fluorophore.emission_max_nm <= filterMidpoint + filterWidth
+  )
 }
 
+/**
+ * Combined: is this fluorophore compatible with this laser+detector pair?
+ */
 export function isCompatible(
-  _excitationSpectra: number[][],
-  _emissionSpectra: number[][],
-  _laserWavelength: number,
-  _filterMidpoint: number,
-  _filterWidth: number
+  fluorophore: FluorophoreWithSpectra,
+  laserWavelength: number,
+  filterMidpoint: number,
+  filterWidth: number
 ): boolean {
-  throw new Error('not implemented')
+  return (
+    isExcitable(fluorophore, laserWavelength) &&
+    isDetectable(fluorophore, filterMidpoint, filterWidth)
+  )
 }
 
 /**

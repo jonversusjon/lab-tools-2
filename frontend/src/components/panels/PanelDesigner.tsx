@@ -1,32 +1,57 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { usePanel, useUpdatePanel, useAddTarget, useRemoveTarget } from '@/hooks/usePanels'
+import {
+  usePanel,
+  useUpdatePanel,
+  useAddTarget,
+  useRemoveTarget,
+  useAddAssignment,
+  useRemoveAssignment,
+} from '@/hooks/usePanels'
 import { useInstruments, useInstrument } from '@/hooks/useInstruments'
 import { useAntibodies } from '@/hooks/useAntibodies'
+import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { laserColors } from '@/utils/colors'
-import type { Antibody } from '@/types'
+import FluorophorePicker from './FluorophorePicker'
+import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
 export default function PanelDesigner() {
   const { id } = useParams<{ id: string }>()
   const { data: panel, refetch: refetchPanel } = usePanel(id ?? '')
   const { data: instrumentsData } = useInstruments(0, 500)
   const { data: antibodiesData } = useAntibodies(0, 500)
+  const { data: fluorophoreData } = useFluorophores(0, 500)
 
   const updateMutation = useUpdatePanel()
   const addTargetMutation = useAddTarget()
   const removeTargetMutation = useRemoveTarget()
+  const addAssignmentMutation = useAddAssignment()
+  const removeAssignmentMutation = useRemoveAssignment()
 
   const instrumentId = panel?.instrument_id ?? null
   const { data: instrument } = useInstrument(instrumentId ?? '')
 
-  const { state, addTarget, removeTarget, clearAssignments } = usePanelDesigner(
+  const { state, dispatch, addTarget, removeTarget, clearAssignments } = usePanelDesigner(
     panel ?? null,
     instrument ?? null
   )
 
   const instruments = instrumentsData?.items ?? []
   const antibodies = antibodiesData?.items ?? []
+  const fluorophoreList = fluorophoreData?.items ?? []
+
+  // Batch-fetch spectra for all fluorophores
+  const fluorophoreIds = useMemo(() => fluorophoreList.map((f) => f.id), [fluorophoreList])
+  const { data: spectraCache } = useBatchSpectra(fluorophoreIds)
+
+  // Merge fluorophore list with spectra data
+  const fluorophoresWithSpectra: FluorophoreWithSpectra[] = useMemo(() => {
+    return fluorophoreList.map((fl) => ({
+      ...fl,
+      spectra: spectraCache?.[fl.id] ?? null,
+    }))
+  }, [fluorophoreList, spectraCache])
 
   // Inline name editing
   const [editingName, setEditingName] = useState(false)
@@ -124,7 +149,7 @@ export default function PanelDesigner() {
       await removeTargetMutation.mutateAsync({ panelId: id, targetId })
       removeTarget(targetId, antibodyId)
     } catch {
-      // Silently fail — target may have already been removed
+      // Target may have already been removed
     }
   }
 
@@ -139,7 +164,7 @@ export default function PanelDesigner() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Build antibody lookup for target rows
+  // Build antibody lookup
   const antibodyMap = useMemo(() => {
     const map = new Map<string, Antibody>()
     for (const ab of antibodies) map.set(ab.id, ab)
@@ -160,6 +185,132 @@ export default function PanelDesigner() {
     () => laserGroups.reduce((sum, g) => sum + g.detectors.length, 0),
     [laserGroups]
   )
+
+  // Assignment lookups
+  const assignmentByAntibody = useMemo(() => {
+    const map = new Map<string, typeof state.assignments[0]>()
+    for (const a of state.assignments) map.set(a.antibody_id, a)
+    return map
+  }, [state.assignments])
+
+  const assignmentByDetector = useMemo(() => {
+    const map = new Map<string, typeof state.assignments[0]>()
+    for (const a of state.assignments) map.set(a.detector_id, a)
+    return map
+  }, [state.assignments])
+
+  const assignedFluorophoreIds = useMemo(() => {
+    return new Set(state.assignments.map((a) => a.fluorophore_id))
+  }, [state.assignments])
+
+  // Picker state
+  const [pickerCell, setPickerCell] = useState<{
+    antibodyId: string
+    detectorId: string
+    laserWavelength: number
+    filterMidpoint: number
+    filterWidth: number
+  } | null>(null)
+  const [assignError, setAssignError] = useState('')
+
+  const handleCellClick = useCallback(
+    (
+      antibodyId: string,
+      detectorId: string,
+      laserWavelength: number,
+      filterMidpoint: number,
+      filterWidth: number
+    ) => {
+      // Check if detector is occupied by another antibody
+      const detAssignment = assignmentByDetector.get(detectorId)
+      if (detAssignment && detAssignment.antibody_id !== antibodyId) return
+
+      // Check if this antibody already has an assignment on a different detector
+      const abAssignment = assignmentByAntibody.get(antibodyId)
+      if (abAssignment && abAssignment.detector_id !== detectorId) return
+
+      setAssignError('')
+      setPickerCell({ antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth })
+    },
+    [assignmentByDetector, assignmentByAntibody]
+  )
+
+  const handleSelectFluorophore = async (fluorophoreId: string) => {
+    if (!id || !pickerCell) return
+    const { antibodyId, detectorId } = pickerCell
+
+    // Optimistic: add assignment locally
+    const optimisticId = 'optimistic-' + Date.now()
+    const optimistic = {
+      id: optimisticId,
+      panel_id: id,
+      antibody_id: antibodyId,
+      fluorophore_id: fluorophoreId,
+      detector_id: detectorId,
+      notes: null,
+    }
+
+    // First remove any existing assignment for this antibody (reassign case)
+    const existing = assignmentByAntibody.get(antibodyId)
+    if (existing) {
+      dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+      try {
+        await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
+      } catch {
+        // If removal fails, re-add and bail
+        dispatch({ type: 'ADD_ASSIGNMENT', assignment: existing })
+        setAssignError('Failed to clear existing assignment')
+        setPickerCell(null)
+        return
+      }
+    }
+
+    dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
+    setPickerCell(null)
+
+    try {
+      const real = await addAssignmentMutation.mutateAsync({
+        panelId: id,
+        data: {
+          antibody_id: antibodyId,
+          fluorophore_id: fluorophoreId,
+          detector_id: detectorId,
+        },
+      })
+      // Replace optimistic with real
+      dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
+      dispatch({ type: 'ADD_ASSIGNMENT', assignment: real })
+    } catch (err: unknown) {
+      // Rollback optimistic
+      dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
+      const message = err instanceof Error ? err.message : 'Assignment failed'
+      setAssignError(message)
+    }
+  }
+
+  const handleClearAssignment = async () => {
+    if (!id || !pickerCell) return
+    const existing = assignmentByAntibody.get(pickerCell.antibodyId)
+    if (!existing) return
+
+    dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+    setPickerCell(null)
+
+    try {
+      await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
+    } catch {
+      // Rollback
+      dispatch({ type: 'ADD_ASSIGNMENT', assignment: existing })
+      setAssignError('Failed to clear assignment')
+    }
+  }
+
+  // Fluorophore name lookup
+  const fluorophoreMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const fl of fluorophoreList) map.set(fl.id, fl.name)
+    return map
+  }, [fluorophoreList])
 
   if (!panel) return <p className="text-gray-500">Loading panel...</p>
 
@@ -255,6 +406,9 @@ export default function PanelDesigner() {
           {targetError && (
             <span className="text-sm text-red-600">{targetError}</span>
           )}
+          {assignError && (
+            <span className="text-sm text-red-600">{assignError}</span>
+          )}
         </div>
 
         {!instrumentId && (
@@ -271,7 +425,7 @@ export default function PanelDesigner() {
               {state.instrument && (
                 <tr className="border-b border-gray-200">
                   <th className="sticky left-0 z-10 bg-gray-50 px-3 py-2" />
-                  <th className="sticky left-0 z-10 bg-gray-50 px-3 py-2" />
+                  <th className="bg-gray-50 px-3 py-2" />
                   <th className="bg-gray-50 px-3 py-2" />
                   {laserGroups.map((g) => (
                     <th
@@ -291,19 +445,27 @@ export default function PanelDesigner() {
                 <th className="sticky left-0 z-10 bg-gray-50 px-3 py-2 font-medium">
                   Target
                 </th>
-                <th className="sticky left-[100px] z-10 bg-gray-50 px-3 py-2 font-medium">
-                  Clone
-                </th>
+                <th className="bg-gray-50 px-3 py-2 font-medium">Clone</th>
                 <th className="bg-gray-50 px-3 py-2 font-medium">Conjugate</th>
                 {laserGroups.flatMap((g) =>
-                  g.detectors.map((det) => (
-                    <th
-                      key={det.id}
-                      className="whitespace-nowrap px-2 py-2 text-center text-xs font-medium"
-                    >
-                      {det.filter_midpoint}/{det.filter_width}
-                    </th>
-                  ))
+                  g.detectors.map((det) => {
+                    const occupied = assignmentByDetector.has(det.id)
+                    return (
+                      <th
+                        key={det.id}
+                        className="whitespace-nowrap px-2 py-2 text-center text-xs font-medium"
+                      >
+                        <span>{det.filter_midpoint}/{det.filter_width}</span>
+                        {occupied && (
+                          <span
+                            className="ml-1 inline-block h-2 w-2 rounded-full"
+                            style={{ backgroundColor: g.color }}
+                            title="Detector occupied"
+                          />
+                        )}
+                      </th>
+                    )
+                  })
                 )}
                 <th className="bg-gray-50 px-3 py-2" />
               </tr>
@@ -321,12 +483,22 @@ export default function PanelDesigner() {
               ) : (
                 state.targets.map((t) => {
                   const ab = antibodyMap.get(t.antibody_id)
+                  const rowAssignment = assignmentByAntibody.get(t.antibody_id)
+                  const hasAssignment = !!rowAssignment
+
                   return (
-                    <tr key={t.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="sticky left-0 z-10 bg-white px-3 py-2 font-medium text-gray-900">
+                    <tr
+                      key={t.id}
+                      className={
+                        'border-b border-gray-100' +
+                        (hasAssignment ? ' bg-blue-50/40' : ' hover:bg-gray-50')
+                      }
+                      data-assigned={hasAssignment ? 'true' : undefined}
+                    >
+                      <td className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900" style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : 'white' }}>
                         {ab?.target ?? '—'}
                       </td>
-                      <td className="sticky left-[100px] z-10 bg-white px-3 py-2 text-gray-600">
+                      <td className="px-3 py-2 text-gray-600">
                         {ab?.clone ?? ''}
                       </td>
                       <td className="px-3 py-2">
@@ -340,14 +512,126 @@ export default function PanelDesigner() {
                         )}
                       </td>
                       {laserGroups.flatMap((g) =>
-                        g.detectors.map((det) => (
-                          <td
-                            key={det.id}
-                            className="px-2 py-2 text-center text-gray-300"
-                          >
-                            —
-                          </td>
-                        ))
+                        g.detectors.map((det) => {
+                          const detAssignment = assignmentByDetector.get(det.id)
+                          const isThisCell =
+                            rowAssignment?.detector_id === det.id
+                          const isOccupiedByOther =
+                            detAssignment && detAssignment.antibody_id !== t.antibody_id
+                          const thisAntibodyAssignedElsewhere =
+                            rowAssignment && rowAssignment.detector_id !== det.id
+                          const pickerOpen =
+                            pickerCell?.antibodyId === t.antibody_id &&
+                            pickerCell?.detectorId === det.id
+
+                          // Assigned cell: this target is assigned to this detector
+                          if (isThisCell && rowAssignment) {
+                            const flName = fluorophoreMap.get(rowAssignment.fluorophore_id) ?? '?'
+                            return (
+                              <td
+                                key={det.id}
+                                className="relative cursor-pointer px-2 py-2 text-center text-xs font-medium"
+                                style={{ backgroundColor: g.color + '25' }}
+                                data-testid={`cell-${t.antibody_id}-${det.id}`}
+                                data-state="assigned"
+                                onClick={() =>
+                                  handleCellClick(
+                                    t.antibody_id,
+                                    det.id,
+                                    g.laser.wavelength_nm,
+                                    det.filter_midpoint,
+                                    det.filter_width
+                                  )
+                                }
+                              >
+                                {flName}
+                                {ab?.fluorophore_id && (
+                                  <span className="ml-0.5 text-[10px]" title="Pre-conjugated">&#128274;</span>
+                                )}
+                                {pickerOpen && (
+                                  <FluorophorePicker
+                                    laserWavelength={pickerCell.laserWavelength}
+                                    filterMidpoint={pickerCell.filterMidpoint}
+                                    filterWidth={pickerCell.filterWidth}
+                                    assignedFluorophoreIds={assignedFluorophoreIds}
+                                    antibody={ab!}
+                                    fluorophores={fluorophoresWithSpectra}
+                                    currentAssignmentFluorophoreId={rowAssignment.fluorophore_id}
+                                    onSelect={handleSelectFluorophore}
+                                    onClear={handleClearAssignment}
+                                    onClose={() => setPickerCell(null)}
+                                  />
+                                )}
+                              </td>
+                            )
+                          }
+
+                          // Occupied by another antibody
+                          if (isOccupiedByOther) {
+                            const otherAb = antibodyMap.get(detAssignment.antibody_id)
+                            return (
+                              <td
+                                key={det.id}
+                                className="cursor-not-allowed bg-gray-100 px-2 py-2 text-center text-xs text-gray-400"
+                                title={'Detector assigned to ' + (otherAb?.target ?? 'another target')}
+                                data-testid={`cell-${t.antibody_id}-${det.id}`}
+                                data-state="occupied"
+                              >
+                                &times;
+                              </td>
+                            )
+                          }
+
+                          // This antibody already assigned to a different detector
+                          if (thisAntibodyAssignedElsewhere) {
+                            return (
+                              <td
+                                key={det.id}
+                                className="cursor-not-allowed bg-gray-50 px-2 py-2 text-center text-xs text-gray-300"
+                                data-testid={`cell-${t.antibody_id}-${det.id}`}
+                                data-state="row-assigned"
+                              >
+                                —
+                              </td>
+                            )
+                          }
+
+                          // Available cell
+                          return (
+                            <td
+                              key={det.id}
+                              className="relative cursor-pointer px-2 py-2 text-center text-xs text-gray-300 hover:bg-blue-50"
+                              data-testid={`cell-${t.antibody_id}-${det.id}`}
+                              data-state="available"
+                              onClick={() =>
+                                handleCellClick(
+                                  t.antibody_id,
+                                  det.id,
+                                  g.laser.wavelength_nm,
+                                  det.filter_midpoint,
+                                  det.filter_width
+                                )
+                              }
+                            >
+                              {pickerOpen ? (
+                                <FluorophorePicker
+                                  laserWavelength={pickerCell.laserWavelength}
+                                  filterMidpoint={pickerCell.filterMidpoint}
+                                  filterWidth={pickerCell.filterWidth}
+                                  assignedFluorophoreIds={assignedFluorophoreIds}
+                                  antibody={ab!}
+                                  fluorophores={fluorophoresWithSpectra}
+                                  currentAssignmentFluorophoreId={null}
+                                  onSelect={handleSelectFluorophore}
+                                  onClear={handleClearAssignment}
+                                  onClose={() => setPickerCell(null)}
+                                />
+                              ) : (
+                                '+'
+                              )}
+                            </td>
+                          )
+                        })
                       )}
                       <td className="px-3 py-2 text-center">
                         <button
