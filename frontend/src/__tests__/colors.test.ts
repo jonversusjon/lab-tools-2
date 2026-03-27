@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { heatmapColor, laserColors } from '@/utils/colors'
+import { heatmapColor, laserColors, getLaserColor } from '@/utils/colors'
 
 function hexToRgb(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -44,5 +44,29 @@ describe('laserColors', () => {
     expect(laserColors[488]).toBeDefined()
     expect(laserColors[561]).toBeDefined()
     expect(laserColors[637]).toBeDefined()
+  })
+})
+
+describe('getLaserColor', () => {
+  it('returns red for common red laser wavelengths (633, 637, 640)', () => {
+    expect(getLaserColor(633)).toBe('#EF4444')
+    expect(getLaserColor(637)).toBe('#EF4444')
+    expect(getLaserColor(640)).toBe('#EF4444')
+  })
+
+  it('returns violet for 405nm', () => {
+    expect(getLaserColor(405)).toBe('#8B5CF6')
+  })
+
+  it('returns blue for 488nm', () => {
+    expect(getLaserColor(488)).toBe('#3B82F6')
+  })
+
+  it('returns yellow-green for 561nm', () => {
+    expect(getLaserColor(561)).toBe('#84CC16')
+  })
+
+  it('returns grey for invalid wavelength', () => {
+    expect(getLaserColor(0)).toBe('#6B7280')
   })
 })

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { laserColors } from '@/utils/colors'
+import { getLaserColor } from '@/utils/colors'
 import DetectorRow from './DetectorRow'
 import type { DetectorFormData } from './DetectorRow'
 
@@ -17,7 +17,7 @@ interface LaserSectionProps {
 
 export default function LaserSection({ laser, onChange, onRemove }: LaserSectionProps) {
   const [collapsed, setCollapsed] = useState(false)
-  const colorHex = laserColors[laser.wavelength_nm] ?? '#6B7280'
+  const colorHex = getLaserColor(laser.wavelength_nm)
 
   const updateDetector = (index: number, updated: DetectorFormData) => {
     const detectors = [...laser.detectors]

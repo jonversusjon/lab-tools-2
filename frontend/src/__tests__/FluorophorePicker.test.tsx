@@ -73,6 +73,13 @@ const conjugatedAb: Antibody = {
 
 const allFluorophores = [fitcFl, peFl, apcFl]
 
+function makeAnchor(): HTMLElement {
+  const el = document.createElement('div')
+  el.getBoundingClientRect = () => ({ top: 100, left: 100, bottom: 120, right: 200, width: 100, height: 20, x: 100, y: 100, toJSON: () => ({}) })
+  document.body.appendChild(el)
+  return el
+}
+
 describe('FluorophorePicker', () => {
   it('only shows compatible fluorophores for a given laser/detector (unconjugated)', () => {
     // Blue laser 488nm, detector 530/30 → FITC compatible, APC not
@@ -85,6 +92,7 @@ describe('FluorophorePicker', () => {
         antibody={unconjugatedAb}
         fluorophores={allFluorophores}
         currentAssignmentFluorophoreId={null}
+        anchorEl={makeAnchor()}
         onSelect={vi.fn()}
         onClear={vi.fn()}
         onClose={vi.fn()}
@@ -105,6 +113,7 @@ describe('FluorophorePicker', () => {
         antibody={conjugatedAb}
         fluorophores={allFluorophores}
         currentAssignmentFluorophoreId={null}
+        anchorEl={makeAnchor()}
         onSelect={vi.fn()}
         onClear={vi.fn()}
         onClose={vi.fn()}
@@ -127,6 +136,7 @@ describe('FluorophorePicker', () => {
         antibody={conjugatedAb}
         fluorophores={allFluorophores}
         currentAssignmentFluorophoreId={null}
+        anchorEl={makeAnchor()}
         onSelect={vi.fn()}
         onClear={vi.fn()}
         onClose={vi.fn()}
@@ -145,6 +155,7 @@ describe('FluorophorePicker', () => {
         antibody={unconjugatedAb}
         fluorophores={allFluorophores}
         currentAssignmentFluorophoreId={null}
+        anchorEl={makeAnchor()}
         onSelect={vi.fn()}
         onClear={vi.fn()}
         onClose={vi.fn()}
@@ -165,6 +176,7 @@ describe('FluorophorePicker', () => {
         antibody={unconjugatedAb}
         fluorophores={allFluorophores}
         currentAssignmentFluorophoreId={null}
+        anchorEl={makeAnchor()}
         onSelect={onSelect}
         onClear={vi.fn()}
         onClose={vi.fn()}
@@ -184,6 +196,7 @@ describe('FluorophorePicker', () => {
         antibody={unconjugatedAb}
         fluorophores={allFluorophores}
         currentAssignmentFluorophoreId="fl-fitc"
+        anchorEl={makeAnchor()}
         onSelect={vi.fn()}
         onClear={vi.fn()}
         onClose={vi.fn()}

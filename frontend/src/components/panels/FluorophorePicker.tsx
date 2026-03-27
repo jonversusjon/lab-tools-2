@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useLayoutEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { isCompatible } from '@/utils/spectra'
 import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
@@ -10,6 +11,7 @@ interface FluorophorePickerProps {
   antibody: Antibody
   fluorophores: FluorophoreWithSpectra[]
   currentAssignmentFluorophoreId: string | null
+  anchorEl: HTMLElement | null
   onSelect: (fluorophoreId: string) => void
   onClear: () => void
   onClose: () => void
@@ -23,11 +25,22 @@ export default function FluorophorePicker({
   antibody,
   fluorophores,
   currentAssignmentFluorophoreId,
+  anchorEl,
   onSelect,
   onClear,
   onClose,
 }: FluorophorePickerProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
+
+  useLayoutEffect(() => {
+    if (!anchorEl) return
+    const rect = anchorEl.getBoundingClientRect()
+    setPos({
+      top: rect.bottom + window.scrollY + 2,
+      left: rect.left + window.scrollX,
+    })
+  }, [anchorEl])
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -44,81 +57,92 @@ export default function FluorophorePicker({
     }
   }, [onClose])
 
+  const style: React.CSSProperties = {
+    position: 'fixed',
+    top: anchorEl ? anchorEl.getBoundingClientRect().bottom + 2 : pos.top,
+    left: anchorEl ? anchorEl.getBoundingClientRect().left : pos.left,
+    zIndex: 50,
+  }
+
+  let content: React.ReactNode
+
   // Pre-conjugated antibody handling
   if (antibody.fluorophore_id) {
     const conjugatedFl = fluorophores.find((f) => f.id === antibody.fluorophore_id)
     if (!conjugatedFl) {
-      return (
-        <div ref={ref} className="absolute z-20 w-56 rounded border border-gray-200 bg-white p-3 shadow-lg">
+      content = (
+        <div ref={ref} className="w-56 rounded border border-gray-200 bg-white p-3 shadow-lg" style={style}>
           <p className="text-sm text-gray-500">Conjugated fluorophore not found in library.</p>
         </div>
       )
+    } else {
+      const compat = isCompatible(conjugatedFl, laserWavelength, filterMidpoint, filterWidth)
+      if (!compat) {
+        content = (
+          <div ref={ref} className="w-64 rounded border border-gray-200 bg-white p-3 shadow-lg" style={style}>
+            <p className="text-sm text-amber-600">
+              Pre-conjugated fluorophore ({conjugatedFl.name}) is not compatible with this detector.
+            </p>
+          </div>
+        )
+      } else {
+        content = (
+          <div ref={ref} className="w-56 rounded border border-gray-200 bg-white shadow-lg" style={style}>
+            <button
+              onClick={() => onSelect(conjugatedFl.id)}
+              className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-blue-50"
+            >
+              {conjugatedFl.name}
+              <span className="ml-2 text-xs text-gray-400">
+                {conjugatedFl.excitation_max_nm}/{conjugatedFl.emission_max_nm}
+              </span>
+            </button>
+          </div>
+        )
+      }
     }
+  } else {
+    // Unconjugated: filter to compatible fluorophores
+    const compatible = fluorophores.filter((fl) =>
+      isCompatible(fl, laserWavelength, filterMidpoint, filterWidth)
+    )
 
-    const compatible = isCompatible(conjugatedFl, laserWavelength, filterMidpoint, filterWidth)
-    if (!compatible) {
-      return (
-        <div ref={ref} className="absolute z-20 w-64 rounded border border-gray-200 bg-white p-3 shadow-lg">
-          <p className="text-sm text-amber-600">
-            Pre-conjugated fluorophore ({conjugatedFl.name}) is not compatible with this detector.
-          </p>
-        </div>
-      )
-    }
-
-    return (
-      <div ref={ref} className="absolute z-20 w-56 rounded border border-gray-200 bg-white shadow-lg">
-        <button
-          onClick={() => onSelect(conjugatedFl.id)}
-          className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-blue-50"
-        >
-          {conjugatedFl.name}
-          <span className="ml-2 text-xs text-gray-400">
-            {conjugatedFl.excitation_max_nm}/{conjugatedFl.emission_max_nm}
-          </span>
-        </button>
+    content = (
+      <div ref={ref} className="max-h-60 w-64 overflow-y-auto rounded border border-gray-200 bg-white shadow-lg" style={style}>
+        {currentAssignmentFluorophoreId && (
+          <button
+            onClick={onClear}
+            className="w-full border-b border-gray-100 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+          >
+            Clear assignment
+          </button>
+        )}
+        {compatible.length === 0 ? (
+          <p className="px-3 py-2 text-sm text-gray-400">No compatible fluorophores</p>
+        ) : (
+          compatible.map((fl) => {
+            const alreadyAssigned = assignedFluorophoreIds.has(fl.id)
+            return (
+              <button
+                key={fl.id}
+                onClick={() => onSelect(fl.id)}
+                className={
+                  'w-full px-3 py-2 text-left text-sm hover:bg-blue-50' +
+                  (alreadyAssigned ? ' opacity-50' : '')
+                }
+              >
+                <span className="font-medium">{fl.name}</span>
+                <span className="ml-2 text-xs text-gray-400">
+                  {fl.excitation_max_nm}/{fl.emission_max_nm}
+                </span>
+                {alreadyAssigned && <span className="ml-1" title="Already assigned in this panel">&#9888;&#65039;</span>}
+              </button>
+            )
+          })
+        )}
       </div>
     )
   }
 
-  // Unconjugated: filter to compatible fluorophores
-  const compatible = fluorophores.filter((fl) =>
-    isCompatible(fl, laserWavelength, filterMidpoint, filterWidth)
-  )
-
-  return (
-    <div ref={ref} className="absolute z-20 max-h-60 w-64 overflow-y-auto rounded border border-gray-200 bg-white shadow-lg">
-      {currentAssignmentFluorophoreId && (
-        <button
-          onClick={onClear}
-          className="w-full border-b border-gray-100 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-        >
-          Clear assignment
-        </button>
-      )}
-      {compatible.length === 0 ? (
-        <p className="px-3 py-2 text-sm text-gray-400">No compatible fluorophores</p>
-      ) : (
-        compatible.map((fl) => {
-          const alreadyAssigned = assignedFluorophoreIds.has(fl.id)
-          return (
-            <button
-              key={fl.id}
-              onClick={() => onSelect(fl.id)}
-              className={
-                'w-full px-3 py-2 text-left text-sm hover:bg-blue-50' +
-                (alreadyAssigned ? ' opacity-50' : '')
-              }
-            >
-              <span className="font-medium">{fl.name}</span>
-              <span className="ml-2 text-xs text-gray-400">
-                {fl.excitation_max_nm}/{fl.emission_max_nm}
-              </span>
-              {alreadyAssigned && <span className="ml-1" title="Already assigned in this panel">&#9888;&#65039;</span>}
-            </button>
-          )
-        })
-      )}
-    </div>
-  )
+  return createPortal(content, document.body)
 }

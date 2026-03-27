@@ -7,6 +7,18 @@ export const laserColors: Record<number, string> = {
   637: '#EF4444',  // Red
 }
 
+/** Maps a laser wavelength to a color using ranges, so 633 and 640 both get red. */
+export function getLaserColor(wavelengthNm: number): string {
+  if (wavelengthNm <= 0) return '#6B7280'
+  if (wavelengthNm < 380) return '#9333EA'   // UV
+  if (wavelengthNm < 440) return '#8B5CF6'   // Violet
+  if (wavelengthNm < 500) return '#3B82F6'   // Blue
+  if (wavelengthNm < 540) return '#10B981'   // Cyan/Green
+  if (wavelengthNm < 590) return '#84CC16'   // Yellow-Green
+  if (wavelengthNm < 620) return '#F59E0B'   // Orange
+  return '#EF4444'                            // Red (620nm+)
+}
+
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
 }

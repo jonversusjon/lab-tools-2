@@ -12,7 +12,7 @@ import { useInstruments, useInstrument } from '@/hooks/useInstruments'
 import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
-import { laserColors } from '@/utils/colors'
+import { getLaserColor } from '@/utils/colors'
 import FluorophorePicker from './FluorophorePicker'
 import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
@@ -177,7 +177,7 @@ export default function PanelDesigner() {
     return state.instrument.lasers.map((laser) => ({
       laser,
       detectors: laser.detectors,
-      color: laserColors[laser.wavelength_nm] ?? '#6B7280',
+      color: getLaserColor(laser.wavelength_nm),
     }))
   }, [state.instrument])
 
@@ -210,11 +210,13 @@ export default function PanelDesigner() {
     laserWavelength: number
     filterMidpoint: number
     filterWidth: number
+    anchorEl: HTMLElement
   } | null>(null)
   const [assignError, setAssignError] = useState('')
 
   const handleCellClick = useCallback(
     (
+      e: React.MouseEvent<HTMLTableCellElement>,
       antibodyId: string,
       detectorId: string,
       laserWavelength: number,
@@ -230,7 +232,7 @@ export default function PanelDesigner() {
       if (abAssignment && abAssignment.detector_id !== detectorId) return
 
       setAssignError('')
-      setPickerCell({ antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth })
+      setPickerCell({ antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
     },
     [assignmentByDetector, assignmentByAntibody]
   )
@@ -520,10 +522,6 @@ export default function PanelDesigner() {
                             detAssignment && detAssignment.antibody_id !== t.antibody_id
                           const thisAntibodyAssignedElsewhere =
                             rowAssignment && rowAssignment.detector_id !== det.id
-                          const pickerOpen =
-                            pickerCell?.antibodyId === t.antibody_id &&
-                            pickerCell?.detectorId === det.id
-
                           // Assigned cell: this target is assigned to this detector
                           if (isThisCell && rowAssignment) {
                             const flName = fluorophoreMap.get(rowAssignment.fluorophore_id) ?? '?'
@@ -534,8 +532,9 @@ export default function PanelDesigner() {
                                 style={{ backgroundColor: g.color + '25' }}
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="assigned"
-                                onClick={() =>
+                                onClick={(e) =>
                                   handleCellClick(
+                                    e,
                                     t.antibody_id,
                                     det.id,
                                     g.laser.wavelength_nm,
@@ -547,20 +546,6 @@ export default function PanelDesigner() {
                                 {flName}
                                 {ab?.fluorophore_id && (
                                   <span className="ml-0.5 text-[10px]" title="Pre-conjugated">&#128274;</span>
-                                )}
-                                {pickerOpen && (
-                                  <FluorophorePicker
-                                    laserWavelength={pickerCell.laserWavelength}
-                                    filterMidpoint={pickerCell.filterMidpoint}
-                                    filterWidth={pickerCell.filterWidth}
-                                    assignedFluorophoreIds={assignedFluorophoreIds}
-                                    antibody={ab!}
-                                    fluorophores={fluorophoresWithSpectra}
-                                    currentAssignmentFluorophoreId={rowAssignment.fluorophore_id}
-                                    onSelect={handleSelectFluorophore}
-                                    onClear={handleClearAssignment}
-                                    onClose={() => setPickerCell(null)}
-                                  />
                                 )}
                               </td>
                             )
@@ -603,8 +588,9 @@ export default function PanelDesigner() {
                               className="relative cursor-pointer px-2 py-2 text-center text-xs text-gray-300 hover:bg-blue-50"
                               data-testid={`cell-${t.antibody_id}-${det.id}`}
                               data-state="available"
-                              onClick={() =>
+                              onClick={(e) =>
                                 handleCellClick(
+                                  e,
                                   t.antibody_id,
                                   det.id,
                                   g.laser.wavelength_nm,
@@ -613,22 +599,7 @@ export default function PanelDesigner() {
                                 )
                               }
                             >
-                              {pickerOpen ? (
-                                <FluorophorePicker
-                                  laserWavelength={pickerCell.laserWavelength}
-                                  filterMidpoint={pickerCell.filterMidpoint}
-                                  filterWidth={pickerCell.filterWidth}
-                                  assignedFluorophoreIds={assignedFluorophoreIds}
-                                  antibody={ab!}
-                                  fluorophores={fluorophoresWithSpectra}
-                                  currentAssignmentFluorophoreId={null}
-                                  onSelect={handleSelectFluorophore}
-                                  onClear={handleClearAssignment}
-                                  onClose={() => setPickerCell(null)}
-                                />
-                              ) : (
-                                '+'
-                              )}
+                              +
                             </td>
                           )
                         })
@@ -650,6 +621,28 @@ export default function PanelDesigner() {
           </table>
         </div>
       </div>
+
+      {/* Fluorophore Picker (portaled to body) */}
+      {pickerCell && (() => {
+        const pickerAb = antibodyMap.get(pickerCell.antibodyId)
+        const pickerAssignment = assignmentByAntibody.get(pickerCell.antibodyId)
+        if (!pickerAb) return null
+        return (
+          <FluorophorePicker
+            laserWavelength={pickerCell.laserWavelength}
+            filterMidpoint={pickerCell.filterMidpoint}
+            filterWidth={pickerCell.filterWidth}
+            assignedFluorophoreIds={assignedFluorophoreIds}
+            antibody={pickerAb}
+            fluorophores={fluorophoresWithSpectra}
+            currentAssignmentFluorophoreId={pickerAssignment?.fluorophore_id ?? null}
+            anchorEl={pickerCell.anchorEl}
+            onSelect={handleSelectFluorophore}
+            onClear={handleClearAssignment}
+            onClose={() => setPickerCell(null)}
+          />
+        )
+      })()}
 
       {/* Section C: Spillover Placeholder */}
       <div className="rounded border border-gray-200 bg-gray-50 px-6 py-8 text-center text-gray-400">
