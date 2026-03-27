@@ -3,5 +3,7 @@ uvicorn[standard]
 sqlalchemy
 pydantic
 httpx
+pandas
+pyarrow
 pytest
 pytest-asyncio

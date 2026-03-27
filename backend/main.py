@@ -27,7 +27,7 @@ SEED_DIR = Path(__file__).parent / "seed_data"
 
 
 def load_seed_data() -> None:
-    """Load seed data atomically if the instruments table is empty."""
+    """Load instruments and antibodies from seed JSON if instruments table is empty."""
     session = SessionLocal()
     try:
         count = session.scalar(select(Instrument.id).limit(1))
@@ -35,9 +35,8 @@ def load_seed_data() -> None:
             logger.info("Seed data already present — skipping.")
             return
 
-        logger.info("Loading seed data...")
+        logger.info("Loading seed data (instruments + antibodies)...")
 
-        # Load instruments
         with open(SEED_DIR / "instruments.json") as f:
             instruments_data = json.load(f)
 
@@ -62,24 +61,6 @@ def load_seed_data() -> None:
                     )
                     session.add(detector)
 
-        # Load fluorophores
-        with open(SEED_DIR / "fluorophores.json") as f:
-            fluorophores_data = json.load(f)
-
-        for fl_data in fluorophores_data:
-            source = fl_data.get("source", "seed")
-            if source == "gaussian_approximation":
-                source = "seed"
-            fluorophore = Fluorophore(
-                name=fl_data["name"],
-                excitation_max_nm=fl_data["excitation_max_nm"],
-                emission_max_nm=fl_data["emission_max_nm"],
-                spectra=fl_data.get("spectra"),
-                source=source,
-            )
-            session.add(fluorophore)
-
-        # Load antibodies
         with open(SEED_DIR / "antibodies.json") as f:
             antibodies_data = json.load(f)
 
@@ -97,9 +78,8 @@ def load_seed_data() -> None:
 
         session.commit()
         logger.info(
-            "Seed data loaded: %d instruments, %d fluorophores, %d antibodies",
+            "Seed data loaded: %d instruments, %d antibodies",
             len(instruments_data),
-            len(fluorophores_data),
             len(antibodies_data),
         )
     except Exception:
@@ -110,10 +90,41 @@ def load_seed_data() -> None:
         session.close()
 
 
+def seed_fluorophores_if_needed() -> None:
+    """Seed FPbase fluorophore data if the fluorophores table is empty."""
+    session = SessionLocal()
+    try:
+        count = session.scalar(select(Fluorophore.id).limit(1))
+        if count is not None:
+            return
+    finally:
+        session.close()
+
+    fpbase_data_dir = Path(__file__).parent.parent / "fpbase_data"
+    if not (fpbase_data_dir / "fpbase_spectra_long.parquet").exists():
+        logger.warning(
+            "FPbase data files not found at %s — skipping fluorophore seed. "
+            "Run 'python seed_fpbase.py' to populate the fluorophore database.",
+            fpbase_data_dir,
+        )
+        return
+
+    logger.info("Seeding FPbase fluorophore data (first-time setup, may take a minute)...")
+    try:
+        from seed_fpbase import seed_fpbase
+        seed_fpbase()
+    except Exception:
+        logger.exception(
+            "Failed to seed FPbase fluorophore data. "
+            "Try running 'python seed_fpbase.py' manually."
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     load_seed_data()
+    seed_fluorophores_if_needed()
     yield
 
 

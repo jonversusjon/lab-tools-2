@@ -9,7 +9,7 @@ type SortDir = 'asc' | 'desc'
 
 export default function AntibodyTable() {
   const { data, isLoading, error } = useAntibodies(0, 500)
-  const { data: fluorophoreData } = useFluorophores(0, 500)
+  const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 500 })
   const deleteMutation = useDeleteAntibody()
 
   const [search, setSearch] = useState('')

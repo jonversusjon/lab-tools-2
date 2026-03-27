@@ -10,8 +10,8 @@ vi.mock('chartjs-plugin-annotation', () => ({ default: {} }))
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 
 const mockSpectra = {
-  excitation: Array.from({ length: 100 }, (_, i) => [350 + i * 2, Math.exp(-((i - 30) ** 2) / 200)]),
-  emission: Array.from({ length: 100 }, (_, i) => [400 + i * 2, Math.exp(-((i - 40) ** 2) / 200)]),
+  EX: Array.from({ length: 100 }, (_, i) => [350 + i * 2, Math.exp(-((i - 30) ** 2) / 200)]),
+  EM: Array.from({ length: 100 }, (_, i) => [400 + i * 2, Math.exp(-((i - 40) ** 2) / 200)]),
 }
 
 describe('SpectraViewer', () => {

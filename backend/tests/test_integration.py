@@ -47,21 +47,21 @@ def test_full_panel_workflow(client):
     assert t2.status_code == 201
 
     # Add assignments using seed fluorophores
-    fitc_fl = fl_map.get("FITC")
-    pe_fl = fl_map.get("PE")
-    assert fitc_fl is not None
-    assert pe_fl is not None
+    egfp_fl = fl_map.get("EGFP")
+    mcherry_fl = fl_map.get("mCherry")
+    assert egfp_fl is not None, "EGFP test fluorophore not found"
+    assert mcherry_fl is not None, "mCherry test fluorophore not found"
 
     a1 = client.post("/api/v1/panels/%s/assignments" % panel_id, json={
         "antibody_id": ab1["id"],
-        "fluorophore_id": fitc_fl["id"],
+        "fluorophore_id": egfp_fl["id"],
         "detector_id": det_fitc,
     })
     assert a1.status_code == 201
 
     a2 = client.post("/api/v1/panels/%s/assignments" % panel_id, json={
         "antibody_id": ab2["id"],
-        "fluorophore_id": pe_fl["id"],
+        "fluorophore_id": mcherry_fl["id"],
         "detector_id": det_pe,
     })
     assert a2.status_code == 201

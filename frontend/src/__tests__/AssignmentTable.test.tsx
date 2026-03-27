@@ -27,7 +27,7 @@ const mockAntibodies = [
 ]
 
 const mockFluorophores = [
-  { id: 'fl-fitc', name: 'FITC', excitation_max_nm: 494, emission_max_nm: 519, source: 'seed' },
+  { id: 'fl-fitc', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: null, ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: false },
 ]
 
 const mockAddTargetMutateAsync = vi.fn()

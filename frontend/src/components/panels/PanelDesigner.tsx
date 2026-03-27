@@ -27,7 +27,7 @@ export default function PanelDesigner() {
   const { data: panel, refetch: refetchPanel } = usePanel(id ?? '')
   const { data: instrumentsData } = useInstruments(0, 500)
   const { data: antibodiesData } = useAntibodies(0, 500)
-  const { data: fluorophoreData } = useFluorophores(0, 500)
+  const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000, has_spectra: true })
 
   const updateMutation = useUpdatePanel()
   const createPanelMutation = useCreatePanel()
@@ -454,22 +454,26 @@ export default function PanelDesigner() {
     return map
   }, [state.instrument])
 
-  // Compute spillover matrix from assignments
-  const spillover = useMemo(() => {
+  // Compute spillover matrix from assignments + collect missing-spectra warnings
+  const { spillover, missingSpectraWarnings } = useMemo(() => {
     const inputs: SpilloverInput[] = []
+    const warnings: string[] = []
     for (const a of state.assignments) {
       const fl = fluorophoresWithSpectra.find((f) => f.id === a.fluorophore_id)
       const det = detectorMap.get(a.detector_id)
       if (!fl || !det) continue
+      if (!fl.has_spectra || !fl.spectra?.EM?.length) {
+        warnings.push(fl.name)
+      }
       inputs.push({
         fluorophoreId: fl.id,
         fluorophoreName: fl.name,
-        emissionSpectra: fl.spectra?.emission ?? [],
+        emissionSpectra: fl.spectra?.EM ?? [],
         detectorMidpoint: det.midpoint,
         detectorWidth: det.width,
       })
     }
-    return computeSpilloverMatrix(inputs)
+    return { spillover: computeSpilloverMatrix(inputs), missingSpectraWarnings: warnings }
   }, [state.assignments, fluorophoresWithSpectra, detectorMap])
 
   // Build spectra overlay data for assigned fluorophores
@@ -890,7 +894,7 @@ export default function PanelDesigner() {
       </div>
 
       {/* Section D: Spillover Matrix */}
-      <SpilloverHeatmap labels={spillover.labels} matrix={spillover.matrix} />
+      <SpilloverHeatmap labels={spillover.labels} matrix={spillover.matrix} missingSpectraWarnings={missingSpectraWarnings} />
 
       {/* Instrument Change Modal */}
       {instrumentChangeModal && (

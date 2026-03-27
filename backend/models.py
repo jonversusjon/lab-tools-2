@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import uuid
 
+from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
+from sqlalchemy import Float
 from sqlalchemy import ForeignKey
+from sqlalchemy import Index
 from sqlalchemy import Integer
-from sqlalchemy import JSON
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import UniqueConstraint
@@ -60,12 +62,45 @@ class Detector(Base):
 class Fluorophore(Base):
     __tablename__ = "fluorophores"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    # FPbase slug (e.g. "egfp", "alexa-fluor-488") or user-generated UUID for user-created dyes
+    id = Column(String(100), primary_key=True)
     name = Column(String, nullable=False, unique=True)
-    excitation_max_nm = Column(Integer, nullable=False)
-    emission_max_nm = Column(Integer, nullable=False)
-    spectra = Column(JSON, nullable=True)
-    source = Column(String, nullable=False, default="seed")
+    fluor_type = Column(String, nullable=True)  # "protein" or "dye"
+    source = Column(String, nullable=False, default="FPbase")
+    ex_max_nm = Column(Float, nullable=True)
+    em_max_nm = Column(Float, nullable=True)
+    ext_coeff = Column(Float, nullable=True)
+    qy = Column(Float, nullable=True)
+    lifetime_ns = Column(Float, nullable=True)
+    oligomerization = Column(String, nullable=True)
+    switch_type = Column(String, nullable=True)
+    has_spectra = Column(Boolean, nullable=False, default=False)
+
+    spectra_records = relationship(
+        "FluorophoreSpectrum",
+        back_populates="fluorophore",
+        cascade="all, delete-orphan",
+    )
+
+
+class FluorophoreSpectrum(Base):
+    __tablename__ = "fluorophore_spectra"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    fluorophore_id = Column(
+        String(100),
+        ForeignKey("fluorophores.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    spectrum_type = Column(String(10), nullable=False)  # EX, EM, AB, A_2P
+    wavelength_nm = Column(Float, nullable=False)
+    intensity = Column(Float, nullable=False)
+
+    __table_args__ = (
+        Index("ix_fluor_spectra", "fluorophore_id", "spectrum_type", "wavelength_nm"),
+    )
+
+    fluorophore = relationship("Fluorophore", back_populates="spectra_records")
 
 
 class Antibody(Base):
@@ -77,7 +112,7 @@ class Antibody(Base):
     host = Column(String, nullable=True)
     isotype = Column(String, nullable=True)
     fluorophore_id = Column(
-        String(36),
+        String(100),
         ForeignKey("fluorophores.id", ondelete="SET NULL"),
         nullable=True,
     )
@@ -144,7 +179,7 @@ class PanelAssignment(Base):
         nullable=False,
     )
     fluorophore_id = Column(
-        String(36),
+        String(100),
         ForeignKey("fluorophores.id", ondelete="CASCADE"),
         nullable=False,
     )

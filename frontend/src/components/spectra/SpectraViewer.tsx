@@ -12,6 +12,7 @@ import annotationPlugin from 'chartjs-plugin-annotation'
 import { Line } from 'react-chartjs-2'
 import { downsampleSpectra } from '@/utils/spectra'
 import { useTheme } from '@/components/layout/ThemeContext'
+import type { SpectraData } from '@/types'
 
 ChartJS.register(
   CategoryScale,
@@ -39,7 +40,7 @@ const OVERLAY_COLORS_DARK = [
 interface SpectraViewerProps {
   fluorophores: Array<{
     name: string
-    spectra: { excitation: number[][]; emission: number[][] }
+    spectra: SpectraData
     color?: string
   }>
   mode: 'single' | 'overlay'
@@ -77,36 +78,45 @@ export default function SpectraViewer({
   if (mode === 'single' && fluorophores.length > 0) {
     const fl = fluorophores[0]
     const color = fl.color ?? (isDark ? '#22D3EE' : '#0891b2')
-    const exData = downsampleSpectra(fl.spectra.excitation, 2)
-    const emData = downsampleSpectra(fl.spectra.emission, 2)
+    const exRaw = fl.spectra.EX ?? fl.spectra.AB ?? []
+    const emRaw = fl.spectra.EM ?? []
+    const exData = downsampleSpectra(exRaw, 2)
+    const emData = downsampleSpectra(emRaw, 2)
 
-    datasets.push({
-      label: fl.name + ' Ex',
-      data: exData.map(([x, y]) => ({ x, y })),
-      borderColor: color,
-      backgroundColor: 'transparent',
-      borderDash: [6, 3],
-      fill: false,
-    })
-    datasets.push({
-      label: fl.name + ' Em',
-      data: emData.map(([x, y]) => ({ x, y })),
-      borderColor: color,
-      backgroundColor: color + '30',
-      fill: true,
-    })
+    if (exData.length > 0) {
+      datasets.push({
+        label: fl.name + ' Ex',
+        data: exData.map(([x, y]) => ({ x, y })),
+        borderColor: color,
+        backgroundColor: 'transparent',
+        borderDash: [6, 3],
+        fill: false,
+      })
+    }
+    if (emData.length > 0) {
+      datasets.push({
+        label: fl.name + ' Em',
+        data: emData.map(([x, y]) => ({ x, y })),
+        borderColor: color,
+        backgroundColor: color + '30',
+        fill: true,
+      })
+    }
   } else if (mode === 'overlay') {
     const palette = isDark ? OVERLAY_COLORS_DARK : OVERLAY_COLORS
     fluorophores.forEach((fl, i) => {
       const color = fl.color ?? palette[i % palette.length]
-      const emData = downsampleSpectra(fl.spectra.emission, 2)
-      datasets.push({
-        label: fl.name,
-        data: emData.map(([x, y]) => ({ x, y })),
-        borderColor: color,
-        backgroundColor: color + '20',
-        fill: false,
-      })
+      const emRaw = fl.spectra.EM ?? []
+      const emData = downsampleSpectra(emRaw, 2)
+      if (emData.length > 0) {
+        datasets.push({
+          label: fl.name,
+          data: emData.map(([x, y]) => ({ x, y })),
+          borderColor: color,
+          backgroundColor: color + '20',
+          fill: false,
+        })
+      }
     })
   }
 

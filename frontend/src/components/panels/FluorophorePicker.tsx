@@ -94,7 +94,7 @@ export default function FluorophorePicker({
             >
               {conjugatedFl.name}
               <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
-                {conjugatedFl.excitation_max_nm}/{conjugatedFl.emission_max_nm}
+                {conjugatedFl.ex_max_nm}/{conjugatedFl.em_max_nm}
               </span>
             </button>
           </div>
@@ -133,7 +133,7 @@ export default function FluorophorePicker({
               >
                 <span className="font-medium">{fl.name}</span>
                 <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
-                  {fl.excitation_max_nm}/{fl.emission_max_nm}
+                  {fl.ex_max_nm}/{fl.em_max_nm}
                 </span>
                 {alreadyAssigned && <span className="ml-1" title="Already assigned in this panel">&#9888;&#65039;</span>}
               </button>

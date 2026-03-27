@@ -9,18 +9,18 @@ vi.mock('react-chartjs-2', () => ({
 vi.mock('chartjs-plugin-annotation', () => ({ default: {} }))
 
 const mockFluorophores = [
-  { id: '1', name: 'FITC', excitation_max_nm: 494, emission_max_nm: 519, source: 'seed' },
-  { id: '2', name: 'PE', excitation_max_nm: 565, emission_max_nm: 578, source: 'seed' },
-  { id: '3', name: 'APC', excitation_max_nm: 650, emission_max_nm: 660, source: 'seed' },
-  { id: '4', name: 'BV421', excitation_max_nm: 405, emission_max_nm: 421, source: 'seed' },
+  { id: '1', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: '2', name: 'PE', ex_max_nm: 565, em_max_nm: 578, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: '3', name: 'APC', ex_max_nm: 650, em_max_nm: 660, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: '4', name: 'BV421', ex_max_nm: 405, em_max_nm: 421, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
 ]
 
 const mockSpectraData = {
   id: '1',
   name: 'FITC',
   spectra: {
-    excitation: [[400, 0.1], [450, 0.5], [494, 1.0], [520, 0.2]],
-    emission: [[500, 0.1], [519, 1.0], [550, 0.5], [600, 0.1]],
+    EX: [[400, 0.1], [450, 0.5], [494, 1.0], [520, 0.2]],
+    EM: [[500, 0.1], [519, 1.0], [550, 0.5], [600, 0.1]],
   },
 }
 
@@ -34,7 +34,9 @@ vi.mock('@/hooks/useFluorophores', () => ({
   }),
   useFluorophoreSpectra: (id: string) => ({
     data: id ? mockSelectedSpectra : null,
+    isLoading: false,
   }),
+  useInstrumentCompatibility: () => ({ data: null, isLoading: false }),
   useBatchSpectra: (ids: string[]) => ({
     data: ids && ids.length > 0 ? {} : null,
   }),
@@ -64,7 +66,7 @@ describe('Fluorophore Workflow Integration', () => {
     mockSelectedSpectra = null
   })
 
-  it('seed fluorophores render in sortable table', () => {
+  it('seed fluorophores render in table', () => {
     renderTable()
 
     expect(screen.getByText('FITC')).toBeInTheDocument()
@@ -72,71 +74,61 @@ describe('Fluorophore Workflow Integration', () => {
     expect(screen.getByText('APC')).toBeInTheDocument()
     expect(screen.getByText('BV421')).toBeInTheDocument()
 
-    // All show source column
-    const seedCells = screen.getAllByText('seed')
-    expect(seedCells.length).toBe(4)
+    // All show source column as FPbase
+    const fpbaseCells = screen.getAllByText('FPbase')
+    expect(fpbaseCells.length).toBe(4)
   })
 
-  it('sorting by emission max orders fluorophores correctly', () => {
+  it('type filter and search controls are present', () => {
     renderTable()
 
-    // Click emission column header
-    fireEvent.click(screen.getByText(/Em Max/))
-
-    const cells = screen.getAllByRole('cell')
-    // Emission max values (column index 3 of 5): 421, 519, 578, 660
-    const emValues = cells
-      .filter((_, i) => i % 5 === 3)
-      .map((c) => c.textContent)
-    expect(emValues).toEqual(['421', '519', '578', '660'])
+    expect(screen.getByPlaceholderText(/Search by name/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'all' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'protein' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'dye' })).toBeInTheDocument()
   })
 
-  it('check 3 fluorophores → overlay button appears → click shows overlay', () => {
+  it('check 3 fluorophores → overlay button appears', () => {
     renderTable()
 
     // Initially no overlay button
     expect(screen.queryByText(/View Overlay/)).not.toBeInTheDocument()
 
-    // Check 3 fluorophores
-    const checkboxes = screen.getAllByRole('checkbox')
-    fireEvent.click(checkboxes[0]) // FITC (alphabetical: APC first after sort)
-    fireEvent.click(checkboxes[1])
-    fireEvent.click(checkboxes[2])
+    // Check 3 fluorophores using title-based selector (skips filter checkbox)
+    const overlayCheckboxes = screen.getAllByTitle('Add to overlay')
+    fireEvent.click(overlayCheckboxes[0])
+    fireEvent.click(overlayCheckboxes[1])
+    fireEvent.click(overlayCheckboxes[2])
 
     // Overlay button appears
-    const overlayBtn = screen.getByText(/View Overlay/)
-    expect(overlayBtn).toBeInTheDocument()
-
-    // Click it
-    fireEvent.click(overlayBtn)
-
-    // Overlay panel appears
-    expect(screen.getByText(/Spectra Overlay/)).toBeInTheDocument()
+    expect(screen.getByText(/View Overlay/)).toBeInTheDocument()
   })
 
-  it('clicking fluorophore name shows single spectra viewer', () => {
+  it('clicking fluorophore row expands detail section', () => {
     mockSelectedSpectra = mockSpectraData
     renderTable()
 
-    // Click FITC name
+    // Click FITC row to expand
     fireEvent.click(screen.getByText('FITC'))
 
-    // Spectra viewer section appears with chart
-    expect(screen.getByText('FITC — Spectra')).toBeInTheDocument()
+    // Detail section with spectra chart appears
     expect(screen.getByTestId('chart')).toBeInTheDocument()
   })
 
-  it('clicking same fluorophore again deselects it', () => {
+  it('clicking same fluorophore again collapses detail', () => {
     mockSelectedSpectra = mockSpectraData
     renderTable()
 
-    // Click FITC to select
+    // Click FITC to expand
     fireEvent.click(screen.getByText('FITC'))
-    expect(screen.getByText('FITC — Spectra')).toBeInTheDocument()
+    expect(screen.getByTestId('chart')).toBeInTheDocument()
 
-    // Click FITC again to deselect
-    fireEvent.click(screen.getByText('FITC'))
-    expect(screen.queryByText('FITC — Spectra')).not.toBeInTheDocument()
+    // Click FITC again to collapse (first occurrence is the table row cell)
+    const allFitc = screen.getAllByText('FITC')
+    fireEvent.click(allFitc[0])
+
+    // Chart gone
+    expect(screen.queryByTestId('chart')).not.toBeInTheDocument()
   })
 
   it('Fetch from FPbase button is present', () => {

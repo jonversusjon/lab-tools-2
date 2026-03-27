@@ -77,34 +77,72 @@ class InstrumentRead(InstrumentBase):
 
 # --- Fluorophore ---
 
-class FluorophoreBase(BaseModel):
+class FluorophoreRead(BaseModel):
+    id: str
     name: str
-    excitation_max_nm: int
-    emission_max_nm: int
+    fluor_type: str | None = None
+    source: str
+    ex_max_nm: float | None = None
+    em_max_nm: float | None = None
+    ext_coeff: float | None = None
+    qy: float | None = None
+    lifetime_ns: float | None = None
+    oligomerization: str | None = None
+    switch_type: str | None = None
+    has_spectra: bool
+
+    model_config = {"from_attributes": True}
+
+
+class FluorophoreCreate(BaseModel):
+    name: str
+    fluor_type: str | None = None
     source: str = "user"
+    ex_max_nm: float | None = None
+    em_max_nm: float | None = None
+    ext_coeff: float | None = None
+    qy: float | None = None
+    lifetime_ns: float | None = None
+    oligomerization: str | None = None
+    switch_type: str | None = None
 
 
-class FluorophoreCreate(FluorophoreBase):
-    spectra: dict | None = None
-
-
-class FluorophoreRead(FluorophoreBase):
-    id: str
-
-    model_config = {"from_attributes": True}
-
-
-class FluorophoreSpectraRead(BaseModel):
-    id: str
+class FluorophoreSpectraResponse(BaseModel):
+    fluorophore_id: str
     name: str
-    spectra: dict | None = None
-
-    model_config = {"from_attributes": True}
+    spectra: dict[str, list[list[float]]]
 
 
 class BatchSpectraRequest(BaseModel):
     ids: list[str]
+    types: list[str] = ["EX", "EM"]
 
+
+class LaserCompatibility(BaseModel):
+    wavelength_nm: int
+    excitation_efficiency: float
+
+
+class DetectorCompatibility(BaseModel):
+    name: str | None
+    center_nm: int
+    bandwidth_nm: int
+    collection_efficiency: float
+
+
+class InstrumentCompatibility(BaseModel):
+    instrument_id: str
+    instrument_name: str
+    laser_lines: list[LaserCompatibility]
+    detectors: list[DetectorCompatibility]
+
+
+class InstrumentCompatibilityResponse(BaseModel):
+    fluorophore_id: str
+    instrument_compatibilities: list[InstrumentCompatibility]
+
+
+# --- FPbase live-fetch schemas (kept for on-demand fetch from FPbase API) ---
 
 class FetchFpbaseRequest(BaseModel):
     name: str

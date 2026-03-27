@@ -30,18 +30,53 @@ export interface Instrument {
 export interface Fluorophore {
   id: string
   name: string
-  excitation_max_nm: number
-  emission_max_nm: number
+  fluor_type: string | null
   source: string
+  ex_max_nm: number | null
+  em_max_nm: number | null
+  ext_coeff: number | null
+  qy: number | null
+  lifetime_ns: number | null
+  oligomerization: string | null
+  switch_type: string | null
+  has_spectra: boolean
 }
 
+/** Spectra data keyed by type: "EX", "EM", "AB", "A_2P" */
+export type SpectraData = Record<string, number[][]>
+
 export interface FluorophoreSpectra {
-  id: string
+  fluorophore_id: string
   name: string
-  spectra: {
-    excitation: number[][]
-    emission: number[][]
-  } | null
+  spectra: SpectraData
+}
+
+export interface FluorophoreWithSpectra extends Fluorophore {
+  spectra: SpectraData | null
+}
+
+export interface LaserCompatibility {
+  wavelength_nm: number
+  excitation_efficiency: number
+}
+
+export interface DetectorCompatibility {
+  name: string | null
+  center_nm: number
+  bandwidth_nm: number
+  collection_efficiency: number
+}
+
+export interface InstrumentCompatibility {
+  instrument_id: string
+  instrument_name: string
+  laser_lines: LaserCompatibility[]
+  detectors: DetectorCompatibility[]
+}
+
+export interface InstrumentCompatibilityResponse {
+  fluorophore_id: string
+  instrument_compatibilities: InstrumentCompatibility[]
 }
 
 export interface Antibody {
@@ -111,17 +146,15 @@ export interface DetectorCreate {
 
 export interface FluorophoreCreate {
   name: string
-  excitation_max_nm: number
-  emission_max_nm: number
+  fluor_type?: string | null
   source?: string
-  spectra?: Record<string, number[][]> | null
-}
-
-export interface FluorophoreWithSpectra extends Fluorophore {
-  spectra: {
-    excitation: number[][]
-    emission: number[][]
-  } | null
+  ex_max_nm?: number | null
+  em_max_nm?: number | null
+  ext_coeff?: number | null
+  qy?: number | null
+  lifetime_ns?: number | null
+  oligomerization?: string | null
+  switch_type?: string | null
 }
 
 export interface AntibodyCreate {

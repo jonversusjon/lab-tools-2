@@ -1,51 +1,159 @@
 from __future__ import annotations
 
+import uuid
+
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
+from sqlalchemy import delete
 from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import get_db
+from models import Detector
 from models import Fluorophore
+from models import FluorophoreSpectrum
+from models import Instrument
+from models import Laser
 from schemas import BatchFetchFpbaseRequest
 from schemas import BatchFetchFpbaseResult
 from schemas import BatchSpectraRequest
+from schemas import DetectorCompatibility
 from schemas import FetchFpbaseRequest
 from schemas import FluorophoreCreate
 from schemas import FluorophoreRead
-from schemas import FluorophoreSpectraRead
+from schemas import FluorophoreSpectraResponse
 from schemas import FpbaseCatalogItem
+from schemas import InstrumentCompatibility
+from schemas import InstrumentCompatibilityResponse
+from schemas import LaserCompatibility
 from schemas import PaginatedResponse
 
 router = APIRouter()
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _interpolate_at(spectra: list[tuple], wavelength: float) -> float:
+    """Linear interpolation on a sorted list of (wavelength, intensity) tuples."""
+    if not spectra:
+        return 0.0
+    if wavelength <= spectra[0][0]:
+        return spectra[0][1] if wavelength == spectra[0][0] else 0.0
+    if wavelength >= spectra[-1][0]:
+        return spectra[-1][1] if wavelength == spectra[-1][0] else 0.0
+    lo = 0
+    hi = len(spectra) - 1
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if spectra[mid][0] <= wavelength:
+            lo = mid
+        else:
+            hi = mid
+    x0, y0 = spectra[lo]
+    x1, y1 = spectra[hi]
+    t = (wavelength - x0) / (x1 - x0)
+    return y0 + (y1 - y0) * t
+
+
+def _integrate_bandpass(
+    spectra: list[tuple], low: float, high: float, step: float = 1.0
+) -> float:
+    """Numerical integration of spectra over [low, high] at 1nm steps."""
+    total = 0.0
+    wl = low
+    while wl <= high:
+        total += _interpolate_at(spectra, wl)
+        wl += step
+    return total
+
+
+def _load_spectra_for(
+    fluorophore_id: str,
+    types: list[str],
+    db: Session,
+) -> dict[str, list[tuple]]:
+    """Return {spectrum_type: sorted[(wavelength, intensity)]} for a fluorophore."""
+    rows = db.execute(
+        select(
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+            FluorophoreSpectrum.intensity,
+        )
+        .where(FluorophoreSpectrum.fluorophore_id == fluorophore_id)
+        .where(FluorophoreSpectrum.spectrum_type.in_(types))
+        .order_by(
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+        )
+    ).all()
+
+    result: dict[str, list[tuple]] = {}
+    for stype, wl, intensity in rows:
+        result.setdefault(stype, []).append((wl, intensity))
+    return result
+
+
+# ---------------------------------------------------------------------------
+# List fluorophores
+# ---------------------------------------------------------------------------
+
 @router.get("/", response_model=PaginatedResponse[FluorophoreRead])
 def list_fluorophores(
     skip: int = 0,
     limit: int = 100,
+    type: str | None = None,
+    search: str | None = None,
+    has_spectra: bool | None = None,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
-    stmt = select(Fluorophore).offset(skip).limit(limit)
+    limit = min(limit, 2000)
+    stmt = select(Fluorophore)
+    count_stmt = select(func.count()).select_from(Fluorophore)
+
+    if type is not None:
+        stmt = stmt.where(Fluorophore.fluor_type == type)
+        count_stmt = count_stmt.where(Fluorophore.fluor_type == type)
+    if search is not None and search.strip():
+        pattern = "%" + search.strip() + "%"
+        stmt = stmt.where(Fluorophore.name.ilike(pattern))
+        count_stmt = count_stmt.where(Fluorophore.name.ilike(pattern))
+    if has_spectra is not None:
+        stmt = stmt.where(Fluorophore.has_spectra == has_spectra)
+        count_stmt = count_stmt.where(Fluorophore.has_spectra == has_spectra)
+
+    stmt = stmt.order_by(Fluorophore.name).offset(skip).limit(limit)
     items = list(db.scalars(stmt))
-    total = db.scalar(select(func.count()).select_from(Fluorophore))
+    total = db.scalar(count_stmt)
     return {"items": items, "total": total, "skip": skip, "limit": limit}
 
+
+# ---------------------------------------------------------------------------
+# Create user-defined fluorophore
+# ---------------------------------------------------------------------------
 
 @router.post("/", response_model=FluorophoreRead, status_code=201)
 def create_fluorophore(
     data: FluorophoreCreate,
     db: Session = Depends(get_db),
 ):
+    fl_id = str(uuid.uuid4())
     fluorophore = Fluorophore(
+        id=fl_id,
         name=data.name,
-        excitation_max_nm=data.excitation_max_nm,
-        emission_max_nm=data.emission_max_nm,
-        spectra=data.spectra,
+        fluor_type=data.fluor_type,
         source=data.source,
+        ex_max_nm=data.ex_max_nm,
+        em_max_nm=data.em_max_nm,
+        ext_coeff=data.ext_coeff,
+        qy=data.qy,
+        lifetime_ns=data.lifetime_ns,
+        oligomerization=data.oligomerization,
+        switch_type=data.switch_type,
+        has_spectra=False,
     )
     db.add(fluorophore)
     try:
@@ -57,16 +165,23 @@ def create_fluorophore(
     return fluorophore
 
 
-@router.get("/{id}/spectra", response_model=FluorophoreSpectraRead)
-def get_fluorophore_spectra(id: str, db: Session = Depends(get_db)):
-    fluorophore = db.get(Fluorophore, id)
-    if fluorophore is None:
-        raise HTTPException(status_code=404, detail="Fluorophore not found")
-    return fluorophore
+# ---------------------------------------------------------------------------
+# FPbase catalog (live fetch from FPbase API — keep before /{id} routes)
+# ---------------------------------------------------------------------------
 
+@router.get("/fpbase-catalog", response_model=list[FpbaseCatalogItem])
+async def fpbase_catalog():
+    from services.fpbase import fetch_fpbase_catalog
+
+    return await fetch_fpbase_catalog()
+
+
+# ---------------------------------------------------------------------------
+# Fetch single fluorophore from live FPbase API and upsert into DB
+# ---------------------------------------------------------------------------
 
 @router.post("/fetch-fpbase", response_model=FluorophoreRead)
-async def fetch_fpbase(
+async def fetch_fpbase_endpoint(
     request: FetchFpbaseRequest,
     db: Session = Depends(get_db),
 ):
@@ -82,41 +197,71 @@ async def fetch_fpbase(
             )
         raise
 
-    # Check if fluorophore already exists by name
-    existing = db.scalar(
-        select(Fluorophore).where(Fluorophore.name == fpbase_data["name"])
-    )
+    fl_id = fpbase_data["slug"]
+    spectra = fpbase_data.get("spectra", {})
+    has_spec = bool(spectra.get("EX") or spectra.get("EM"))
+
+    existing = db.get(Fluorophore, fl_id)
     if existing is not None:
-        existing.excitation_max_nm = fpbase_data["excitation_max_nm"]
-        existing.emission_max_nm = fpbase_data["emission_max_nm"]
-        existing.spectra = fpbase_data["spectra"]
+        existing.ex_max_nm = fpbase_data.get("ex_max_nm")
+        existing.em_max_nm = fpbase_data.get("em_max_nm")
         existing.source = "fpbase"
-        db.commit()
-        db.refresh(existing)
-        return existing
+        existing.has_spectra = has_spec
+        db.execute(
+            delete(FluorophoreSpectrum).where(
+                FluorophoreSpectrum.fluorophore_id == existing.id
+            )
+        )
+    else:
+        # Also check by name in case the slug differs
+        name_match = db.scalar(
+            select(Fluorophore).where(Fluorophore.name == fpbase_data["name"])
+        )
+        if name_match is not None:
+            name_match.ex_max_nm = fpbase_data.get("ex_max_nm")
+            name_match.em_max_nm = fpbase_data.get("em_max_nm")
+            name_match.source = "fpbase"
+            name_match.has_spectra = has_spec
+            db.execute(
+                delete(FluorophoreSpectrum).where(
+                    FluorophoreSpectrum.fluorophore_id == name_match.id
+                )
+            )
+            existing = name_match
+        else:
+            existing = Fluorophore(
+                id=fl_id,
+                name=fpbase_data["name"],
+                source="fpbase",
+                ex_max_nm=fpbase_data.get("ex_max_nm"),
+                em_max_nm=fpbase_data.get("em_max_nm"),
+                has_spectra=has_spec,
+            )
+            db.add(existing)
+            db.flush()
 
-    fluorophore = Fluorophore(
-        name=fpbase_data["name"],
-        excitation_max_nm=fpbase_data["excitation_max_nm"],
-        emission_max_nm=fpbase_data["emission_max_nm"],
-        spectra=fpbase_data["spectra"],
-        source="fpbase",
-    )
-    db.add(fluorophore)
+    for stype, points in spectra.items():
+        for wl, intensity in points:
+            db.add(
+                FluorophoreSpectrum(
+                    fluorophore_id=existing.id,
+                    spectrum_type=stype,
+                    wavelength_nm=wl,
+                    intensity=intensity,
+                )
+            )
+
     db.commit()
-    db.refresh(fluorophore)
-    return fluorophore
+    db.refresh(existing)
+    return existing
 
 
-@router.get("/fpbase-catalog", response_model=list[FpbaseCatalogItem])
-async def fpbase_catalog():
-    from services.fpbase import fetch_fpbase_catalog
-
-    return await fetch_fpbase_catalog()
-
+# ---------------------------------------------------------------------------
+# Batch fetch from live FPbase API
+# ---------------------------------------------------------------------------
 
 @router.post("/batch-fetch-fpbase", response_model=BatchFetchFpbaseResult)
-async def batch_fetch_fpbase(
+async def batch_fetch_fpbase_endpoint(
     request: BatchFetchFpbaseRequest,
     db: Session = Depends(get_db),
 ):
@@ -130,7 +275,7 @@ async def batch_fetch_fpbase(
             detail="Maximum 10 fluorophores per batch request",
         )
 
-    fetched: list[dict] = []
+    fetched: list[Fluorophore] = []
     errors: list[dict] = []
 
     for i, name in enumerate(request.names):
@@ -142,57 +287,203 @@ async def batch_fetch_fpbase(
             errors.append({"name": name, "detail": exc.detail})
             continue
 
-        # Upsert: check if exists by name
-        existing = db.scalar(
-            select(Fluorophore).where(Fluorophore.name == fpbase_data["name"])
-        )
+        fl_id = fpbase_data["slug"]
+        spectra = fpbase_data.get("spectra", {})
+        has_spec = bool(spectra.get("EX") or spectra.get("EM"))
+
+        existing = db.get(Fluorophore, fl_id)
         if existing is not None:
-            existing.excitation_max_nm = fpbase_data["excitation_max_nm"]
-            existing.emission_max_nm = fpbase_data["emission_max_nm"]
-            existing.spectra = fpbase_data["spectra"]
+            existing.ex_max_nm = fpbase_data.get("ex_max_nm")
+            existing.em_max_nm = fpbase_data.get("em_max_nm")
             existing.source = "fpbase"
-            db.commit()
-            db.refresh(existing)
-            fetched.append({
-                "id": existing.id,
-                "name": existing.name,
-                "excitation_max_nm": existing.excitation_max_nm,
-                "emission_max_nm": existing.emission_max_nm,
-                "source": existing.source,
-            })
-        else:
-            fluorophore = Fluorophore(
-                name=fpbase_data["name"],
-                excitation_max_nm=fpbase_data["excitation_max_nm"],
-                emission_max_nm=fpbase_data["emission_max_nm"],
-                spectra=fpbase_data["spectra"],
-                source="fpbase",
+            existing.has_spectra = has_spec
+            db.execute(
+                delete(FluorophoreSpectrum).where(
+                    FluorophoreSpectrum.fluorophore_id == existing.id
+                )
             )
-            db.add(fluorophore)
-            db.commit()
-            db.refresh(fluorophore)
-            fetched.append({
-                "id": fluorophore.id,
-                "name": fluorophore.name,
-                "excitation_max_nm": fluorophore.excitation_max_nm,
-                "emission_max_nm": fluorophore.emission_max_nm,
-                "source": fluorophore.source,
-            })
+        else:
+            existing = Fluorophore(
+                id=fl_id,
+                name=fpbase_data["name"],
+                source="fpbase",
+                ex_max_nm=fpbase_data.get("ex_max_nm"),
+                em_max_nm=fpbase_data.get("em_max_nm"),
+                has_spectra=has_spec,
+            )
+            db.add(existing)
+            db.flush()
+
+        for stype, points in spectra.items():
+            for wl, intensity in points:
+                db.add(
+                    FluorophoreSpectrum(
+                        fluorophore_id=existing.id,
+                        spectrum_type=stype,
+                        wavelength_nm=wl,
+                        intensity=intensity,
+                    )
+                )
+        db.commit()
+        db.refresh(existing)
+        fetched.append(existing)
 
     return {"fetched": fetched, "errors": errors}
 
 
-@router.post("/batch-spectra")
+# ---------------------------------------------------------------------------
+# Batch spectra (POST /spectra/batch)
+# ---------------------------------------------------------------------------
+
+@router.post("/spectra/batch")
 def batch_spectra(
     request: BatchSpectraRequest,
     db: Session = Depends(get_db),
 ):
-    if len(request.ids) > 100:
-        raise HTTPException(status_code=400, detail="Maximum 100 IDs per request")
+    if len(request.ids) > 2000:
+        raise HTTPException(status_code=400, detail="Maximum 2000 IDs per request")
 
-    stmt = select(Fluorophore).where(Fluorophore.id.in_(request.ids))
-    fluorophores = list(db.scalars(stmt))
-    result = {}
-    for fl in fluorophores:
-        result[fl.id] = fl.spectra
+    types = request.types if request.types else ["EX", "EM"]
+
+    rows = db.execute(
+        select(
+            FluorophoreSpectrum.fluorophore_id,
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+            FluorophoreSpectrum.intensity,
+        )
+        .where(FluorophoreSpectrum.fluorophore_id.in_(request.ids))
+        .where(FluorophoreSpectrum.spectrum_type.in_(types))
+        .order_by(
+            FluorophoreSpectrum.fluorophore_id,
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+        )
+    ).all()
+
+    result: dict[str, dict[str, list[list[float]]]] = {}
+    for fl_id, stype, wl, intensity in rows:
+        if fl_id not in result:
+            result[fl_id] = {}
+        if stype not in result[fl_id]:
+            result[fl_id][stype] = []
+        result[fl_id][stype].append([wl, intensity])
+
     return result
+
+
+# ---------------------------------------------------------------------------
+# Single fluorophore spectra
+# ---------------------------------------------------------------------------
+
+@router.get("/{id}/spectra", response_model=FluorophoreSpectraResponse)
+def get_fluorophore_spectra(
+    id: str,
+    types: str = "EX,EM",
+    db: Session = Depends(get_db),
+):
+    fluorophore = db.get(Fluorophore, id)
+    if fluorophore is None:
+        raise HTTPException(status_code=404, detail="Fluorophore not found")
+
+    type_list = [t.strip() for t in types.split(",") if t.strip()]
+    spectra_map = _load_spectra_for(id, type_list, db)
+
+    spectra_out: dict[str, list[list[float]]] = {
+        stype: [[wl, intensity] for wl, intensity in points]
+        for stype, points in spectra_map.items()
+    }
+
+    return {
+        "fluorophore_id": id,
+        "name": fluorophore.name,
+        "spectra": spectra_out,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Instrument compatibility
+# ---------------------------------------------------------------------------
+
+@router.get("/{id}/instrument-compatibility", response_model=InstrumentCompatibilityResponse)
+def get_instrument_compatibility(
+    id: str,
+    db: Session = Depends(get_db),
+):
+    fluorophore = db.get(Fluorophore, id)
+    if fluorophore is None:
+        raise HTTPException(status_code=404, detail="Fluorophore not found")
+
+    # Load EX and EM spectra for this fluorophore
+    spectra_map = _load_spectra_for(id, ["EX", "EM", "AB"], db)
+    ex_spectra = spectra_map.get("EX") or spectra_map.get("AB") or []
+    em_spectra = spectra_map.get("EM") or []
+
+    # Pre-compute total EM integral for collection efficiency normalization
+    em_total = 0.0
+    if em_spectra:
+        low = em_spectra[0][0]
+        high = em_spectra[-1][0]
+        em_total = _integrate_bandpass(em_spectra, low, high)
+
+    # Fetch all instruments with their lasers and detectors
+    instruments = list(
+        db.scalars(select(Instrument).order_by(Instrument.name))
+    )
+
+    compatibilities: list[InstrumentCompatibility] = []
+    for inst in instruments:
+        lasers = list(
+            db.scalars(
+                select(Laser)
+                .where(Laser.instrument_id == inst.id)
+                .order_by(Laser.wavelength_nm)
+            )
+        )
+
+        laser_lines: list[LaserCompatibility] = []
+        for laser in lasers:
+            ex_eff = _interpolate_at(ex_spectra, float(laser.wavelength_nm))
+            laser_lines.append(
+                LaserCompatibility(
+                    wavelength_nm=laser.wavelength_nm,
+                    excitation_efficiency=round(ex_eff, 4),
+                )
+            )
+
+        detector_rows: list[DetectorCompatibility] = []
+        for laser in lasers:
+            detectors = list(
+                db.scalars(
+                    select(Detector)
+                    .where(Detector.laser_id == laser.id)
+                    .order_by(Detector.filter_midpoint)
+                )
+            )
+            for det in detectors:
+                low = det.filter_midpoint - det.filter_width / 2
+                high = det.filter_midpoint + det.filter_width / 2
+                bandpass_integral = _integrate_bandpass(em_spectra, low, high)
+                coll_eff = (bandpass_integral / em_total) if em_total > 0 else 0.0
+                detector_rows.append(
+                    DetectorCompatibility(
+                        name=det.name,
+                        center_nm=det.filter_midpoint,
+                        bandwidth_nm=det.filter_width,
+                        collection_efficiency=round(coll_eff, 4),
+                    )
+                )
+
+        compatibilities.append(
+            InstrumentCompatibility(
+                instrument_id=inst.id,
+                instrument_name=inst.name,
+                laser_lines=laser_lines,
+                detectors=detector_rows,
+            )
+        )
+
+    return InstrumentCompatibilityResponse(
+        fluorophore_id=id,
+        instrument_compatibilities=compatibilities,
+    )

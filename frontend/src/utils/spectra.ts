@@ -35,16 +35,16 @@ export function interpolateAt(
 
 /**
  * Can this fluorophore be excited by the given laser?
- * If full excitation spectrum available: use interpolateAt to get
- * intensity at laser wavelength, compare to max intensity in spectrum.
+ * If full excitation spectrum (EX or AB) available: use interpolateAt to get
+ * intensity at laser wavelength, compare to peak intensity.
  * Threshold: >= 15% of peak.
- * Fallback (no spectra or empty): laser within ±40nm of excitation max.
+ * Fallback (no spectra): laser within ±40nm of excitation max.
  */
 export function isExcitable(
   fluorophore: FluorophoreWithSpectra,
   laserWavelength: number
 ): boolean {
-  const ex = fluorophore.spectra?.excitation
+  const ex = fluorophore.spectra?.EX ?? fluorophore.spectra?.AB
   if (ex && ex.length > 0) {
     const intensity = interpolateAt(ex, laserWavelength)
     const peak = Math.max(...ex.map((p) => p[1]))
@@ -52,7 +52,10 @@ export function isExcitable(
     return intensity / peak >= 0.15
   }
   // Fallback: within ±40nm of excitation max
-  return Math.abs(fluorophore.excitation_max_nm - laserWavelength) <= 40
+  if (fluorophore.ex_max_nm !== null && fluorophore.ex_max_nm !== undefined) {
+    return Math.abs(fluorophore.ex_max_nm - laserWavelength) <= 40
+  }
+  return false
 }
 
 /**
@@ -67,7 +70,7 @@ export function isDetectable(
   filterMidpoint: number,
   filterWidth: number
 ): boolean {
-  const em = fluorophore.spectra?.emission
+  const em = fluorophore.spectra?.EM
   if (em && em.length > 0) {
     const low = filterMidpoint - filterWidth / 2
     const high = filterMidpoint + filterWidth / 2
@@ -88,10 +91,13 @@ export function isDetectable(
     return bandpassIntegral / totalIntegral >= 0.05
   }
   // Fallback: generous 2× window
-  return (
-    fluorophore.emission_max_nm >= filterMidpoint - filterWidth &&
-    fluorophore.emission_max_nm <= filterMidpoint + filterWidth
-  )
+  if (fluorophore.em_max_nm !== null && fluorophore.em_max_nm !== undefined) {
+    return (
+      fluorophore.em_max_nm >= filterMidpoint - filterWidth &&
+      fluorophore.em_max_nm <= filterMidpoint + filterWidth
+    )
+  }
+  return false
 }
 
 /**

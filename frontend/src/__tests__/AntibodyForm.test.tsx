@@ -14,8 +14,8 @@ import AntibodyForm from '@/components/antibodies/AntibodyForm'
 import type { Antibody, Fluorophore } from '@/types'
 
 const fluorophores: Fluorophore[] = [
-  { id: 'fl-1', name: 'FITC', excitation_max_nm: 494, emission_max_nm: 519, source: 'seed' },
-  { id: 'fl-2', name: 'PE', excitation_max_nm: 565, emission_max_nm: 578, source: 'seed' },
+  { id: 'fl-1', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: 'fl-2', name: 'PE', ex_max_nm: 565, em_max_nm: 578, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
 ]
 
 function wrapper({ children }: { children: React.ReactNode }) {

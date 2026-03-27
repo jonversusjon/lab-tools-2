@@ -3,17 +3,19 @@ import {
   listFluorophores,
   createFluorophore,
   getFluorophoreSpectra,
+  getInstrumentCompatibility,
   batchSpectra,
   fetchFpbase,
   fetchFpbaseCatalog,
   batchFetchFpbase,
 } from '@/api/fluorophores'
 import type { FluorophoreCreate } from '@/types'
+import type { FluorophoreListParams as ApiParams } from '@/api/fluorophores'
 
-export function useFluorophores(skip = 0, limit = 100) {
+export function useFluorophores(params: ApiParams = {}) {
   return useQuery({
-    queryKey: ['fluorophores', { skip, limit }],
-    queryFn: () => listFluorophores(skip, limit),
+    queryKey: ['fluorophores', params],
+    queryFn: () => listFluorophores(params),
   })
 }
 
@@ -25,10 +27,18 @@ export function useFluorophoreSpectra(id: string) {
   })
 }
 
+export function useInstrumentCompatibility(id: string) {
+  return useQuery({
+    queryKey: ['fluorophores', id, 'instrument-compatibility'],
+    queryFn: () => getInstrumentCompatibility(id),
+    enabled: !!id,
+  })
+}
+
 export function useBatchSpectra(ids: string[]) {
   return useQuery({
-    queryKey: ['fluorophores', 'batch-spectra'],
-    queryFn: () => batchSpectra(ids),
+    queryKey: ['fluorophores', 'batch-spectra', ids.length],
+    queryFn: () => batchSpectra(ids, ['EX', 'EM']),
     enabled: ids.length > 0,
     staleTime: 5 * 60 * 1000,
   })

@@ -28,10 +28,11 @@ def test_create_all_models(db_session):
     db_session.flush()
 
     fluorophore = Fluorophore(
+        id="test-model-create",
         name="TestDye-ModelCreate",
-        excitation_max_nm=494,
-        emission_max_nm=519,
-        source="seed",
+        ex_max_nm=494,
+        em_max_nm=519,
+        source="user",
     )
     db_session.add(fluorophore)
     db_session.flush()
@@ -81,7 +82,7 @@ def test_all_pks_are_strings(db_session):
     db_session.add(detector)
     db_session.flush()
 
-    fluorophore = Fluorophore(name="TestDye-PKCheck", excitation_max_nm=360, emission_max_nm=460, source="seed")
+    fluorophore = Fluorophore(id="test-pk-check", name="TestDye-PKCheck", ex_max_nm=360, em_max_nm=460, source="user")
     db_session.add(fluorophore)
     db_session.flush()
 

@@ -15,7 +15,7 @@ EXPECTED_ROUTES = [
     ("POST", "/api/v1/fluorophores"),
     ("GET", "/api/v1/fluorophores/{id}/spectra"),
     ("POST", "/api/v1/fluorophores/fetch-fpbase"),
-    ("POST", "/api/v1/fluorophores/batch-spectra"),
+    ("POST", "/api/v1/fluorophores/spectra/batch"),
     ("GET", "/api/v1/antibodies"),
     ("POST", "/api/v1/antibodies"),
     ("GET", "/api/v1/antibodies/{id}"),

@@ -21,6 +21,7 @@ from main import app
 from models import Antibody
 from models import Detector
 from models import Fluorophore
+from models import FluorophoreSpectrum
 from models import Instrument
 from models import Laser
 
@@ -52,8 +53,22 @@ def _make_test_engine():
     return eng
 
 
+def _make_spectra_points(peak_nm: float, fwhm: float = 30.0) -> list[tuple]:
+    """Generate a minimal Gaussian-shaped spectrum for test purposes."""
+    import math
+
+    sigma = fwhm / (2 * math.sqrt(2 * math.log(2)))
+    points = []
+    for wl in range(int(peak_nm) - 100, int(peak_nm) + 100, 2):
+        intensity = math.exp(-0.5 * ((wl - peak_nm) / sigma) ** 2)
+        if intensity >= 0.01:
+            points.append((float(wl), round(intensity, 4)))
+    return points
+
+
 def _load_seed(session):
     """Load seed data into the test database."""
+    # Load instruments from JSON
     with open(SEED_DIR / "instruments.json") as f:
         instruments_data = json.load(f)
     for inst_data in instruments_data:
@@ -77,21 +92,85 @@ def _load_seed(session):
                 )
                 session.add(detector)
 
-    with open(SEED_DIR / "fluorophores.json") as f:
-        fluorophores_data = json.load(f)
-    for fl_data in fluorophores_data:
-        source = fl_data.get("source", "seed")
-        if source == "gaussian_approximation":
-            source = "seed"
-        fluorophore = Fluorophore(
-            name=fl_data["name"],
-            excitation_max_nm=fl_data["excitation_max_nm"],
-            emission_max_nm=fl_data["emission_max_nm"],
-            spectra=fl_data.get("spectra"),
-            source=source,
-        )
-        session.add(fluorophore)
+    # Create a small set of test fluorophores (FPbase-style schema)
+    test_fluorophores = [
+        {
+            "id": "test-egfp",
+            "name": "EGFP",
+            "fluor_type": "protein",
+            "source": "FPbase",
+            "ex_max_nm": 488.0,
+            "em_max_nm": 507.0,
+            "ext_coeff": 56000.0,
+            "qy": 0.60,
+            "has_spectra": True,
+            "ex_peak": 488.0,
+            "em_peak": 507.0,
+        },
+        {
+            "id": "test-mcherry",
+            "name": "mCherry",
+            "fluor_type": "protein",
+            "source": "FPbase",
+            "ex_max_nm": 587.0,
+            "em_max_nm": 610.0,
+            "ext_coeff": 72000.0,
+            "qy": 0.22,
+            "has_spectra": True,
+            "ex_peak": 587.0,
+            "em_peak": 610.0,
+        },
+        {
+            "id": "test-dye-no-spectra",
+            "name": "TestDyeNoSpectra",
+            "fluor_type": "dye",
+            "source": "FPbase",
+            "ex_max_nm": 650.0,
+            "em_max_nm": 670.0,
+            "ext_coeff": None,
+            "qy": None,
+            "has_spectra": False,
+            "ex_peak": None,
+            "em_peak": None,
+        },
+    ]
 
+    for fl_data in test_fluorophores:
+        fl = Fluorophore(
+            id=fl_data["id"],
+            name=fl_data["name"],
+            fluor_type=fl_data["fluor_type"],
+            source=fl_data["source"],
+            ex_max_nm=fl_data["ex_max_nm"],
+            em_max_nm=fl_data["em_max_nm"],
+            ext_coeff=fl_data.get("ext_coeff"),
+            qy=fl_data.get("qy"),
+            has_spectra=fl_data["has_spectra"],
+        )
+        session.add(fl)
+        session.flush()
+
+        if fl_data["has_spectra"]:
+            for wl, intensity in _make_spectra_points(fl_data["ex_peak"]):
+                session.add(
+                    FluorophoreSpectrum(
+                        fluorophore_id=fl.id,
+                        spectrum_type="EX",
+                        wavelength_nm=wl,
+                        intensity=intensity,
+                    )
+                )
+            for wl, intensity in _make_spectra_points(fl_data["em_peak"]):
+                session.add(
+                    FluorophoreSpectrum(
+                        fluorophore_id=fl.id,
+                        spectrum_type="EM",
+                        wavelength_nm=wl,
+                        intensity=intensity,
+                    )
+                )
+
+    # Load antibodies from JSON (all unconjugated, no fluorophore_id)
     with open(SEED_DIR / "antibodies.json") as f:
         antibodies_data = json.load(f)
     for ab_data in antibodies_data:

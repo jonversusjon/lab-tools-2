@@ -44,9 +44,16 @@ const makeFluorophore = (
 ): FluorophoreWithSpectra => ({
   id: 'test',
   name: 'Test',
-  excitation_max_nm: 494,
-  emission_max_nm: 519,
-  source: 'seed',
+  fluor_type: null,
+  source: 'FPbase',
+  ex_max_nm: 494,
+  em_max_nm: 519,
+  ext_coeff: null,
+  qy: null,
+  lifetime_ns: null,
+  oligomerization: null,
+  switch_type: null,
+  has_spectra: false,
   spectra: null,
   ...overrides,
 })
@@ -80,16 +87,16 @@ describe('downsampleSpectra', () => {
 describe('isExcitable', () => {
   it('FITC (ex 494) is excitable by 488nm laser (with spectra)', () => {
     const fl = makeFluorophore({
-      excitation_max_nm: 494,
-      spectra: { excitation: fitcExcitation, emission: fitcEmission },
+      ex_max_nm: 494,
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
     expect(isExcitable(fl, 488)).toBe(true)
   })
 
   it('FITC is NOT excitable by 637nm laser (with spectra)', () => {
     const fl = makeFluorophore({
-      excitation_max_nm: 494,
-      spectra: { excitation: fitcExcitation, emission: fitcEmission },
+      ex_max_nm: 494,
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
     expect(isExcitable(fl, 637)).toBe(false)
   })
@@ -98,15 +105,15 @@ describe('isExcitable', () => {
     const fl = makeFluorophore({
       id: 'apc',
       name: 'APC',
-      excitation_max_nm: 650,
-      emission_max_nm: 660,
-      spectra: { excitation: apcExcitation, emission: apcEmission },
+      ex_max_nm: 650,
+      em_max_nm: 660,
+      spectra: { EX: apcExcitation, EM: apcEmission },
     })
     expect(isExcitable(fl, 637)).toBe(true)
   })
 
   it('uses fallback when no spectra: within ±40nm', () => {
-    const fl = makeFluorophore({ excitation_max_nm: 494, spectra: null })
+    const fl = makeFluorophore({ ex_max_nm: 494, spectra: null })
     expect(isExcitable(fl, 488)).toBe(true)
     expect(isExcitable(fl, 637)).toBe(false)
   })
@@ -115,8 +122,8 @@ describe('isExcitable', () => {
 describe('isDetectable', () => {
   it('FITC (em 519) is detectable by 530/30 filter (with spectra)', () => {
     const fl = makeFluorophore({
-      emission_max_nm: 519,
-      spectra: { excitation: fitcExcitation, emission: fitcEmission },
+      em_max_nm: 519,
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
     // 530/30 = 515–545nm, FITC emission peak 519 is right inside
     expect(isDetectable(fl, 530, 30)).toBe(true)
@@ -124,8 +131,8 @@ describe('isDetectable', () => {
 
   it('FITC is NOT detectable by 780/60 filter (with spectra)', () => {
     const fl = makeFluorophore({
-      emission_max_nm: 519,
-      spectra: { excitation: fitcExcitation, emission: fitcEmission },
+      em_max_nm: 519,
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
     expect(isDetectable(fl, 780, 60)).toBe(false)
   })
@@ -134,15 +141,15 @@ describe('isDetectable', () => {
     const fl = makeFluorophore({
       id: 'apc',
       name: 'APC',
-      excitation_max_nm: 650,
-      emission_max_nm: 660,
-      spectra: { excitation: apcExcitation, emission: apcEmission },
+      ex_max_nm: 650,
+      em_max_nm: 660,
+      spectra: { EX: apcExcitation, EM: apcEmission },
     })
     expect(isDetectable(fl, 670, 30)).toBe(true)
   })
 
   it('uses fallback when no spectra: emission max within generous 2× window', () => {
-    const fl = makeFluorophore({ emission_max_nm: 519, spectra: null })
+    const fl = makeFluorophore({ em_max_nm: 519, spectra: null })
     expect(isDetectable(fl, 530, 30)).toBe(true)   // 500–560 range
     expect(isDetectable(fl, 780, 60)).toBe(false)   // 720–840 range
   })
@@ -151,7 +158,7 @@ describe('isDetectable', () => {
 describe('isCompatible', () => {
   it('combines excitable + detectable', () => {
     const fl = makeFluorophore({
-      spectra: { excitation: fitcExcitation, emission: fitcEmission },
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
     // FITC + 488nm laser + 530/30 detector → compatible
     expect(isCompatible(fl, 488, 530, 30)).toBe(true)

@@ -10,9 +10,9 @@ vi.mock('react-chartjs-2', () => ({
 vi.mock('chartjs-plugin-annotation', () => ({ default: {} }))
 
 const mockFluorophores = [
-  { id: '1', name: 'FITC', excitation_max_nm: 494, emission_max_nm: 519, source: 'seed' },
-  { id: '2', name: 'PE', excitation_max_nm: 565, emission_max_nm: 578, source: 'seed' },
-  { id: '3', name: 'APC', excitation_max_nm: 650, emission_max_nm: 660, source: 'seed' },
+  { id: '1', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: '2', name: 'PE', ex_max_nm: 565, em_max_nm: 578, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: '3', name: 'APC', ex_max_nm: 650, em_max_nm: 660, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
 ]
 
 vi.mock('@/hooks/useFluorophores', () => ({
@@ -21,7 +21,8 @@ vi.mock('@/hooks/useFluorophores', () => ({
     isLoading: false,
     error: null,
   }),
-  useFluorophoreSpectra: () => ({ data: null }),
+  useFluorophoreSpectra: () => ({ data: null, isLoading: false }),
+  useInstrumentCompatibility: () => ({ data: null, isLoading: false }),
   useBatchSpectra: () => ({ data: null }),
   useFetchFromFpbase: () => ({
     mutateAsync: vi.fn(),
@@ -49,31 +50,21 @@ describe('FluorophoreTable', () => {
     expect(screen.getByText('APC')).toBeInTheDocument()
   })
 
-  it('clicking column header sorts the table', () => {
+  it('shows search and filter controls', () => {
     render(<FluorophoreTable />, { wrapper })
-    // Default sort by name ascending: APC, FITC, PE
-    const cells = screen.getAllByRole('cell')
-    const nameTexts = cells
-      .filter((_, i) => i % 5 === 1) // name is second column
-      .map((c) => c.textContent)
-    expect(nameTexts).toEqual(['APC', 'FITC', 'PE'])
-
-    // Click name header to reverse
-    fireEvent.click(screen.getByText(/^Name/))
-    const cellsAfter = screen.getAllByRole('cell')
-    const nameTextsAfter = cellsAfter
-      .filter((_, i) => i % 5 === 1)
-      .map((c) => c.textContent)
-    expect(nameTextsAfter).toEqual(['PE', 'FITC', 'APC'])
+    expect(screen.getByPlaceholderText(/Search by name/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'protein' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'dye' })).toBeInTheDocument()
   })
 
   it('selecting checkboxes shows View Overlay button', () => {
     render(<FluorophoreTable />, { wrapper })
     expect(screen.queryByText(/View Overlay/)).not.toBeInTheDocument()
 
-    const checkboxes = screen.getAllByRole('checkbox')
-    fireEvent.click(checkboxes[0])
-    fireEvent.click(checkboxes[1])
+    // Use title-based selector to target row checkboxes, not the filter checkbox
+    const overlayCheckboxes = screen.getAllByTitle('Add to overlay')
+    fireEvent.click(overlayCheckboxes[0])
+    fireEvent.click(overlayCheckboxes[1])
 
     expect(screen.getByText(/View Overlay/)).toBeInTheDocument()
   })
