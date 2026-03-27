@@ -1,7 +1,9 @@
 import type {
+  BatchFetchFpbaseResult,
   Fluorophore,
   FluorophoreCreate,
   FluorophoreSpectra,
+  FpbaseCatalogItem,
   PaginatedResponse,
 } from '@/types'
 
@@ -45,6 +47,27 @@ export async function fetchFpbase(name: string): Promise<Fluorophore> {
   if (!res.ok) {
     const body = await res.json().catch(() => null)
     throw new Error(body?.detail ?? 'Failed to fetch from FPbase')
+  }
+  return res.json()
+}
+
+export async function fetchFpbaseCatalog(): Promise<FpbaseCatalogItem[]> {
+  const res = await fetch('/api/v1/fluorophores/fpbase-catalog')
+  if (!res.ok) throw new Error('Failed to fetch FPbase catalog')
+  return res.json()
+}
+
+export async function batchFetchFpbase(
+  names: string[]
+): Promise<BatchFetchFpbaseResult> {
+  const res = await fetch('/api/v1/fluorophores/batch-fetch-fpbase', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ names }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new Error(body?.detail ?? 'Failed to batch fetch from FPbase')
   }
   return res.json()
 }

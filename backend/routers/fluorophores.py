@@ -9,11 +9,14 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Fluorophore
+from schemas import BatchFetchFpbaseRequest
+from schemas import BatchFetchFpbaseResult
 from schemas import BatchSpectraRequest
 from schemas import FetchFpbaseRequest
 from schemas import FluorophoreCreate
 from schemas import FluorophoreRead
 from schemas import FluorophoreSpectraRead
+from schemas import FpbaseCatalogItem
 from schemas import PaginatedResponse
 
 router = APIRouter()
@@ -103,6 +106,80 @@ async def fetch_fpbase(
     db.commit()
     db.refresh(fluorophore)
     return fluorophore
+
+
+@router.get("/fpbase-catalog", response_model=list[FpbaseCatalogItem])
+async def fpbase_catalog():
+    from services.fpbase import fetch_fpbase_catalog
+
+    return await fetch_fpbase_catalog()
+
+
+@router.post("/batch-fetch-fpbase", response_model=BatchFetchFpbaseResult)
+async def batch_fetch_fpbase(
+    request: BatchFetchFpbaseRequest,
+    db: Session = Depends(get_db),
+):
+    import asyncio
+
+    from services.fpbase import fetch_fluorophore_from_fpbase
+
+    if len(request.names) > 10:
+        raise HTTPException(
+            status_code=400,
+            detail="Maximum 10 fluorophores per batch request",
+        )
+
+    fetched: list[dict] = []
+    errors: list[dict] = []
+
+    for i, name in enumerate(request.names):
+        if i > 0:
+            await asyncio.sleep(1)
+        try:
+            fpbase_data = await fetch_fluorophore_from_fpbase(name)
+        except HTTPException as exc:
+            errors.append({"name": name, "detail": exc.detail})
+            continue
+
+        # Upsert: check if exists by name
+        existing = db.scalar(
+            select(Fluorophore).where(Fluorophore.name == fpbase_data["name"])
+        )
+        if existing is not None:
+            existing.excitation_max_nm = fpbase_data["excitation_max_nm"]
+            existing.emission_max_nm = fpbase_data["emission_max_nm"]
+            existing.spectra = fpbase_data["spectra"]
+            existing.source = "fpbase"
+            db.commit()
+            db.refresh(existing)
+            fetched.append({
+                "id": existing.id,
+                "name": existing.name,
+                "excitation_max_nm": existing.excitation_max_nm,
+                "emission_max_nm": existing.emission_max_nm,
+                "source": existing.source,
+            })
+        else:
+            fluorophore = Fluorophore(
+                name=fpbase_data["name"],
+                excitation_max_nm=fpbase_data["excitation_max_nm"],
+                emission_max_nm=fpbase_data["emission_max_nm"],
+                spectra=fpbase_data["spectra"],
+                source="fpbase",
+            )
+            db.add(fluorophore)
+            db.commit()
+            db.refresh(fluorophore)
+            fetched.append({
+                "id": fluorophore.id,
+                "name": fluorophore.name,
+                "excitation_max_nm": fluorophore.excitation_max_nm,
+                "emission_max_nm": fluorophore.emission_max_nm,
+                "source": fluorophore.source,
+            })
+
+    return {"fetched": fetched, "errors": errors}
 
 
 @router.post("/batch-spectra")

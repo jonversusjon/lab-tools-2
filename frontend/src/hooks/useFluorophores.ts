@@ -5,6 +5,8 @@ import {
   getFluorophoreSpectra,
   batchSpectra,
   fetchFpbase,
+  fetchFpbaseCatalog,
+  batchFetchFpbase,
 } from '@/api/fluorophores'
 import type { FluorophoreCreate } from '@/types'
 
@@ -44,6 +46,22 @@ export function useFetchFromFpbase() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (name: string) => fetchFpbase(name),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['fluorophores'] }),
+  })
+}
+
+export function useFpbaseCatalog() {
+  return useQuery({
+    queryKey: ['fpbase-catalog'],
+    queryFn: fetchFpbaseCatalog,
+    staleTime: 30 * 60 * 1000,
+  })
+}
+
+export function useBatchFetchFpbase() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (names: string[]) => batchFetchFpbase(names),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['fluorophores'] }),
   })
 }

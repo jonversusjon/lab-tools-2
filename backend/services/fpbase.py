@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import httpx
 from fastapi import HTTPException
 
@@ -18,6 +20,56 @@ query GetDye($name: String!) {
     }
 }
 """
+
+CATALOG_QUERY = """
+query {
+    fluorophores {
+        name
+        id
+    }
+}
+"""
+
+# Module-level cache for catalog
+_catalog_cache: list[dict] | None = None
+_catalog_cache_time: float = 0.0
+CATALOG_TTL_SECONDS = 3600  # 1 hour
+
+
+async def fetch_fpbase_catalog() -> list[dict]:
+    """Fetch the full fluorophore catalog from FPbase. Cached for 1 hour."""
+    global _catalog_cache, _catalog_cache_time
+
+    now = time.time()
+    if _catalog_cache is not None and (now - _catalog_cache_time) < CATALOG_TTL_SECONDS:
+        return _catalog_cache
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                FPBASE_GRAPHQL_URL,
+                json={"query": CATALOG_QUERY},
+                timeout=30.0,
+            )
+            response.raise_for_status()
+    except (httpx.HTTPError, httpx.TimeoutException):
+        raise HTTPException(
+            status_code=502,
+            detail="FPbase service unavailable",
+        )
+
+    data = response.json()
+    fluorophores = data.get("data", {}).get("fluorophores", [])
+    if not isinstance(fluorophores, list):
+        raise HTTPException(
+            status_code=502,
+            detail="Unexpected response from FPbase",
+        )
+
+    catalog = [{"name": f["name"], "id": f["id"]} for f in fluorophores]
+    _catalog_cache = catalog
+    _catalog_cache_time = now
+    return catalog
 
 
 def _parse_spectra_data(data_str: str) -> list[list[float]]:

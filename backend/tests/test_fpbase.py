@@ -104,6 +104,135 @@ def test_fetch_fpbase_creates_new_fluorophore(client):
     assert "NewFPbaseDye" in names
 
 
+@pytest.mark.asyncio
+async def test_catalog_returns_list():
+    from services.fpbase import fetch_fpbase_catalog
+
+    mock_catalog_response = {
+        "data": {
+            "fluorophores": [
+                {"name": "EGFP", "id": "abc123"},
+                {"name": "mCherry", "id": "def456"},
+            ]
+        }
+    }
+    mock_client = AsyncMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+    mock_client.post = AsyncMock(return_value=FakeResponse(mock_catalog_response))
+
+    # Clear cache before test
+    import services.fpbase as fpbase_mod
+    fpbase_mod._catalog_cache = None
+    fpbase_mod._catalog_cache_time = 0.0
+
+    with patch("services.fpbase.httpx.AsyncClient", return_value=mock_client):
+        result = await fetch_fpbase_catalog()
+
+    assert len(result) == 2
+    assert result[0]["name"] == "EGFP"
+    assert result[1]["id"] == "def456"
+
+
+@pytest.mark.asyncio
+async def test_catalog_uses_cache():
+    import services.fpbase as fpbase_mod
+    from services.fpbase import fetch_fpbase_catalog
+
+    # Pre-populate cache
+    cached = [{"name": "CachedDye", "id": "cached1"}]
+    fpbase_mod._catalog_cache = cached
+    import time
+    fpbase_mod._catalog_cache_time = time.time()
+
+    # Should NOT call httpx
+    result = await fetch_fpbase_catalog()
+    assert result == cached
+
+    # Clean up
+    fpbase_mod._catalog_cache = None
+    fpbase_mod._catalog_cache_time = 0.0
+
+
+def test_catalog_endpoint(client):
+    mock_catalog = AsyncMock(return_value=[
+        {"name": "EGFP", "id": "abc123"},
+        {"name": "mCherry", "id": "def456"},
+    ])
+
+    with patch("services.fpbase.fetch_fpbase_catalog", mock_catalog):
+        resp = client.get("/api/v1/fluorophores/fpbase-catalog")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 2
+    assert data[0]["name"] == "EGFP"
+
+
+def test_batch_fetch_fpbase_success(client):
+    call_count = 0
+
+    async def mock_fetch(name):
+        nonlocal call_count
+        call_count += 1
+        return {
+            "name": name,
+            "excitation_max_nm": 490,
+            "emission_max_nm": 525,
+            "spectra": {"excitation": [[490, 1.0]], "emission": [[525, 1.0]]},
+            "source": "fpbase",
+        }
+
+    with patch("services.fpbase.fetch_fluorophore_from_fpbase", side_effect=mock_fetch):
+        resp = client.post(
+            "/api/v1/fluorophores/batch-fetch-fpbase",
+            json={"names": ["DyeA", "DyeB"]},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["fetched"]) == 2
+    assert len(data["errors"]) == 0
+    assert data["fetched"][0]["name"] == "DyeA"
+
+
+def test_batch_fetch_fpbase_exceeds_limit(client):
+    resp = client.post(
+        "/api/v1/fluorophores/batch-fetch-fpbase",
+        json={"names": ["dye%d" % i for i in range(11)]},
+    )
+    assert resp.status_code == 400
+    assert "Maximum 10" in resp.json()["detail"]
+
+
+def test_batch_fetch_fpbase_partial_failure(client):
+    from fastapi import HTTPException
+
+    async def mock_fetch(name):
+        if name == "BadDye":
+            raise HTTPException(status_code=404, detail="Fluorophore not found on FPbase")
+        return {
+            "name": name,
+            "excitation_max_nm": 490,
+            "emission_max_nm": 525,
+            "spectra": {"excitation": [[490, 1.0]], "emission": [[525, 1.0]]},
+            "source": "fpbase",
+        }
+
+    with patch("services.fpbase.fetch_fluorophore_from_fpbase", side_effect=mock_fetch):
+        resp = client.post(
+            "/api/v1/fluorophores/batch-fetch-fpbase",
+            json={"names": ["GoodDye", "BadDye"]},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["fetched"]) == 1
+    assert data["fetched"][0]["name"] == "GoodDye"
+    assert len(data["errors"]) == 1
+    assert data["errors"][0]["name"] == "BadDye"
+
+
 def test_fetch_fpbase_updates_existing_fluorophore(client):
     # Create a fluorophore first
     client.post("/api/v1/fluorophores", json={

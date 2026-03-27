@@ -110,6 +110,20 @@ class FetchFpbaseRequest(BaseModel):
     name: str
 
 
+class BatchFetchFpbaseRequest(BaseModel):
+    names: list[str]
+
+
+class BatchFetchFpbaseResult(BaseModel):
+    fetched: list[FluorophoreRead]
+    errors: list[dict]
+
+
+class FpbaseCatalogItem(BaseModel):
+    name: str
+    id: str
+
+
 # --- Antibody ---
 
 class AntibodyBase(BaseModel):

@@ -145,3 +145,13 @@ export interface PanelAssignmentCreate {
   detector_id: string
   notes?: string | null
 }
+
+export interface FpbaseCatalogItem {
+  name: string
+  id: string
+}
+
+export interface BatchFetchFpbaseResult {
+  fetched: Fluorophore[]
+  errors: { name: string; detail: string }[]
+}
