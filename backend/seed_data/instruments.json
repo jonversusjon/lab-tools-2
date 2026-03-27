@@ -1,1 +1,48 @@
-[]
+[
+  {
+    "name": "BD FACSAria III (4-laser)",
+    "lasers": [
+      {
+        "wavelength_nm": 405,
+        "name": "Violet",
+        "detectors": [
+          {"filter_midpoint": 450, "filter_width": 40},
+          {"filter_midpoint": 510, "filter_width": 50},
+          {"filter_midpoint": 610, "filter_width": 20},
+          {"filter_midpoint": 660, "filter_width": 20},
+          {"filter_midpoint": 710, "filter_width": 50},
+          {"filter_midpoint": 780, "filter_width": 60}
+        ]
+      },
+      {
+        "wavelength_nm": 488,
+        "name": "Blue",
+        "detectors": [
+          {"filter_midpoint": 530, "filter_width": 30},
+          {"filter_midpoint": 695, "filter_width": 40},
+          {"filter_midpoint": 780, "filter_width": 60}
+        ]
+      },
+      {
+        "wavelength_nm": 561,
+        "name": "Yellow-Green",
+        "detectors": [
+          {"filter_midpoint": 582, "filter_width": 15},
+          {"filter_midpoint": 610, "filter_width": 20},
+          {"filter_midpoint": 670, "filter_width": 30},
+          {"filter_midpoint": 710, "filter_width": 50},
+          {"filter_midpoint": 780, "filter_width": 60}
+        ]
+      },
+      {
+        "wavelength_nm": 637,
+        "name": "Red",
+        "detectors": [
+          {"filter_midpoint": 670, "filter_width": 30},
+          {"filter_midpoint": 710, "filter_width": 50},
+          {"filter_midpoint": 780, "filter_width": 60}
+        ]
+      }
+    ]
+  }
+]

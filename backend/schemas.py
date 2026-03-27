@@ -132,6 +132,7 @@ class AntibodyUpdate(AntibodyBase):
 
 class AntibodyRead(AntibodyBase):
     id: str
+    fluorophore_name: str | None = None
 
     model_config = {"from_attributes": True}
 
@@ -184,6 +185,16 @@ class PanelCreate(PanelBase):
 
 class PanelUpdate(PanelBase):
     pass
+
+
+class PanelListRead(PanelBase):
+    id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    target_count: int = 0
+    assignment_count: int = 0
+
+    model_config = {"from_attributes": True}
 
 
 class PanelRead(PanelBase):

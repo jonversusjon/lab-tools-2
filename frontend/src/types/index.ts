@@ -53,6 +53,17 @@ export interface Antibody {
   fluorophore_id: string | null
   vendor: string | null
   catalog_number: string | null
+  fluorophore_name: string | null
+}
+
+export interface PanelListItem {
+  id: string
+  name: string
+  instrument_id: string | null
+  created_at: string | null
+  updated_at: string | null
+  target_count: number
+  assignment_count: number
 }
 
 export interface PanelTarget {
