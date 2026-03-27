@@ -37,8 +37,8 @@ describe('SpectraViewer', () => {
       />
     )
     const chart = screen.getByTestId('chart')
-    // 3 datasets (one emission per fluorophore)
-    expect(chart.getAttribute('data-datasets')).toBe('3')
+    // 6 datasets: EX + EM per fluorophore (default visibleTypes='both')
+    expect(chart.getAttribute('data-datasets')).toBe('6')
   })
 
   it('accepts laserLines prop without crashing', () => {

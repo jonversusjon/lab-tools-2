@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   useFluorophores,
   useFluorophoreSpectra,
@@ -145,9 +146,8 @@ export default function FluorophoreBrowser() {
                 </tr>
               )}
               {items.map((fl) => (
-                <>
+                <React.Fragment key={fl.id}>
                   <tr
-                    key={fl.id}
                     className={
                       'border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800' +
                       (expandedId === fl.id ? ' bg-blue-50 dark:bg-blue-900/20' : '')
@@ -189,13 +189,13 @@ export default function FluorophoreBrowser() {
                   </tr>
 
                   {expandedId === fl.id && (
-                    <tr key={fl.id + '-detail'}>
+                    <tr>
                       <td colSpan={8} className="p-0">
                         <FluorophoreDetail fluorophore={fl} />
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
@@ -394,6 +394,35 @@ function MetaRow({ label, value }: { label: string; value: string | null | undef
 // Right sidebar: spectra overlay comparison
 // ---------------------------------------------------------------------------
 
+type VisibleTypes = 'EX' | 'EM' | 'both'
+
+function TypeToggle({
+  value,
+  onChange,
+}: {
+  value: VisibleTypes
+  onChange: (v: VisibleTypes) => void
+}) {
+  return (
+    <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
+      {(['EX', 'EM', 'both'] as VisibleTypes[]).map((t) => (
+        <button
+          key={t}
+          onClick={() => onChange(t)}
+          className={
+            'px-2 py-0.5 ' +
+            (value === t
+              ? 'bg-blue-600 text-white'
+              : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600')
+          }
+        >
+          {t === 'both' ? 'Both' : t}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function OverlaySidebar({
   overlayMap,
   onRemove,
@@ -405,6 +434,20 @@ function OverlaySidebar({
 }) {
   const ids = Array.from(overlayMap.keys())
   const { data: batchData, isLoading } = useBatchSpectra(ids)
+  const [visibleTypes, setVisibleTypes] = useState<VisibleTypes>('both')
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const escRef = useRef<((e: KeyboardEvent) => void) | null>(null)
+
+  useEffect(() => {
+    if (isFullscreen) {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setIsFullscreen(false)
+      }
+      escRef.current = handler
+      document.addEventListener('keydown', handler)
+      return () => document.removeEventListener('keydown', handler)
+    }
+  }, [isFullscreen])
 
   const fluorophores = ids
     .map((id) => {
@@ -414,56 +457,142 @@ function OverlaySidebar({
     })
     .filter((f): f is { name: string; spectra: SpectraData } => f !== null)
 
+  const chartSection = (fullscreen: boolean) => {
+    if (ids.length < 2) {
+      return (
+        <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
+          Select {2 - ids.length} more to compare.
+        </p>
+      )
+    }
+    if (isLoading) {
+      return <p className="text-xs text-gray-400 dark:text-gray-500 py-1">Loading spectra...</p>
+    }
+    if (fluorophores.length >= 2) {
+      return (
+        <SpectraViewer
+          fluorophores={fluorophores}
+          mode="overlay"
+          visibleTypes={visibleTypes}
+          className={fullscreen ? 'h-[55vh] w-full' : 'h-56 w-full'}
+        />
+      )
+    }
+    return (
+      <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
+        Spectra unavailable for selected fluorophores.
+      </p>
+    )
+  }
+
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-          Spectra Overlay
-        </h3>
-        <button
-          onClick={onClear}
-          className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-        >
-          Clear all
-        </button>
-      </div>
-
-      {/* Selected fluorophore chips */}
-      <ul className="border-b border-gray-100 dark:border-gray-700 px-4 py-2 space-y-1">
-        {ids.map((id) => (
-          <li key={id} className="flex items-center justify-between gap-2 text-xs">
-            <span className="truncate text-gray-700 dark:text-gray-300">
-              {overlayMap.get(id)}
-            </span>
+    <>
+      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            Spectra Overlay
+          </h3>
+          <div className="flex items-center gap-2">
+            <TypeToggle value={visibleTypes} onChange={setVisibleTypes} />
             <button
-              onClick={() => onRemove(id)}
-              className="shrink-0 rounded px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-              title="Remove"
-              aria-label={'Remove ' + overlayMap.get(id)}
+              onClick={() => setIsFullscreen(true)}
+              title="Fullscreen"
+              className="rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              aria-label="Expand to fullscreen"
             >
-              ×
+              {/* expand icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
+              </svg>
             </button>
-          </li>
-        ))}
-      </ul>
+            <button
+              onClick={onClear}
+              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              Clear all
+            </button>
+          </div>
+        </div>
 
-      {/* Chart area */}
-      <div className="px-4 py-3">
-        {ids.length < 2 ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
-            Select {2 - ids.length} more to compare.
-          </p>
-        ) : isLoading ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500 py-1">Loading spectra...</p>
-        ) : fluorophores.length >= 2 ? (
-          <SpectraViewer fluorophores={fluorophores} mode="overlay" />
-        ) : (
-          <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
-            Spectra unavailable for selected fluorophores.
-          </p>
-        )}
+        {/* Selected fluorophore chips */}
+        <ul className="border-b border-gray-100 dark:border-gray-700 px-4 py-2 space-y-1">
+          {ids.map((id) => (
+            <li key={id} className="flex items-center justify-between gap-2 text-xs">
+              <span className="truncate text-gray-700 dark:text-gray-300">
+                {overlayMap.get(id)}
+              </span>
+              <button
+                onClick={() => onRemove(id)}
+                className="shrink-0 rounded px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                title="Remove"
+                aria-label={'Remove ' + overlayMap.get(id)}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Chart area */}
+        <div className="px-4 py-3">{chartSection(false)}</div>
       </div>
-    </div>
+
+      {/* Fullscreen modal */}
+      {isFullscreen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
+            onClick={() => setIsFullscreen(false)}
+          >
+            <div
+              className="w-full max-w-5xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-3">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Spectra Overlay
+                </h3>
+                <div className="flex items-center gap-3">
+                  <TypeToggle value={visibleTypes} onChange={setVisibleTypes} />
+                  <button
+                    onClick={() => setIsFullscreen(false)}
+                    className="rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    aria-label="Close fullscreen"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Chip list */}
+              <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+                {ids.map((id) => (
+                  <span
+                    key={id}
+                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs text-gray-700 dark:text-gray-300"
+                  >
+                    {overlayMap.get(id)}
+                    <button
+                      onClick={() => onRemove(id)}
+                      className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                      aria-label={'Remove ' + overlayMap.get(id)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Chart */}
+              <div className="px-6 py-4">{chartSection(true)}</div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   )
 }

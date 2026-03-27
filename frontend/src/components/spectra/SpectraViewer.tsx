@@ -44,19 +44,25 @@ interface SpectraViewerProps {
     color?: string
   }>
   mode: 'single' | 'overlay'
+  /** Overlay mode only: which spectrum types to render. Defaults to 'both'. */
+  visibleTypes?: 'EX' | 'EM' | 'both'
   laserLines?: number[]
   detectorWindows?: Array<{
     midpoint: number
     width: number
     color?: string
   }>
+  /** CSS class for the outer container div. Defaults to 'h-72 w-full'. */
+  className?: string
 }
 
 export default function SpectraViewer({
   fluorophores,
   mode,
+  visibleTypes = 'both',
   laserLines,
   detectorWindows,
+  className,
 }: SpectraViewerProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -104,18 +110,36 @@ export default function SpectraViewer({
     }
   } else if (mode === 'overlay') {
     const palette = isDark ? OVERLAY_COLORS_DARK : OVERLAY_COLORS
+    const showEx = visibleTypes === 'EX' || visibleTypes === 'both'
+    const showEm = visibleTypes === 'EM' || visibleTypes === 'both'
     fluorophores.forEach((fl, i) => {
       const color = fl.color ?? palette[i % palette.length]
-      const emRaw = fl.spectra.EM ?? []
-      const emData = downsampleSpectra(emRaw, 2)
-      if (emData.length > 0) {
-        datasets.push({
-          label: fl.name,
-          data: emData.map(([x, y]) => ({ x, y })),
-          borderColor: color,
-          backgroundColor: color + '20',
-          fill: false,
-        })
+      if (showEx) {
+        const exRaw = fl.spectra.EX ?? fl.spectra.AB ?? []
+        const exData = downsampleSpectra(exRaw, 2)
+        if (exData.length > 0) {
+          datasets.push({
+            label: fl.name + ' Ex',
+            data: exData.map(([x, y]) => ({ x, y })),
+            borderColor: color,
+            backgroundColor: 'transparent',
+            borderDash: [6, 3],
+            fill: false,
+          })
+        }
+      }
+      if (showEm) {
+        const emRaw = fl.spectra.EM ?? []
+        const emData = downsampleSpectra(emRaw, 2)
+        if (emData.length > 0) {
+          datasets.push({
+            label: fl.name + ' Em',
+            data: emData.map(([x, y]) => ({ x, y })),
+            borderColor: color,
+            backgroundColor: color + '20',
+            fill: false,
+          })
+        }
       }
     })
   }
@@ -202,7 +226,7 @@ export default function SpectraViewer({
   }
 
   return (
-    <div className="h-72 w-full">
+    <div className={className ?? 'h-72 w-full'}>
       <Line data={{ datasets }} options={options} />
     </div>
   )
