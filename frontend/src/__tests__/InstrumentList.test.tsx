@@ -41,6 +41,8 @@ vi.mock('@/hooks/useInstruments', () => ({
     isLoading: false,
     error: null,
   }),
+  useUpdateInstrument: () => ({ mutate: vi.fn() }),
+  useDeleteInstrument: () => ({ mutate: vi.fn() }),
 }))
 
 function wrapper({ children }: { children: React.ReactNode }) {

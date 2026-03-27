@@ -124,6 +124,13 @@ export default function FluorophoreTable() {
           </tr>
         </thead>
         <tbody>
+          {sorted.length === 0 && (
+            <tr>
+              <td colSpan={5} className="py-6 text-center text-gray-400">
+                No fluorophores found.
+              </td>
+            </tr>
+          )}
           {sorted.map((fl) => (
             <tr
               key={fl.id}

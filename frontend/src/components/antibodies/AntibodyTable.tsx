@@ -3,6 +3,7 @@ import { useAntibodies, useDeleteAntibody } from '@/hooks/useAntibodies'
 import { useFluorophores } from '@/hooks/useFluorophores'
 import AntibodyForm from './AntibodyForm'
 import type { Antibody } from '@/types'
+import HoverActionsRow from '@/components/layout/HoverActionsRow'
 
 type SortDir = 'asc' | 'desc'
 
@@ -86,11 +87,25 @@ export default function AntibodyTable() {
           </tr>
         </thead>
         <tbody>
+          {sorted.length === 0 && (
+            <tr>
+              <td colSpan={8} className="py-6 text-center text-gray-400">
+                {search ? 'No antibodies matching your search.' : 'No antibodies yet — create one to get started.'}
+              </td>
+            </tr>
+          )}
           {sorted.map((ab) => (
-            <tr
+            <HoverActionsRow
               key={ab.id}
-              className="cursor-pointer border-b border-gray-100 hover:bg-gray-50"
+              as="tr"
+              className="border-b border-gray-100 hover:bg-gray-50"
               onClick={() => setEditingAntibody(ab)}
+              actions={{
+                onRename: () => setEditingAntibody(ab),
+                // TODO: wire onDuplicate after backend POST /{id}/duplicate endpoints are built
+                onDuplicate: undefined,
+                onDelete: () => handleDelete(ab),
+              }}
             >
               <td className="py-2 font-medium text-gray-900">{ab.target}</td>
               <td className="py-2 text-gray-600">{ab.clone ?? ''}</td>
@@ -108,19 +123,7 @@ export default function AntibodyTable() {
               </td>
               <td className="py-2 text-gray-600">{ab.vendor ?? ''}</td>
               <td className="py-2 text-gray-600">{ab.catalog_number ?? ''}</td>
-              <td className="py-2 text-center">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDelete(ab)
-                  }}
-                  className="text-red-500 hover:text-red-700"
-                  aria-label="Delete"
-                >
-                  &times;
-                </button>
-              </td>
-            </tr>
+            </HoverActionsRow>
           ))}
         </tbody>
       </table>

@@ -1,15 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { usePanels, useCreatePanel, useDeletePanel } from '@/hooks/usePanels'
+import { usePanels, useCreatePanel, useDeletePanel, useUpdatePanel } from '@/hooks/usePanels'
 import Modal from '@/components/layout/Modal'
+import HoverActionsRow from '@/components/layout/HoverActionsRow'
 
 export default function PanelList() {
   const { data, isLoading, error } = usePanels(0, 500)
   const createMutation = useCreatePanel()
   const deleteMutation = useDeletePanel()
+  const updateMutation = useUpdatePanel()
   const navigate = useNavigate()
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
+  const [editingPanel, setEditingPanel] = useState<{id: string, name: string} | null>(null)
+  const [renameValue, setRenameValue] = useState('')
 
   const items = data?.items ?? []
 
@@ -22,6 +26,22 @@ export default function PanelList() {
           setShowCreate(false)
           setNewName('')
           navigate('/panels/' + panel.id)
+        },
+      }
+    )
+  }
+
+  const handleRename = () => {
+    if (!editingPanel || !renameValue.trim() || renameValue.trim() === editingPanel.name) {
+      setEditingPanel(null)
+      return
+    }
+    updateMutation.mutate(
+      { id: editingPanel.id, data: { name: renameValue.trim() } },
+      {
+        onSuccess: () => {
+          setEditingPanel(null)
+          setRenameValue('')
         },
       }
     )
@@ -62,10 +82,20 @@ export default function PanelList() {
           </thead>
           <tbody>
             {items.map((p) => (
-              <tr
+              <HoverActionsRow
                 key={p.id}
-                className="cursor-pointer border-b border-gray-100 hover:bg-gray-50"
+                as="tr"
+                className="border-b border-gray-100 hover:bg-gray-50"
                 onClick={() => navigate('/panels/' + p.id)}
+                actions={{
+                  onRename: () => {
+                    setEditingPanel({ id: p.id, name: p.name })
+                    setRenameValue(p.name)
+                  },
+                  // TODO: wire onDuplicate after backend POST /{id}/duplicate endpoints are built
+                  onDuplicate: undefined,
+                  onDelete: () => handleDelete(p.id, p.name),
+                }}
               >
                 <td className="py-2 font-medium text-gray-900">{p.name}</td>
                 <td className="py-2 text-gray-600">
@@ -77,19 +107,7 @@ export default function PanelList() {
                 </td>
                 <td className="py-2 text-gray-600">{p.target_count}</td>
                 <td className="py-2 text-gray-600">{p.assignment_count}</td>
-                <td className="py-2 text-center">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDelete(p.id, p.name)
-                    }}
-                    className="text-red-500 hover:text-red-700"
-                    aria-label="Delete"
-                  >
-                    &times;
-                  </button>
-                </td>
-              </tr>
+              </HoverActionsRow>
             ))}
           </tbody>
         </table>
@@ -136,6 +154,52 @@ export default function PanelList() {
               className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
               Create
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!editingPanel}
+        onClose={() => {
+          setEditingPanel(null)
+          setRenameValue('')
+        }}
+        title="Rename Panel"
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-gray-700">
+              Panel Name
+            </label>
+            <input
+              id="rename-panel"
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleRename()
+              }}
+              className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              autoFocus
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingPanel(null)
+                setRenameValue('')
+              }}
+              className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRename}
+              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Save
             </button>
           </div>
         </div>

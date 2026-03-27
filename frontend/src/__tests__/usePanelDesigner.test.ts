@@ -9,6 +9,8 @@ const emptyState: PanelDesignerState = {
   targets: [],
   assignments: [],
   isDirty: false,
+  past: [],
+  future: [],
 }
 
 const mockTarget: PanelTarget = {
@@ -116,5 +118,58 @@ describe('panelDesignerReducer', () => {
     })
     state = panelDesignerReducer(state, { type: 'CLEAR_ASSIGNMENTS' })
     expect(state).toBeDefined()
+  })
+
+  it('UNDO restores previous assignment state', () => {
+    let state = emptyState
+    state = panelDesignerReducer(state, { type: 'ADD_ASSIGNMENT', assignment: mockAssignment })
+    expect(state.assignments).toHaveLength(1)
+    expect(state.past).toHaveLength(1)
+
+    state = panelDesignerReducer(state, { type: 'UNDO' })
+    expect(state.assignments).toHaveLength(0)
+    expect(state.past).toHaveLength(0)
+    expect(state.future).toHaveLength(1)
+  })
+
+  it('REDO replays undone assignment state', () => {
+    let state = emptyState
+    state = panelDesignerReducer(state, { type: 'ADD_ASSIGNMENT', assignment: mockAssignment })
+    state = panelDesignerReducer(state, { type: 'UNDO' })
+    expect(state.assignments).toHaveLength(0)
+
+    state = panelDesignerReducer(state, { type: 'REDO' })
+    expect(state.assignments).toHaveLength(1)
+    expect(state.future).toHaveLength(0)
+  })
+
+  it('new action clears future stack', () => {
+    const a2: PanelAssignment = { ...mockAssignment, id: 'a2', fluorophore_id: 'fl2' }
+    let state = emptyState
+    state = panelDesignerReducer(state, { type: 'ADD_ASSIGNMENT', assignment: mockAssignment })
+    state = panelDesignerReducer(state, { type: 'UNDO' })
+    expect(state.future).toHaveLength(1)
+
+    state = panelDesignerReducer(state, { type: 'ADD_ASSIGNMENT', assignment: a2 })
+    expect(state.future).toHaveLength(0)
+  })
+
+  it('UPDATE_ASSIGNMENT_ID updates ID across state, past, and future', () => {
+    let state = emptyState
+    state = panelDesignerReducer(state, { type: 'ADD_ASSIGNMENT', assignment: mockAssignment })
+    // past has one entry with empty assignments, present has the assignment
+    state = panelDesignerReducer(state, { type: 'UPDATE_ASSIGNMENT_ID', oldId: 'a1', newId: 'a1-real' })
+    expect(state.assignments[0].id).toBe('a1-real')
+  })
+
+  it('undo stack capped at 50', () => {
+    let state = emptyState
+    for (let i = 0; i < 60; i++) {
+      state = panelDesignerReducer(state, {
+        type: 'ADD_ASSIGNMENT',
+        assignment: { ...mockAssignment, id: 'a' + i },
+      })
+    }
+    expect(state.past.length).toBeLessThanOrEqual(50)
   })
 })

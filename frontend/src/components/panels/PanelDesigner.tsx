@@ -39,10 +39,89 @@ export default function PanelDesigner() {
   const instrumentId = panel?.instrument_id ?? null
   const { data: instrument } = useInstrument(instrumentId ?? '')
 
-  const { state, dispatch, addTarget, removeTarget, clearAssignments } = usePanelDesigner(
+  const { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo } = usePanelDesigner(
     panel ?? null,
     instrument ?? null
   )
+
+  // Backend-syncing undo/redo
+  const syncUndoRedo = useCallback(
+    async (direction: 'undo' | 'redo') => {
+      if (!id) return
+      // Compute diff: what assignments were added/removed
+      const before = state.assignments
+      const after =
+        direction === 'undo'
+          ? state.past[state.past.length - 1]
+          : state.future[0]
+      if (!after) return
+
+      const beforeIds = new Set(before.map((a) => a.id))
+      const afterIds = new Set(after.map((a) => a.id))
+
+      // Assignments removed (in before but not after) → DELETE from backend
+      const removed = before.filter((a) => !afterIds.has(a.id))
+      // Assignments added (in after but not before) → POST to backend
+      const added = after.filter((a) => !beforeIds.has(a.id))
+
+      // Apply the state change first (optimistic)
+      if (direction === 'undo') undo()
+      else redo()
+
+      // Sync removals
+      for (const a of removed) {
+        try {
+          await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: a.id })
+        } catch {
+          setAssignError('Undo sync failed — local state may differ from server')
+        }
+      }
+
+      // Sync additions (re-create assignments)
+      for (const a of added) {
+        try {
+          const real = await addAssignmentMutation.mutateAsync({
+            panelId: id,
+            data: {
+              antibody_id: a.antibody_id,
+              fluorophore_id: a.fluorophore_id,
+              detector_id: a.detector_id,
+            },
+          })
+          // Update the ID in state + stacks
+          if (real.id !== a.id) {
+            dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: a.id, newId: real.id })
+          }
+        } catch {
+          setAssignError('Undo sync failed — local state may differ from server')
+        }
+      }
+    },
+    [id, state.assignments, state.past, state.future, undo, redo, dispatch, addAssignmentMutation, removeAssignmentMutation]
+  )
+
+  const handleUndo = useCallback(() => syncUndoRedo('undo'), [syncUndoRedo])
+  const handleRedo = useCallback(() => syncUndoRedo('redo'), [syncUndoRedo])
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        handleUndo()
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault()
+        handleRedo()
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault()
+        handleRedo()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleUndo, handleRedo])
 
   const instruments = instrumentsData?.items ?? []
   const antibodies = antibodiesData?.items ?? []
@@ -463,6 +542,24 @@ export default function PanelDesigner() {
               {panel.name}
             </h1>
           )}
+          <div className="flex items-center gap-1 ml-2">
+            <button
+              onClick={handleUndo}
+              disabled={!canUndo}
+              className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+              title={canUndo ? state.past.length + ' action' + (state.past.length !== 1 ? 's' : '') + ' to undo' : 'Nothing to undo'}
+            >
+              Undo
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={!canRedo}
+              className="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+              title={canRedo ? state.future.length + ' action' + (state.future.length !== 1 ? 's' : '') + ' to redo' : 'Nothing to redo'}
+            >
+              Redo
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -705,6 +802,7 @@ export default function PanelDesigner() {
                               className="relative cursor-pointer px-2 py-2 text-center text-xs text-gray-300 hover:bg-blue-50"
                               data-testid={`cell-${t.antibody_id}-${det.id}`}
                               data-state="available"
+                              title={`${det.filter_midpoint - det.filter_width / 2}\u2013${det.filter_midpoint + det.filter_width / 2} nm`}
                               onClick={(e) =>
                                 handleCellClick(
                                   e,
