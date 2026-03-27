@@ -36,9 +36,10 @@ export function useInstrumentCompatibility(id: string) {
 }
 
 export function useBatchSpectra(ids: string[]) {
+  const sortedIds = [...ids].sort()
   return useQuery({
-    queryKey: ['fluorophores', 'batch-spectra', ids.length],
-    queryFn: () => batchSpectra(ids, ['EX', 'EM']),
+    queryKey: ['fluorophores', 'batch-spectra', sortedIds],
+    queryFn: () => batchSpectra(sortedIds, ['EX', 'EM']),
     enabled: ids.length > 0,
     staleTime: 5 * 60 * 1000,
   })
