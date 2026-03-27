@@ -23,7 +23,7 @@ query GetDye($name: String!) {
 
 CATALOG_QUERY = """
 query {
-    fluorophores {
+    dyes {
         name
         id
     }
@@ -59,7 +59,7 @@ async def fetch_fpbase_catalog() -> list[dict]:
         )
 
     data = response.json()
-    fluorophores = data.get("data", {}).get("fluorophores", [])
+    fluorophores = data.get("data", {}).get("dyes", [])
     if not isinstance(fluorophores, list):
         raise HTTPException(
             status_code=502,
