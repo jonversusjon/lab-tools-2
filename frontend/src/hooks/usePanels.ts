@@ -5,6 +5,8 @@ import {
   createPanel,
   updatePanel,
   deletePanel,
+  addTarget,
+  removeTarget,
 } from '@/api/panels'
 import type { PanelCreate } from '@/types'
 
@@ -45,5 +47,19 @@ export function useDeletePanel() {
   return useMutation({
     mutationFn: (id: string) => deletePanel(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['panels'] }),
+  })
+}
+
+export function useAddTarget() {
+  return useMutation({
+    mutationFn: ({ panelId, antibodyId }: { panelId: string; antibodyId: string }) =>
+      addTarget(panelId, antibodyId),
+  })
+}
+
+export function useRemoveTarget() {
+  return useMutation({
+    mutationFn: ({ panelId, targetId }: { panelId: string; targetId: string }) =>
+      removeTarget(panelId, targetId),
   })
 }

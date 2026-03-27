@@ -4,10 +4,8 @@ import InstrumentList from '@/components/instruments/InstrumentList'
 import InstrumentEditor from '@/components/instruments/InstrumentEditor'
 import FluorophoreTable from '@/components/fluorophores/FluorophoreTable'
 import AntibodyTable from '@/components/antibodies/AntibodyTable'
-
-function PanelsPage() {
-  return <h1 className="text-2xl font-bold">Panels</h1>
-}
+import PanelList from '@/components/panels/PanelList'
+import PanelDesigner from '@/components/panels/PanelDesigner'
 
 export default function App() {
   return (
@@ -18,7 +16,8 @@ export default function App() {
         <Route path="/instruments/:id" element={<InstrumentEditor />} />
         <Route path="/fluorophores" element={<FluorophoreTable />} />
         <Route path="/antibodies" element={<AntibodyTable />} />
-        <Route path="/panels" element={<PanelsPage />} />
+        <Route path="/panels" element={<PanelList />} />
+        <Route path="/panels/:id" element={<PanelDesigner />} />
         <Route path="/" element={<Navigate to="/instruments" replace />} />
       </Route>
     </Routes>

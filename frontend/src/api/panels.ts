@@ -1,5 +1,6 @@
 import type {
   Panel,
+  PanelListItem,
   PanelAssignment,
   PanelAssignmentCreate,
   PanelCreate,
@@ -10,7 +11,7 @@ import type {
 export async function listPanels(
   skip = 0,
   limit = 100
-): Promise<PaginatedResponse<Panel>> {
+): Promise<PaginatedResponse<PanelListItem>> {
   const res = await fetch(`/api/v1/panels?skip=${skip}&limit=${limit}`)
   if (!res.ok) throw new Error('Failed to fetch panels')
   return res.json()
@@ -59,7 +60,13 @@ export async function addTarget(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ antibody_id: antibodyId }),
   })
-  if (!res.ok) throw new Error('Failed to add target')
+  if (!res.ok) {
+    if (res.status === 409) {
+      const body = await res.json()
+      throw new Error(body.detail ?? 'Antibody already a target in this panel')
+    }
+    throw new Error('Failed to add target')
+  }
   return res.json()
 }
 

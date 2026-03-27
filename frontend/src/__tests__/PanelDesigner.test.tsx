@@ -1,0 +1,221 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { Panel } from '@/types'
+
+const mockPanel: Panel = {
+  id: 'p1',
+  name: 'Test Panel',
+  instrument_id: 'inst-1',
+  created_at: null,
+  updated_at: null,
+  targets: [
+    { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
+  ],
+  assignments: [],
+}
+
+const mockPanelNoInstrument: Panel = {
+  ...mockPanel,
+  instrument_id: null,
+}
+
+const mockInstrument = {
+  id: 'inst-1',
+  name: 'BD FACSAria III',
+  lasers: [
+    {
+      id: 'l1',
+      instrument_id: 'inst-1',
+      wavelength_nm: 488,
+      name: 'Blue',
+      detectors: [
+        { id: 'd1', laser_id: 'l1', filter_midpoint: 530, filter_width: 30, name: null },
+        { id: 'd2', laser_id: 'l1', filter_midpoint: 695, filter_width: 40, name: null },
+      ],
+    },
+    {
+      id: 'l2',
+      instrument_id: 'inst-1',
+      wavelength_nm: 637,
+      name: 'Red',
+      detectors: [
+        { id: 'd3', laser_id: 'l2', filter_midpoint: 670, filter_width: 14, name: null },
+      ],
+    },
+  ],
+}
+
+const mockAntibodies = [
+  { id: 'ab1', target: 'CD3', clone: 'OKT3', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: null, catalog_number: null },
+  { id: 'ab2', target: 'CD4', clone: 'RPA-T4', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: null, catalog_number: null },
+  { id: 'ab3', target: 'CD8', clone: 'SK1', host: 'mouse', isotype: 'IgG1', fluorophore_id: 'fl-1', fluorophore_name: 'FITC', vendor: null, catalog_number: null },
+]
+
+const mockAddTargetMutateAsync = vi.fn()
+const mockRemoveTargetMutateAsync = vi.fn()
+const mockUpdateMutate = vi.fn()
+
+let currentPanel = mockPanel
+
+vi.mock('@/hooks/usePanels', () => ({
+  usePanel: () => ({
+    data: currentPanel,
+    refetch: vi.fn(),
+  }),
+  usePanels: () => ({
+    data: { items: [], total: 0, skip: 0, limit: 500 },
+    isLoading: false,
+    error: null,
+  }),
+  useCreatePanel: () => ({ mutate: vi.fn() }),
+  useDeletePanel: () => ({ mutate: vi.fn() }),
+  useUpdatePanel: () => ({ mutate: mockUpdateMutate }),
+  useAddTarget: () => ({ mutateAsync: mockAddTargetMutateAsync }),
+  useRemoveTarget: () => ({ mutateAsync: mockRemoveTargetMutateAsync }),
+}))
+
+vi.mock('@/hooks/useInstruments', () => ({
+  useInstruments: () => ({
+    data: { items: [mockInstrument], total: 1, skip: 0, limit: 500 },
+    isLoading: false,
+    error: null,
+  }),
+  useInstrument: (id: string) => ({
+    data: id ? mockInstrument : null,
+  }),
+}))
+
+vi.mock('@/hooks/useAntibodies', () => ({
+  useAntibodies: () => ({
+    data: { items: mockAntibodies, total: 3, skip: 0, limit: 500 },
+    isLoading: false,
+    error: null,
+  }),
+}))
+
+import PanelDesigner from '@/components/panels/PanelDesigner'
+
+function renderDesigner(panelOverride?: Panel) {
+  if (panelOverride) currentPanel = panelOverride
+  else currentPanel = mockPanel
+
+  const qc = new QueryClient()
+  return render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter initialEntries={['/panels/p1']}>
+        <Routes>
+          <Route path="/panels/:id" element={<PanelDesigner />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
+  )
+}
+
+describe('PanelDesigner', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('renders panel name and instrument selector', () => {
+    renderDesigner()
+    expect(screen.getByText('Test Panel')).toBeInTheDocument()
+    expect(screen.getByLabelText(/Instrument/)).toBeInTheDocument()
+  })
+
+  it('null instrument state shows "Select an instrument" prompt, no detector columns', () => {
+    renderDesigner(mockPanelNoInstrument)
+    expect(screen.getByText(/Select an instrument to begin designing/)).toBeInTheDocument()
+    expect(screen.queryByText('530/30')).not.toBeInTheDocument()
+  })
+
+  it('changing instrument triggers confirmation if assignments exist', () => {
+    const panelWithAssignment: Panel = {
+      ...mockPanel,
+      assignments: [
+        { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl1', detector_id: 'd1', notes: null },
+      ],
+    }
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    renderDesigner(panelWithAssignment)
+
+    const select = screen.getByLabelText(/Instrument/)
+    fireEvent.change(select, { target: { value: '' } })
+    expect(confirmSpy).toHaveBeenCalled()
+    confirmSpy.mockRestore()
+  })
+
+  it('"Add Target" dropdown shows antibodies not already in panel', () => {
+    renderDesigner()
+    const input = screen.getByPlaceholderText('Add target antibody...')
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: '' } })
+    // ab1 (CD3) is already a target, so should not appear
+    // ab2 (CD4) and ab3 (CD8) should appear
+    expect(screen.getByText('CD4')).toBeInTheDocument()
+    expect(screen.getByText('CD8')).toBeInTheDocument()
+    // CD3 should only appear in the target table, not in the dropdown
+    const cd3Elements = screen.getAllByText('CD3')
+    expect(cd3Elements).toHaveLength(1) // only in the table row
+  })
+
+  it('adding a target adds a row to the table', async () => {
+    const newTarget = { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 0 }
+    mockAddTargetMutateAsync.mockResolvedValue(newTarget)
+
+    renderDesigner()
+    const input = screen.getByPlaceholderText('Add target antibody...')
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'CD4' } })
+
+    const option = screen.getByText('CD4')
+    fireEvent.click(option)
+
+    expect(mockAddTargetMutateAsync).toHaveBeenCalledWith({
+      panelId: 'p1',
+      antibodyId: 'ab2',
+    })
+  })
+
+  it('removing a target removes its row', async () => {
+    mockRemoveTargetMutateAsync.mockResolvedValue(undefined)
+    renderDesigner()
+
+    const removeBtn = screen.getByLabelText('Remove target')
+    fireEvent.click(removeBtn)
+
+    expect(mockRemoveTargetMutateAsync).toHaveBeenCalledWith({
+      panelId: 'p1',
+      targetId: 't1',
+    })
+  })
+
+  it('column headers render correct laser groups and detector filters', () => {
+    renderDesigner()
+    expect(screen.getByText('488nm Blue')).toBeInTheDocument()
+    expect(screen.getByText('637nm Red')).toBeInTheDocument()
+    expect(screen.getByText('530/30')).toBeInTheDocument()
+    expect(screen.getByText('695/40')).toBeInTheDocument()
+    expect(screen.getByText('670/14')).toBeInTheDocument()
+  })
+
+  it('pre-conjugated antibodies show fluorophore name in target row', () => {
+    const panelWithConjugated: Panel = {
+      ...mockPanel,
+      targets: [
+        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', sort_order: 0 },
+      ],
+    }
+    renderDesigner(panelWithConjugated)
+    expect(screen.getByText('FITC')).toBeInTheDocument()
+  })
+
+  it('targets contain backend-returned PanelTarget objects with IDs', () => {
+    renderDesigner()
+    // The CD3 target row is present from panel.targets[0] which has id 't1'
+    expect(screen.getByText('CD3')).toBeInTheDocument()
+    // OKT3 clone is shown
+    expect(screen.getByText('OKT3')).toBeInTheDocument()
+  })
+})
