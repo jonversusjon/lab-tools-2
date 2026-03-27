@@ -9,7 +9,7 @@ FPBASE_GRAPHQL_URL = "https://www.fpbase.org/graphql/"
 
 QUERY = """
 query GetDye($name: String!) {
-    dyes(name: $name) {
+    dye(name: $name) {
         name
         exMax
         emMax
@@ -26,6 +26,7 @@ query {
     dyes {
         name
         id
+        slug
     }
 }
 """
@@ -66,29 +67,29 @@ async def fetch_fpbase_catalog() -> list[dict]:
             detail="Unexpected response from FPbase",
         )
 
-    catalog = [{"name": f["name"], "id": f["id"]} for f in fluorophores]
+    catalog = [{"name": f["name"], "id": f["id"], "slug": f.get("slug", "")} for f in fluorophores]
     _catalog_cache = catalog
     _catalog_cache_time = now
     return catalog
 
 
-def _parse_spectra_data(data_str: str) -> list[list[float]]:
-    """Parse FPbase spectra data string into [[wavelength, intensity], ...]."""
-    pairs = []
-    for item in data_str.split(","):
-        parts = item.strip().split()
-        if len(parts) == 2:
-            pairs.append([float(parts[0]), float(parts[1])])
-    return pairs
+
 
 
 async def fetch_fluorophore_from_fpbase(name: str) -> dict:
     """Fetch fluorophore data from FPbase GraphQL API."""
+    # First get the catalog to find the correct slug for this name
+    catalog = await fetch_fpbase_catalog()
+    slug = next((item["slug"] for item in catalog if item["name"] == name), None)
+    
+    if not slug:
+        raise HTTPException(status_code=404, detail=f"Fluorophore '{name}' not found in FPbase catalog")
+
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 FPBASE_GRAPHQL_URL,
-                json={"query": QUERY, "variables": {"name": name}},
+                json={"query": QUERY, "variables": {"name": slug}},
                 timeout=15.0,
             )
             response.raise_for_status()
@@ -99,17 +100,16 @@ async def fetch_fluorophore_from_fpbase(name: str) -> dict:
         )
 
     data = response.json()
-    dyes = data.get("data", {}).get("dyes", [])
-    if not dyes:
+    dye = data.get("data", {}).get("dye")
+    if not dye:
         raise HTTPException(status_code=404, detail="Fluorophore not found on FPbase")
-
-    dye = dyes[0]
-
+        
     excitation = None
     emission = None
     for spec in dye.get("spectra", []):
         subtype = spec.get("subtype", "")
-        parsed = _parse_spectra_data(spec.get("data", ""))
+        # GraphQL returns data as [[wavelength, intensity], ...] already
+        parsed = spec.get("data", [])
         if subtype == "EX" and excitation is None:
             excitation = parsed
         elif subtype == "AB" and excitation is None:
