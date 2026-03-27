@@ -13,7 +13,11 @@ import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { getLaserColor } from '@/utils/colors'
+import { computeSpilloverMatrix } from '@/utils/spillover'
+import type { SpilloverInput } from '@/utils/spillover'
 import FluorophorePicker from './FluorophorePicker'
+import SpilloverHeatmap from './SpilloverHeatmap'
+import SpectraViewer from '@/components/spectra/SpectraViewer'
 import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
 export default function PanelDesigner() {
@@ -313,6 +317,78 @@ export default function PanelDesigner() {
     for (const fl of fluorophoreList) map.set(fl.id, fl.name)
     return map
   }, [fluorophoreList])
+
+  // Build detector lookup for spillover
+  const detectorMap = useMemo(() => {
+    const map = new Map<string, { midpoint: number; width: number; laserWavelength: number }>()
+    if (!state.instrument) return map
+    for (const laser of state.instrument.lasers) {
+      for (const det of laser.detectors) {
+        map.set(det.id, {
+          midpoint: det.filter_midpoint,
+          width: det.filter_width,
+          laserWavelength: laser.wavelength_nm,
+        })
+      }
+    }
+    return map
+  }, [state.instrument])
+
+  // Compute spillover matrix from assignments
+  const spillover = useMemo(() => {
+    const inputs: SpilloverInput[] = []
+    for (const a of state.assignments) {
+      const fl = fluorophoresWithSpectra.find((f) => f.id === a.fluorophore_id)
+      const det = detectorMap.get(a.detector_id)
+      if (!fl || !det) continue
+      inputs.push({
+        fluorophoreId: fl.id,
+        fluorophoreName: fl.name,
+        emissionSpectra: fl.spectra?.emission ?? [],
+        detectorMidpoint: det.midpoint,
+        detectorWidth: det.width,
+      })
+    }
+    return computeSpilloverMatrix(inputs)
+  }, [state.assignments, fluorophoresWithSpectra, detectorMap])
+
+  // Build spectra overlay data for assigned fluorophores
+  const spectraOverlayData = useMemo(() => {
+    return state.assignments
+      .map((a) => {
+        const fl = fluorophoresWithSpectra.find((f) => f.id === a.fluorophore_id)
+        if (!fl?.spectra) return null
+        return {
+          name: fl.name,
+          spectra: fl.spectra,
+        }
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+  }, [state.assignments, fluorophoresWithSpectra])
+
+  const laserLinesForSpectra = useMemo(() => {
+    if (!state.instrument) return []
+    return state.instrument.lasers.map((l) => l.wavelength_nm)
+  }, [state.instrument])
+
+  const detectorWindowsForSpectra = useMemo(() => {
+    const windows: { midpoint: number; width: number; color?: string }[] = []
+    for (const a of state.assignments) {
+      const det = detectorMap.get(a.detector_id)
+      if (!det) continue
+      windows.push({
+        midpoint: det.midpoint,
+        width: det.width,
+        color: getLaserColor(det.laserWavelength),
+      })
+    }
+    return windows
+  }, [state.assignments, detectorMap])
+
+  const [spectraCollapsed, setSpectraCollapsed] = useState(false)
+  useEffect(() => {
+    if (state.assignments.length > 5) setSpectraCollapsed(true)
+  }, [state.assignments.length])
 
   if (!panel) return <p className="text-gray-500">Loading panel...</p>
 
@@ -644,10 +720,38 @@ export default function PanelDesigner() {
         )
       })()}
 
-      {/* Section C: Spillover Placeholder */}
-      <div className="rounded border border-gray-200 bg-gray-50 px-6 py-8 text-center text-gray-400">
-        Spillover Matrix (Phase 8)
+      {/* Section C: Panel Spectra */}
+      <div className="rounded border border-gray-200 bg-white">
+        <button
+          onClick={() => setSpectraCollapsed(!spectraCollapsed)}
+          className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50"
+        >
+          <span>{spectraCollapsed ? '\u25B6' : '\u25BC'}</span>
+          Panel Spectra
+          <span className="text-xs font-normal text-gray-400">
+            ({spectraOverlayData.length} fluorophore{spectraOverlayData.length !== 1 ? 's' : ''})
+          </span>
+        </button>
+        {!spectraCollapsed && (
+          <div className="border-t border-gray-100 px-4 pb-4">
+            {spectraOverlayData.length === 0 ? (
+              <p className="py-4 text-center text-sm text-gray-400">
+                Assign fluorophores to detectors to see spectra overlay
+              </p>
+            ) : (
+              <SpectraViewer
+                fluorophores={spectraOverlayData}
+                mode="overlay"
+                laserLines={laserLinesForSpectra}
+                detectorWindows={detectorWindowsForSpectra}
+              />
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Section D: Spillover Matrix */}
+      <SpilloverHeatmap labels={spillover.labels} matrix={spillover.matrix} />
     </div>
   )
 }
