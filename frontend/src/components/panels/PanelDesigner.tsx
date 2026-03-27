@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   usePanel,
   useUpdatePanel,
+  useCreatePanel,
   useAddTarget,
   useRemoveTarget,
   useAddAssignment,
@@ -22,12 +23,14 @@ import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
 export default function PanelDesigner() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { data: panel, refetch: refetchPanel } = usePanel(id ?? '')
   const { data: instrumentsData } = useInstruments(0, 500)
   const { data: antibodiesData } = useAntibodies(0, 500)
   const { data: fluorophoreData } = useFluorophores(0, 500)
 
   const updateMutation = useUpdatePanel()
+  const createPanelMutation = useCreatePanel()
   const addTargetMutation = useAddTarget()
   const removeTargetMutation = useRemoveTarget()
   const addAssignmentMutation = useAddAssignment()
@@ -84,19 +87,20 @@ export default function PanelDesigner() {
     )
   }
 
-  // Instrument change
+  // Instrument change with 3-option modal
+  const [instrumentChangeModal, setInstrumentChangeModal] = useState<{
+    newInstrumentId: string | null
+  } | null>(null)
+  const [copyInProgress, setCopyInProgress] = useState(false)
+
   const handleInstrumentChange = (newInstrumentId: string) => {
     if (!panel || !id) return
     const newId = newInstrumentId || null
     if (newId === panel.instrument_id) return
 
     if (state.assignments.length > 0) {
-      if (
-        !confirm(
-          'Changing the instrument will remove all current fluorophore assignments. Your target antibodies will be preserved. Continue?'
-        )
-      )
-        return
+      setInstrumentChangeModal({ newInstrumentId: newId })
+      return
     }
 
     updateMutation.mutate(
@@ -108,6 +112,43 @@ export default function PanelDesigner() {
         },
       }
     )
+  }
+
+  const handleInstrumentChangeContinue = () => {
+    if (!panel || !id || !instrumentChangeModal) return
+    setInstrumentChangeModal(null)
+    updateMutation.mutate(
+      { id, data: { name: panel.name, instrument_id: instrumentChangeModal.newInstrumentId } },
+      {
+        onSuccess: () => {
+          clearAssignments()
+          refetchPanel()
+        },
+      }
+    )
+  }
+
+  const handleInstrumentChangeCopy = async () => {
+    if (!panel || !id || !instrumentChangeModal) return
+    setCopyInProgress(true)
+    try {
+      const newPanel = await createPanelMutation.mutateAsync({
+        name: panel.name + ' (copy)',
+        instrument_id: instrumentChangeModal.newInstrumentId,
+      })
+      // Copy all targets to the new panel
+      for (const target of state.targets) {
+        await addTargetMutation.mutateAsync({
+          panelId: newPanel.id,
+          antibodyId: target.antibody_id,
+        })
+      }
+      setInstrumentChangeModal(null)
+      setCopyInProgress(false)
+      navigate('/panels/' + newPanel.id)
+    } catch {
+      setCopyInProgress(false)
+    }
   }
 
   // Target search
@@ -448,7 +489,7 @@ export default function PanelDesigner() {
       <div>
         {/* Add Target control */}
         <div className="mb-3 flex items-center gap-3">
-          <div ref={dropdownRef} className="relative">
+          <div ref={dropdownRef} className="relative z-20">
             <input
               type="text"
               placeholder="Add target antibody..."
@@ -462,7 +503,7 @@ export default function PanelDesigner() {
               className="w-64 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             />
             {targetDropdownOpen && filteredAntibodies.length > 0 && (
-              <div className="absolute z-10 mt-1 max-h-48 w-80 overflow-y-auto rounded border border-gray-200 bg-white shadow-lg">
+              <div className="absolute z-30 mt-1 max-h-48 w-80 overflow-y-auto rounded border border-gray-200 bg-white shadow-lg">
                 {filteredAntibodies.map((ab) => (
                   <button
                     key={ab.id}
@@ -752,6 +793,48 @@ export default function PanelDesigner() {
 
       {/* Section D: Spillover Matrix */}
       <SpilloverHeatmap labels={spillover.labels} matrix={spillover.matrix} />
+
+      {/* Instrument Change Modal */}
+      {instrumentChangeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-[440px] rounded-lg bg-white shadow-xl">
+            <div className="border-b border-gray-200 px-6 py-4">
+              <h2 className="text-lg font-bold">Change Instrument</h2>
+            </div>
+            <div className="px-6 py-4">
+              <p className="text-sm text-gray-700">
+                Changing the instrument will remove all current fluorophore assignments.
+                Your target antibodies will be preserved.
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                You can also copy your targets to a new panel with the new instrument,
+                keeping this panel unchanged.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-gray-200 px-6 py-3">
+              <button
+                onClick={() => setInstrumentChangeModal(null)}
+                className="rounded border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleInstrumentChangeCopy}
+                disabled={copyInProgress}
+                className="rounded border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+              >
+                {copyInProgress ? 'Copying...' : 'Copy to New Panel'}
+              </button>
+              <button
+                onClick={handleInstrumentChangeContinue}
+                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

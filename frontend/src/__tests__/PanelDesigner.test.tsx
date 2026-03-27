@@ -141,20 +141,27 @@ describe('PanelDesigner', () => {
     expect(screen.queryByText('530/30')).not.toBeInTheDocument()
   })
 
-  it('changing instrument triggers confirmation if assignments exist', () => {
+  it('changing instrument shows modal with 3 options if assignments exist', () => {
     const panelWithAssignment: Panel = {
       ...mockPanel,
       assignments: [
         { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl1', detector_id: 'd1', notes: null },
       ],
     }
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
     renderDesigner(panelWithAssignment)
 
     const select = screen.getByLabelText(/Instrument/)
     fireEvent.change(select, { target: { value: '' } })
-    expect(confirmSpy).toHaveBeenCalled()
-    confirmSpy.mockRestore()
+
+    // Modal should appear with 3 options
+    expect(screen.getByText('Change Instrument')).toBeInTheDocument()
+    expect(screen.getByText('Cancel')).toBeInTheDocument()
+    expect(screen.getByText('Copy to New Panel')).toBeInTheDocument()
+    expect(screen.getByText('Continue')).toBeInTheDocument()
+
+    // Cancel should dismiss the modal
+    fireEvent.click(screen.getByText('Cancel'))
+    expect(screen.queryByText('Change Instrument')).not.toBeInTheDocument()
   })
 
   it('"Add Target" dropdown shows antibodies not already in panel', () => {
