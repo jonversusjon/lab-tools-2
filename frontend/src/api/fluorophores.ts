@@ -106,3 +106,22 @@ export async function batchSpectra(
   if (!res.ok) throw new Error('Failed to fetch batch spectra')
   return res.json()
 }
+
+export async function toggleFluorophoreFavorite(
+  id: string,
+  is_favorite: boolean
+): Promise<{ id: string; name: string; is_favorite: boolean }> {
+  const res = await fetch(`/api/v1/fluorophores/${id}/favorite`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_favorite }),
+  })
+  if (!res.ok) throw new Error('Failed to toggle fluorophore favorite')
+  return res.json()
+}
+
+export async function getRecentFluorophores(): Promise<string[]> {
+  const res = await fetch('/api/v1/fluorophores/recent')
+  if (!res.ok) throw new Error('Failed to fetch recent fluorophores')
+  return res.json()
+}

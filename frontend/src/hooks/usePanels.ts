@@ -6,11 +6,13 @@ import {
   updatePanel,
   deletePanel,
   addTarget,
+  updateTarget,
+  reorderTargets,
   removeTarget,
   addAssignment,
   removeAssignment,
 } from '@/api/panels'
-import type { PanelCreate, PanelAssignmentCreate } from '@/types'
+import type { PanelCreate, PanelTargetCreate, PanelTargetUpdate, PanelAssignmentCreate } from '@/types'
 
 export function usePanels(skip = 0, limit = 100) {
   return useQuery({
@@ -54,8 +56,22 @@ export function useDeletePanel() {
 
 export function useAddTarget() {
   return useMutation({
-    mutationFn: ({ panelId, antibodyId }: { panelId: string; antibodyId: string }) =>
-      addTarget(panelId, antibodyId),
+    mutationFn: ({ panelId, antibodyId, data }: { panelId: string; antibodyId?: string; data?: PanelTargetCreate }) =>
+      addTarget(panelId, data ?? (antibodyId != null ? { antibody_id: antibodyId } : {})),
+  })
+}
+
+export function useUpdateTarget() {
+  return useMutation({
+    mutationFn: ({ panelId, targetId, data }: { panelId: string; targetId: string; data: PanelTargetUpdate }) =>
+      updateTarget(panelId, targetId, data),
+  })
+}
+
+export function useReorderTargets() {
+  return useMutation({
+    mutationFn: ({ panelId, targetIds }: { panelId: string; targetIds: string[] }) =>
+      reorderTargets(panelId, targetIds),
   })
 }
 

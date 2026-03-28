@@ -117,28 +117,33 @@ def test_fk_pragma_active(db_session):
         db_session.flush()
 
 
-def test_panel_target_unique_constraint(db_session):
-    """Cannot add the same antibody to the same panel twice."""
-    instrument = Instrument(name="Test")
-    db_session.add(instrument)
-    db_session.flush()
-
-    antibody = Antibody(target="CD8")
-    db_session.add(antibody)
-    db_session.flush()
-
-    panel = Panel(name="P1", instrument_id=instrument.id)
+def test_panel_target_nullable_antibody(db_session):
+    """PanelTarget can have null antibody_id (empty placeholder row)."""
+    panel = Panel(name="P1")
     db_session.add(panel)
     db_session.flush()
 
-    target1 = PanelTarget(panel_id=panel.id, antibody_id=antibody.id)
-    db_session.add(target1)
+    target = PanelTarget(panel_id=panel.id, antibody_id=None, sort_order=0)
+    db_session.add(target)
     db_session.flush()
 
-    target2 = PanelTarget(panel_id=panel.id, antibody_id=antibody.id)
-    db_session.add(target2)
-    with pytest.raises(IntegrityError):
-        db_session.flush()
+    assert target.antibody_id is None
+    assert target.staining_mode == "direct"
+
+
+def test_panel_target_multiple_null_antibodies(db_session):
+    """Multiple null-antibody targets are allowed in the same panel."""
+    panel = Panel(name="P1")
+    db_session.add(panel)
+    db_session.flush()
+
+    t1 = PanelTarget(panel_id=panel.id, antibody_id=None, sort_order=0)
+    t2 = PanelTarget(panel_id=panel.id, antibody_id=None, sort_order=1)
+    db_session.add(t1)
+    db_session.add(t2)
+    db_session.flush()
+
+    assert t1.id != t2.id
 
 
 def test_panel_null_instrument(db_session):

@@ -5,9 +5,11 @@ import {
   useFluorophoreSpectra,
   useInstrumentCompatibility,
   useBatchSpectra,
+  useToggleFluorophoreFavorite,
 } from '@/hooks/useFluorophores'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 import FpbaseFetchModal from './FpbaseFetchModal'
+import FavoriteButton from '@/components/antibodies/FavoriteButton'
 import type { Fluorophore, SpectraData } from '@/types'
 
 const PAGE_SIZE = 50
@@ -21,6 +23,7 @@ export default function FluorophoreBrowser() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   // Map of fluorophore id → name for all items currently in the overlay
   const [overlayMap, setOverlayMap] = useState<Map<string, string>>(new Map())
+  const toggleFavorite = useToggleFluorophoreFavorite()
   const [showFpbaseModal, setShowFpbaseModal] = useState(false)
 
   useEffect(() => {
@@ -60,13 +63,6 @@ export default function FluorophoreBrowser() {
       next.delete(id)
       return next
     })
-  }
-
-  if (isLoading) {
-    return <p className="text-gray-500 dark:text-gray-400">Loading fluorophores...</p>
-  }
-  if (error) {
-    return <p className="text-red-600">Failed to load fluorophores.</p>
   }
 
   return (
@@ -128,6 +124,7 @@ export default function FluorophoreBrowser() {
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
                 <th className="w-8 py-2" />
+                <th className="w-8 py-2" />
                 <th className="py-2 font-medium">Name</th>
                 <th className="py-2 font-medium">Type</th>
                 <th className="py-2 font-medium">Ex Max</th>
@@ -138,14 +135,26 @@ export default function FluorophoreBrowser() {
               </tr>
             </thead>
             <tbody>
-              {items.length === 0 && (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-400 dark:text-gray-500">
+                  <td colSpan={9} className="py-8 text-center text-gray-400 dark:text-gray-500">
+                    Loading fluorophores...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={9} className="py-8 text-center text-red-600">
+                    Failed to load fluorophores.
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-8 text-center text-gray-400 dark:text-gray-500">
                     No fluorophores found.
                   </td>
                 </tr>
-              )}
-              {items.map((fl) => (
+              ) : null}
+              {!isLoading && !error && items.map((fl) => (
                 <React.Fragment key={fl.id}>
                   <tr
                     className={
@@ -163,6 +172,14 @@ export default function FluorophoreBrowser() {
                           title="Add to spectra overlay"
                         />
                       )}
+                    </td>
+                    <td className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                      <FavoriteButton
+                        isFavorite={fl.is_favorite}
+                        onClick={() =>
+                          toggleFavorite.mutate({ id: fl.id, is_favorite: !fl.is_favorite })
+                        }
+                      />
                     </td>
                     <td className="py-2 font-medium text-gray-900 dark:text-gray-100">
                       {fl.name}
@@ -190,7 +207,7 @@ export default function FluorophoreBrowser() {
 
                   {expandedId === fl.id && (
                     <tr>
-                      <td colSpan={8} className="p-0">
+                      <td colSpan={9} className="p-0">
                         <FluorophoreDetail fluorophore={fl} />
                       </td>
                     </tr>
@@ -333,16 +350,24 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
               </thead>
               <tbody>
                 {compatData.instrument_compatibilities.map((inst) => {
-                  const bestLaser = inst.laser_lines.reduce(
-                    (best, l) =>
-                      l.excitation_efficiency > (best?.excitation_efficiency ?? -1) ? l : best,
-                    null as typeof inst.laser_lines[0] | null
+                  // Build a lookup from laser wavelength → excitation efficiency
+                  const exByWl = new Map(
+                    inst.laser_lines.map((l) => [l.wavelength_nm, l.excitation_efficiency])
                   )
-                  const bestDet = inst.detectors.reduce(
-                    (best, d) =>
-                      d.collection_efficiency > (best?.collection_efficiency ?? -1) ? d : best,
-                    null as typeof inst.detectors[0] | null
-                  )
+                  // Pick the laser-detector pair with the highest relative brightness
+                  // (excitation × collection), which is proportional to total signal
+                  let bestDet: typeof inst.detectors[0] | null = null
+                  let bestExEff = 0
+                  let bestScore = -1
+                  for (const d of inst.detectors) {
+                    const exEff = exByWl.get(d.laser_wavelength_nm) ?? 0
+                    const score = exEff * d.collection_efficiency
+                    if (score > bestScore) {
+                      bestScore = score
+                      bestDet = d
+                      bestExEff = exEff
+                    }
+                  }
                   return (
                     <tr
                       key={inst.instrument_id}
@@ -352,12 +377,10 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
                         {inst.instrument_name}
                       </td>
                       <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
-                        {bestLaser ? bestLaser.wavelength_nm + ' nm' : '—'}
+                        {bestDet ? bestDet.laser_wavelength_nm + ' nm' : '—'}
                       </td>
                       <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
-                        {bestLaser
-                          ? (bestLaser.excitation_efficiency * 100).toFixed(1) + '%'
-                          : '—'}
+                        {bestDet ? (bestExEff * 100).toFixed(1) + '%' : '—'}
                       </td>
                       <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
                         {bestDet

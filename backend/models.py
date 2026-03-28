@@ -75,6 +75,7 @@ class Fluorophore(Base):
     oligomerization = Column(String, nullable=True)
     switch_type = Column(String, nullable=True)
     has_spectra = Column(Boolean, nullable=False, default=False)
+    is_favorite = Column(Boolean, nullable=False, default=False)
 
     spectra_records = relationship(
         "FluorophoreSpectrum",
@@ -107,6 +108,7 @@ class Antibody(Base):
     __tablename__ = "antibodies"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=True)  # Full display name from CSV (e.g. "TUJ1 chk Millipore")
     target = Column(String, nullable=False)
     clone = Column(String, nullable=True)
     host = Column(String, nullable=True)
@@ -116,10 +118,34 @@ class Antibody(Base):
         ForeignKey("fluorophores.id", ondelete="SET NULL"),
         nullable=True,
     )
+    conjugate = Column(String, nullable=True)  # e.g. "AF488", "PE", "FITC"
     vendor = Column(String, nullable=True)
     catalog_number = Column(String, nullable=True)
+    confirmed_in_stock = Column(Boolean, nullable=False, default=False)
+    date_received = Column(String, nullable=True)  # ISO date string
+    flow_dilution = Column(String, nullable=True)
+    icc_if_dilution = Column(String, nullable=True)
+    wb_dilution = Column(String, nullable=True)
+    reacts_with = Column(Text, nullable=True)  # JSON array string
+    storage_temp = Column(String, nullable=True)
+    validation_notes = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    website = Column(String, nullable=True)
+    physical_location = Column(String, nullable=True)
+    is_favorite = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("name", "catalog_number", name="uq_antibody_name_catalog"),
+    )
 
     fluorophore = relationship("Fluorophore")
+    tags = relationship(
+        "AntibodyTag",
+        secondary="antibody_tag_assignments",
+        back_populates="antibodies",
+    )
 
 
 class Panel(Base):
@@ -140,6 +166,29 @@ class Panel(Base):
     assignments = relationship("PanelAssignment", back_populates="panel", cascade="all, delete-orphan")
 
 
+class SecondaryAntibody(Base):
+    __tablename__ = "secondary_antibodies"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    host = Column(String, nullable=False)
+    target_species = Column(String, nullable=False)
+    target_isotype = Column(String, nullable=True)
+    fluorophore_id = Column(
+        String(100),
+        ForeignKey("fluorophores.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    vendor = Column(String, nullable=True)
+    catalog_number = Column(String, nullable=True)
+    lot_number = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    fluorophore = relationship("Fluorophore")
+
+
 class PanelTarget(Base):
     __tablename__ = "panel_targets"
 
@@ -152,16 +201,19 @@ class PanelTarget(Base):
     antibody_id = Column(
         String(36),
         ForeignKey("antibodies.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
     )
-    sort_order = Column(Integer, default=0)
-
-    __table_args__ = (
-        UniqueConstraint("panel_id", "antibody_id", name="uq_panel_target"),
+    staining_mode = Column(String(10), nullable=False, default="direct")
+    secondary_antibody_id = Column(
+        String(36),
+        ForeignKey("secondary_antibodies.id", ondelete="SET NULL"),
+        nullable=True,
     )
+    sort_order = Column(Integer, nullable=False, default=0)
 
     panel = relationship("Panel", back_populates="targets")
     antibody = relationship("Antibody")
+    secondary_antibody = relationship("SecondaryAntibody")
 
 
 class PanelAssignment(Base):
@@ -199,3 +251,38 @@ class PanelAssignment(Base):
     antibody = relationship("Antibody")
     fluorophore = relationship("Fluorophore")
     detector = relationship("Detector")
+
+
+class AntibodyTag(Base):
+    __tablename__ = "antibody_tags"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False, unique=True)
+    color = Column(String, nullable=True)  # hex color for UI badge
+
+    antibodies = relationship(
+        "Antibody",
+        secondary="antibody_tag_assignments",
+        back_populates="tags",
+    )
+
+
+class AntibodyTagAssignment(Base):
+    __tablename__ = "antibody_tag_assignments"
+
+    antibody_id = Column(
+        String(36),
+        ForeignKey("antibodies.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    tag_id = Column(
+        String(36),
+        ForeignKey("antibody_tags.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+
+    key = Column(String, primary_key=True)
+    value = Column(String, nullable=False)

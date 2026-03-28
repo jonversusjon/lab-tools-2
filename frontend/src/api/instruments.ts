@@ -1,4 +1,9 @@
-import type { Instrument, InstrumentCreate, PaginatedResponse } from '@/types'
+import type { 
+  Instrument, 
+  InstrumentCreate, 
+  PaginatedResponse,
+  DetectorCompatibilityResponse 
+} from '@/types'
 
 export async function listInstruments(
   skip = 0,
@@ -51,4 +56,39 @@ export async function deleteInstrument(id: string): Promise<void> {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete instrument')
+}
+
+export async function exportInstrument(
+  id: string
+): Promise<InstrumentCreate> {
+  const res = await fetch(`/api/v1/instruments/${id}/export`)
+  if (!res.ok) throw new Error('Failed to export instrument')
+  return res.json()
+}
+
+export async function importInstrument(
+  data: InstrumentCreate
+): Promise<Instrument> {
+  const res = await fetch('/api/v1/instruments/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to import instrument')
+  return res.json()
+}
+
+export async function getFluorophoreCompatibility(
+  id: string,
+  min_excitation_pct?: number,
+  min_detection_pct?: number
+): Promise<DetectorCompatibilityResponse> {
+  const query = new URLSearchParams()
+  if (min_excitation_pct !== undefined) query.set('min_excitation_pct', String(min_excitation_pct))
+  if (min_detection_pct !== undefined) query.set('min_detection_pct', String(min_detection_pct))
+  
+  const url = `/api/v1/instruments/${id}/fluorophore-compatibility${query.toString() ? '?' + query.toString() : ''}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('Failed to fetch instrument fluorophore compatibility')
+  return res.json()
 }

@@ -204,7 +204,10 @@ export default function SpectraViewer({
     },
     elements: {
       point: { radius: 0 },
-      line: { tension: 0.1 },
+      line: {
+        tension: 0.1,
+        borderWidth: 0.5,
+      },
     },
     plugins: {
       annotation: { annotations },

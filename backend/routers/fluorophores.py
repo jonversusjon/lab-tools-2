@@ -16,6 +16,7 @@ from models import Fluorophore
 from models import FluorophoreSpectrum
 from models import Instrument
 from models import Laser
+from models import PanelAssignment
 from schemas import BatchFetchFpbaseRequest
 from schemas import BatchFetchFpbaseResult
 from schemas import BatchSpectraRequest
@@ -29,72 +30,32 @@ from schemas import InstrumentCompatibility
 from schemas import InstrumentCompatibilityResponse
 from schemas import LaserCompatibility
 from schemas import PaginatedResponse
+from services.spectra import integrate_bandpass
+from services.spectra import interpolate_at
+from services.spectra import load_spectra_for
 
 router = APIRouter()
+from models import Panel
 
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _interpolate_at(spectra: list[tuple], wavelength: float) -> float:
-    """Linear interpolation on a sorted list of (wavelength, intensity) tuples."""
-    if not spectra:
-        return 0.0
-    if wavelength <= spectra[0][0]:
-        return spectra[0][1] if wavelength == spectra[0][0] else 0.0
-    if wavelength >= spectra[-1][0]:
-        return spectra[-1][1] if wavelength == spectra[-1][0] else 0.0
-    lo = 0
-    hi = len(spectra) - 1
-    while hi - lo > 1:
-        mid = (lo + hi) // 2
-        if spectra[mid][0] <= wavelength:
-            lo = mid
-        else:
-            hi = mid
-    x0, y0 = spectra[lo]
-    x1, y1 = spectra[hi]
-    t = (wavelength - x0) / (x1 - x0)
-    return y0 + (y1 - y0) * t
-
-
-def _integrate_bandpass(
-    spectra: list[tuple], low: float, high: float, step: float = 1.0
-) -> float:
-    """Numerical integration of spectra over [low, high] at 1nm steps."""
-    total = 0.0
-    wl = low
-    while wl <= high:
-        total += _interpolate_at(spectra, wl)
-        wl += step
-    return total
-
-
-def _load_spectra_for(
-    fluorophore_id: str,
-    types: list[str],
-    db: Session,
-) -> dict[str, list[tuple]]:
-    """Return {spectrum_type: sorted[(wavelength, intensity)]} for a fluorophore."""
-    rows = db.execute(
-        select(
-            FluorophoreSpectrum.spectrum_type,
-            FluorophoreSpectrum.wavelength_nm,
-            FluorophoreSpectrum.intensity,
-        )
-        .where(FluorophoreSpectrum.fluorophore_id == fluorophore_id)
-        .where(FluorophoreSpectrum.spectrum_type.in_(types))
-        .order_by(
-            FluorophoreSpectrum.spectrum_type,
-            FluorophoreSpectrum.wavelength_nm,
-        )
-    ).all()
-
-    result: dict[str, list[tuple]] = {}
-    for stype, wl, intensity in rows:
-        result.setdefault(stype, []).append((wl, intensity))
-    return result
+@router.get("/recent", response_model=list[str])
+def get_recent_fluorophores(db: Session = Depends(get_db)):
+    # Retrieve up to 10 most recent unique fluorophores assigned in any panel
+    stmt = (
+        select(PanelAssignment.fluorophore_id)
+        .join(Panel, PanelAssignment.panel_id == Panel.id)
+        .order_by(Panel.updated_at.desc(), PanelAssignment.id)
+        .limit(100)
+    )
+    all_assigned = db.scalars(stmt).all()
+    seen = set()
+    unique_ids = []
+    for fid in all_assigned:
+        if fid not in seen:
+            seen.add(fid)
+            unique_ids.append(fid)
+            if len(unique_ids) >= 10:
+                break
+    return unique_ids
 
 
 # ---------------------------------------------------------------------------
@@ -373,6 +334,29 @@ def batch_spectra(
 
 
 # ---------------------------------------------------------------------------
+# Fluorophore favorite toggle
+# ---------------------------------------------------------------------------
+
+@router.patch("/{id}/favorite")
+def toggle_fluorophore_favorite(
+    id: str,
+    body: dict,
+    db: Session = Depends(get_db),
+):
+    fl = db.get(Fluorophore, id)
+    if fl is None:
+        raise HTTPException(status_code=404, detail="Fluorophore not found")
+    fl.is_favorite = bool(body.get("is_favorite", False))
+    db.commit()
+    db.refresh(fl)
+    return {
+        "id": fl.id,
+        "name": fl.name,
+        "is_favorite": fl.is_favorite,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Single fluorophore spectra
 # ---------------------------------------------------------------------------
 
@@ -387,7 +371,7 @@ def get_fluorophore_spectra(
         raise HTTPException(status_code=404, detail="Fluorophore not found")
 
     type_list = [t.strip() for t in types.split(",") if t.strip()]
-    spectra_map = _load_spectra_for(id, type_list, db)
+    spectra_map = load_spectra_for(id, type_list, db)
 
     spectra_out: dict[str, list[list[float]]] = {
         stype: [[wl, intensity] for wl, intensity in points]
@@ -415,7 +399,7 @@ def get_instrument_compatibility(
         raise HTTPException(status_code=404, detail="Fluorophore not found")
 
     # Load EX and EM spectra for this fluorophore
-    spectra_map = _load_spectra_for(id, ["EX", "EM", "AB"], db)
+    spectra_map = load_spectra_for(id, ["EX", "EM", "AB"], db)
     ex_spectra = spectra_map.get("EX") or spectra_map.get("AB") or []
     em_spectra = spectra_map.get("EM") or []
 
@@ -424,7 +408,7 @@ def get_instrument_compatibility(
     if em_spectra:
         low = em_spectra[0][0]
         high = em_spectra[-1][0]
-        em_total = _integrate_bandpass(em_spectra, low, high)
+        em_total = integrate_bandpass(em_spectra, low, high)
 
     # Fetch all instruments with their lasers and detectors
     instruments = list(
@@ -443,7 +427,7 @@ def get_instrument_compatibility(
 
         laser_lines: list[LaserCompatibility] = []
         for laser in lasers:
-            ex_eff = _interpolate_at(ex_spectra, float(laser.wavelength_nm))
+            ex_eff = interpolate_at(ex_spectra, float(laser.wavelength_nm))
             laser_lines.append(
                 LaserCompatibility(
                     wavelength_nm=laser.wavelength_nm,
@@ -463,7 +447,7 @@ def get_instrument_compatibility(
             for det in detectors:
                 low = det.filter_midpoint - det.filter_width / 2
                 high = det.filter_midpoint + det.filter_width / 2
-                bandpass_integral = _integrate_bandpass(em_spectra, low, high)
+                bandpass_integral = integrate_bandpass(em_spectra, low, high)
                 coll_eff = (bandpass_integral / em_total) if em_total > 0 else 0.0
                 detector_rows.append(
                     DetectorCompatibility(
@@ -471,6 +455,7 @@ def get_instrument_compatibility(
                         center_nm=det.filter_midpoint,
                         bandwidth_nm=det.filter_width,
                         collection_efficiency=round(coll_eff, 4),
+                        laser_wavelength_nm=laser.wavelength_nm,
                     )
                 )
 

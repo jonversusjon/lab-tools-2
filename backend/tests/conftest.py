@@ -19,11 +19,14 @@ from database import Base
 from database import get_db
 from main import app
 from models import Antibody
+from models import AntibodyTag
+from models import AntibodyTagAssignment
 from models import Detector
 from models import Fluorophore
 from models import FluorophoreSpectrum
 from models import Instrument
 from models import Laser
+from models import SecondaryAntibody
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed_data"
 
@@ -182,6 +185,30 @@ def _load_seed(session):
             fluorophore_id=ab_data.get("fluorophore_id"),
         )
         session.add(antibody)
+
+    # Seed secondary antibodies
+    sa1 = SecondaryAntibody(
+        id="test-secondary-with-fluor",
+        name="Goat anti-Mouse IgG AF488",
+        host="Goat",
+        target_species="Mouse",
+        target_isotype=None,
+        fluorophore_id="test-egfp",
+        vendor="Thermo Fisher",
+        catalog_number="A-11001",
+    )
+    sa2 = SecondaryAntibody(
+        id="test-secondary-no-fluor",
+        name="Goat anti-Rabbit IgG",
+        host="Goat",
+        target_species="Rabbit",
+        target_isotype=None,
+        fluorophore_id=None,
+        vendor="Thermo Fisher",
+        catalog_number="A-21428",
+    )
+    session.add(sa1)
+    session.add(sa2)
 
     session.commit()
 

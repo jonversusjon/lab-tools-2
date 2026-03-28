@@ -112,6 +112,7 @@ def seed_fpbase() -> None:
                 oligom,
                 switch,
                 has_spec,
+                0,  # is_favorite
             ))
 
         conn.executemany(
@@ -119,8 +120,8 @@ def seed_fpbase() -> None:
             INSERT OR REPLACE INTO fluorophores
                 (id, name, fluor_type, source,
                  ex_max_nm, em_max_nm, ext_coeff, qy, lifetime_ns,
-                 oligomerization, switch_type, has_spectra)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 oligomerization, switch_type, has_spectra, is_favorite)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             fluor_rows,
         )

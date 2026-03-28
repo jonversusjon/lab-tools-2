@@ -5,6 +5,8 @@ import type {
   PanelAssignmentCreate,
   PanelCreate,
   PanelTarget,
+  PanelTargetCreate,
+  PanelTargetUpdate,
   PaginatedResponse,
 } from '@/types'
 
@@ -53,12 +55,12 @@ export async function deletePanel(id: string): Promise<void> {
 
 export async function addTarget(
   panelId: string,
-  antibodyId: string
+  data: PanelTargetCreate = {}
 ): Promise<PanelTarget> {
   const res = await fetch(`/api/v1/panels/${panelId}/targets`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ antibody_id: antibodyId }),
+    body: JSON.stringify(data),
   })
   if (!res.ok) {
     if (res.status === 409) {
@@ -67,6 +69,39 @@ export async function addTarget(
     }
     throw new Error('Failed to add target')
   }
+  return res.json()
+}
+
+export async function updateTarget(
+  panelId: string,
+  targetId: string,
+  data: PanelTargetUpdate
+): Promise<PanelTarget> {
+  const res = await fetch(`/api/v1/panels/${panelId}/targets/${targetId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    if (res.status === 409) {
+      const body = await res.json()
+      throw new Error(body.detail ?? 'Target conflict')
+    }
+    throw new Error('Failed to update target')
+  }
+  return res.json()
+}
+
+export async function reorderTargets(
+  panelId: string,
+  targetIds: string[]
+): Promise<PanelTarget[]> {
+  const res = await fetch(`/api/v1/panels/${panelId}/targets/reorder`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_ids: targetIds }),
+  })
+  if (!res.ok) throw new Error('Failed to reorder targets')
   return res.json()
 }
 

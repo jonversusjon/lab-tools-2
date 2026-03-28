@@ -10,15 +10,36 @@ from sqlalchemy.orm import selectinload
 
 from database import get_db
 from models import Detector
+from models import Fluorophore
+from models import FluorophoreSpectrum
 from models import Instrument
 from models import Laser
 from models import PanelAssignment
+from models import UserPreference
+from schemas import DetectorCompatibilityResponse
+from schemas import FluorophoreCompatibilityDetail
 from schemas import InstrumentCreate
+from schemas import InstrumentExport
 from schemas import InstrumentRead
 from schemas import InstrumentUpdate
 from schemas import PaginatedResponse
+from services.spectra import integrate_bandpass
+from services.spectra import interpolate_at
 
 router = APIRouter()
+
+_compat_cache: dict[str, tuple[str, DetectorCompatibilityResponse]] = {}
+
+def _get_cache_token(db: Session, instrument: Instrument) -> str:
+    fl_count = db.scalar(select(func.count()).select_from(Fluorophore)) or 0
+    fs_count = db.scalar(select(func.count()).select_from(FluorophoreSpectrum)) or 0
+    inst_hash = f"{instrument.name}-"
+    for laser in instrument.lasers:
+        inst_hash += f"{laser.id}{laser.wavelength_nm}"
+        for det in laser.detectors:
+            inst_hash += f"{det.id}{det.filter_midpoint}{det.filter_width}"
+    return f"{fl_count}-{fs_count}-{inst_hash}"
+
 
 
 def _load_instrument(db: Session, instrument_id: str) -> Instrument:
@@ -154,3 +175,165 @@ def delete_instrument(id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Instrument not found")
     db.delete(instrument)
     db.commit()
+
+
+@router.get("/{id}/export", response_model=InstrumentExport)
+def export_instrument(id: str, db: Session = Depends(get_db)):
+    instrument = _load_instrument(db, id)
+    return InstrumentExport(
+        name=instrument.name,
+        lasers=[
+            {
+                "wavelength_nm": laser.wavelength_nm,
+                "name": laser.name,
+                "detectors": [
+                    {
+                        "filter_midpoint": det.filter_midpoint,
+                        "filter_width": det.filter_width,
+                        "name": det.name,
+                    }
+                    for det in laser.detectors
+                ],
+            }
+            for laser in instrument.lasers
+        ],
+    )
+
+
+@router.post("/import", response_model=InstrumentRead, status_code=201)
+def import_instrument(
+    data: InstrumentExport,
+    db: Session = Depends(get_db),
+):
+    instrument = Instrument(name=data.name)
+    db.add(instrument)
+    db.flush()
+
+    for laser_data in data.lasers:
+        laser = Laser(
+            instrument_id=instrument.id,
+            wavelength_nm=laser_data.wavelength_nm,
+            name=laser_data.name,
+        )
+        db.add(laser)
+        db.flush()
+        for det_data in laser_data.detectors:
+            detector = Detector(
+                laser_id=laser.id,
+                filter_midpoint=det_data.filter_midpoint,
+                filter_width=det_data.filter_width,
+                name=det_data.name,
+            )
+            db.add(detector)
+
+    db.commit()
+    return _load_instrument(db, instrument.id)
+
+
+@router.get("/{id}/fluorophore-compatibility", response_model=DetectorCompatibilityResponse)
+def get_fluorophore_compatibility(
+    id: str,
+    min_excitation_pct: int | None = None,
+    min_detection_pct: int | None = None,
+    db: Session = Depends(get_db),
+):
+    instrument = _load_instrument(db, id)
+    token = _get_cache_token(db, instrument)
+
+    if min_excitation_pct is None:
+        p = db.get(UserPreference, "min_excitation_pct")
+        min_excitation_pct = int(p.value) if p else 5
+    if min_detection_pct is None:
+        p = db.get(UserPreference, "min_detection_pct")
+        min_detection_pct = int(p.value) if p else 10
+
+    cache_key = f"{id}-{token}-{min_excitation_pct}-{min_detection_pct}"
+    if cache_key in _compat_cache:
+        return _compat_cache[cache_key][1]
+
+    # Calculate
+    from collections import defaultdict
+    fl_spectra = defaultdict(lambda: defaultdict(list))
+    spectra_rows = db.execute(
+        select(
+            FluorophoreSpectrum.fluorophore_id,
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+            FluorophoreSpectrum.intensity,
+        )
+        .where(FluorophoreSpectrum.spectrum_type.in_(["EX", "EM", "AB"]))
+        .order_by(
+            FluorophoreSpectrum.fluorophore_id,
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+        )
+    ).all()
+    for fl_id, stype, wl, intensity in spectra_rows:
+        fl_spectra[fl_id][stype].append((wl, intensity))
+
+    fluorophores = list(db.scalars(select(Fluorophore)))
+    
+    # Pre-calculate totals for emission
+    em_totals = {}
+    for fl in fluorophores:
+        em_spectra = fl_spectra[fl.id].get("EM", [])
+        if em_spectra:
+            em_totals[fl.id] = integrate_bandpass(em_spectra, em_spectra[0][0], em_spectra[-1][0])
+        else:
+            em_totals[fl.id] = 0.0
+
+    compatibility_map: dict[str, list[FluorophoreCompatibilityDetail]] = defaultdict(list)
+
+    for laser in instrument.lasers:
+        laser_wl = laser.wavelength_nm
+        for fl in fluorophores:
+            # Ex efficiency
+            ex_spectra = fl_spectra[fl.id].get("EX") or fl_spectra[fl.id].get("AB") or []
+            ex_eff = 0.0
+            if ex_spectra:
+                ex_eff = interpolate_at(ex_spectra, float(laser_wl))
+                peak = max(p[1] for p in ex_spectra)
+                ex_eff = (ex_eff / peak) if peak > 0 else 0.0
+            else:
+                if fl.ex_max_nm is not None and abs(fl.ex_max_nm - laser_wl) <= 40:
+                    ex_eff = 1.0
+            
+            if ex_eff < (min_excitation_pct / 100.0):
+                continue
+
+            # Det efficiency
+            em_spectra = fl_spectra[fl.id].get("EM", [])
+            em_total = em_totals[fl.id]
+
+            for det in laser.detectors:
+                det_eff = 0.0
+                if em_spectra and em_total > 0:
+                    low = det.filter_midpoint - det.filter_width / 2
+                    high = det.filter_midpoint + det.filter_width / 2
+                    bandpass_integral = integrate_bandpass(em_spectra, low, high)
+                    det_eff = bandpass_integral / em_total
+                else:
+                    if fl.em_max_nm is not None:
+                        if det.filter_midpoint - det.filter_width <= fl.em_max_nm <= det.filter_midpoint + det.filter_width:
+                            det_eff = 1.0
+                
+                if det_eff >= (min_detection_pct / 100.0):
+                    compatibility_map[det.id].append(
+                        FluorophoreCompatibilityDetail(
+                            fluorophore_id=fl.id,
+                            name=fl.name,
+                            excitation_efficiency=round(ex_eff, 4),
+                            detection_efficiency=round(det_eff, 4),
+                            is_favorite=fl.is_favorite
+                        )
+                    )
+
+    resp = DetectorCompatibilityResponse(
+        instrument_id=id,
+        min_excitation_pct=min_excitation_pct,
+        min_detection_pct=min_detection_pct,
+        compatibility=dict(compatibility_map),
+    )
+    _compat_cache[cache_key] = (token, resp)
+    return resp
+

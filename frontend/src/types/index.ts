@@ -40,6 +40,7 @@ export interface Fluorophore {
   oligomerization: string | null
   switch_type: string | null
   has_spectra: boolean
+  is_favorite: boolean
 }
 
 /** Spectra data keyed by type: "EX", "EM", "AB", "A_2P" */
@@ -65,6 +66,7 @@ export interface DetectorCompatibility {
   center_nm: number
   bandwidth_nm: number
   collection_efficiency: number
+  laser_wavelength_nm: number
 }
 
 export interface InstrumentCompatibility {
@@ -79,16 +81,63 @@ export interface InstrumentCompatibilityResponse {
   instrument_compatibilities: InstrumentCompatibility[]
 }
 
+export interface FluorophoreCompatibilityDetail {
+  fluorophore_id: string
+  name: string
+  excitation_efficiency: number
+  detection_efficiency: number
+  is_favorite: boolean
+}
+
+export interface DetectorCompatibilityResponse {
+  instrument_id: string
+  min_excitation_pct: number
+  min_detection_pct: number
+  compatibility: Record<string, FluorophoreCompatibilityDetail[]>
+}
+
+export interface UserPreference {
+  key: string
+  value: string
+}
+
+export interface AntibodyTag {
+  id: string
+  name: string
+  color: string | null
+}
+
+export interface AntibodyTagWithCount extends AntibodyTag {
+  antibody_count: number
+}
+
 export interface Antibody {
   id: string
+  name: string | null
   target: string
   clone: string | null
   host: string | null
   isotype: string | null
   fluorophore_id: string | null
+  conjugate: string | null
   vendor: string | null
   catalog_number: string | null
+  confirmed_in_stock: boolean
+  date_received: string | null
+  flow_dilution: string | null
+  icc_if_dilution: string | null
+  wb_dilution: string | null
+  reacts_with: string[] | null
+  storage_temp: string | null
+  validation_notes: string | null
+  notes: string | null
+  website: string | null
+  physical_location: string | null
   fluorophore_name: string | null
+  is_favorite: boolean
+  tags: AntibodyTag[]
+  created_at: string | null
+  updated_at: string | null
 }
 
 export interface PanelListItem {
@@ -101,11 +150,58 @@ export interface PanelListItem {
   assignment_count: number
 }
 
+export interface SecondaryAntibody {
+  id: string
+  name: string
+  host: string
+  target_species: string
+  target_isotype: string | null
+  fluorophore_id: string | null
+  fluorophore_name: string | null
+  vendor: string | null
+  catalog_number: string | null
+  lot_number: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SecondaryAntibodyCreate {
+  name: string
+  host: string
+  target_species: string
+  target_isotype?: string | null
+  fluorophore_id?: string | null
+  vendor?: string | null
+  catalog_number?: string | null
+  lot_number?: string | null
+  notes?: string | null
+}
+
 export interface PanelTarget {
   id: string
   panel_id: string
-  antibody_id: string
+  antibody_id: string | null
+  staining_mode: "direct" | "indirect"
+  secondary_antibody_id: string | null
   sort_order: number
+  antibody_name: string | null
+  antibody_target: string | null
+  secondary_antibody_name: string | null
+  secondary_fluorophore_id: string | null
+  secondary_fluorophore_name: string | null
+}
+
+export interface PanelTargetCreate {
+  antibody_id?: string | null
+  staining_mode?: "direct" | "indirect"
+  secondary_antibody_id?: string | null
+}
+
+export interface PanelTargetUpdate {
+  antibody_id?: string | null
+  staining_mode?: "direct" | "indirect"
+  secondary_antibody_id?: string | null
 }
 
 export interface PanelAssignment {
@@ -159,12 +255,110 @@ export interface FluorophoreCreate {
 
 export interface AntibodyCreate {
   target: string
+  name?: string | null
   clone?: string | null
   host?: string | null
   isotype?: string | null
   fluorophore_id?: string | null
+  conjugate?: string | null
   vendor?: string | null
   catalog_number?: string | null
+  confirmed_in_stock?: boolean
+  date_received?: string | null
+  flow_dilution?: string | null
+  icc_if_dilution?: string | null
+  wb_dilution?: string | null
+  reacts_with?: string[] | null
+  storage_temp?: string | null
+  validation_notes?: string | null
+  notes?: string | null
+  website?: string | null
+  physical_location?: string | null
+}
+
+// --- CSV Import types ---
+
+export interface ParsedAntibody {
+  name: string | null
+  catalog_number: string | null
+  conjugate: string | null
+  host_species: string | null
+  isotype: string | null
+  manufacturer: string | null
+  confirmed_in_stock: boolean
+  date_received: string | null
+  flow_dilution: string | null
+  icc_if_dilution: string | null
+  wb_dilution: string | null
+  reacts_with: string[]
+  storage_temp: string | null
+  validation_notes: string | null
+  notes: string | null
+  website: string | null
+  physical_location: string | null
+}
+
+export interface NewAntibodyRow {
+  csv_row_index: number
+  parsed: ParsedAntibody
+  missing_fields: string[]
+  warnings: string[]
+}
+
+export interface ExistingAntibodyRow {
+  csv_row_index: number
+  name: string | null
+  catalog_number: string | null
+  existing_id: string
+}
+
+export interface ParseErrorRow {
+  csv_row_index: number
+  raw_row: Record<string, string>
+  error: string
+}
+
+export interface CsvImportResponse {
+  new_antibodies: NewAntibodyRow[]
+  already_exists: ExistingAntibodyRow[]
+  parse_errors: ParseErrorRow[]
+  summary: {
+    total_csv_rows: number
+    new: number
+    existing: number
+    errors: number
+  }
+}
+
+export interface ImportAntibodyItem {
+  name?: string | null
+  target?: string | null
+  catalog_number?: string | null
+  conjugate?: string | null
+  host?: string | null
+  isotype?: string | null
+  vendor?: string | null
+  confirmed_in_stock?: boolean
+  date_received?: string | null
+  flow_dilution?: string | null
+  icc_if_dilution?: string | null
+  wb_dilution?: string | null
+  reacts_with?: string[]
+  storage_temp?: string | null
+  validation_notes?: string | null
+  notes?: string | null
+  website?: string | null
+  physical_location?: string | null
+}
+
+export interface ImportConfirmResponse {
+  imported: number
+  errors: { name?: string; error: string }[]
+}
+
+export interface TagCreate {
+  name: string
+  color?: string | null
 }
 
 export interface PanelCreate {

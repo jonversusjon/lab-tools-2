@@ -75,6 +75,10 @@ class InstrumentRead(InstrumentBase):
     model_config = {"from_attributes": True}
 
 
+class InstrumentExport(InstrumentBase):
+    lasers: list[LaserCreate] = []
+
+
 # --- Fluorophore ---
 
 class FluorophoreRead(BaseModel):
@@ -90,6 +94,7 @@ class FluorophoreRead(BaseModel):
     oligomerization: str | None = None
     switch_type: str | None = None
     has_spectra: bool
+    is_favorite: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -128,6 +133,7 @@ class DetectorCompatibility(BaseModel):
     center_nm: int
     bandwidth_nm: int
     collection_efficiency: float
+    laser_wavelength_nm: int
 
 
 class InstrumentCompatibility(BaseModel):
@@ -140,6 +146,35 @@ class InstrumentCompatibility(BaseModel):
 class InstrumentCompatibilityResponse(BaseModel):
     fluorophore_id: str
     instrument_compatibilities: list[InstrumentCompatibility]
+
+
+class PreferenceBase(BaseModel):
+    value: str
+
+
+class PreferenceRead(PreferenceBase):
+    key: str
+
+    model_config = {"from_attributes": True}
+
+
+class PreferenceUpdate(PreferenceBase):
+    pass
+
+
+class FluorophoreCompatibilityDetail(BaseModel):
+    fluorophore_id: str
+    name: str
+    excitation_efficiency: float
+    detection_efficiency: float
+    is_favorite: bool
+
+
+class DetectorCompatibilityResponse(BaseModel):
+    instrument_id: str
+    min_excitation_pct: int
+    min_detection_pct: int
+    compatibility: dict[str, list[FluorophoreCompatibilityDetail]]
 
 
 # --- FPbase live-fetch schemas (kept for on-demand fetch from FPbase API) ---
@@ -162,16 +197,44 @@ class FpbaseCatalogItem(BaseModel):
     id: str
 
 
+# --- Antibody Tag ---
+
+class TagCreate(BaseModel):
+    name: str
+    color: str | None = None
+
+
+class TagRead(BaseModel):
+    id: str
+    name: str
+    color: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
 # --- Antibody ---
 
 class AntibodyBase(BaseModel):
     target: str
+    name: str | None = None
     clone: str | None = None
     host: str | None = None
     isotype: str | None = None
     fluorophore_id: str | None = None
+    conjugate: str | None = None
     vendor: str | None = None
     catalog_number: str | None = None
+    confirmed_in_stock: bool = False
+    date_received: str | None = None
+    flow_dilution: str | None = None
+    icc_if_dilution: str | None = None
+    wb_dilution: str | None = None
+    reacts_with: list[str] | None = None
+    storage_temp: str | None = None
+    validation_notes: str | None = None
+    notes: str | None = None
+    website: str | None = None
+    physical_location: str | None = None
 
 
 class AntibodyCreate(AntibodyBase):
@@ -185,6 +248,142 @@ class AntibodyUpdate(AntibodyBase):
 class AntibodyRead(AntibodyBase):
     id: str
     fluorophore_name: str | None = None
+    is_favorite: bool = False
+    tags: list[TagRead] = []
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class FavoriteToggle(BaseModel):
+    is_favorite: bool
+
+
+# --- CSV Import ---
+
+class ParsedAntibody(BaseModel):
+    name: str | None = None
+    catalog_number: str | None = None
+    conjugate: str | None = None
+    host_species: str | None = None
+    isotype: str | None = None
+    manufacturer: str | None = None
+    confirmed_in_stock: bool = False
+    date_received: str | None = None
+    flow_dilution: str | None = None
+    icc_if_dilution: str | None = None
+    wb_dilution: str | None = None
+    reacts_with: list[str] = []
+    storage_temp: str | None = None
+    validation_notes: str | None = None
+    notes: str | None = None
+    website: str | None = None
+    physical_location: str | None = None
+
+
+class NewAntibodyRow(BaseModel):
+    csv_row_index: int
+    parsed: ParsedAntibody
+    missing_fields: list[str] = []
+    warnings: list[str] = []
+
+
+class ExistingAntibodyRow(BaseModel):
+    csv_row_index: int
+    name: str | None = None
+    catalog_number: str | None = None
+    existing_id: str
+
+
+class ParseErrorRow(BaseModel):
+    csv_row_index: int
+    raw_row: dict
+    error: str
+
+
+class ImportSummary(BaseModel):
+    total_csv_rows: int
+    new: int
+    existing: int
+    errors: int
+
+
+class CsvImportResponse(BaseModel):
+    new_antibodies: list[NewAntibodyRow]
+    already_exists: list[ExistingAntibodyRow]
+    parse_errors: list[ParseErrorRow]
+    summary: ImportSummary
+
+
+class ImportAntibodyItem(BaseModel):
+    name: str | None = None
+    target: str | None = None
+    catalog_number: str | None = None
+    conjugate: str | None = None
+    host: str | None = None
+    isotype: str | None = None
+    vendor: str | None = None
+    confirmed_in_stock: bool = False
+    date_received: str | None = None
+    flow_dilution: str | None = None
+    icc_if_dilution: str | None = None
+    wb_dilution: str | None = None
+    reacts_with: list[str] = []
+    storage_temp: str | None = None
+    validation_notes: str | None = None
+    notes: str | None = None
+    website: str | None = None
+    physical_location: str | None = None
+
+
+class ImportConfirmRequest(BaseModel):
+    antibodies: list[ImportAntibodyItem]
+
+
+class ImportConfirmResponse(BaseModel):
+    imported: int
+    errors: list[dict]
+
+
+# --- Antibody Tag ---
+
+class TagAssignRequest(BaseModel):
+    tag_ids: list[str]
+
+
+# --- Secondary Antibody ---
+
+class SecondaryAntibodyCreate(BaseModel):
+    name: str
+    host: str
+    target_species: str
+    target_isotype: str | None = None
+    fluorophore_id: str | None = None
+    vendor: str | None = None
+    catalog_number: str | None = None
+    lot_number: str | None = None
+    notes: str | None = None
+
+
+class SecondaryAntibodyUpdate(SecondaryAntibodyCreate):
+    pass
+
+
+class SecondaryAntibodyResponse(BaseModel):
+    id: str
+    name: str
+    host: str
+    target_species: str
+    target_isotype: str | None
+    fluorophore_id: str | None
+    fluorophore_name: str | None = None
+    vendor: str | None
+    catalog_number: str | None
+    lot_number: str | None
+    notes: str | None
+    created_at: datetime
+    updated_at: datetime
 
     model_config = {"from_attributes": True}
 
@@ -192,14 +391,33 @@ class AntibodyRead(AntibodyBase):
 # --- PanelTarget ---
 
 class PanelTargetCreate(BaseModel):
-    antibody_id: str
+    antibody_id: str | None = None
+    staining_mode: str = "direct"
+    secondary_antibody_id: str | None = None
+
+
+class PanelTargetUpdate(BaseModel):
+    antibody_id: str | None = None
+    staining_mode: str | None = None
+    secondary_antibody_id: str | None = None
+
+
+class PanelTargetReorder(BaseModel):
+    target_ids: list[str]
 
 
 class PanelTargetRead(BaseModel):
     id: str
     panel_id: str
-    antibody_id: str
+    antibody_id: str | None
+    staining_mode: str
+    secondary_antibody_id: str | None
     sort_order: int
+    antibody_name: str | None = None
+    antibody_target: str | None = None
+    secondary_antibody_name: str | None = None
+    secondary_fluorophore_id: str | None = None
+    secondary_fluorophore_name: str | None = None
 
     model_config = {"from_attributes": True}
 

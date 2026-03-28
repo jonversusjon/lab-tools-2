@@ -5,6 +5,8 @@ import {
   createInstrument,
   updateInstrument,
   deleteInstrument,
+  importInstrument,
+  getFluorophoreCompatibility,
 } from '@/api/instruments'
 import type { InstrumentCreate } from '@/types'
 
@@ -45,5 +47,26 @@ export function useDeleteInstrument() {
   return useMutation({
     mutationFn: (id: string) => deleteInstrument(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['instruments'] }),
+  })
+}
+
+export function useImportInstrument() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: InstrumentCreate) => importInstrument(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['instruments'] }),
+  })
+}
+
+export function useFluorophoreCompatibility(
+  instrumentId: string | null,
+  minEx?: number,
+  minDet?: number
+) {
+  return useQuery({
+    queryKey: ['compatibility', instrumentId, minEx, minDet],
+    queryFn: () => getFluorophoreCompatibility(instrumentId!, minEx, minDet),
+    enabled: !!instrumentId,
+    staleTime: 5 * 60 * 1000,
   })
 }

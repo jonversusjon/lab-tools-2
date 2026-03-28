@@ -5,9 +5,10 @@ interface ModalProps {
   onClose: () => void
   title: string
   children: React.ReactNode
+  wide?: boolean
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, wide }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
         if (e.target === overlayRef.current) onClose()
       }}
     >
-      <div className="w-full max-w-lg rounded-lg bg-white dark:bg-gray-800 shadow-xl">
+      <div className={`w-full ${wide ? 'max-w-4xl' : 'max-w-lg'} rounded-lg bg-white dark:bg-gray-800 shadow-xl`}>
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <button

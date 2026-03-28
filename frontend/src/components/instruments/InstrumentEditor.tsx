@@ -6,6 +6,7 @@ import {
   useUpdateInstrument,
   useDeleteInstrument,
 } from '@/hooks/useInstruments'
+import { exportInstrument } from '@/api/instruments'
 import LaserSection from './LaserSection'
 import type { LaserFormData } from './LaserSection'
 
@@ -105,6 +106,21 @@ export default function InstrumentEditor() {
     }
   }
 
+  const handleExport = async () => {
+    try {
+      const data = await exportInstrument(id!)
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = form.name.replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_') + '.json'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('Failed to export instrument.')
+    }
+  }
+
   const handleDelete = async () => {
     if (
       !window.confirm(
@@ -188,13 +204,21 @@ export default function InstrumentEditor() {
           {isSaving ? 'Saving...' : 'Save'}
         </button>
         {!isNew && (
-          <button
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-            className="rounded border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-          >
-            Delete Instrument
-          </button>
+          <>
+            <button
+              onClick={handleExport}
+              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Export JSON
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="rounded border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+            >
+              Delete Instrument
+            </button>
+          </>
         )}
       </div>
     </div>

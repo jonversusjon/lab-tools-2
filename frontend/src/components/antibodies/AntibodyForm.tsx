@@ -17,12 +17,22 @@ export default function AntibodyForm({
   const isEdit = antibody !== null
 
   const [target, setTarget] = useState(antibody?.target ?? '')
+  const [name, setName] = useState(antibody?.name ?? '')
   const [clone, setClone] = useState(antibody?.clone ?? '')
   const [host, setHost] = useState(antibody?.host ?? '')
   const [isotype, setIsotype] = useState(antibody?.isotype ?? '')
   const [fluorophoreId, setFluorophoreId] = useState(antibody?.fluorophore_id ?? '')
+  const [conjugate, setConjugate] = useState(antibody?.conjugate ?? '')
   const [vendor, setVendor] = useState(antibody?.vendor ?? '')
   const [catalogNumber, setCatalogNumber] = useState(antibody?.catalog_number ?? '')
+  const [flowDilution, setFlowDilution] = useState(antibody?.flow_dilution ?? '')
+  const [iccIfDilution, setIccIfDilution] = useState(antibody?.icc_if_dilution ?? '')
+  const [wbDilution, setWbDilution] = useState(antibody?.wb_dilution ?? '')
+  const [storageTemp, setStorageTemp] = useState(antibody?.storage_temp ?? '')
+  const [confirmedInStock, setConfirmedInStock] = useState(antibody?.confirmed_in_stock ?? false)
+  const [notes, setNotes] = useState(antibody?.notes ?? '')
+  const [website, setWebsite] = useState(antibody?.website ?? '')
+  const [physicalLocation, setPhysicalLocation] = useState(antibody?.physical_location ?? '')
   const [validationError, setValidationError] = useState('')
 
   const createMutation = useCreateAntibody()
@@ -38,12 +48,22 @@ export default function AntibodyForm({
 
     const payload: AntibodyCreate = {
       target: target.trim(),
+      name: name.trim() || null,
       clone: clone.trim() || null,
       host: host.trim() || null,
       isotype: isotype.trim() || null,
       fluorophore_id: fluorophoreId || null,
+      conjugate: conjugate.trim() || null,
       vendor: vendor.trim() || null,
       catalog_number: catalogNumber.trim() || null,
+      flow_dilution: flowDilution.trim() || null,
+      icc_if_dilution: iccIfDilution.trim() || null,
+      wb_dilution: wbDilution.trim() || null,
+      storage_temp: storageTemp || null,
+      confirmed_in_stock: confirmedInStock,
+      notes: notes.trim() || null,
+      website: website.trim() || null,
+      physical_location: physicalLocation.trim() || null,
     }
 
     if (isEdit) {
@@ -56,100 +76,153 @@ export default function AntibodyForm({
     }
   }
 
-  const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+  const inputClass =
+    'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
 
   return (
-    <Modal
-      isOpen
-      onClose={onClose}
-      title={isEdit ? 'Edit Antibody' : 'New Antibody'}
-    >
+    <Modal isOpen onClose={onClose} title={isEdit ? 'Edit Antibody' : 'New Antibody'} wide>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="ab-target" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Target <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="ab-target"
-            type="text"
-            value={target}
-            onChange={(e) => setTarget(e.target.value)}
-            className={inputClass}
-          />
-          {validationError && (
-            <p className="mt-1 text-sm text-red-600">{validationError}</p>
-          )}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="ab-target" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Target <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="ab-target"
+              type="text"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              className={inputClass}
+            />
+            {validationError && (
+              <p className="mt-1 text-sm text-red-600">{validationError}</p>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Display Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. TUJ1 chk Millipore"
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Clone</label>
+            <input type="text" value={clone} onChange={(e) => setClone(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Host</label>
+            <input type="text" value={host} onChange={(e) => setHost(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Isotype</label>
+            <input type="text" value={isotype} onChange={(e) => setIsotype(e.target.value)} className={inputClass} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Clone</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Conjugate</label>
             <input
               type="text"
-              value={clone}
-              onChange={(e) => setClone(e.target.value)}
+              value={conjugate}
+              onChange={(e) => setConjugate(e.target.value)}
+              placeholder="e.g. AF488, PE, FITC"
               className={inputClass}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Host</label>
-            <input
-              type="text"
-              value={host}
-              onChange={(e) => setHost(e.target.value)}
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Linked Fluorophore
+            </label>
+            <select
+              value={fluorophoreId}
+              onChange={(e) => setFluorophoreId(e.target.value)}
               className={inputClass}
-            />
+            >
+              <option value="">-- None --</option>
+              {fluorophores.map((fl) => (
+                <option key={fl.id} value={fl.id}>{fl.name}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              For pre-conjugated antibodies in the spectra database.
+            </p>
           </div>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Isotype</label>
-          <input
-            type="text"
-            value={isotype}
-            onChange={(e) => setIsotype(e.target.value)}
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Conjugate</label>
-          <select
-            value={fluorophoreId}
-            onChange={(e) => setFluorophoreId(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">— None (Unconjugated) —</option>
-            {fluorophores.map((fl) => (
-              <option key={fl.id} value={fl.id}>
-                {fl.name}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Leave empty for unconjugated antibodies. Set for pre-conjugated antibodies (e.g., anti-CD3-FITC).
-          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Vendor</label>
-            <input
-              type="text"
-              value={vendor}
-              onChange={(e) => setVendor(e.target.value)}
-              className={inputClass}
-            />
+            <input type="text" value={vendor} onChange={(e) => setVendor(e.target.value)} className={inputClass} />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog #</label>
-            <input
-              type="text"
-              value={catalogNumber}
-              onChange={(e) => setCatalogNumber(e.target.value)}
-              className={inputClass}
-            />
+            <input type="text" value={catalogNumber} onChange={(e) => setCatalogNumber(e.target.value)} className={inputClass} />
           </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Flow Dilution</label>
+            <input type="text" value={flowDilution} onChange={(e) => setFlowDilution(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">ICC/IF Dilution</label>
+            <input type="text" value={iccIfDilution} onChange={(e) => setIccIfDilution(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">WB Dilution</label>
+            <input type="text" value={wbDilution} onChange={(e) => setWbDilution(e.target.value)} className={inputClass} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Storage Temp</label>
+            <select value={storageTemp} onChange={(e) => setStorageTemp(e.target.value)} className={inputClass}>
+              <option value="">--</option>
+              <option value="4C">4C</option>
+              <option value="-20C">-20C</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Website</label>
+            <input type="url" value={website} onChange={(e) => setWebsite(e.target.value)} className={inputClass} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+            <input type="text" value={physicalLocation} onChange={(e) => setPhysicalLocation(e.target.value)} className={inputClass} />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="ab-in-stock"
+            checked={confirmedInStock}
+            onChange={(e) => setConfirmedInStock(e.target.checked)}
+          />
+          <label htmlFor="ab-in-stock" className="text-sm text-gray-700 dark:text-gray-300">
+            Confirmed in stock
+          </label>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            className={inputClass}
+          />
         </div>
 
         <div className="flex justify-end gap-3 pt-2">

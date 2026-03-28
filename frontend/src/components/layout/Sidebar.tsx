@@ -6,6 +6,7 @@ const navItems = [
   { to: '/fluorophores', label: 'Fluorophores' },
   { to: '/antibodies', label: 'Antibodies' },
   { to: '/panels', label: 'Panels' },
+  { to: '/settings', label: 'Settings' },
 ]
 
 export default function Sidebar() {

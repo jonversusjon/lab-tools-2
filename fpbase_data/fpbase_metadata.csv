@@ -1,0 +1,1891 @@
+fluorophore,fluor_type,fpbase_id,slug,ex_max_nm,em_max_nm,ext_coeff,qy,lifetime_ns,oligomerization,switch_type,n_spectra
+10B,protein,RO9XQ,10b,513.0,525.0,30800.0,,,,,0
+11,protein,W92N1,11,502.0,512.0,33000.0,,,,B,0
+(3-F)Tyr-EGFP,protein,2VPWT,3-ftyr-egfp,484.0,514.0,,,,,B,0
+5B,protein,G9FG2,5b,512.0,524.0,19400.0,,,,,0
+A44-KR,protein,D77WT,a44-kr,397.0,520.0,,,,,B,1
+aacuGFP1,protein,498LC,aacugfp1,478.0,502.0,36900.0,0.61,,T,B,0
+aacuGFP2,protein,3W5ZV,aacugfp2,502.0,513.0,93900.0,0.71,,T,B,0
+AausFP1,protein,C2FJQ,aausfp1,504.0,510.0,170000.0,0.97,,D,B,2
+AausFP2,protein,UHNQV,aausfp2,609.0,,52000.0,,,,B,1
+AausFP3,protein,OEVJT,aausfp3,587.0,,59000.0,,,,B,1
+AausFP4,protein,F5F6H,aausfp4,477.0,513.0,69000.0,,,D,PS,2
+AausGFP,protein,D7QYG,aausgfp,398.0,503.0,29000.0,0.73,,D,B,2
+aceGFP,protein,GQRF2,acegfp,480.0,505.0,50000.0,0.55,,M,B,0
+aceGFP-G222E-Y220L,protein,DH5VX,acegfp-g222e-y220l,396.0,508.0,,,,M,B,0
+aceGFP-h,protein,WBLSA,acegfp-h,390.0,505.0,,,,,B,0
+AcGFP1,protein,6ORKJ,acgfp1,475.0,505.0,50000.0,0.55,,WD,B,2
+Achilles,protein,MLHQR,achilles,513.0,525.0,110000.0,0.64,,,B,0
+AdRed,protein,DAH3B,adred,567.0,612.0,,,,T,B,2
+AdRed-C148S,protein,THMOX,adred-c148s,560.0,599.0,,,,,B,2
+aeBlue,protein,LFOL4,aeblue,597.0,,,,,T,B,1
+aeurGFP,protein,4NRYW,aeurgfp,504.0,515.0,145700.0,0.67,,T,B,0
+afCFP,protein,TDOH1,afcfp,406.0,499.0,30000.0,0.79,,,B,0
+afraGFP,protein,T5A9C,afragfp,494.0,503.0,100800.0,0.61,,T,B,0
+alajGFP1,protein,LBAXM,alajgfp1,509.0,517.0,,,,T,B,0
+alajGFP2,protein,RFJ23,alajgfp2,509.0,517.0,,,,T,B,0
+alajGFP3,protein,V25UH,alajgfp3,494.0,504.0,,,,T,B,0
+&alpha;GFP,protein,B28N7,alphagfp,397.0,506.0,30000.0,0.79,,D,B,3
+amCyan1,protein,L5QET,amcyan1,453.0,486.0,,,,T,B,2
+amFP486,protein,1M48O,amfp486,458.0,486.0,40000.0,0.24,,T,B,3
+amFP495,protein,ANK6E,amfp495,467.0,495.0,,0.08,,T,B,0
+amFP506,protein,VQMW2,amfp506,483.0,506.0,,0.67,,T,B,0
+amFP515,protein,8KFSR,amfp515,500.0,515.0,,0.006,,T,B,0
+amilCP,protein,18KQQ,amilcp,588.0,,87600.0,,,T,,1
+amilFP484,protein,9MM4N,amilfp484,420.0,484.0,,,,T,B,0
+amilFP490,protein,VAXZZ,amilfp490,424.0,490.0,29500.0,0.9,,,B,0
+amilFP497,protein,VGW8W,amilfp497,477.0,497.0,,,,T,B,0
+amilFP504,protein,WQ5JF,amilfp504,488.0,504.0,,,,,B,0
+amilFP512,protein,Q3VS4,amilfp512,500.0,512.0,,,,T,B,0
+amilFP513,protein,LO7EL,amilfp513,504.0,513.0,75200.0,0.67,,T,B,0
+amilFP593,protein,VDDDT,amilfp593,562.0,593.0,90900.0,0.49,,T,B,0
+amilFP597,protein,2YKB1,amilfp597,558.0,597.0,,,,T,B,0
+amilGFP,protein,8TF9W,amilgfp,503.0,512.0,75200.0,0.67,,,B,2
+anm1GFP1,protein,S1U3D,anm1gfp1,475.0,495.0,75000.0,0.65,,D,B,0
+anm1GFP2,protein,YV34T,anm1gfp2,490.0,504.0,,,,D,B,0
+anm2CP,protein,SEJPD,anm2cp,572.0,597.0,120000.0,0.001,,M,B,3
+anobCFP1,protein,NPCN7,anobcfp1,462.0,490.0,27600.0,0.86,,T,B,0
+anobCFP2,protein,MHMQX,anobcfp2,477.0,495.0,67200.0,0.49,,T,B,0
+anobGFP,protein,W1X8H,anobgfp,502.0,511.0,96200.0,0.6,,T,B,0
+apolCP584,protein,ZQBZM,apolcp584,584.0,,103000.0,,,,B,1
+apulFP483,protein,VAPCK,apulfp483,420.0,483.0,,,,T,B,0
+AQ14,protein,WBK4U,aq14,595.0,663.0,,,,,B,2
+AQ143,protein,GW5EB,aq143,595.0,655.0,90000.0,0.04,,T,B,2
+Aquamarine,protein,963OH,aquamarine,430.0,474.0,26000.0,0.89,4.1,M,B,2
+asCP562,protein,3NV4W,ascp562,562.0,595.0,,,,T,B,1
+asFP499,protein,5W398,asfp499,480.0,499.0,,,,D,B,0
+AsRed2,protein,8TL1P,asred2,576.0,592.0,56200.0,0.05,,T,B,2
+asulCP,protein,M3FBS,asulcp,572.0,595.0,120000.0,0.001,,,B,3
+atenFP,protein,J9SCM,atenfp,504.0,515.0,,,,,B,0
+avGFP,protein,1XF1B,avgfp,395.0,509.0,25000.0,0.79,,D,MP,3
+avGFP454,protein,T4B2J,avgfp454,410.0,454.0,,,,,B,0
+avGFP480,protein,QPRJJ,avgfp480,456.0,480.0,,,,,B,0
+avGFP509,protein,WL2YR,avgfp509,487.0,509.0,,,,,B,0
+avGFP510,protein,PEHFX,avgfp510,488.0,510.0,,,,,B,0
+avGFP514,protein,G413J,avgfp514,484.0,514.0,,,,,B,0
+avGFP523,protein,WPR7G,avgfp523,512.0,523.0,,,,,B,0
+AvicFP1,protein,VE1RL,avicfp1,481.0,503.0,64000.0,0.63,,WD,B,2
+AvicFP2,protein,FHG23,avicfp2,480.0,515.0,59000.0,0.04,,,B,2
+AvicFP3,protein,ZJWZK,avicfp3,480.0,520.0,,0.001,,,B,1
+AvicFP4,protein,LTRTO,avicfp4,500.0,512.0,121000.0,0.1,,,B,2
+AzaleaB5,protein,886AH,azaleab5,574.0,596.0,104000.0,0.58,,M,B,2
+AzamiGreen,protein,HC91W,azamigreen,492.0,505.0,72300.0,0.67,,T,B,2
+AzamiRed1.0,protein,1NUNN,azamired10,571.0,606.0,34100.0,0.65,,T,B,2
+Azurite,protein,ZMWEJ,azurite,383.0,447.0,26200.0,0.55,3.65,WD,B,0
+BDFP1.6,protein,QNYK6,bdfp16,642.0,666.0,100000.0,0.197,,D,B,2
+BDFP1.8,protein,YEOJF,bdfp18,678.0,702.0,77027.0,0.061,,D,B,2
+BDFP2.0,protein,P9XBV,bdfp20,587.0,666.0,,,,D,B,2
+bfloGFPa1,protein,6BXQP,bflogfpa1,500.0,512.0,120900.0,1.0,,D,B,0
+bfloGFPc1,protein,7AJCQ,bflogfpc1,493.0,521.0,98800.0,0.0015,,D,B,0
+BFP,protein,SDS4K,bfp,381.0,445.0,14000.0,0.38,,D,B,0
+BFP5,protein,RSDF7,bfp5,385.0,450.0,,,,,B,0
+BFP.A5,protein,A6N87,bfpa5,383.0,447.0,27400.0,0.48,3.27,WD,B,0
+Blue102,protein,N8PD5,blue102,403.0,454.0,11400.0,0.9,,,T,0
+Bluebonnet2,protein,JSPPN,bluebonnet2,399.0,454.0,,,,M,B,0
+BP02,protein,7XHKJ,bp02,342.0,382.0,4494.0,0.1139,0.69,M,B,0
+BR1,protein,WH633,br1,450.0,495.0,12500.0,0.45,,,B,2
+BrUSLEE,protein,1K2R7,bruslee,487.0,509.0,86000.0,0.3,0.82,M,B,2
+bsDronpa,protein,DOGBN,bsdronpa,460.0,504.0,45000.0,0.5,,M,PS,0
+CagFbFP,protein,N9NE1,cagfbfp,447.0,497.0,15317.0,0.36,,D,B,2
+CAR-GECO1,protein,WZXU4,car-geco1,576.0,629.0,3580.0,0.17,,,B,3
+ccalGFP1,protein,T41NE,ccalgfp1,504.0,517.0,78000.0,0.46,,T,B,0
+ccalGFP3,protein,UHFSE,ccalgfp3,505.0,517.0,144000.0,0.48,,T,B,0
+ccalOFP1,protein,5YBHO,ccalofp1,508.0,561.0,85000.0,0.52,,T,B,2
+ccalRFP1,protein,T44E8,ccalrfp1,568.0,598.0,92000.0,0.59,,T,B,0
+ccalRFP2,protein,HU1DA,ccalrfp2,558.0,516.0,61000.0,0.05,,,B,2
+ccalYFP1,protein,WVV8W,ccalyfp1,514.0,523.0,142000.0,0.75,,T,B,0
+ccGFP E6,protein,HUQ28,ccgfp-e6,501.0,520.0,,,,M,B,2
+cEGFP,protein,UNRFC,cegfp,489.0,507.0,,,,,B,0
+cerFP505,protein,8XMCL,cerfp505,494.0,505.0,54000.0,0.55,,T,B,0
+Cerulean,protein,CVUYM,cerulean,433.0,475.0,43000.0,0.62,3.3,WD,B,3
+CFP,protein,ZRLU4,cfp,456.0,480.0,,,,D,B,2
+cFP484,protein,O8SH6,cfp484,456.0,484.0,35300.0,0.48,,T,B,0
+cfSGFP2,protein,YAH6C,cfsgfp2,493.0,517.0,45000.0,0.75,,M,B,1
+cgfmKate2,protein,2D7XF,cgfmkate2,584.0,628.0,55000.0,0.47,,M,B,0
+CGFP,protein,5WSHL,cgfp,463.0,506.0,23900.0,0.14,,,B,0
+cgfTagRFP,protein,G9U12,cgftagrfp,555.0,584.0,86000.0,0.42,,M,B,2
+cgigCP,protein,24DFB,cgigcp,571.0,,,,,,,1
+cgigGFP,protein,UHFA9,cgiggfp,399.0,496.0,,,,,B,0
+CGP,protein,DK9OP,cgp,503.0,514.0,,0.55,,,B,2
+Channelrhodopsin2,protein,4RWBQ,channelrhodopsin2,485.0,1000.0,,,,,PA,1
+CheGFP1,protein,63KQB,chegfp1,488.0,500.0,,,,,B,0
+CheGFP2,protein,F3LOW,chegfp2,488.0,508.0,,,,,B,0
+CheGFP4,protein,VWLEW,chegfp4,488.0,500.0,,,,,B,0
+Citrine,protein,VR7EN,citrine,516.0,529.0,77000.0,0.76,3.6,WD,B,3
+Citrine2,protein,ZWH88,citrine2,509.0,522.0,98000.0,0.7,3.3,D,B,2
+cjBlue,protein,PL2EH,cjblue,610.0,620.0,66700.0,0.0001,,T,B,1
+cjBlue2,protein,ROTAL,cjblue2,603.0,,56600.0,0.0001,,T,B,0
+cjFP510,protein,R6P2K,cjfp510,500.0,510.0,,,,,B,0
+Clomeleon,protein,GVAVH,clomeleon,485.0,535.0,,,,,B,0
+Clover,protein,4Z641,clover,505.0,515.0,111000.0,0.76,3.2,WD,B,4
+cpCitrine,protein,9PBZV,cpcitrine,506.0,524.0,20000.0,0.1,,,B,0
+cpEYFP(V68L/Q69K),protein,2TAPF,cpeyfpv68lq69k,506.0,520.0,,,,,B,2
+cp-mKate,protein,2EM4B,cp-mkate,588.0,620.0,,0.33,,M,B,0
+cpT-Sapphire 174-173,protein,AJWMF,cpt-sapphire-174-173,399.0,511.0,44000.0,0.53,,,B,0
+CpYGFP,protein,RK5BV,cpygfp,508.0,518.0,101000.0,0.53,,D,B,0
+CreiLOV,protein,NENVO,creilov,450.0,495.0,12500.0,0.51,,M,B,2
+Crimson,protein,5HD4W,crimson,588.0,617.0,77000.0,0.42,,,B,0
+CRISPRed2s,protein,M59JJ,crispred2s,464.0,590.0,28700.0,0.382,,T,B,0
+CU17S,protein,5DXHD,cu17s,496.0,505.0,,,,D,B,0
+CyOFP1,protein,TL112,cyofp1,497.0,589.0,40000.0,0.76,3.6,M,B,3
+CyPet,protein,V534T,cypet,435.0,477.0,35000.0,0.51,,WD,B,2
+CyRFP1,protein,A8RF9,cyrfp1,529.0,588.0,48000.0,0.76,,WD,B,2
+D10,protein,GHBKT,d10,433.0,475.0,44000.0,0.46,,,B,0
+d1EosFP,protein,YLRRG,d1eosfp,571.0,581.0,40000.0,0.62,,D,PC,0
+d2EosFP,protein,1SEDF,d2eosfp,569.0,581.0,33000.0,0.6,,D,PC,0
+DarkVenus,protein,B8S8J,darkvenus,515.0,525.0,74400.0,0.05,,,B,2
+dCyOFP2s,protein,2DGCJ,dcyofp2s,510.0,592.0,36000.0,0.69,,D,B,0
+dCyRFP2s,protein,54XX1,dcyrfp2s,516.0,592.0,42000.0,0.58,,D,B,0
+deGFP1,protein,THWKH,degfp1,504.0,516.0,28700.0,0.16,,,B,0
+deGFP2,protein,MGNCD,degfp2,496.0,517.0,21700.0,0.34,,,B,0
+deGFP3,protein,B72B1,degfp3,508.0,518.0,26700.0,0.19,,,B,0
+deGFP4,protein,LDZC9,degfp4,509.0,518.0,26900.0,0.15,,,B,0
+dendFP,protein,JTXCJ,dendfp,492.0,508.0,90000.0,0.65,,T,PC,0
+Dendra,protein,GJDTN,dendra,556.0,575.0,20000.0,0.72,,M,PC,0
+Dendra2,protein,GE6KO,dendra2,490.0,507.0,45000.0,0.5,3.3,M,PC,2
+Dendra2-M159A,protein,CQ4QL,dendra2-m159a,528.0,562.0,45000.0,0.75,4.0,M,MP,0
+Dendra2-T69A,protein,XKDOQ,dendra2-t69a,563.0,578.0,35400.0,0.64,4.2,M,PC,3
+dfGFP,protein,P2PV8,dfgfp,505.0,524.0,,,,D,B,2
+dimer1,protein,ZC4KN,dimer1,551.0,579.0,,,,D,B,0
+dimer2,protein,DFXUK,dimer2,552.0,579.0,69000.0,0.69,,D,B,0
+DimVenus,protein,NOX8W,dimvenus,508.0,525.0,55400.0,0.03,,,B,2
+Diogenes,protein,3Z9FM,diogenes,579.0,603.0,90000.0,0.44,2.2,M,B,0
+dis2RFP,protein,ORVNV,dis2rfp,573.0,593.0,,,,,B,0
+dis3GFP,protein,D41LA,dis3gfp,503.0,512.0,,,,,B,0
+dKeima,protein,LMJV4,dkeima,440.0,616.0,24600.0,0.31,2.78,D,B,2
+dKeima570,protein,BUJNN,dkeima570,440.0,570.0,14000.0,0.15,,D,B,2
+dLanYFP,protein,SKHT2,dlanyfp,513.0,524.0,125000.0,0.9,3.1,D,B,2
+DrCBD,protein,Y2WTN,drcbd,416.0,622.0,,,,M,B,0
+Dreiklang,protein,JY7XC,dreiklang,511.0,529.0,83000.0,0.41,,M,PS,2
+d-RFP618,protein,GZCBS,d-rfp618,560.0,618.0,,0.35,,D,B,0
+Dronpa,protein,7P38V,dronpa,503.0,518.0,95000.0,0.85,3.6,M,PS,2
+Dronpa-2,protein,52ADP,dronpa-2,490.0,515.0,61732.0,0.33,,M,PS,0
+Dronpa-3,protein,42Q3E,dronpa-3,490.0,515.0,58000.0,0.33,,M,PS,0
+dsFP483,protein,YG5WM,dsfp483,443.0,483.0,23900.0,0.46,,T,B,3
+DspR1,protein,9T6B1,dspr1,556.0,582.0,,,,,B,0
+DsRed,protein,EGE3L,dsred,558.0,583.0,72500.0,0.68,,T,B,3
+DsRed2,protein,TXLFX,dsred2,561.0,587.0,52000.0,0.55,,T,B,3
+DsRed-Express,protein,DCYCK,dsred-express,554.0,586.0,30100.0,0.42,,T,B,2
+DsRed-Express2,protein,5DP2R,dsred-express2,554.0,591.0,35600.0,0.42,,,B,2
+DsRed.M1,protein,N33JN,dsredm1,558.0,587.0,27300.0,0.14,1.4,M,B,2
+DsRed-Max,protein,UVJD2,dsred-max,560.0,589.0,48000.0,0.41,,T,B,2
+DsRed-NF,protein,OF5G5,dsred-nf,561.0,600.0,57000.0,0.001,,,B,1
+DsRed.T3,protein,FRM5D,dsredt3,560.0,587.0,49500.0,0.59,,T,B,0
+DsRed.T4,protein,XHBTX,dsredt4,555.0,586.0,30300.0,0.44,,T,B,0
+DstC1,protein,7J2M8,dstc1,436.0,482.0,,,,,B,0
+dTFP0.1,protein,2BJM7,dtfp01,456.0,485.0,42000.0,0.63,,D,B,0
+dTFP0.2,protein,QQJHZ,dtfp02,456.0,486.0,60000.0,0.68,,D,B,3
+dTomato,protein,G1DQY,dtomato,554.0,581.0,69000.0,0.69,,D,B,2
+dUltramarine2,protein,UL6ZA,dultramarine2,587.0,,81500.0,0.0001,,D,B,0
+dVFP,protein,2DB3H,dvfp,491.0,503.0,107000.0,1.0,,D,B,0
+DyLight549P1,protein,T41B7,dylight549p1,550.0,575.0,150.0,0.091,,M,B,2
+E2-Crimson,protein,VSU6B,e2-crimson,611.0,646.0,126000.0,0.23,,T,B,3
+E2-Orange,protein,A3B6M,e2-orange,540.0,561.0,36500.0,0.54,,T,B,2
+E2-Red/Green,protein,VB2NB,e2-redgreen,560.0,585.0,53800.0,0.67,,,B,0
+EaGFP,protein,QJSF2,eagfp,506.0,514.0,,,,,B,0
+EBFP,protein,1LZV9,ebfp,380.0,440.0,31500.0,0.2,,WD,B,3
+EBFP1.2,protein,514KE,ebfp12,379.0,446.0,41000.0,0.45,,M,B,1
+EBFP1.5,protein,XBGJO,ebfp15,381.0,449.0,43000.0,0.53,,M,B,1
+EBFP2,protein,DVMQ7,ebfp2,383.0,448.0,32000.0,0.56,3.0,M,B,3
+ECFP,protein,27HOS,ecfp,434.0,477.0,32500.0,0.4,3.0,M,B,4
+ECFP H148D,protein,D4OFQ,ecfp-h148d,433.0,475.0,3200.0,0.68,,,B,0
+ECGFP,protein,9HU84,ecgfp,463.0,506.0,23900.0,0.14,,,B,0
+eCGP123,protein,GZU2E,ecgp123,495.0,505.0,59900.0,0.8,,,B,2
+eechGFP1,protein,MX4SD,eechgfp1,497.0,510.0,124200.0,0.75,,T,B,0
+eechGFP2,protein,37XMD,eechgfp2,506.0,520.0,109800.0,0.69,,T,B,0
+eechGFP3,protein,31NFQ,eechgfp3,512.0,524.0,120600.0,0.45,,T,B,0
+eechRFP,protein,JB7SD,eechrfp,574.0,582.0,12100.0,0.43,,T,B,0
+efasCFP,protein,OSFMK,efascfp,466.0,490.0,40333.0,0.77,,T,B,3
+efasGFP,protein,5EU5J,efasgfp,496.0,507.0,125800.0,0.8,,T,B,0
+eforCP,protein,TDA9A,eforcp,589.0,609.0,111300.0,0.16,,T,B,2
+EGFP,protein,R9NL8,egfp,488.0,507.0,55900.0,0.6,2.6,WD,B,3
+eGFP203C,protein,C16U6,egfp203c,498.0,509.0,,,,D,B,0
+eGFP205C,protein,54TPA,egfp205c,489.0,509.0,,,,D,B,0
+Electra1,protein,5X9A8,electra1,402.0,454.0,69750.0,0.74,3.4,M,B,3
+Electra2,protein,5GJX3,electra2,403.0,454.0,80900.0,0.76,3.4,M,B,3
+Emerald,protein,GLAD6,emerald,487.0,509.0,57500.0,0.68,,WD,B,0
+emiRFP670,protein,YHJV5,emirfp670,642.0,670.0,87400.0,0.14,1.53,M,B,2
+emiRFP703,protein,GNJK5,emirfp703,674.0,703.0,90900.0,0.086,,M,B,0
+Enhanced Cyan-Emitting GFP,protein,R3OET,enhanced-cyan-emitting-gfp,458.0,485.0,,,,,B,0
+EosFP,protein,16WGJ,eosfp,506.0,516.0,72000.0,0.7,,T,PC,0
+eqFP578,protein,G5OWS,eqfp578,552.0,578.0,102000.0,0.54,,D,B,0
+eqFP611,protein,R5RQ5,eqfp611,559.0,611.0,78000.0,0.45,2.5,T,B,2
+eqFP611 V124T,protein,ALL3F,eqfp611-v124t,559.0,611.0,74000.0,0.42,,D,B,0
+eqFP650,protein,JS838,eqfp650,592.0,650.0,65000.0,0.24,,D,B,3
+eqFP670,protein,7FXGZ,eqfp670,605.0,670.0,70000.0,0.06,,D,B,3
+EYFP,protein,8DNLG,eyfp,513.0,527.0,67000.0,0.67,3.1,WD,B,3
+EYFP-Q69K,protein,XZJ98,eyfp-q69k,514.0,526.0,72000.0,0.76,,WD,B,0
+eYGFP,protein,MQNBX,eygfp,507.0,516.0,124000.0,0.58,,D,B,0
+eYGFPuv,protein,KECCG,eygfpuv,398.0,512.0,31200.0,0.76,,D,B,2
+eYGPdp,protein,21E2G,eygpdp,501.0,513.0,49800.0,0.69,,D,B,0
+fabdGFP,protein,BQFPM,fabdgfp,508.0,520.0,116800.0,0.54,,T,B,0
+"FAST + HBR 3,5 DM",protein,TCVQR,fast-hbr-35-dm,500.0,560.0,53000.0,0.38,,M,B,2
+"FAST + HBR 3,5 DOM",protein,VHC8E,fast-hbr-35-dom,519.0,600.0,44000.0,0.33,,M,,2
+FAST + HMBR,protein,L3DPW,fast-hmbr,481.0,540.0,47000.0,0.23,,M,,2
+ffDronpa,protein,9U6KU,ffdronpa,503.0,517.0,105000.0,0.75,,M,PS,0
+Flamindo2,protein,J5AWO,flamindo2,504.0,523.0,,,,,,0
+FOLD6,protein,C5EUY,fold6,505.0,515.0,118200.0,0.73,,WD,B,2
+Folding Reporter GFP,protein,N6ZHS,folding-reporter-gfp,490.0,530.0,82400.0,0.72,,D,B,0
+FP586,protein,WUW5F,fp586,559.0,586.0,,,,,B,0
+FPrfl2.3,protein,7HX6W,fprfl23,506.0,512.0,,,,,B,0
+FR-1,protein,39D4R,fr-1,569.0,594.0,84900.0,0.34,2.3,M,B,0
+Free Use GFP,protein,7BLNH,free-use-gfp,395.0,503.0,27618.0,,,,B,0
+frFAST,protein,UUTXN,frfast,555.0,670.0,45000.0,0.21,,M,B,0
+frSkylan-S,protein,8DFHZ,frskylan-s,499.0,513.0,95400.0,0.8,2.93,M,PS,0
+FusionRed,protein,S6A7A,fusionred,580.0,608.0,94500.0,0.19,1.8,M,B,2
+FusionRed-M,protein,E3FDV,fusionred-m,571.0,594.0,71100.0,0.34,2.1,M,B,0
+FusionRed-MQV,protein,F35B7,fusionred-mqv,566.0,585.0,144000.0,0.53,2.77,M,B,3
+fwYellow,protein,COLSB,fwyellow,520.0,540.0,,,,D,B,0
+G1,protein,O2UFD,g1,487.0,503.0,26000.0,0.6,,M,B,1
+G2,protein,WLCQP,g2,487.0,503.0,39000.0,0.65,,M,B,0
+G3,protein,FM76L,g3,498.0,515.0,49000.0,0.7,,M,B,1
+G3GFP,protein,QGJWB,g3gfp,520.0,650.0,,,,,B,0
+Gamillus,protein,21PQ5,gamillus,504.0,519.0,83000.0,0.9,,M,PS,2
+Gamillus0.1,protein,AW33C,gamillus01,505.0,524.0,20000.0,0.84,,M,B,0
+Gamillus0.2,protein,WLNHW,gamillus02,505.0,524.0,55000.0,0.94,,D,B,0
+Gamillus0.3,protein,LQXJ6,gamillus03,505.0,524.0,51000.0,0.88,,M,B,0
+Gamillus0.4,protein,JVUSZ,gamillus04,505.0,524.0,75000.0,0.89,,M,B,0
+GCaMP2,protein,JKD8V,gcamp2,487.0,508.0,,,,,B,0
+GCaMP6f,protein,F5GKU,gcamp6f,300.0,300.0,66293.0,0.66,,,O,2
+GdT,protein,HQZZC,gdt,476.0,500.0,59000.0,0.14,,D,B,3
+gfasCP,protein,OXU4P,gfascp,577.0,,205200.0,,,T,,1
+gfasGFP,protein,ASMG7,gfasgfp,492.0,506.0,102500.0,0.73,,T,B,0
+GFP-151pyTyrCu,protein,L1JAY,gfp-151pytyrcu,375.0,510.0,,,,,B,0
+GFP(E222G),protein,1EOAR,gfpe222g,481.0,506.0,,,,,B,2
+GFPmut2,protein,QS3XQ,gfpmut2,485.0,508.0,53900.0,0.73,,WD,B,3
+GFPmut3,protein,A2OWC,gfpmut3,506.0,513.0,58191.0,0.39,,WD,B,2
+GFP (S65T),protein,B6J33,gfp-s65t,490.0,510.0,55000.0,0.64,,D,B,1
+GFP-Tyr151pyz,protein,GBEZ4,gfp-tyr151pyz,397.0,508.0,,,,,B,0
+GFPxm16,protein,7XQBJ,gfpxm16,485.0,504.0,,0.74,,M,B,0
+GFPxm161,protein,PK2PN,gfpxm161,500.0,510.0,,,,M,B,0
+GFPxm162,protein,PHV2M,gfpxm162,514.0,525.0,,,,M,B,0
+GFPxm163,protein,5M9ZL,gfpxm163,512.0,523.0,,1.0,,M,B,0
+GFPxm18,protein,PLVQM,gfpxm18,472.0,502.0,,0.96,,M,B,0
+GFPxm181uv,protein,KCUBM,gfpxm181uv,398.0,514.0,,,,M,B,0
+GFPxm18uv,protein,4YUEY,gfpxm18uv,400.0,513.0,,,,M,B,0
+GFPxm19,protein,DANPD,gfpxm19,475.0,502.0,,0.7,,M,B,0
+GFPxm191uv,protein,7NN4S,gfpxm191uv,498.0,510.0,,,,M,B,0
+GFPxm19uv,protein,XAQPR,gfpxm19uv,393.0,505.0,,,,M,B,0
+GGvT,protein,OYSEV,ggvt,476.0,500.0,91000.0,0.14,,TD,B,0
+GRvT,protein,H93B4,grvt,557.0,583.0,71000.0,0.97,,TD,B,2
+gtenCP,protein,FTKQU,gtencp,580.0,,,,,,,1
+GZnP3,protein,1E8G7,gznp3,488.0,512.0,23400.0,0.462,,M,B,1
+h2-3,protein,YQ25V,h2-3,506.0,516.0,130000.0,0.89,,D,B,2
+H9,protein,59R1F,h9,399.0,511.0,20000.0,0.6,,,B,0
+HcRed,protein,LP3PQ,hcred,592.0,645.0,20000.0,0.015,,T,B,2
+HcRed1-Blue,protein,1ZQEX,hcred1-blue,408.0,455.0,,,,T,B,0
+HcRed7,protein,LNY1F,hcred7,592.0,645.0,75000.0,0.08,,D,B,2
+HcRed-Tandem,protein,VWTNO,hcred-tandem,590.0,637.0,160000.0,0.04,,TD,B,0
+hcriGFP,protein,C5398,hcrigfp,405.0,500.0,,,,,B,0
+hmGFP,protein,EKYG9,hmgfp,490.0,510.0,,,,,B,2
+hmKeima8.5,protein,Q92FU,hmkeima85,438.0,612.0,32000.0,0.34,,M,B,0
+HriCFP,protein,CZPVJ,hricfp,450.0,495.0,,,,M,B,0
+HriGFP,protein,XBY8K,hrigfp,507.0,527.0,,,,M,B,0
+htFuncLib_acid.1,protein,WO1AA,htfunclib_acid1,486.0,508.0,,0.71,1.08,,B,2
+htFuncLib_acid.2,protein,ELPNT,htfunclib_acid2,489.0,509.0,,0.76,1.07,,B,2
+htFuncLib_acid.3,protein,X7B77,htfunclib_acid3,472.0,502.0,,0.71,1.06,,B,2
+htFuncLib_acid.4,protein,Z8XA4,htfunclib_acid4,490.0,511.0,,0.45,0.73,,B,2
+htFuncLib_acid.5,protein,BSGZ9,htfunclib_acid5,485.0,508.0,,0.56,0.9,,B,2
+htFuncLib_acid.6,protein,O4JCW,htfunclib_acid6,489.0,509.0,,0.38,0.73,,B,2
+htFuncLib_basic.1,protein,M2CL2,htfunclib_basic1,467.0,507.0,,0.0,0.73,,B,2
+htFuncLib_basic.2,protein,PZYVQ,htfunclib_basic2,496.0,512.0,,0.33,0.77,,B,2
+htFuncLib_basic.3,protein,8QHYG,htfunclib_basic3,476.0,503.0,,0.37,0.46,,B,2
+htFuncLib_basic.4,protein,OHNCP,htfunclib_basic4,464.0,501.0,,0.26,0.95,,B,2
+htFuncLib_basic.6,protein,A7KFM,htfunclib_basic6,487.0,506.0,,0.83,1.2,,B,2
+htFuncLib_bleach.1,protein,QG9Q3,htfunclib_bleach1,483.0,508.0,,0.54,0.98,,B,2
+htFuncLib_bleach.2,protein,YC6MJ,htfunclib_bleach2,471.0,504.0,,0.79,1.27,,B,2
+htFuncLib_bleach.3,protein,MWGPE,htfunclib_bleach3,502.0,514.0,,0.46,0.99,,B,2
+htFuncLib_bleach.4,protein,97D3T,htfunclib_bleach4,480.0,505.0,,0.4,0.89,,B,2
+htFuncLib_bleach.5,protein,Y5O8O,htfunclib_bleach5,474.0,510.0,,0.74,1.07,,B,2
+htFuncLib_bleach.6,protein,FRJFG,htfunclib_bleach6,500.0,513.0,,0.39,1.05,,B,2
+htFuncLib_em-blue-shift.1,protein,MPQJQ,htfunclib_em-blue-shift1,465.0,502.0,,0.3,0.84,,B,2
+htFuncLib_em-blue-shift.2,protein,UR8TM,htfunclib_em-blue-shift2,469.0,503.0,,0.64,0.99,,B,2
+htFuncLib_fast.1,protein,14TVO,htfunclib_fast1,465.0,500.0,,0.19,0.61,,B,2
+htFuncLib_fast.2,protein,A7RB2,htfunclib_fast2,483.0,508.0,,0.3,0.68,,B,2
+htFuncLib_fast.3,protein,HCTDS,htfunclib_fast3,470.0,503.0,,0.19,0.69,,B,2
+htFuncLib_fast.4,protein,BCD93,htfunclib_fast4,477.0,506.0,,0.3,0.72,,B,2
+htFuncLib_mid.10,protein,LMXFP,htfunclib_mid10,489.0,508.0,,0.45,0.85,,B,2
+htFuncLib_mid.11,protein,U3PPD,htfunclib_mid11,488.0,509.0,,0.4,0.88,,B,2
+htFuncLib_mid.12,protein,7V4LQ,htfunclib_mid12,470.0,504.0,,0.72,1.03,,B,2
+htFuncLib_mid.13,protein,RVB61,htfunclib_mid13,480.0,506.0,,0.37,0.84,,B,2
+htFuncLib_mid.2,protein,FLXJ6,htfunclib_mid2,476.0,510.0,,0.45,1.17,,B,2
+htFuncLib_mid.3,protein,WHL1L,htfunclib_mid3,501.0,513.0,,0.43,1.04,,B,2
+htFuncLib_mid.4,protein,MZOF5,htfunclib_mid4,498.0,512.0,,0.51,1.1,,B,2
+htFuncLib_mid.5,protein,LQ7D5,htfunclib_mid5,501.0,513.0,,0.4,1.01,,B,2
+htFuncLib_mid.6,protein,D4LY1,htfunclib_mid6,501.0,514.0,,0.38,0.8,,B,2
+htFuncLib_mid.7,protein,JDSFD,htfunclib_mid7,491.0,511.0,,0.58,1.1,,B,2
+htFuncLib_mid.8,protein,79SEY,htfunclib_mid8,484.0,508.0,,0.37,0.8,,B,2
+htFuncLib_mid.9,protein,SV3AL,htfunclib_mid9,493.0,511.0,,0.46,1.14,,B,2
+htFuncLib_photostable.1,protein,K5XCR,htfunclib_photostable1,394.0,505.0,,0.0,1.0,,B,2
+htFuncLib_photostable.2,protein,ZL4PC,htfunclib_photostable2,507.0,515.0,,0.22,0.62,,B,2
+htFuncLib_sf:acid.3,protein,VAOO7,htfunclib_sfacid3,474.0,504.0,,0.64,0.83,,B,2
+htFuncLib_sf:acid.4,protein,S4UFT,htfunclib_sfacid4,490.0,512.0,,0.4,0.7,,B,2
+htFuncLib_sf:acid.5,protein,XUAR3,htfunclib_sfacid5,487.0,510.0,,0.47,0.95,,B,2
+htFuncLib_sf:bleach.1,protein,LN18S,htfunclib_sfbleach1,488.0,510.0,,0.53,0.92,,B,2
+htFuncLib_sf:bleach.2,protein,L1LXR,htfunclib_sfbleach2,488.0,508.0,,0.58,0.84,,B,2
+htFuncLib_sf:bleach.3,protein,EPJ8V,htfunclib_sfbleach3,493.0,511.0,,0.44,0.94,,B,2
+htFuncLib_sf:em-blue-shift.1,protein,7HWV7,htfunclib_sfem-blue-shift1,473.0,506.0,,0.42,0.49,,B,2
+htFuncLib_sf:em-blue-shift.2,protein,7YMEB,htfunclib_sfem-blue-shift2,476.0,506.0,,0.7,0.95,,B,2
+htFuncLib_sf:fast.3,protein,DLETY,htfunclib_sffast3,488.0,509.0,,0.42,0.71,,B,2
+htFuncLib_sf:mid.10,protein,7LCRR,htfunclib_sfmid10,488.0,509.0,,0.56,0.73,,B,2
+htFuncLib_sf:mid.11,protein,M7SDW,htfunclib_sfmid11,488.0,509.0,,0.45,0.73,,B,2
+htFuncLib_sf:mid.12,protein,ENAMS,htfunclib_sfmid12,488.0,508.0,,0.6,0.94,,B,2
+htFuncLib_sf:mid.5,protein,9XJTC,htfunclib_sfmid5,498.0,512.0,,0.41,0.77,,B,2
+htFuncLib_sf:mid.7,protein,LA3L3,htfunclib_sfmid7,489.0,509.0,,0.53,0.89,,B,2
+htFuncLib_sf:mid.9,protein,1R5CB,htfunclib_sfmid9,497.0,511.0,,0.47,1.01,,B,2
+htFuncLib_sf:photostable.1,protein,HU13M,htfunclib_sfphotostable1,488.0,508.0,,0.52,0.8,,B,2
+htFuncLib_sf:photostable.2,protein,1LB8K,htfunclib_sfphotostable2,496.0,511.0,,0.46,0.85,,B,2
+htFuncLib_sf:thermo.2,protein,YCXS5,htfunclib_sfthermo2,509.0,516.0,,0.54,1.06,,B,2
+htFuncLib_sf:thermo.9,protein,LMFWL,htfunclib_sfthermo9,502.0,515.0,,0.49,1.05,,B,2
+htFuncLib_slow.1,protein,O3J17,htfunclib_slow1,506.0,522.0,,0.62,1.68,,B,2
+htFuncLib_slow.2,protein,DE52E,htfunclib_slow2,483.0,507.0,,0.37,1.59,,B,2
+htFuncLib_slow.3,protein,1BS3R,htfunclib_slow3,483.0,506.0,,0.44,1.37,,B,2
+htFuncLib_slow.4,protein,VGWZK,htfunclib_slow4,393.0,509.0,,0.29,1.32,,B,2
+htFuncLib_slow.5,protein,DVWG8,htfunclib_slow5,492.0,510.0,,0.57,1.27,,B,2
+htFuncLib_thermo.1,protein,YVPT6,htfunclib_thermo1,509.0,523.0,,0.61,1.53,,B,2
+htFuncLib_thermo.2,protein,S695B,htfunclib_thermo2,511.0,525.0,,0.58,1.48,,B,2
+htFuncLib_thermo.3,protein,GYBKZ,htfunclib_thermo3,508.0,524.0,,0.62,1.53,,B,2
+htFuncLib_thermo.4,protein,UJG2E,htfunclib_thermo4,396.0,507.0,,0.19,1.14,,B,2
+htFuncLib_thermo.5,protein,6UXG3,htfunclib_thermo5,397.0,510.0,,0.66,1.06,,B,2
+htFuncLib_thermo.6,protein,RC341,htfunclib_thermo6,398.0,510.0,,0.72,1.08,,B,2
+htFuncLib_thermo.8,protein,C4C4B,htfunclib_thermo8,400.0,510.0,,0.73,0.96,,B,2
+htFuncLib_thermo.9,protein,672X4,htfunclib_thermo9,503.0,519.0,,0.44,1.27,,B,2
+Hyperfolder YFP,protein,YX459,hyperfolder-yfp,514.0,529.0,119500.0,0.6,,WD,B,2
+iFP1.4,protein,WSRVG,ifp14,684.0,708.0,92000.0,0.07,,M,B,2
+iFP2.0,protein,B53TZ,ifp20,690.0,711.0,86000.0,0.08,,,B,2
+iLov,protein,CE7VU,ilov,447.0,497.0,,0.44,,,O,0
+iq-EBFP2,protein,QXJO4,iq-ebfp2,386.0,446.0,24800.0,0.63,,M,B,0
+iq-mApple,protein,WPO9A,iq-mapple,568.0,593.0,34400.0,0.36,,M,B,0
+iq-mCerulean3,protein,PX32J,iq-mcerulean3,433.0,474.0,27300.0,0.92,,M,B,0
+iq-mEmerald,protein,7G47U,iq-memerald,482.0,509.0,50400.0,0.67,,M,B,0
+iq-mKate2,protein,QNUKK,iq-mkate2,580.0,632.0,11600.0,0.34,,M,B,0
+iq-mVenus,protein,H9KU1,iq-mvenus,516.0,529.0,88700.0,0.63,,M,B,0
+iRFP670,protein,Q5DYR,irfp670,643.0,670.0,114000.0,0.11,,D,B,3
+iRFP682,protein,N3G27,irfp682,663.0,682.0,90000.0,0.11,0.95,D,B,2
+iRFP702,protein,7WEWT,irfp702,673.0,702.0,93000.0,0.08,,D,B,2
+iRFP713,protein,DGXFA,irfp713,690.0,713.0,105000.0,0.06,,D,B,2
+iRFP713/V256C,protein,3G1CL,irfp713v256c,662.0,680.0,94000.0,0.145,,D,B,0
+iRFP720,protein,OX75X,irfp720,702.0,720.0,96000.0,0.06,,D,B,3
+IrisFP,protein,PA6OT,irisfp,551.0,580.0,35400.0,0.47,,T,MP,0
+IrisFP-M159A,protein,T44HU,irisfp-m159a,484.0,513.0,62800.0,0.18,,T,PS,0
+jRCaMP1a,protein,7VM5E,jrcamp1a,573.0,595.0,42735.0,0.29,,,B,3
+Jred,protein,HKDXH,jred,584.0,610.0,44000.0,0.2,,D,B,2
+jREX-GECO1,protein,YPB84,jrex-geco1,577.0,599.0,31746.0,0.061,,,B,3
+jRGECO1a,protein,TUAGZ,jrgeco1a,450.0,595.0,4741.0,0.12,,,O,3
+Kaede,protein,Q31FH,kaede,508.0,518.0,98800.0,0.88,3.4,T,PC,2
+Katushka,protein,Q2ZO7,katushka,588.0,635.0,65000.0,0.34,2.1,D,B,3
+Katushka2S,protein,4E21X,katushka2s,588.0,633.0,67000.0,0.44,,D,B,2
+Katushka-9-5,protein,JO1K2,katushka-9-5,588.0,635.0,,,,D,B,0
+KCY,protein,2P4CB,kcy,455.0,488.0,38700.0,0.85,,D,B,0
+KCY-G4219,protein,3KHK4,kcy-g4219,453.0,486.0,21100.0,0.8,,,B,3
+KCY-G4219-38L,protein,NKT4V,kcy-g4219-38l,464.0,494.0,,,,,B,0
+KCY-R1,protein,437NM,kcy-r1,461.0,492.0,21200.0,0.75,,D,B,0
+KCY-R1-158A,protein,Z78XR,kcy-r1-158a,459.0,489.0,,,,,B,0
+KCY-R1-38H,protein,JWC7O,kcy-r1-38h,459.0,489.0,,,,,B,0
+KCY-R1-38L,protein,GR6FV,kcy-r1-38l,467.0,496.0,13000.0,,,,B,0
+KFP1,protein,5N1DD,kfp1,580.0,600.0,59000.0,0.07,,T,PA,2
+K-GECO1,protein,5ELUZ,k-geco1,572.0,597.0,18750.0,0.19,,,B,3
+KikG,protein,PRMX6,kikg,507.0,517.0,81000.0,0.68,,T,B,0
+KikGR1,protein,OB7P5,kikgr1,507.0,517.0,53700.0,0.7,,T,PC,2
+KillerOrange,protein,97MBQ,killerorange,455.0,555.0,41200.0,0.42,,D,B,3
+KillerRed,protein,MSYZC,killerred,585.0,610.0,45000.0,0.25,,D,B,2
+KO,protein,A8BXL,ko,548.0,561.0,109750.0,0.45,4.2,D,B,2
+KOFP-7,protein,25HRD,kofp-7,450.0,496.0,,0.61,,,B,0
+Kohinoor,protein,L3C27,kohinoor,495.0,514.0,62900.0,0.71,,M,PS,2
+Kohinoor2.0,protein,L1ZEW,kohinoor20,500.0,516.0,31200.0,0.607,,,PS,0
+laesGFP,protein,7YHAN,laesgfp,491.0,506.0,,,,,B,0
+laGFP,protein,YYN9U,lagfp,502.0,511.0,,,,,B,0
+LanFP1,protein,T9CO9,lanfp1,500.0,510.0,53000.0,0.57,,,B,0
+LanFP2,protein,HXBWE,lanfp2,500.0,516.0,162000.0,0.0013,,,B,0
+lanRFP-&Delta;S83l,protein,GNV89,lanrfp-deltas83l,521.0,592.0,71000.0,0.1,,D,B,0
+LanYFP,protein,WK5F6,lanyfp,513.0,524.0,150000.0,0.95,,T,B,0
+laRFP,protein,G5H29,larfp,521.0,592.0,71000.0,0.1,,,B,0
+Lime,protein,BJRSJ,lime,488.0,510.0,45000.0,0.77,,,O,2
+LSSA12,protein,V81JD,lssa12,398.0,511.0,38700.0,0.38,,M,B,2
+LSSmApple,protein,JMXXU,lssmapple,490.0,600.0,45000.0,0.31,,M,B,2
+LSSmCherry1,protein,EY2GX,lssmcherry1,450.0,610.0,35000.0,0.29,,M,B,2
+LSSmGFP,protein,SGW8V,lssmgfp,400.0,510.0,36900.0,0.48,,M,B,2
+LSS-mKate1,protein,GLJ6S,lss-mkate1,463.0,624.0,31200.0,0.08,,M,B,2
+LSS-mKate2,protein,RU9EF,lss-mkate2,460.0,605.0,26000.0,0.17,1.4,M,B,2
+LSSmOrange,protein,OVJRJ,lssmorange,437.0,572.0,52000.0,0.45,,M,B,3
+LSSmScarlet,protein,POBTH,lssmscarlet,470.0,598.0,30200.0,0.42,,M,B,2
+LSSmScarlet2,protein,OOASP,lssmscarlet2,470.0,600.0,30000.0,0.29,,M,B,0
+LSSmScarlet3,protein,86FNG,lssmscarlet3,466.0,598.0,27300.0,0.36,,M,B,0
+LucY,protein,NC216,lucy,460.0,528.0,11662.0,0.356,,M,B,2
+Lumazine binding protein,protein,6TP83,lumazine-binding-protein,420.0,470.0,,0.55,13.6,,B,2
+M355NA,protein,PO1ML,m355na,572.0,595.0,220000.0,0.21,,T,B,0
+mAmetrine,protein,DF1S4,mametrine,406.0,526.0,45000.0,0.58,,M,B,4
+mApple,protein,T5UGO,mapple,568.0,592.0,75000.0,0.49,2.9,M,B,2
+Maroon0.1,protein,6F9A8,maroon01,610.0,650.0,50000.0,0.11,,D,B,2
+mARs1,protein,A6URG,mars1,571.0,598.0,27100.0,0.26,,M,B,2
+mAvicFP1,protein,SXYKQ,mavicfp1,480.0,503.0,65000.0,0.63,,M,B,2
+mAzamiGreen,protein,QRBKZ,mazamigreen,492.0,505.0,41800.0,0.81,,,B,3
+mBanana,protein,9GUD2,mbanana,540.0,553.0,6000.0,0.7,,M,B,3
+mBaoJin,protein,4XHVQ,mbaojin,500.0,508.0,128000.0,0.93,3.1,M,B,3
+mBaoJin-N137K,protein,VBNF5,mbaojin-n137k,504.0,510.0,72949.0,0.68,,M,B,1
+mBaoJin-S134P,protein,YM2UC,mbaojin-s134p,502.0,510.0,70245.0,0.83,,M,B,1
+mBaoJin-T55S,protein,KEBCT,mbaojin-t55s,497.0,508.0,127000.0,0.86,,M,B,1
+mBaoJin-V152E,protein,K655P,mbaojin-v152e,498.0,508.0,114146.0,0.61,,M,B,1
+mBeRFP,protein,2ERUG,mberfp,446.0,611.0,65000.0,0.27,2.0,M,B,3
+mBlueberry1,protein,WNJAS,mblueberry1,398.0,452.0,11000.0,0.48,,M,B,1
+mBlueberry2,protein,NYYN4,mblueberry2,402.0,467.0,51000.0,0.48,,M,B,2
+mc1,protein,VBVAC,mc1,508.0,582.0,,,,,B,0
+mc2,protein,N2LZL,mc2,505.0,515.0,,,,,B,0
+mc3,protein,9PWLU,mc3,505.0,515.0,,,,,B,0
+mc4,protein,Q7SKD,mc4,505.0,515.0,,,,,B,0
+mc5,protein,C36M3,mc5,435.0,495.0,,,,,B,0
+mc6,protein,Z6R8B,mc6,495.0,507.0,,,,,B,0
+McaG1,protein,WKCO7,mcag1,492.0,514.0,,,,,B,0
+McaG1ea,protein,JF6E7,mcag1ea,492.0,514.0,,,,,B,0
+McaG2,protein,T93PK,mcag2,492.0,502.0,,,,,B,0
+mCardinal,protein,7EWEM,mcardinal,604.0,659.0,87000.0,0.19,,M,B,4
+mCarmine,protein,LG377,mcarmine,603.0,675.0,83000.0,0.07,,M,B,3
+mcavFP,protein,SF8MO,mcavfp,440.0,510.0,,,,,B,0
+mcavGFP,protein,1SBTT,mcavgfp,506.0,516.0,,,,,B,0
+mcavRFP,protein,4LQJE,mcavrfp,508.0,580.0,,,,,B,0
+mcCFP,protein,6N98Z,mccfp,432.0,477.0,,0.385,2.66,T,B,0
+mCerulean,protein,J2JWA,mcerulean,433.0,475.0,33000.0,0.49,,M,B,3
+mCerulean2,protein,UDAAK,mcerulean2,432.0,474.0,47000.0,0.6,3.04,M,B,0
+mCerulean2.D3,protein,9KYTB,mcerulean2d3,434.0,472.0,45000.0,0.52,,M,B,0
+mCerulean2.N,protein,WQ6TU,mcerulean2n,440.0,484.0,49000.0,0.48,2.63,M,B,0
+mCerulean2.N(T65S),protein,EEJ9Q,mcerulean2nt65s,439.0,481.0,43000.0,0.46,,M,B,0
+mCerulean3,protein,TWJXO,mcerulean3,433.0,475.0,40000.0,0.87,4.1,M,B,3
+mCerulean.B,protein,ORBRD,mceruleanb,434.0,473.0,43000.0,0.49,,M,B,0
+mCerulean.B2,protein,9ALF8,mceruleanb2,432.0,471.0,39000.0,0.5,,M,B,0
+mCerulean.B24,protein,243P7,mceruleanb24,433.0,473.0,43000.0,0.52,,M,B,0
+mChartreuse,protein,J59TV,mchartreuse,487.0,510.0,71000.0,0.75,,M,B,3
+mCherry,protein,ZERB6,mcherry,587.0,610.0,72000.0,0.22,1.4,M,B,3
+mCherry2,protein,CN92E,mcherry2,589.0,610.0,79400.0,0.22,,M,B,2
+mCherry_I202T,protein,P1FHR,mcherry_i202t,587.0,617.0,,0.04,,,B,3
+mCherry_I202Y,protein,P5PQK,mcherry_i202y,592.0,620.0,,0.02,,,B,3
+mCherry_M10L,protein,XXLM6,mcherry_m10l,583.0,611.0,,,,,B,2
+mCherry-XL,protein,HZMZV,mcherry-xl,558.0,589.0,72000.0,0.7,3.9,M,B,2
+mCitrine,protein,3Q37R,mcitrine,516.0,529.0,94000.0,0.74,,M,B,3
+mClavGR2,protein,6LRFZ,mclavgr2,488.0,504.0,19000.0,0.77,,M,PC,0
+mClover3,protein,RYFE4,mclover3,506.0,518.0,109000.0,0.78,3.11,M,B,2
+mCRISPRed,protein,RTMMX,mcrispred,460.0,592.0,28500.0,0.46,2.1,M,B,2
+mCyRFP1,protein,UQH8C,mcyrfp1,528.0,594.0,27000.0,0.65,3.71,M,B,3
+mECFP,protein,MVN8T,mecfp,433.0,475.0,33000.0,0.41,,M,B,3
+meffCFP,protein,73TKS,meffcfp,467.0,492.0,88600.0,0.55,,T,B,3
+meffGFP,protein,N6WUS,meffgfp,492.0,506.0,92000.0,0.58,,T,B,0
+meffRFP,protein,ND36H,meffrfp,560.0,576.0,99600.0,0.56,,T,B,0
+mEGFP,protein,QKFJN,megfp,488.0,507.0,56000.0,0.6,,M,B,3
+meleCFP,protein,KKQNA,melecfp,454.0,485.0,47400.0,0.74,,T,B,3
+meleRFP,protein,UWMXB,melerfp,573.0,579.0,45600.0,0.85,,T,B,0
+mEmerald,protein,AD4BK,memerald,487.0,509.0,57500.0,0.68,,M,B,2
+mEos2,protein,OTXRQ,meos2,506.0,519.0,56000.0,0.84,3.5,WD,PC,2
+mEos2-A69T,protein,YJY7C,meos2-a69t,565.0,580.0,11500.0,0.66,4.2,M,PC,0
+mEos3.1,protein,73GT1,meos31,505.0,513.0,88400.0,0.83,,M,PC,2
+mEos3.2,protein,VUXRF,meos32,507.0,516.0,63400.0,0.84,,M,PC,2
+mEos4a,protein,EC56T,meos4a,571.0,580.0,61000.0,0.71,,M,PC,2
+mEos4b,protein,V2GB1,meos4b,570.0,580.0,55500.0,0.71,,,PC,2
+mEos4b-L93M,protein,F3GZ1,meos4b-l93m,569.0,580.0,57200.0,0.63,,M,PC,0
+mEos4Fast1,protein,TP5Z2,meos4fast1,570.0,580.0,58450.0,0.73,,M,PC,0
+mEos4Fast2,protein,9KH59,meos4fast2,565.0,580.0,43290.0,0.54,,M,PC,0
+mEosEM,protein,DKEXK,meosem,569.0,579.0,170128.0,0.66,,M,PC,2
+mEosFP,protein,N8HMF,meosfp,569.0,581.0,37000.0,0.62,4.1,M,PC,0
+mEosFP-F173S,protein,81ENW,meosfp-f173s,550.0,581.0,25000.0,0.41,3.7,M,MP,0
+mEosFP-M159A,protein,WBU2Y,meosfp-m159a,487.0,514.0,98600.0,0.52,3.2,M,B,0
+mEYFP,protein,SBLM5,meyfp,515.0,528.0,79000.0,0.62,,M,B,0
+MfaG1,protein,6XY7Q,mfag1,492.0,508.0,,,,,B,0
+mGarnet,protein,AE8QV,mgarnet,598.0,670.0,95000.0,0.09,0.8,M,B,3
+mGarnet2,protein,7DP3C,mgarnet2,598.0,671.0,105000.0,0.087,0.76,M,B,3
+mGeos-C,protein,VVNZ5,mgeos-c,505.0,516.0,76967.0,0.81,,M,PS,0
+mGeos-E,protein,5WALF,mgeos-e,501.0,513.0,69630.0,0.75,,M,PS,0
+mGeos-F,protein,H8UXC,mgeos-f,504.0,515.0,53135.0,0.85,,M,PS,0
+mGeos-L,protein,8QC31,mgeos-l,501.0,513.0,53448.0,0.72,,M,PS,0
+mGeos-M,protein,RD2N4,mgeos-m,503.0,514.0,51600.0,0.85,,M,PS,0
+mGeos-S,protein,U9LQE,mgeos-s,501.0,512.0,64602.0,0.76,,M,PS,0
+mGFPmut3,protein,37ZRR,mgfpmut3,500.0,513.0,89400.0,0.39,,M,B,0
+mGinger1,protein,AQ2DU,mginger1,587.0,637.0,58000.0,0.02,,M,B,2
+mGinger2,protein,GSP4M,mginger2,578.0,631.0,36000.0,0.04,,M,B,2
+mGold,protein,UNETX,mgold,515.0,531.0,107000.0,0.64,,M,B,3
+mGold2s,protein,CGRMD,mgold2s,517.0,529.0,131000.0,0.69,3.04,M,B,3
+mGold2t,protein,HUE6V,mgold2t,515.0,527.0,126000.0,0.7,2.95,M,B,3
+mGrape1,protein,AL871,mgrape1,595.0,625.0,50000.0,0.03,,M,B,0
+mGrape2,protein,H6RGM,mgrape2,605.0,636.0,33000.0,0.03,,M,B,0
+mGrape3,protein,O351D,mgrape3,608.0,646.0,40000.0,0.03,,M,B,3
+mGreenLantern,protein,G1VL1,mgreenlantern,503.0,514.0,101800.0,0.72,,M,B,2
+mHoneydew,protein,FLO5T,mhoneydew,487.0,562.0,17000.0,0.12,,M,B,2
+MiCy,protein,T7XX8,micy,472.0,495.0,27250.0,0.9,3.4,D,B,2
+mIFP,protein,LDVKW,mifp,683.0,704.0,82000.0,0.08,,M,B,2
+miniGFP1,protein,OOLCX,minigfp1,450.0,499.0,16800.0,0.31,4.46,M,B,3
+miniGFP2,protein,UVP48,minigfp2,450.0,499.0,16200.0,0.32,4.54,,B,3
+miniSOG,protein,ZZHSE,minisog,447.0,501.0,14100.0,0.43,,M,B,2
+miniSOG2,protein,8EDYL,minisog2,429.0,507.0,,,,,B,3
+miniSOG Q103V,protein,G4TXA,minisog-q103v,440.0,487.0,,0.43,,M,B,0
+miRFP,protein,HO9GG,mirfp,674.0,703.0,92400.0,0.097,,M,B,2
+miRFP2,protein,AYRSR,mirfp2,676.0,706.0,55600.0,0.043,,M,B,2
+miRFP670,protein,DP999,mirfp670,642.0,670.0,87400.0,0.14,1.42,M,B,2
+miRFP670-2,protein,1KUE6,mirfp670-2,643.0,670.0,103000.0,0.136,1.42,M,B,2
+miRFP670nano,protein,1KNNM,mirfp670nano,645.0,670.0,95000.0,0.108,,M,B,2
+miRFP670nano3,protein,MASAE,mirfp670nano3,645.0,670.0,129000.0,0.185,,M,B,3
+miRFP670v1,protein,GCOU1,mirfp670v1,644.0,670.0,71300.0,0.116,,M,B,0
+miRFP680,protein,RAKQZ,mirfp680,661.0,680.0,94000.0,0.145,1.67,M,B,2
+miRFP682,protein,X1DTP,mirfp682,663.0,682.0,91000.0,0.112,,M,B,0
+miRFP702,protein,55FPY,mirfp702,673.0,702.0,88000.0,0.081,,M,B,0
+miRFP703,protein,1B7TK,mirfp703,674.0,703.0,90900.0,0.086,,M,B,2
+miRFP709,protein,Q6V69,mirfp709,683.0,709.0,78400.0,0.054,,M,B,2
+miRFP713,protein,2EG15,mirfp713,690.0,713.0,99000.0,0.07,0.89,M,B,2
+miRFP720,protein,AJLWS,mirfp720,702.0,720.0,98000.0,0.061,,M,B,2
+mIrisFP,protein,KDHFJ,mirisfp,486.0,516.0,47000.0,0.54,,M,MP,0
+mJuniper,protein,6KPKA,mjuniper,434.0,475.0,32000.0,0.43,,M,B,3
+mKalama1,protein,TUONH,mkalama1,385.0,456.0,36000.0,0.45,,M,B,3
+mKate,protein,WRF55,mkate,588.0,635.0,45000.0,0.33,,M,B,3
+mKate2,protein,DBBO8,mkate2,588.0,633.0,62500.0,0.4,2.5,M,B,3
+mKate M41G S158C,protein,26VNF,mkate-m41g-s158c,593.0,648.0,73000.0,0.22,,M,B,0
+mKate S158A,protein,BRFP4,mkate-s158a,585.0,630.0,75000.0,0.3,,M,B,2
+mKate S158C,protein,W34KB,mkate-s158c,586.0,630.0,63000.0,0.33,,M,B,2
+mKeima,protein,SXBT1,mkeima,440.0,620.0,14400.0,0.24,2.93,M,B,2
+mKelly1,protein,3PP3A,mkelly1,596.0,656.0,44000.0,0.16,,M,B,2
+mKelly2,protein,T9G4X,mkelly2,598.0,649.0,43000.0,0.18,,M,B,2
+mKG,protein,PS1S2,mkg,494.0,507.0,,,,M,B,0
+mK-GO,protein,SBO48,mk-go,548.0,561.0,42000.0,,,M,O,2
+mKikGR,protein,RHTPG,mkikgr,505.0,515.0,49000.0,0.69,,M,PC,2
+mKillerOrange,protein,QB9WJ,mkillerorange,458.0,560.0,35000.0,0.5,,M,B,3
+mKO,protein,RR1M4,mko,548.0,559.0,51600.0,0.6,4.1,M,B,2
+mKO2,protein,134NN,mko2,551.0,565.0,63800.0,0.62,,M,B,3
+mKO&kappa;,protein,HMK8R,mkokappa,551.0,563.0,105000.0,0.61,,M,B,3
+mLemon,protein,Q7WVB,mlemon,514.0,526.0,125000.0,0.74,,M,B,3
+mLumin,protein,UQCHR,mlumin,587.0,621.0,70000.0,0.46,,M,B,2
+mLychee,protein,893F3,mlychee,568.0,596.0,80000.0,0.5,,M,B,3
+mMaple,protein,SXSQ9,mmaple,489.0,505.0,15000.0,0.74,,M,PC,2
+mMaple2,protein,SEJ6N,mmaple2,492.0,506.0,,,,WD,PC,2
+mMaple3,protein,MNH1D,mmaple3,491.0,506.0,15760.0,0.37,,M,PC,2
+mMaroon1,protein,RATTD,mmaroon1,609.0,657.0,80000.0,0.11,,M,B,3
+mmGFP,protein,U5ALR,mmgfp,398.0,505.0,,0.645,3.1,M,B,0
+mMiCy,protein,ZS5CR,mmicy,470.0,496.0,22150.0,0.7,,M,B,2
+mmilCFP,protein,QB1DP,mmilcfp,404.0,492.0,42500.0,0.9,,T,B,0
+mNectarine,protein,4O71N,mnectarine,558.0,578.0,58000.0,0.45,,M,B,0
+mNeonGreen,protein,ZRKRV,mneongreen,506.0,517.0,116000.0,0.8,3.1,M,B,3
+mNeptune,protein,1LT8G,mneptune,600.0,650.0,67000.0,0.2,,M,B,3
+mNeptune2,protein,VXEVZ,mneptune2,599.0,651.0,89000.0,0.24,,M,B,0
+mNeptune2.5,protein,OADBJ,mneptune25,599.0,643.0,95000.0,0.24,,M,B,2
+mNeptune681,protein,REVUQ,mneptune681,604.0,681.0,38000.0,0.04,,M,B,2
+mNeptune684,protein,Q8TQ6,mneptune684,604.0,684.0,39000.0,0.03,,M,B,0
+Monomeric hyperfolder YFP,protein,PF2S1,monomeric-hyperfolder-yfp,515.0,529.0,124000.0,0.62,,M,B,2
+Montipora sp. #20-9115,protein,C69E5,montipora-sp-20-9115,580.0,606.0,,,,,B,2
+mOrange,protein,G6HDH,morange,548.0,562.0,71000.0,0.69,,M,B,3
+mOrange2,protein,5GR1V,morange2,549.0,565.0,58000.0,0.6,2.7,M,B,3
+moxBFP,protein,SSTDU,moxbfp,385.0,448.0,31000.0,0.56,,M,B,0
+moxCerulean3,protein,TPB93,moxcerulean3,434.0,474.0,41000.0,0.87,,M,B,2
+moxDendra2,protein,Y46HX,moxdendra2,551.0,571.0,31200.0,0.55,,M,PC,2
+moxGFP,protein,H99SX,moxgfp,486.0,510.0,87000.0,0.58,,M,B,2
+moxMaple3,protein,LY1S9,moxmaple3,490.0,506.0,14800.0,0.37,,M,PC,2
+moxNeonGreen,protein,GSCT9,moxneongreen,505.0,520.0,111000.0,0.74,,M,B,0
+moxVenus,protein,2KWB9,moxvenus,514.0,526.0,89000.0,0.49,,M,B,0
+mPapaya,protein,5LCAQ,mpapaya,530.0,541.0,43000.0,0.83,,M,B,2
+mPapaya0.7,protein,LGDN9,mpapaya07,529.0,541.0,23000.0,0.69,,M,B,0
+mPlum,protein,XU2WO,mplum,590.0,649.0,41000.0,0.1,,M,B,3
+mPlum-E16P,protein,TCPO9,mplum-e16p,590.0,630.0,,0.14,,M,B,0
+mRaspberry,protein,V5FM2,mraspberry,598.0,625.0,86000.0,0.15,,M,B,3
+mRed7,protein,1NW9S,mred7,589.0,606.0,,,0.43,M,B,0
+mRed7Q1,protein,TJBUO,mred7q1,560.0,591.0,,,2.29,M,B,0
+mRed7Q1S1,protein,9TBLQ,mred7q1s1,569.0,595.0,,,,M,B,0
+mRed7Q1S1BM,protein,86QDA,mred7q1s1bm,569.0,596.0,,,3.3,M,B,0
+mRFP1,protein,5YCFA,mrfp1,584.0,607.0,50000.0,0.25,,M,B,4
+mRFP1.1,protein,EY795,mrfp11,589.0,612.0,,,,M,B,0
+mRFP1.2,protein,HMOJG,mrfp12,590.0,612.0,,,,M,B,2
+mRFP1_Magenta,protein,3NCM3,mrfp1_magenta,588.0,616.0,,,,,B,0
+mRFP1_Pink,protein,K6V3F,mrfp1_pink,565.0,581.0,,,,,B,0
+mRFP1-Q66C,protein,MSSUL,mrfp1-q66c,559.0,580.0,31800.0,0.33,,M,B,0
+mRFP1-Q66S,protein,CQCQT,mrfp1-q66s,555.0,569.0,32900.0,0.35,,M,B,0
+mRFP1-Q66T,protein,P4KRD,mrfp1-q66t,549.0,570.0,38100.0,0.43,,M,B,0
+mRFP1_Violet,protein,HBEF2,mrfp1_violet,586.0,619.0,,,,,B,0
+mRFP1_Yellow,protein,8O716,mrfp1_yellow,498.0,,,,,,B,0
+mRhubarb713,protein,OZEBT,mrhubarb713,690.0,713.0,113457.0,0.0763,,M,B,2
+mRhubarb719,protein,TUP2T,mrhubarb719,700.0,719.0,83768.0,0.068,,M,B,2
+mRhubarb720,protein,PV8DK,mrhubarb720,701.0,720.0,94941.0,0.0646,,M,B,2
+mRojoA,protein,QEO8D,mrojoa,597.0,633.0,48000.0,0.02,,M,B,3
+mRojoB,protein,6LJKY,mrojob,598.0,631.0,61000.0,0.06,,M,B,3
+mRouge,protein,JXVU8,mrouge,600.0,637.0,43000.0,0.02,,M,B,3
+mRtms5,protein,FD244,mrtms5,588.0,633.0,54100.0,0.005,,M,B,0
+mRuby,protein,6KLAW,mruby,558.0,605.0,112000.0,0.35,2.6,M,B,2
+mRuby2,protein,8MJ78,mruby2,559.0,600.0,113000.0,0.38,2.5,M,B,3
+mRuby3,protein,MZMFB,mruby3,558.0,592.0,128000.0,0.45,,M,B,2
+mRubyFT,protein,9JNRR,mrubyft,582.0,624.0,29600.0,0.086,,M,T,2
+mSandy2,protein,OS9DX,msandy2,581.0,606.0,79000.0,0.35,,M,B,0
+mScarlet,protein,FVS3D,mscarlet,569.0,594.0,100000.0,0.7,3.9,M,B,3
+mScarlet-220A,protein,ZHYAA,mscarlet-220a,568.0,594.0,95000.0,0.668,,M,B,3
+mScarlet-2A,protein,2G7N6,mscarlet-2a,568.0,592.0,97000.0,0.685,,M,B,3
+mScarlet-2A-84W,protein,5CEBO,mscarlet-2a-84w,568.0,592.0,97000.0,0.7,,M,B,3
+mScarlet3,protein,1AFJZ,mscarlet3,569.0,592.0,104000.0,0.75,4.0,M,B,3
+mScarlet3-H,protein,444PN,mscarlet3-h,551.0,592.0,102685.0,0.18,,M,B,3
+mScarlet3-S2,protein,STCSK,mscarlet3-s2,550.0,587.0,83000.0,0.18,,M,B,3
+mScarlet-H,protein,588N2,mscarlet-h,551.0,592.0,74000.0,0.2,1.3,,B,2
+mScarlet-I,protein,6VVTK,mscarlet-i,569.0,593.0,104000.0,0.54,3.1,M,B,3
+mScarlet-I-220A,protein,3DUUH,mscarlet-i-220a,568.0,594.0,100000.0,0.543,,M,B,3
+mScarlet-I3,protein,THSBS,mscarlet-i3,568.0,592.0,105000.0,0.65,3.6,M,B,3
+mScarlet-I3-NCwt,protein,1VSM7,mscarlet-i3-ncwt,567.0,592.0,102000.0,0.653,,M,B,3
+msGFP2,protein,4VSRL,msgfp2,489.0,509.0,52200.0,0.59,,M,B,0
+mStable,protein,DKZQ7,mstable,597.0,633.0,45000.0,0.17,,M,B,2
+mStayGold,protein,5H7QY,mstaygold,499.0,510.0,164000.0,0.83,2.79,M,B,2
+mStayGold2,protein,95LHQ,mstaygold2,499.0,509.0,175000.0,0.79,2.83,M,B,2
+mStrawberry,protein,TN3DM,mstrawberry,574.0,596.0,90000.0,0.29,,M,B,3
+mTagBFP2,protein,ZO7NN,mtagbfp2,399.0,454.0,50600.0,0.64,2.6,M,B,3
+mTangerine,protein,N63O3,mtangerine,568.0,585.0,38000.0,0.3,,M,B,3
+mTFP*,protein,3OSEV,mtfp,468.0,495.0,,,,,B,0
+mTFP0.3,protein,8PKAY,mtfp03,458.0,488.0,19000.0,0.31,,M,B,0
+mTFP0.7,protein,2HEJS,mtfp07,453.0,488.0,60000.0,0.5,,M,O,1
+mTFP1,protein,ASSY9,mtfp1,462.0,492.0,64000.0,0.85,3.2,M,B,3
+mTFP1-Y67W,protein,4JYN3,mtfp1-y67w,424.0,461.0,3000.0,0.02,,,B,0
+mT-Sapphire,protein,KSK4V,mt-sapphire,399.0,511.0,44000.0,0.6,,M,B,0
+mTurquoise,protein,5E826,mturquoise,434.0,474.0,30000.0,0.84,3.7,M,B,2
+mTurquoise2,protein,7AV5G,mturquoise2,434.0,474.0,30000.0,0.93,4.0,M,B,4
+mTurquoise2-1710,protein,P38Q4,mturquoise2-1710,482.0,519.0,30000.0,0.51,,M,B,4
+mTurquoise2_T203Y,protein,QPK3T,mturquoise2_t203y,471.0,514.0,27400.0,0.23,1.9,M,B,2
+muGFP,protein,UQX41,mugfp,490.0,508.0,117000.0,0.45,,M,B,2
+mUkG,protein,BXYZE,mukg,483.0,499.0,60000.0,0.72,,M,B,2
+M-Velour-537,protein,5TSUE,m-velour-537,537.0,,72000.0,0.001,,,B,1
+M-Velour-553,protein,DX3TE,m-velour-553,553.0,,72000.0,0.001,,,B,1
+M-Velour-554,protein,WHKL9,m-velour-554,554.0,,86000.0,0.001,,,B,1
+mVenus,protein,WCSN6,mvenus,515.0,527.0,104000.0,0.64,2.7,M,B,2
+mVenus-Q69M,protein,FE6UX,mvenus-q69m,515.0,528.0,,,,M,B,0
+mVFP,protein,GUFES,mvfp,491.0,503.0,85000.0,0.86,,M,B,0
+mVFP1,protein,LXWLT,mvfp1,491.0,503.0,80400.0,0.84,,M,B,0
+mWasabi,protein,QTBVW,mwasabi,493.0,509.0,70000.0,0.8,,M,B,3
+mWatermelon,protein,V41RE,mwatermelon,504.0,515.0,88000.0,0.47,,M,B,2
+(n1)oxStayGold,protein,2NNZY,n1oxstaygold,497.0,506.0,,,,,B,0
+(n1)StayGold,protein,4Y1D1,n1staygold,496.0,505.0,,,,D,B,0
+nanoLuc,protein,M8P3S,nanoluc,460.0,460.0,,,,,B,1
+Neptune,protein,Z3GLX,neptune,600.0,650.0,72000.0,0.18,,D,B,3
+NijiFP,protein,87UEF,nijifp,526.0,569.0,42000.0,0.65,4.2,M,MP,0
+"nirFAST  + HPAR-3,5DOM",protein,68RZA,nirfast-hpar-35dom,636.0,713.0,46000.0,0.067,,M,B,2
+NowGFP,protein,HXP5A,nowgfp,494.0,502.0,56700.0,0.76,5.1,M,B,2
+Nữ,protein,UOJ8M,nu,517.0,531.0,115000.0,0.07,,M,B,2
+obeCFP,protein,JGCGO,obecfp,400.0,499.0,36000.0,0.62,,,B,0
+obeGFP,protein,782GK,obegfp,502.0,515.0,78000.0,0.62,,,B,0
+obeYFP,protein,WRGL6,obeyfp,514.0,528.0,77000.0,0.57,,,B,0
+OFP,protein,KETFB,ofp,548.0,573.0,60000.0,0.64,,T,B,0
+OFPxm,protein,O247C,ofpxm,509.0,523.0,,0.25,,M,B,0
+O-GECO1,protein,37TVB,o-geco1,558.0,570.0,611.0,0.22,,,B,3
+O-Velour,protein,JS116,o-velour,506.0,,20000.0,0.001,,,B,1
+oxBFP,protein,QX7D1,oxbfp,385.0,448.0,31000.0,0.56,,D,B,2
+oxCerulean,protein,ZWK6V,oxcerulean,435.0,477.0,56000.0,0.41,,D,B,0
+oxGFP,protein,JJV3D,oxgfp,486.0,510.0,87000.0,0.58,,D,B,2
+oxStayGold,protein,Z97VJ,oxstaygold,497.0,506.0,169000.0,0.93,,D,B,0
+oxVenus,protein,4GMRC,oxvenus,514.0,526.0,89000.0,0.49,,D,B,0
+P11,protein,R9DP6,p11,471.0,502.0,,,,,B,0
+P4,protein,671NA,p4,382.0,448.0,2100.0,0.24,,WD,B,2
+P4-1,protein,9CEJ5,p4-1,504.0,514.0,14500.0,0.54,,,B,0
+P4-3E,protein,LKB4E,p4-3e,384.0,448.0,22000.0,0.27,,,B,2
+P9,protein,UN7HE,p9,471.0,502.0,,,,,B,0
+Padron,protein,162KQ,padron,503.0,522.0,43000.0,0.64,,M,PS,0
+Padron0.9,protein,FM4GO,padron09,505.0,522.0,36000.0,0.61,,M,PS,2
+Padron2,protein,DSZCH,padron2,492.0,516.0,32700.0,0.49,3.5,M,PS,0
+Padron(star),protein,31OK2,padronstar,503.0,522.0,,,,M,O,0
+PA-GFP,protein,7QYHY,pa-gfp,504.0,517.0,17400.0,0.79,,M,PA,2
+PAmCherry1,protein,OMODZ,pamcherry1,564.0,595.0,18000.0,0.46,,M,PA,2
+PAmCherry2,protein,SV3XM,pamcherry2,570.0,596.0,24000.0,0.53,,M,PA,0
+PAmCherry3,protein,PL518,pamcherry3,570.0,596.0,21000.0,0.24,,M,PA,0
+PAmKate,protein,DTAXR,pamkate,586.0,628.0,25000.0,0.18,,M,PA,3
+PATagRFP,protein,OAKV5,patagrfp,562.0,595.0,66000.0,0.38,,M,PA,2
+PATagRFP1297,protein,XQCPX,patagrfp1297,563.0,595.0,63000.0,0.42,,T,PA,0
+PATagRFP1314,protein,7UFQR,patagrfp1314,562.0,596.0,61000.0,0.46,,D,PA,0
+pcDronpa,protein,WV3Q7,pcdronpa,569.0,581.0,75000.0,0.68,3.9,T,MP,0
+pcDronpa2,protein,GGUJF,pcdronpa2,504.0,515.0,100000.0,0.83,,T,MP,0
+pcStar,protein,3SXVB,pcstar,567.0,579.0,48403.0,0.44,,M,PC,2
+PdaC1,protein,8HBTK,pdac1,480.0,492.0,,,,,B,0
+pdae1GFP,protein,QNZSY,pdae1gfp,491.0,511.0,105000.0,0.68,,,B,0
+pFAST + HBIR-3M,protein,447SU,pfast-hbir-3m,514.0,567.0,12000.0,0.003,,M,B,0
+"pFAST + HBR 2,5 DM",protein,OGT27,pfast-hbr-25-dm,498.0,549.0,,,,M,B,2
+"pFAST + HBR 3,5 DOM",protein,BB7AD,pfast-hbr-35-dom,519.0,600.0,44000.0,0.33,,M,B,2
+pFAST + HMBR,protein,PJN84,pfast-hmbr,481.0,542.0,54000.0,0.23,,M,,2
+Phanta,protein,QKBVG,phanta,506.0,516.0,98000.0,0.003,,,B,0
+phiLOV2.1,protein,T33XW,philov21,451.0,501.0,13500.0,0.2,,M,B,2
+phiLOV3,protein,PG1ZQ,philov3,452.0,502.0,15800.0,0.22,,M,B,2
+phiYFP,protein,7DEM9,phiyfp,525.0,537.0,115000.0,0.6,,D,B,2
+phiYFPv,protein,85KA4,phiyfpv,524.0,537.0,101305.0,0.59,,,B,0
+pHluorin2,protein,SJT6S,phluorin2,395.0,509.0,,,,,O,0
+pHluorin4,protein,6E1ER,phluorin4,488.0,520.0,15900.0,0.85,,,B,0
+"pHluorin, ecliptic",protein,KPFB9,phluorin-ecliptic,395.0,509.0,,,,,O,0
+"pHluorin, ratiometric",protein,XKELZ,phluorin-ratiometric,395.0,509.0,,,,,O,0
+pHmScarlet,protein,RSRP9,phmscarlet,562.0,585.0,85000.0,0.47,,,B,1
+pHRed,protein,T9MOZ,phred,440.0,620.0,,,,,B,1
+pH-tdGFP,protein,9GPWY,ph-tdgfp,488.0,515.0,,,,TD,B,0
+pHuji,protein,SS15T,phuji,566.0,598.0,31000.0,0.22,,M,B,2
+plamGFP,protein,4UCC6,plamgfp,502.0,514.0,98600.0,0.96,,T,B,0
+plobRFP,protein,ESQ8O,plobrfp,578.0,614.0,84000.0,0.74,,T,B,2
+pmeaGFP1,protein,8BUQQ,pmeagfp1,489.0,504.0,99000.0,0.74,,,B,0
+pmeaGFP2,protein,MEFJC,pmeagfp2,487.0,502.0,98000.0,0.72,,,B,0
+pmimGFP1,protein,OW4TY,pmimgfp1,491.0,505.0,79000.0,0.92,,T,B,0
+pmimGFP2,protein,U97V7,pmimgfp2,491.0,505.0,79000.0,0.92,,T,B,0
+Pp2 FbFP,protein,4BUSQ,pp2-fbfp,449.0,495.0,14200.0,0.22,,D,B,0
+Pp2FbFP L30M,protein,WN1JX,pp2fbfp-l30m,449.0,495.0,14800.0,0.25,,D,B,0
+ppluGFP1,protein,VPR4D,pplugfp1,480.0,500.0,65000.0,0.6,,,B,0
+ppluGFP2,protein,2BK6M,pplugfp2,482.0,502.0,70000.0,0.6,,M,B,2
+pporGFP,protein,W7ZR3,pporgfp,495.0,507.0,98200.0,0.54,,T,B,0
+pporRFP,protein,FRRJW,pporrfp,578.0,595.0,94900.0,0.54,,T,B,0
+PROSS-eGFP,protein,3HHOA,pross-egfp,488.0,509.0,,0.57,0.99,,B,2
+psamCFP,protein,U69HK,psamcfp,404.0,492.0,30800.0,0.96,,T,B,0
+PS-CFP,protein,6O8HW,ps-cfp,490.0,511.0,27000.0,0.19,,M,PC,0
+PS-CFP2,protein,RDRFL,ps-cfp2,400.0,468.0,43000.0,0.2,,M,PC,2
+PSLSSmKate,protein,9S2ZE,pslssmkate,445.0,622.0,26500.0,0.21,,M,PS,0
+PSmOrange,protein,AQ8G3,psmorange,548.0,565.0,113300.0,0.51,,M,PC,2
+PSmOrange2,protein,U76BO,psmorange2,546.0,561.0,51000.0,0.61,,M,PC,0
+ptilGFP,protein,DMJJX,ptilgfp,500.0,508.0,,,,,B,0
+QC2-6,protein,L3PJW,qc2-6,496.0,504.0,,,,M,B,0
+R3-2+PCB,protein,OORFP,r3-2pcb,620.0,648.0,74000.0,0.13,,,B,0
+RCaMP,protein,J5Y7Z,rcamp,575.0,602.0,,0.14,,,B,4
+RDSmCherry0.1,protein,JVYE5,rdsmcherry01,598.0,625.0,59600.0,0.1,,M,B,0
+RDSmCherry0.2,protein,XOVUP,rdsmcherry02,600.0,630.0,34400.0,0.03,,M,B,0
+RDSmCherry0.5,protein,CS45L,rdsmcherry05,604.0,636.0,23300.0,0.02,,M,B,0
+RDSmCherry1,protein,CC2YL,rdsmcherry1,600.0,630.0,55400.0,0.09,,M,B,2
+REACh1,protein,HZRZF,reach1,495.0,530.0,,,,,B,2
+REACh2,protein,NP1UM,reach2,510.0,538.0,,,,,B,2
+REX-GECO1,protein,JAAOP,rex-geco1,578.0,599.0,38227.0,0.054000000000000006,,,B,3
+R-FlincA,protein,DP2EW,r-flinca,560.0,585.0,,,,,B,0
+rfloGFP,protein,OM1OY,rflogfp,508.0,518.0,,,,,B,0
+rfloRFP,protein,46ZQ7,rflorfp,566.0,574.0,,,,,B,0
+RFP611,protein,8DX6R,rfp611,559.0,611.0,120000.0,0.48,,T,B,0
+RFP618,protein,35N2E,rfp618,560.0,618.0,,0.35,,T,B,0
+RFP630,protein,296AF,rfp630,583.0,630.0,50000.0,0.35,,T,B,0
+RFP637,protein,QVF1F,rfp637,587.0,637.0,72000.0,0.23,,T,B,0
+RFP639,protein,B3LN6,rfp639,588.0,639.0,69000.0,0.18,,T,B,0
+R-GECO1,protein,CBTDK,r-geco1,576.0,599.0,5138.0,0.15,,,B,3
+R-GECO1.2,protein,NFDXY,r-geco12,573.0,597.0,2333.0,0.21,,,B,3
+RLuc8,protein,OHUHS,rluc8,400.0,400.0,,,,,B,1
+roGFP1,protein,ZE3SV,rogfp1,475.0,508.0,,,,,B,0
+roGFP1-R1,protein,Y8A5R,rogfp1-r1,400.0,508.0,,,,,B,0
+roGFP1-R8,protein,U5JBT,rogfp1-r8,400.0,511.0,,,,,B,0
+roGFP2,protein,KTFOJ,rogfp2,490.0,511.0,,,,,B,0
+Rosmarinus,protein,GNU4X,rosmarinus,437.0,482.0,45000.0,0.85,,T,B,0
+rrenGFP,protein,6HML4,rrengfp,485.0,508.0,,,,D,B,0
+RRvT,protein,7GO5D,rrvt,556.0,583.0,134000.0,0.88,,TD,B,0
+rsCherry,protein,Q8AAM,rscherry,572.0,610.0,80000.0,0.02,,M,PS,0
+rsCherryRev,protein,45EFN,rscherryrev,572.0,608.0,84000.0,0.005,,M,PS,2
+rsCherryRev1.4,protein,1GO7S,rscherryrev14,572.0,609.0,,,,D,PS,2
+rsEGFP,protein,JYYJ1,rsegfp,493.0,510.0,47000.0,0.36,,M,PS,2
+rsEGFP2,protein,4Z6XY,rsegfp2,478.0,503.0,61300.0,0.3,,M,PS,2
+rsFastLime,protein,XJO9Z,rsfastlime,496.0,518.0,39094.0,0.77,2.9,T,PS,2
+rsFolder,protein,BKD94,rsfolder,477.0,503.0,51600.0,0.25,,M,PS,2
+rsFolder2,protein,6VV9O,rsfolder2,478.0,503.0,44000.0,0.23,,M,PS,2
+rsFusionRed1,protein,77HQK,rsfusionred1,577.0,605.0,82400.0,0.1,,M,PS,2
+rsFusionRed2,protein,9EUJH,rsfusionred2,580.0,607.0,35500.0,0.12,,M,PS,2
+rsFusionRed3,protein,13ANW,rsfusionred3,580.0,607.0,38000.0,0.08,,M,PS,2
+rsGreen1,protein,D9JZ4,rsgreen1,486.0,509.0,61000.0,0.42,,M,PS,0
+rsKame,protein,D87D7,rskame,503.0,517.0,72000.0,0.86,,M,PS,0
+rsTagRFP,protein,3FC3D,rstagrfp,567.0,585.0,36800.0,0.11,,M,PS,0
+Rtms5,protein,B4SGV,rtms5,592.0,626.0,80000.0,0.004,,T,,3
+R-Velour,protein,QUVLA,r-velour,528.0,,91000.0,0.001,,M,B,1
+SAASoti,protein,O72EP,saasoti,510.0,589.0,,,,T,PC,0
+Sandercyanin,protein,P9LBW,sandercyanin,375.0,675.0,21000.0,0.016,,T,B,2
+Sapphire,protein,G4VP2,sapphire,399.0,511.0,29000.0,0.64,,WD,B,3
+sarcGFP,protein,1BEMJ,sarcgfp,483.0,500.0,76700.0,0.96,,T,B,0
+SBFP1,protein,DO6Z1,sbfp1,380.0,446.0,2300.0,0.4,,M,B,0
+SBFP2,protein,J325F,sbfp2,380.0,446.0,34000.0,0.47,,M,B,0
+SCFP1,protein,5NY15,scfp1,434.0,477.0,29000.0,0.24,1.5,M,B,0
+SCFP2,protein,BSK5M,scfp2,434.0,474.0,29000.0,0.41,2.3,M,B,0
+SCFP3A,protein,HFE84,scfp3a,433.0,474.0,30000.0,0.56,2.6,M,B,2
+SCFP3B,protein,YVJ5E,scfp3b,433.0,474.0,30000.0,0.5,2.3,M,B,0
+scubGFP1,protein,S1LK3,scubgfp1,497.0,506.0,,,,,B,0
+scubGFP2,protein,NJL9P,scubgfp2,497.0,506.0,,,,,B,0
+scubRFP,protein,AJCVH,scubrfp,570.0,578.0,66400.0,0.6,,T,B,0
+secBFP2,protein,PQRLE,secbfp2,399.0,456.0,,,,M,B,2
+SEYFP,protein,SZYEK,seyfp,515.0,528.0,101000.0,0.56,,D,B,0
+sfOrange,protein,UPDD1,sforange,546.0,560.0,,,,D,B,2
+sg11,protein,T23T9,sg11,385.0,506.0,12700.0,0.84,,,B,0
+sg12,protein,T972V,sg12,396.0,508.0,18300.0,0.85,,,B,0
+sg25,protein,7ZG25,sg25,474.0,506.0,26200.0,0.76,,,B,0
+sg42,protein,RFW2X,sg42,384.0,450.0,15600.0,0.24,,,B,0
+sg50,protein,2VONA,sg50,384.0,450.0,16500.0,0.25,,,B,0
+sgBP-Q62M,protein,F2H19,sgbp-q62m,608.0,,122923.0,,,,B,1
+sgBP-S157C,protein,EWZUN,sgbp-s157c,604.0,,58029.0,,,,B,1
+sgBP-S157T,protein,62TRX,sgbp-s157t,611.0,,85654.0,,,,B,1
+SGFP1,protein,TZ5KN,sgfp1,495.0,512.0,42000.0,0.62,,M,B,0
+SGFP2,protein,TR5BB,sgfp2,495.0,512.0,46000.0,0.7,,M,B,0
+SGFP2(206A),protein,LS1K6,sgfp2206a,496.0,512.0,44000.0,0.69,,M,B,0
+SGFP2(E222Q),protein,49YLM,sgfp2e222q,496.0,512.0,67000.0,0.52,,,B,0
+SGFP2(T65G),protein,BL164,sgfp2t65g,501.0,512.0,90000.0,0.35,,M,B,0
+SH3,protein,PFYNU,sh3,450.0,495.0,,0.4,,,B,0
+ShadowG,protein,JM7JP,shadowg,486.0,510.0,89000.0,0.005,0.16,,B,2
+ShadowR,protein,V5UXX,shadowr,585.0,,97100.0,,,M,B,1
+ShadowY,protein,D7L1L,shadowy,519.0,531.0,136000.0,0.01,,,B,2
+SHardonnay,protein,6VP2A,shardonnay,511.0,530.0,89000.0,0.75,3.4,M,B,2
+shBFP,protein,QGZZT,shbfp,401.0,458.0,15407.0,0.79,,WD,B,2
+shBFP-N158K/L173I,protein,JOHLM,shbfp-n158kl173i,375.0,458.0,19500.0,0.78,,,B,0
+shBFP-N158S/L173I,protein,4LKQ5,shbfp-n158sl173i,375.0,458.0,24100.0,0.84,,M,B,2
+shCP-E63L/Y64H,protein,ZOL96,shcp-e63ly64h,403.0,451.0,1276.0,0.17,,,B,2
+shCP-E63S,protein,FO3YK,shcp-e63s,560.0,,,,,,B,0
+shCP-Q39S,protein,975C7,shcp-q39s,518.0,,,,,,B,0
+shCP-T194I,protein,DJL91,shcp-t194i,577.0,,,,,,B,0
+ShG24,protein,5LPGL,shg24,486.0,506.0,,,,M,B,0
+ShyRFP,protein,1M59L,shyrfp,450.0,596.0,30000.0,,,M,MP,0
+Sirius,protein,BU5R3,sirius,355.0,424.0,15000.0,0.24,,M,B,2
+SiriusGFP,protein,4OC6N,siriusgfp,504.0,516.0,56600.0,0.214,,M,B,2
+Skylan-NS,protein,VPDTG,skylan-ns,499.0,511.0,133770.0,0.59,,M,PS,3
+Skylan-S,protein,11G2Y,skylan-s,499.0,511.0,152408.0,0.64,3.94,M,PS,2
+smURFP,protein,HGBNQ,smurfp,642.0,670.0,180000.0,0.18,1.4,D,B,2
+smURFP_2.5,protein,P2GXH,smurfp_25,642.0,672.0,160000.0,0.32,,D,B,0
+SNIFP,protein,Q5F5J,snifp,697.0,720.0,149200.0,0.022,0.63,M,B,2
+SOPP,protein,VVQ8D,sopp,440.0,487.0,14500.0,0.39,,,B,2
+SOPP2,protein,DVDZZ,sopp2,439.0,491.0,14800.0,0.41,,,B,0
+SOPP3,protein,W4PW7,sopp3,439.0,490.0,15000.0,0.41,,,B,3
+SPOON,protein,MRKZY,spoon,510.0,527.0,54000.0,0.5,,M,PS,2
+sREACh1,protein,2A3U4,sreach1,518.0,530.0,114000.0,0.03,,,B,0
+sREACh2,protein,F9HKG,sreach2,519.0,531.0,130000.0,0.02,,,B,0
+StayGold,protein,71X7X,staygold,496.0,505.0,159000.0,0.93,,D,B,2
+StayGold-E138D,protein,Q8WTP,staygold-e138d,497.0,504.0,145000.0,0.87,,M,B,2
+StayRose,protein,KT9BY,stayrose,530.0,588.0,,,,D,B,2
+stylGFP,protein,FWVH2,stylgfp,485.0,500.0,86700.0,0.7,,T,B,0
+Sumire,protein,EG3EK,sumire,343.0,414.0,20000.0,0.7,,WD,B,2
+superecliptic pHluorin,protein,1Q7JU,superecliptic-phluorin,488.0,511.0,37000.0,0.8,,,O,0
+Superfolder BFP,protein,BOF2S,superfolder-bfp,380.0,445.0,,,,,B,0
+Superfolder CFP,protein,41E1T,superfolder-cfp,430.0,479.0,,,,WD,B,0
+Superfolder GFP,protein,B4SOW,superfolder-gfp,488.0,510.0,83300.0,0.65,3.1,WD,B,3
+Superfolder mTurquoise2,protein,NFBGR,superfolder-mturquoise2,434.0,474.0,,,,M,B,1
+Superfolder mTurquoise2 ox,protein,QEXW4,superfolder-mturquoise2-ox,434.0,474.0,,,,M,B,1
+Superfolder YFP,protein,EFRBB,superfolder-yfp,513.0,527.0,,,,WD,B,0
+SuperNova2,protein,NRHQ2,supernova2,579.0,610.0,45.0,,,M,B,3
+SuperNova Green,protein,3CN24,supernova-green,440.0,510.0,28000.0,0.23,,M,B,3
+SuperNova Red,protein,6EEUG,supernova-red,579.0,610.0,45000.0,0.3,,M,B,3
+super-TagRFP,protein,QJV5C,super-tagrfp,555.0,579.0,113000.0,0.53,2.5,M,B,2
+SYFP2,protein,GB9EO,syfp2,515.0,527.0,101000.0,0.68,2.9,M,B,2
+TagBFP,protein,BFJKS,tagbfp,402.0,457.0,52000.0,0.63,2.6,M,B,3
+TagCFP,protein,WRK8K,tagcfp,458.0,480.0,37000.0,0.57,,M,B,2
+TagGFP,protein,2V75Y,taggfp,482.0,505.0,55000.0,0.6,,D,B,2
+TagGFP2,protein,GJETS,taggfp2,483.0,506.0,56500.0,0.6,3.2,M,B,3
+TagRFP,protein,S4HC8,tagrfp,555.0,584.0,100000.0,0.48,2.3,WD,B,3
+TagRFP657,protein,C2N5S,tagrfp657,611.0,657.0,34000.0,0.1,,M,B,2
+TagRFP658,protein,AJJAK,tagrfp658,611.0,658.0,41200.0,0.1,,M,B,2
+TagRFP675,protein,NLF4R,tagrfp675,598.0,675.0,46000.0,0.08,0.9,M,B,2
+TagRFP-T,protein,LF3LJ,tagrfp-t,555.0,584.0,81000.0,0.41,2.3,M,B,2
+TagYFP,protein,V7M33,tagyfp,508.0,524.0,50000.0,0.62,,M,B,2
+td5oxStayGold,protein,JVB9K,td5oxstaygold,496.0,506.0,156000.0,0.93,,TD,B,0
+td5StayGold,protein,9BOLR,td5staygold,496.0,504.0,155000.0,0.91,,TD,B,0
+td8oxStayGold,protein,VKDX5,td8oxstaygold,496.0,506.0,157000.0,0.93,,TD,B,0
+tdimer2(12),protein,9FQLJ,tdimer212,552.0,579.0,120000.0,0.68,,TD,B,3
+tdKatushka2,protein,1L4BP,tdkatushka2,588.0,633.0,132500.0,0.37,,TD,B,1
+tdLanYFP,protein,KHSZ4,tdlanyfp,512.0,519.0,133000.0,0.92,2.9,D,B,0
+tdoxStayGold,protein,LJYOP,tdoxstaygold,496.0,504.0,,,,TD,B,0
+td-RFP611,protein,GHNRL,td-rfp611,558.0,609.0,70000.0,0.47,,D,B,0
+td-RFP639,protein,A77ZH,td-rfp639,589.0,631.0,90400.0,0.16,,D,B,0
+TDsmURFP,protein,MZOGH,tdsmurfp,642.0,670.0,170000.0,0.18,,TD,B,2
+tdStayGold,protein,DOU4X,tdstaygold,496.0,504.0,162000.0,0.9,,TD,B,0
+tdTomato,protein,PGG5S,tdtomato,554.0,581.0,138000.0,0.69,,TD,B,3
+tdUltramarine2,protein,PGSB7,tdultramarine2,587.0,,203400.0,0.0001,,TD,B,0
+Thermostable Green Protein,protein,K782G,thermostable-green-protein,493.0,507.0,64000.0,0.66,3.1,M,B,0
+tKeima,protein,F1MW1,tkeima,440.0,616.0,14500.0,0.22,2.4,T,B,2
+Topaz,protein,SY6TH,topaz,514.0,527.0,94500.0,0.6,,WD,B,2
+TripartiteGFP,protein,UDYQ6,tripartitegfp,480.0,514.0,,,,,B,2
+T-Sapphire,protein,NLY5P,t-sapphire,399.0,511.0,44000.0,0.6,2.93,WD,B,2
+TurboFP602,protein,4QJ63,turbofp602,574.0,602.0,74400.0,0.35,,D,B,2
+TurboGFP,protein,A315M,turbogfp,482.0,502.0,70000.0,0.53,,D,B,2
+TurboGFP-V197L,protein,K487K,turbogfp-v197l,482.0,502.0,,,,D,B,0
+TurboRFP,protein,AHNXC,turborfp,553.0,574.0,92000.0,0.67,,D,B,2
+TurboYFP,protein,TC87V,turboyfp,525.0,538.0,105000.0,0.53,,D,B,0
+Turquoise-GL,protein,KBERH,turquoise-gl,434.0,474.0,30000.0,0.82,3.9,M,B,0
+Ultramarine,protein,3F18R,ultramarine,586.0,626.0,64000.0,0.001,1.6,M,B,1
+UnaG,protein,5ULGG,unag,498.0,527.0,77300.0,0.51,,,B,2
+usGFP,protein,V3NZ1,usgfp,490.0,508.0,103000.0,0.45,,D,B,2
+V127T SAASoti,protein,1U9ZJ,v127t-saasoti,579.0,589.0,24000.0,,,M,PC,0
+Var1,protein,9H4UT,var1,484.0,508.0,62241.0,0.8,,,B,2
+Venus,protein,YUJWJ,venus,515.0,528.0,92200.0,0.57,3.0,WD,B,3
+VFP,protein,P3DVP,vfp,491.0,503.0,83700.0,1.0,,D,B,0
+vsfGFP-0,protein,BH9MB,vsfgfp-0,485.0,510.0,209916.0,0.76,,D,B,2
+vsfGFP-9,protein,ACXOE,vsfgfp-9,485.0,510.0,104958.0,0.7,,M,B,2
+W1C,protein,8RSXF,w1c,435.0,495.0,21200.0,0.39,,D,B,0
+W2,protein,OMA2X,w2,432.0,480.0,10000.0,0.71,,D,B,0
+W7,protein,ZVV1B,w7,433.0,475.0,18000.0,0.67,,D,B,0
+WasCFP,protein,V7NZK,wascfp,494.0,505.0,51000.0,0.85,5.1,M,B,2
+Wi-Phy,protein,V6A1P,wi-phy,701.0,719.0,92991.0,0.047,,M,B,0
+WiPhy2,protein,R4JFX,wiphy2,696.0,719.0,,0.087,0.78,M,B,0
+YFP3,protein,UPG56,yfp3,514.0,527.0,99000.0,0.76,,,B,1
+YGFPdp,protein,B1GJH,ygfpdp,502.0,513.0,17300.0,0.7,,D,B,0
+YGFPuv,protein,VAQHD,ygfpuv,398.0,512.0,8800.0,0.81,,D,B,0
+YPet,protein,AQACH,ypet,517.0,530.0,104000.0,0.77,,WD,B,2
+YuzuFP,protein,WQUOO,yuzufp,492.0,511.0,61400.0,0.92,2.76,M,B,2
+zFP538,protein,15MYG,zfp538,528.0,538.0,20200.0,0.42,,T,B,0
+zoan2RFP,protein,HGZ48,zoan2rfp,552.0,576.0,,,,,B,0
+ZsGreen,protein,W8LAG,zsgreen,496.0,506.0,35600.0,0.63,,T,B,2
+ZsGreen1,protein,51H85,zsgreen1,493.0,505.0,,,,T,B,0
+ZsYellow1,protein,LTFO5,zsyellow1,529.0,539.0,20000.0,0.65,,T,B,2
+CF 725,dye,3560,cf-725-default,,,,,,,,2
+CytoLiner 495/510,dye,3561,cytoliner-495510-default,,,,,,,,2
+ATTOIrida 425,dye,3657,attoirida-425-default,,,,,,,,0
+ATTOIrida 438LS,dye,3658,attoirida-438ls-default,,,,,,,,0
+CytoLiner 570/590,dye,3562,cytoliner-570590-default,,,,,,,,2
+ATTOIrida 488,dye,3659,attoirida-488-default,,,,,,,,0
+CytoLiner 650/675,dye,3563,cytoliner-650675-default,,,,,,,,2
+ATTOIrida 494LS,dye,3660,attoirida-494ls-default,,,,,,,,0
+CytoLiner 680/710,dye,3564,cytoliner-680710-default,,,,,,,,2
+BioTracker 490,dye,3525,biotracker-490-default,,,,,,,,0
+ATTOIrida 532,dye,3661,attoirida-532-default,,,,,,,,0
+CytoLiner 785/815,dye,3565,cytoliner-785815-default,,,,,,,,2
+ATTOIrida 550,dye,3662,attoirida-550-default,,,,,,,,0
+ATTOIrida 594,dye,3663,attoirida-594-default,,,,,,,,0
+ATTOIrida 614H,dye,3664,attoirida-614h-default,,,,,,,,0
+TyraMax 400/550,dye,3566,tyramax-400550-default,,,,,,,,2
+TyraMax 410/550,dye,3567,tyramax-410550-default,,,,,,,,1
+ATTOIrida 647N,dye,3665,attoirida-647n-default,,,,,,,,0
+ATTOIrida 680,dye,3666,attoirida-680-default,,,,,,,,0
+ATTOIrida 700,dye,3667,attoirida-700-default,,,,,,,,0
+TyraMax 410/450,dye,3568,tyramax-410450-default,,,,,,,,1
+ATTOIrida 740H,dye,3668,attoirida-740h-default,,,,,,,,0
+TyraMax 430/500,dye,3569,tyramax-430500-default,,,,,,,,2
+NBD,dye,2552,nbd-default,,,,,,,,2
+TyraMax 490/520,dye,3570,tyramax-490520-default,,,,,,,,2
+ELF 97,dye,2546,elf-97-default,,,,,,,,2
+TyraMax 555/565,dye,3571,tyramax-555565-default,,,,,,,,2
+DCF,dye,2740,dcf-default,,,,,,,,2
+TyraMax 560/580,dye,3572,tyramax-560580-default,,,,,,,,2
+TyraMax 630/650,dye,3573,tyramax-630650-default,,,,,,,,2
+Lumafluor,dye,3492,lumafluor-default,,,,,,,,0
+trFluor Eu Acceptor XL665,dye,3591,trfluor-eu-acceptor-xl665-default,,,,,,,,2
+TyraMax 647/670,dye,3574,tyramax-647670-default,,,,,,,,2
+CPY-CA,dye,3459,cpy-ca-default,,,,,,,,2
+TyraMax 660/680,dye,3575,tyramax-660680-default,,,,,,,,2
+TyraMax 680/700,dye,3576,tyramax-680700-default,,,,,,,,2
+CF 740,dye,3558,cf-740-default,,,,,,,,2
+TyraMax 710/740,dye,3577,tyramax-710740-default,,,,,,,,2
+SYTO 85,dye,2698,syto-85-default,,,,,,,,2
+CF 710,dye,3559,cf-710-default,,,,,,,,2
+SYTO 59,dye,2843,syto-59-default,,,,,,,,2
+CF820,dye,3087,cf820-default,,,,,,,,2
+Qdot 705,dye,2497,qdot-705-default,300.0,702.0,,,,,,2
+Methyl Green,dye,2436,methyl-green-default,,,,,,,,2
+BODIPY 493/503,dye,2437,bodipy-493-503-default,,,,,,,,2
+Alexa Fluor 430,dye,2438,alexa-fluor-430-default,431.0,540.0,15000.0,,,,,2
+Alexa Fluor 555,dye,2439,alexa-fluor-555-default,553.0,568.0,155000.0,0.1,,,,2
+Alexa Fluor 594,dye,2440,alexa-fluor-594-default,590.0,618.0,92000.0,0.66,,,,2
+Alexa Fluor 610,dye,2441,alexa-fluor-610-default,612.0,630.0,144000.0,,,,,2
+Alexa Fluor 633,dye,2442,alexa-fluor-633-default,631.0,650.0,159000.0,,,,,2
+Alexa Fluor 635,dye,2443,alexa-fluor-635-default,633.0,648.0,140000.0,,,,,2
+Alexa Fluor 660,dye,2444,alexa-fluor-660-default,663.0,691.0,132000.0,0.37,,,,2
+Alexa Fluor 700,dye,2445,alexa-fluor-700-default,696.0,719.0,205000.0,0.25,,,,2
+BODIPY FL,dye,2446,bodipy-fl-default,502.0,511.0,83000.0,0.99,,,,2
+Cy3.5,dye,2447,cy35-default,576.0,589.0,116000.0,0.15,,,,2
+LYSO-ID Green,dye,2448,lyso-id-green-default,,,,,,,,2
+HCS CellMask Deep Red stain,dye,2449,hcs-cellmask-deep-red-stain-default,649.0,670.0,,,,,,2
+Pyridine 2 - Sirah,dye,2545,pyridine-2-sirah-default,,,,,,,,2
+HCS CellMask Green stain,dye,2450,hcs-cellmask-green-stain-default,493.0,517.0,,,,,,2
+HCS CellMask Red stain,dye,2451,hcs-cellmask-red-stain-default,587.0,614.0,,,,,,2
+HCS LipidTOX Deep Red,dye,2452,hcs-lipidtox-deep-red-default,635.0,652.0,,,,,,2
+HCS NuclearMask Blue stain,dye,2453,hcs-nuclearmask-blue-stain-default,352.0,455.0,,,,,,2
+HCS NuclearMask Red stain,dye,2454,hcs-nuclearmask-red-stain-default,622.0,644.0,,,,,,2
+Hoechst 33258,dye,2455,hoechst-33258-default,352.0,455.0,,,,,,2
+MitoTracker Deep Red FM,dye,2456,mitotracker-deep-red-fm-default,641.0,662.0,,,,,,2
+MitoTracker Green FM,dye,2457,mitotracker-green-fm-default,490.0,512.0,,,,,,2
+MitoTracker Red FM,dye,2458,mitotracker-red-fm-default,604.0,650.0,,,,,,2
+MitoTracker Red,dye,2459,mitotracker-red-default,578.0,598.0,,,,,,2
+Pacific Green,dye,2460,pacific-green-default,415.0,502.0,,,,,,2
+Pacific Orange,dye,2461,pacific-orange-default,400.0,551.0,,,,,,2
+SYTO 9,dye,2462,syto-9-default,483.0,500.0,,,,,,2
+TO-PRO-1,dye,2463,to-pro-1-default,515.0,531.0,,,,,,2
+TO-PRO-3,dye,2464,to-pro-3-default,642.0,657.0,,,,,,2
+Qdot 545,dye,2465,qdot-545-default,300.0,543.0,,,,,,2
+Qdot 585,dye,2466,qdot-585-default,300.0,588.0,,,,,,2
+Qdot 625,dye,2467,qdot-625-default,300.0,621.0,,,,,,2
+Qdot 655,dye,2468,qdot-655-default,300.0,654.0,,,,,,2
+Qdot 800,dye,2469,qdot-800-default,300.0,792.0,,,,,,2
+Alexa Fluor 350,dye,2470,alexa-fluor-350-default,343.0,441.0,19000.0,,,,,2
+ReAsH,dye,2471,reash-default,,,,,,,,2
+DyLight 405,dye,2472,dylight-405-default,,,,,,,,2
+Opal 650,dye,2473,opal-650-default,,,,,,,,2
+SiR720,dye,2474,sir720-default,,,,,,,,2
+LBL-Dye M580,dye,2475,lbl-dye-m580-default,,,,,,,,2
+Revert 520 Total Protein Stain,dye,2476,revert-520-total-protein-stain-default,,,,,,,,2
+pHrodo Red,dye,2477,phrodo-red-default,,,,,,,,2
+ATTO Rho14,dye,2478,atto-rho14-default,626.0,646.0,140000.0,0.8,,,,2
+Alexa Fluor 532,dye,2479,alexa-fluor-532-default,534.0,553.0,81000.0,0.61,,,,2
+Alexa Fluor 546,dye,2480,alexa-fluor-546-default,561.0,572.0,112000.0,0.79,,,,2
+Alexa Fluor 568,dye,2481,alexa-fluor-568-default,579.0,603.0,88000.0,0.69,,,,2
+Alexa Fluor 680,dye,2482,alexa-fluor-680-default,681.0,704.0,183000.0,0.36,,,,2
+Alexa Fluor 790,dye,2483,alexa-fluor-790-default,782.0,805.0,260000.0,,,,,2
+Cy7,dye,2484,cy7-default,749.0,775.0,200000.0,0.28,,,,2
+LBL-Dye M715,dye,2485,lbl-dye-m715-default,,,,,,,,2
+HCS CellMask Blue stain,dye,2486,hcs-cellmask-blue-stain-default,347.0,443.0,,,,,,2
+HCS CellMask Orange stain,dye,2487,hcs-cellmask-orange-stain-default,551.0,564.0,,,,,,2
+HCS NuclearMask Deep Red,dye,2488,hcs-nuclearmask-deep-red-default,637.0,685.0,,,,,,2
+Hoechst 33342,dye,2489,hoechst-33342-default,352.0,455.0,,,,,,2
+MitoTracker Orange,dye,2490,mitotracker-orange-default,551.0,575.0,,,,,,2
+Oregon Green 488,dye,2491,oregon-green-488-default,498.0,526.0,,,,,,2
+Pacific Blue,dye,2492,pacific-blue-default,404.0,455.0,,,,,,2
+Propidium iodide (PI),dye,2493,propidium-iodide-pi-default,305.0,617.0,,,,,,2
+SYTOX Orange,dye,2494,sytox-orange-default,547.0,570.0,,,,,,2
+SYTOX Red,dye,2495,sytox-red-default,640.0,658.0,,,,,,2
+Pyrene,dye,2594,pyrene-default,,,,,,,,2
+Fura-2 (calcium bound),dye,2496,fura-2-calcium-bound-default,,,,,,,,2
+ATTO 390,dye,2498,atto-390-default,390.0,476.0,24000.0,0.9,,,,2
+ATTO Rho12,dye,2499,atto-rho12-default,577.0,600.0,120000.0,0.8,,,,2
+ATTO 514,dye,2500,atto-514-default,511.0,532.0,115000.0,0.85,,,,2
+ATTO Rho101,dye,2501,atto-rho101-default,587.0,609.0,120000.0,0.8,,,,2
+ATTO 680,dye,2502,atto-680-default,681.0,698.0,125000.0,0.3,,,,2
+ATTO Rho6G,dye,2503,atto-rho6g-default,533.0,557.0,115000.0,0.9,,,,2
+ATTO 665,dye,2504,atto-665-default,662.0,680.0,160000.0,0.6,,,,2
+DyLight 633,dye,2505,dylight-633-default,,,,,,,,2
+ATTO 647N,dye,2506,atto-647n-default,646.0,664.0,150000.0,0.65,,,,2
+BODIPY 500_510,dye,2507,bodipy-500_510-default,,,,,,,,2
+ATTO Rho3B,dye,2508,atto-rho3b-default,566.0,589.0,120000.0,0.5,,,,2
+Fm 4-64,dye,2509,fm-4-64-default,,,,,,,,2
+CF650,dye,2510,cf650-default,,,,,,,,2
+IRDye 800CW,dye,2511,irdye-800cw-default,,,,,,,,2
+Qdot 565,dye,2512,qdot-565-default,300.0,564.0,,,,,,3
+TFCoral,dye,2513,tfcoral-default,,,,,,,,2
+Qdot 605,dye,2514,qdot-605-default,300.0,603.0,,,,,,3
+CellBrite Cytoplasmic Membrane Green,dye,2515,cellbrite-cytoplasmic-membrane-green-default,,,,,,,,2
+ATTO 520,dye,2516,atto-520-default,517.0,538.0,110000.0,0.9,,,,2
+ATTO 425,dye,2517,atto-425-default,439.0,485.0,45000.0,0.9,,,,2
+ATTO 550,dye,2518,atto-550-default,554.0,576.0,120000.0,0.8,,,,2
+ATTO 655,dye,2519,atto-655-default,663.0,680.0,125000.0,0.3,,,,2
+ATTO 594,dye,2520,atto-594-default,603.0,626.0,120000.0,0.85,,,,2
+ATTO 647,dye,2521,atto-647-default,647.0,667.0,120000.0,0.2,,,,2
+ATTO 725,dye,2522,atto-725-default,728.0,751.0,120000.0,0.1,,,,2
+ATTO 700,dye,2523,atto-700-default,700.0,716.0,120000.0,0.25,,,,2
+ATTO 620,dye,2524,atto-620-default,620.0,642.0,120000.0,0.5,,,,2
+ATTO Rho13,dye,2525,atto-rho13-default,603.0,627.0,120000.0,0.8,,,,2
+ATTO 488,dye,2526,atto-488-default,500.0,520.0,90000.0,0.8,,,,2
+ATTO Rho11,dye,2527,atto-rho11-default,572.0,595.0,120000.0,0.8,,,,2
+ATTO 565,dye,2528,atto-565-default,564.0,590.0,120000.0,0.9,,,,2
+ATTO 610,dye,2529,atto-610-default,616.0,633.0,150000.0,0.7,,,,2
+ATTO Thio12,dye,2530,atto-thio12-default,582.0,607.0,110000.0,0.15,,,,2
+ATTO 590,dye,2531,atto-590-default,593.0,622.0,120000.0,0.8,,,,2
+ATTO 633,dye,2532,atto-633-default,630.0,651.0,130000.0,0.64,,,,2
+ATTO Oxa12,dye,2533,atto-oxa12-default,662.0,681.0,125000.0,0.3,,,,2
+ATTO 430LS,dye,2534,atto-430ls-default,436.0,545.0,32000.0,0.65,,,,2
+ATTO 643,dye,2535,atto-643-default,643.0,665.0,150000.0,0.62,,,,2
+ATTO 542,dye,2536,atto-542-default,542.0,562.0,120000.0,0.93,,,,2
+ATTO 532,dye,2537,atto-532-default,532.0,552.0,115000.0,0.9,,,,2
+ATTO 495,dye,2538,atto-495-default,498.0,526.0,80000.0,0.2,,,,2
+DRAQ5,dye,2539,draq5-default,,,,,,,,2
+SiR,dye,2540,sir-default,652.0,674.0,100000.0,,,,,2
+SNAP-Cell 647-SiR,dye,2541,snap-cell-647-sir-default,,,,,,,,2
+SNAP-Cell TMR-Star,dye,2542,snap-cell-tmr-star-default,,,,,,,,2
+Cy3B-NHS,dye,2543,cy3b-nhs-default,,,,,,,,2
+Pyridine 2 - Radiant Dyes,dye,2544,pyridine-2-radiant-dyes-default,,,,,,,,2
+ATTO 490LS,dye,2547,atto-490ls-default,495.0,658.0,40000.0,0.3,,,,3
+CyQuant,dye,2548,cyquant-default,,,,,,,,2
+CAL Fluor Red 590,dye,2549,cal-fluor-red-590-default,,,79000.0,,,,,2
+Quasar 670,dye,2550,quasar-670-default,,,187000.0,,,,,2
+LysoTracker Red DND-99,dye,2551,lysotracker-red-dnd-99-default,577.0,590.0,,,,,,2
+Cell Mask green,dye,2553,cell-mask-green-default,522.0,535.0,,,,,,2
+Cresyl Violet perchlorate,dye,2554,cresyl-violet-perchlorate-default,,,,,,,,2
+FluoroMyelin Red,dye,2555,fluoromyelin-red-default,,,,,,,,2
+HyPer-3,dye,2556,hyper-3-default,,,,,,,,2
+LBL-Dye M717,dye,2557,lbl-dye-m717-default,,,,,,,,2
+Lysotracker Deep Red,dye,2558,lysotracker-deep-red-default,,,,,,,,2
+Alexa Fluor 750,dye,2559,alexa-fluor-750-default,752.0,776.0,290000.0,0.12,,,,2
+SYTOX Green,dye,2560,sytox-green-default,504.0,524.0,,,,,,2
+FluoSpheres yellow-green,dye,2561,fluospheres-yellow-green-default,,,,,,,,2
+DiA,dye,2562,dia-default,,,,,,,,2
+FluoSpheres Red,dye,2563,fluospheres-red-default,,,,,,,,2
+FluoSpheres blue (365/415),dye,2564,fluospheres-blue-365-415-default,,,,,,,,2
+SYTO 11,dye,2565,syto-11-default,,,,,,,,2
+Lucifer Yellow,dye,2566,lucifer-yellow-default,,,,,,,,2
+Ethidium Homodimer,dye,2567,ethidium-homodimer-default,,,,,,,,2
+LD540,dye,2568,ld540-default,,,,,,,,2
+Monodansylpentane,dye,2569,monodansylpentane-default,,,,,,,,2
+Lipi-Blue,dye,2570,lipi-blue-default,,,,,,,,2
+Calcein AM,dye,2571,calcein-am-default,,,,,,,,2
+Coumarin 6,dye,2572,coumarin-6-default,,,,,,,,2
+Acridine Orange (DNA),dye,2573,acridine-orange-dna-default,,,,,,,,2
+Alexa Fluor 488,dye,2574,alexa-fluor-488-default,499.0,520.0,73000.0,0.92,,,,2
+Alexa Fluor 647,dye,2575,alexa-fluor-647-default,650.0,671.0,270000.0,0.33,,,,2
+SYTOX Blue,dye,2576,sytox-blue-default,445.0,470.0,,,,,,2
+Quasar 570,dye,2577,quasar-570-default,,,115000.0,,,,,2
+TFLime,dye,2578,tflime-default,,,,,,,,2
+DiD,dye,2579,did-default,,,,,,,,3
+ATTO 465,dye,2580,atto-465-default,453.0,506.0,75000.0,0.75,,,,2
+ATTO 740,dye,2581,atto-740-default,743.0,763.0,120000.0,0.1,,,,2
+MitoBlue,dye,2582,mitoblue-default,,,,,,,,2
+CF 405m,dye,2583,cf-405m-default,,,,,,,,2
+FlAsH,dye,2584,flash-default,,,,,,,,2
+CellROX Green,dye,2585,cellrox-green-default,,,,,,,,2
+Chlorophyll a,dye,2586,chlorophyll-a-default,,,,,,,,2
+Chlorophyll b,dye,2587,chlorophyll-b-default,,,,,,,,2
+L-tryptophan,dye,2588,l-tryptophan-default,,,,,,,,2
+"Fluo-4, Calcium Bound",dye,2589,fluo-4-calcium-bound-default,,,,,,,,2
+L-Anap,dye,2590,l-anap-default,,,,,,,,2
+DyLight 680,dye,2591,dylight-680-default,,,,,,,,2
+SNAP-SiR 647,dye,2592,snap-sir-647-default,,,,,,,,2
+CellTracker Deep Red,dye,2593,celltracker-deep-red-default,,,,,,,,2
+CyTRAK Orange,dye,2595,cytrak-orange-default,,,,,,,,2
+LysoTracker Blue,dye,2596,lysotracker-blue-default,,,,,,,,2
+DMAO,dye,2597,dmao-default,,,,,,,,2
+NovaRed 685,dye,2598,novared-685-default,,,,,,,,2
+RPE-CF647T,dye,2599,rpe-cf647t-default,,,,,,,,2
+Dapoxyl,dye,2600,dapoxyl-default,,,,,,,,2
+APC/Fire-750,dye,2601,apc-fire-750-default,,,,,,,,2
+SYTO 81,dye,2602,syto-81-default,,,,,,,,2
+APC-eFluor 780,dye,2603,apc-efluor-780-default,,,,,,,,2
+Nile red (triglyceride),dye,2604,nile-red-triglyceride-default,,,,,,,,2
+"BHQ-10 Carboxylic Acid, Succinimidyl Ester",dye,2605,bhq-10-carboxylic-acid-succinimidyl-ester-default,,,28700.0,,,,,1
+SBFI (sodium free),dye,2606,sbfi-sodium-free-default,,,,,,,,2
+LDS 751,dye,2607,lds-751-default,,,,,,,,2
+FAM,dye,2608,fam-default,,,71300.0,,,,,3
+Alexa Fluor 680-allophycocyanin (APC),dye,2609,alexa-fluor-680-allophycocyanin-apc-default,,,,,,,,2
+DDAO,dye,2610,ddao-default,,,,,,,,2
+LysoSensor Blue,dye,2611,lysosensor-blue-default,,,,,,,,2
+CellEvent Green,dye,2612,cellevent-green-default,,,,,,,,2
+Calcium Sensor Dye eFluor 514,dye,2613,calcium-sensor-dye-efluor-514-default,,,,,,,,2
+APF,dye,2614,apf-default,,,,,,,,2
+Naphthofluorescein,dye,2615,naphthofluorescein-default,,,,,,,,2
+TRI-COLOR,dye,2616,tri-color-default,,,,,,,,2
+MitoSOX Red,dye,2617,mitosox-red-default,,,,,,,,2
+FocalCheck Orange Ring Stain,dye,2618,focalcheck-orange-ring-stain-default,,,,,,,,2
+SYTO RNASelect,dye,2619,syto-rnaselect-default,,,,,,,,2
+Calcium Orange,dye,2620,calcium-orange-default,,,,,,,,2
+Pro-Q Diamond,dye,2621,pro-q-diamond-default,,,,,,,,2
+Pro-Q Emerald 300,dye,2622,pro-q-emerald-300-default,,,,,,,,2
+FocalCheck Blue Ring Stain,dye,2623,focalcheck-blue-ring-stain-default,,,,,,,,2
+PerCP-eFluor 710,dye,2624,percp-efluor-710-default,,,,,,,,2
+Super Bright 702,dye,2625,super-bright-702-default,,,,,,,,2
+eFluor 660,dye,2626,efluor-660-default,,,,,,,,2
+Cascade Blue,dye,2627,cascade-blue-default,,,,,,,,2
+CellTrace calcein violet,dye,2628,celltrace-calcein-violet-default,,,,,,,,2
+LysoTracker Green,dye,2629,lysotracker-green-default,,,,,,,,2
+Cell Proliferation Dye eFluor 450,dye,2630,cell-proliferation-dye-efluor-450-default,,,,,,,,2
+Rhod-5N (calcium bound),dye,2631,rhod-5n-calcium-bound-default,,,,,,,,2
+LIVE_DEAD Fixable Red Dead Cell Stain,dye,2632,live_dead-fixable-red-dead-cell-stain-default,,,,,,,,2
+PicoGreen reagent,dye,2633,picogreen-reagent-default,,,,,,,,2
+CellTracker Violet BMQC,dye,2634,celltracker-violet-bmqc-default,,,,,,,,2
+SYTO 80,dye,2635,syto-80-default,,,,,,,,2
+eFluor 570,dye,2636,efluor-570-default,,,,,,,,2
+Rhodamine 6G,dye,2637,rhodamine-6g-default,,,,,,,,2
+SYTO 43,dye,2638,syto-43-default,,,,,,,,2
+BeRST1,dye,2639,berst1-default,,,,,,,,2
+"CFSE (fluorescein, CFDA, SE)",dye,2640,cfse-fluorescein-cfda-se-default,,,,,,,,2
+CellTrace Blue,dye,2641,celltrace-blue-default,,,,,,,,2
+Vybrant DyeCycle Ruby stain,dye,2642,vybrant-dyecycle-ruby-stain-default,,,,,,,,2
+Alexa Fluor 647-R-phycoerythrin (R-PE),dye,2643,alexa-fluor-647-r-phycoerythrin-r-pe-default,,,,,,,,2
+BODIPY 630_650,dye,2692,bodipy-630_650-default,,,,,,,,2
+Fixable Viability Dye eFluor 506,dye,2644,fixable-viability-dye-efluor-506-default,,,,,,,,2
+eFluor 615,dye,2645,efluor-615-default,,,,,,,,2
+FocalCheck Dark Red Ring Stain,dye,2646,focalcheck-dark-red-ring-stain-default,,,,,,,,2
+PE-Alexa Fluor 680,dye,2647,pe-alexa-fluor-680-default,,,,,,,,2
+SYBR Gold,dye,2648,sybr-gold-default,,,,,,,,2
+SYBR Green,dye,2649,sybr-green-default,,,,,,,,2
+SYTO 42,dye,2650,syto-42-default,,,,,,,,2
+SPY505,dye,2651,spy505-default,,,,,,,,2
+HCS LipidTOX Red Neutral Lipid,dye,2652,hcs-lipidtox-red-neutral-lipid-default,,,,,,,,2
+"1,8-ANS",dye,2653,18-ans-default,,,,,,,,2
+ThiolTracker Violet,dye,2654,thioltracker-violet-default,,,,,,,,2
+FluoSpheres nile red fluorescent microspheres,dye,2655,fluospheres-nile-red-fluorescent-microspheres-default,,,,,,,,2
+SYTO 83,dye,2656,syto-83-default,,,,,,,,2
+Dibromobimane (bBBr),dye,2657,dibromobimane-bbbr-default,,,,,,,,2
+SYTO 40,dye,2658,syto-40-default,,,,,,,,2
+FluoSpheres dark red fluorescent microspheres,dye,2659,fluospheres-dark-red-fluorescent-microspheres-default,,,,,,,,2
+Rhod-2 (calcium bound),dye,2660,rhod-2-calcium-bound-default,,,,,,,,2
+Sodium Green (sodium bound),dye,2661,sodium-green-sodium-bound-default,,,,,,,,2
+LysoTracker Yellow HCK-123,dye,2662,lysotracker-yellow-hck-123-default,,,,,,,,2
+CellTrace Far Red,dye,2663,celltrace-far-red-default,,,,,,,,2
+Fura Red (calcium bound),dye,2664,fura-red-calcium-bound-default,,,,,,,,2
+SBFI (sodium bound),dye,2665,sbfi-sodium-bound-default,,,,,,,,2
+FluoSpheres yellow-green fluorescent microspheres,dye,2666,fluospheres-yellow-green-fluorescent-microspheres-default,,,,,,,,2
+ROX (carboxy-X-rhodamine),dye,2667,rox-carboxy-x-rhodamine-default,,,,,,,,2
+FluoSpheres orange fluorescent microspheres,dye,2668,fluospheres-orange-fluorescent-microspheres-default,,,,,,,,2
+SYTO 41,dye,2669,syto-41-default,,,,,,,,2
+Di-4-ANEPPS,dye,2670,di-4-anepps-default,,,,,,,,2
+SYTO 82,dye,2671,syto-82-default,,,,,,,,2
+NeuroTrace 435_455 blue fluorescent Nissl stain,dye,2672,neurotrace-435_455-blue-fluorescent-nissl-stain-default,,,,,,,,2
+DiFMU (pH 9.0),dye,2673,difmu-ph-90-default,,,,,,,,2
+PE-Cy5,dye,2674,pe-cy5-default,,,,,,,,2
+CellTrace Yellow,dye,2675,celltrace-yellow-default,,,,,,,,2
+JOJO-1,dye,2676,jojo-1-default,,,,,,,,2
+FluxOR Red,dye,2677,fluxor-red-default,,,,,,,,2
+FxCycle Far Red stain,dye,2678,fxcycle-far-red-stain-default,,,,,,,,2
+SYTO 45,dye,2679,syto-45-default,,,,,,,,2
+LysoSensor Yellow_Blue (pH 3.0),dye,2680,lysosensor-yellow_blue-ph-30-default,,,,,,,,2
+SNARF 1 @ pH 9,dye,2681,snarf-1-ph-9-default,,,,,,,,2
+SYBR 14,dye,2682,sybr-14-default,,,,,,,,2
+PO-PRO-3,dye,2683,po-pro-3-default,,,,,,,,2
+abberior STAR 470SXP,dye,2684,abberior-star-470sxp-default,,,,,,,,2
+"Calcein AM (calcein, calcein green)",dye,2685,calcein-am-calcein-calcein-green-default,,,,,,,,2
+Oregon Green 514,dye,2686,oregon-green-514-default,,,,,,,,2
+Acridine orange,dye,2687,acridine-orange-default,,,,,,,,2
+Fluo-3 (calcium bound),dye,2688,fluo-3-calcium-bound-default,,,,,,,,2
+SYTO 44,dye,2689,syto-44-default,,,,,,,,2
+JC-1,dye,2690,jc-1-default,,,,,,,,2
+Cy5B,dye,2691,cy5b-default,,,,,,,,2
+LIVE_DEAD Fixable Yellow Dead Cell Stain,dye,2693,live_dead-fixable-yellow-dead-cell-stain-default,,,,,,,,2
+TOTO-3,dye,2694,toto-3-default,,,,,,,,2
+ER-Tracker Blue-White DPX,dye,2695,er-tracker-blue-white-dpx-default,,,,,,,,2
+Fixable Viability Dye eFluor 660,dye,2696,fixable-viability-dye-efluor-660-default,,,,,,,,2
+PE-eFluor 610,dye,2697,pe-efluor-610-default,,,,,,,,2
+Yeast vacuole membrane marker (MDY-64),dye,2699,yeast-vacuole-membrane-marker-mdy-64-default,,,,,,,,2
+DAF-FM,dye,2700,daf-fm-default,,,,,,,,2
+Fura Red (calcium free),dye,2701,fura-red-calcium-free-default,,,,,,,,2
+FxCycle Violet,dye,2702,fxcycle-violet-default,,,,,,,,2
+PO-PRO-1,dye,2703,po-pro-1-default,,,,,,,,2
+FM 5-95,dye,2704,fm-5-95-default,,,,,,,,2
+Fixable Viability Dye eFluor 455UV,dye,2705,fixable-viability-dye-efluor-455uv-default,,,,,,,,2
+alamarBlue,dye,2706,alamarblue-default,,,,,,,,2
+FluoSpheres crimson fluorescent microspheres,dye,2707,fluospheres-crimson-fluorescent-microspheres-default,,,,,,,,2
+Super Bright 600,dye,2708,super-bright-600-default,,,,,,,,2
+SYTO 84,dye,2709,syto-84-default,,,,,,,,2
+PE-Cy5.5,dye,2710,pe-cy55-default,,,,,,,,2
+PE-Cy7,dye,2711,pe-cy7-default,,,,,,,,2
+CellTracker Red CMTPX,dye,2712,celltracker-red-cmtpx-default,,,,,,,,2
+Magnesium Green,dye,2713,magnesium-green-default,,,,,,,,2
+Di-4-ANEPPDHQ,dye,2714,di-4-aneppdhq-default,,,,,,,,2
+Rhodamine Green,dye,2715,rhodamine-green-default,,,,,,,,2
+Image-iT DEAD Green viability stain,dye,2716,image-it-dead-green-viability-stain-default,,,,,,,,2
+Rhodamine 123,dye,2717,rhodamine-123-default,,,,,,,,2
+DiFMU (pH 3.0),dye,2718,difmu-ph-30-default,,,,,,,,2
+Violet membrane asymmetry probe (F2N12S),dye,2719,violet-membrane-asymmetry-probe-f2n12s-default,,,,,,,,2
+CellROX Orange,dye,2720,cellrox-orange-default,,,,,,,,2
+Cascade Yellow,dye,2721,cascade-yellow-default,,,,,,,,2
+FM 2-10,dye,2722,fm-2-10-default,,,,,,,,2
+Di-3-ANEPPDHQ,dye,2723,di-3-aneppdhq-default,,,,,,,,2
+FluxOR thallium indicator,dye,2724,fluxor-thallium-indicator-default,,,,,,,,2
+FluoSpheres blue fluorescent microspheres,dye,2725,fluospheres-blue-fluorescent-microspheres-default,,,,,,,,2
+Dansyl,dye,2726,dansyl-default,,,,,,,,2
+SYTOX AADvanced dead cell stain,dye,2727,sytox-aadvanced-dead-cell-stain-default,,,,,,,,2
+eFluor 506,dye,2728,efluor-506-default,,,,,,,,2
+TOTO-1,dye,2729,toto-1-default,,,,,,,,2
+APC-Alexa Fluor 750,dye,2730,apc-alexa-fluor-750-default,,,,,,,,2
+NeuroTrace 515_535 yellow fluorescent Nissl stain,dye,2731,neurotrace-515_535-yellow-fluorescent-nissl-stain-default,,,,,,,,2
+Filipin,dye,2732,filipin-default,,,,,,,,2
+eFluor 710,dye,2733,efluor-710-default,,,,,,,,2
+Rhodamine Red,dye,2734,rhodamine-red-default,,,,,,,,2
+LIVE_DEAD Fixable Green Dead Cell Stain,dye,2735,live_dead-fixable-green-dead-cell-stain-default,,,,,,,,2
+Oregon Green 488 BAPTA,dye,2736,oregon-green-488-bapta-default,,,,,,,,2
+Monobromobimane (mBBr),dye,2737,monobromobimane-mbbr-default,,,,,,,,2
+FM 1-43,dye,2738,fm-1-43-default,,,,,,,,2
+Mag-fura-2,dye,2739,mag-fura-2-default,,,,,,,,2
+LysoSensor Yellow_Blue (pH 9),dye,2741,lysosensor-yellow_blue-ph-9-default,,,,,,,,2
+PrestoBlue,dye,2742,prestoblue-default,,,,,,,,2
+BODIPY TMR,dye,2743,bodipy-tmr-default,,,,,,,,2
+Dihydroethidium,dye,2744,dihydroethidium-default,,,,,,,,2
+Di-2-ANEPEQ (JPW 1114),dye,2745,di-2-anepeq-jpw-1114-default,,,,,,,,2
+Malachite green,dye,2746,malachite-green-default,,,,,,,,1
+RH 795,dye,2747,rh-795-default,,,,,,,,2
+SYTO 14,dye,2748,syto-14-default,,,,,,,,2
+Vybrant DyeCycle Green stain,dye,2749,vybrant-dyecycle-green-stain-default,,,,,,,,2
+Qnuclear Deep Red stain,dye,2750,qnuclear-deep-red-stain-default,,,,,,,,2
+Fura-2 (calcium free),dye,2751,fura-2-calcium-free-default,,,,,,,,2
+BODIPY 650_665,dye,2752,bodipy-650_665-default,,,,,,,,2
+SYPRO Ruby protein gel stain,dye,2753,sypro-ruby-protein-gel-stain-default,,,,,,,,2
+BODIPY 581_591,dye,2754,bodipy-581_591-default,,,,,,,,2
+Super Bright 645,dye,2755,super-bright-645-default,,,,,,,,2
+Vybrant DyeCycle Orange stain,dye,2756,vybrant-dyecycle-orange-stain-default,,,,,,,,2
+SYTO 16,dye,2757,syto-16-default,,,,,,,,2
+HCS LipidTOX Green Neutral Lipid,dye,2758,hcs-lipidtox-green-neutral-lipid-default,,,,,,,,2
+LysoTracker Red,dye,2759,lysotracker-red-default,,,,,,,,2
+BCECF @ pH 5.2,dye,2760,bcecf-ph-52-default,,,,,,,,2
+DyLight 549,dye,2761,dylight-549-default,,,,,,,,2
+AMC (7-amino-4-methylcoumarin),dye,2762,amc-7-amino-4-methylcoumarin-default,,,,,,,,2
+eFluor 450,dye,2763,efluor-450-default,,,,,,,,2
+SYTO 17,dye,2764,syto-17-default,,,,,,,,2
+LIVE_DEAD Fixable Blue Dead Cell Stain,dye,2765,live_dead-fixable-blue-dead-cell-stain-default,,,,,,,,2
+7-hydroxy-4-methylcoumarin,dye,2766,7-hydroxy-4-methylcoumarin-default,,,,,,,,2
+Image-iT Lipid Peroxidation Sensor,dye,2767,image-it-lipid-peroxidation-sensor-default,,,,,,,,2
+SYTO 13,dye,2768,syto-13-default,,,,,,,,2
+Calcium Green,dye,2769,calcium-green-default,,,,,,,,2
+YOYO-1,dye,2770,yoyo-1-default,,,,,,,,2
+DyLight 649,dye,2771,dylight-649-default,,,,,,,,2
+Cell Proliferation Dye eFluor 670,dye,2772,cell-proliferation-dye-efluor-670-default,,,,,,,,2
+Premo Cameleon Calcium Sensor (calcium bound),dye,2773,premo-cameleon-calcium-sensor-calcium-bound-default,,,,,,,,2
+SYBR Safe,dye,2774,sybr-safe-default,,,,,,,,2
+YO-PRO-3,dye,2775,yo-pro-3-default,,,,,,,,2
+Di-8-ANEPPS,dye,2776,di-8-anepps-default,,,,,,,,2
+Calcium Crimson (calcium bound),dye,2777,calcium-crimson-calcium-bound-default,,,,,,,,2
+Premo Cameleon Calcium Sensor (calcium free),dye,2778,premo-cameleon-calcium-sensor-calcium-free-default,,,,,,,,2
+YO-PRO-1,dye,2779,yo-pro-1-default,,,,,,,,2
+CellEvent Senescence Green,dye,2780,cellevent-senescence-green-default,,,,,,,,2
+JOE,dye,2781,joe-default,,,,,,,,2
+NeuroTrace 640_660 deep-red fluorescent Nissl stain,dye,2782,neurotrace-640_660-deep-red-fluorescent-nissl-stain-default,,,,,,,,2
+Amplex Red,dye,2783,amplex-red-default,,,,,,,,2
+PerCP-Cy5.5,dye,2784,percp-cy55-default,,,,,,,,2
+Indo-1 (calcium bound),dye,2785,indo-1-calcium-bound-default,,,,,,,,2
+HCS LipidTOX Green phospholipidosis reagent,dye,2786,hcs-lipidtox-green-phospholipidosis-reagent-default,,,,,,,,2
+DyeCycle Green,dye,2787,dyecycle-green-default,,,,,,,,2
+YOYO-3,dye,2788,yoyo-3-default,,,,,,,,2
+Fixable Viability Dye eFluor 780,dye,2789,fixable-viability-dye-efluor-780-default,,,,,,,,2
+PE-Alexa Fluor 610,dye,2790,pe-alexa-fluor-610-default,,,,,,,,2
+FocalCheck DoubleOrange Ring Stain,dye,2791,focalcheck-doubleorange-ring-stain-default,,,,,,,,2
+Monochlorobimane (mBCI),dye,2792,monochlorobimane-mbci-default,,,,,,,,2
+BODIPY R6G,dye,2793,bodipy-r6g-default,,,,,,,,2
+NucSpot 500/515,dye,2794,nucspot-500-515-default,,,,,,,,2
+NucSpot 555/570,dye,2795,nucspot-555-570-default,,,,,,,,2
+FluoSpheres red fluorescent microspheres,dye,2796,fluospheres-red-fluorescent-microspheres-default,,,,,,,,2
+pHrodo Green,dye,2797,phrodo-green-default,,,,,,,,2
+SYTO 62,dye,2798,syto-62-default,,,,,,,,2
+Marina Blue,dye,2799,marina-blue-default,,,,,,,,2
+LIVE_DEAD Fixable Far Red Dead Cell Stain,dye,2800,live_dead-fixable-far-red-dead-cell-stain-default,,,,,,,,2
+Dabcyl,dye,2801,dabcyl-default,,,,,,,,1
+SNARF 1 @ pH 6,dye,2802,snarf-1-ph-6-default,,,,,,,,2
+X-Rhod-5F (calcium bound),dye,2803,x-rhod-5f-calcium-bound-default,,,,,,,,2
+Sulforhodamine 101,dye,2804,sulforhodamine-101-default,,,,,,,,2
+LIVE_DEAD Fixable Aqua Dead Cell Stain,dye,2805,live_dead-fixable-aqua-dead-cell-stain-default,,,,,,,,2
+TetraSpeck blue dye,dye,2806,tetraspeck-blue-dye-default,,,,,,,,2
+TetraSpeck orange dye,dye,2807,tetraspeck-orange-dye-default,,,,,,,,2
+LysoSensor Green,dye,2808,lysosensor-green-default,,,,,,,,2
+LIVE_DEAD Fixable Near-IR Dead Cell Stain,dye,2809,live_dead-fixable-near-ir-dead-cell-stain-default,,,,,,,,2
+CellMask Orange plasma membrane stain,dye,2810,cellmask-orange-plasma-membrane-stain-default,,,,,,,,2
+Pyranine (pH=1),dye,2811,pyranine-ph1-default,,,,,,,,2
+CellTrace calcein red-orange,dye,2812,celltrace-calcein-red-orange-default,,,,,,,,2
+PE-Alexa Fluor 700,dye,2813,pe-alexa-fluor-700-default,,,,,,,,2
+4-Di-10-ASP,dye,2814,4-di-10-asp-default,,,,,,,,2
+ERseeing,dye,2815,erseeing-default,,,,,,,,2
+DyLight 488,dye,2816,dylight-488-default,,,,,,,,2
+SYTO 61,dye,2817,syto-61-default,,,,,,,,2
+Nile red (phospholipid),dye,2818,nile-red-phospholipid-default,,,,,,,,2
+Pyranine,dye,2819,pyranine-default,,,,,,,,2
+Calbryte 630,dye,2820,calbryte-630-default,,,,,,,,0
+quinine,dye,2821,quinine-default,,,,,,,,2
+FocalCheck DoubleGreen Ring Stain,dye,2822,focalcheck-doublegreen-ring-stain-default,,,,,,,,2
+LIVE_DEAD Fixable Violet Dead Cell Stain,dye,2823,live_dead-fixable-violet-dead-cell-stain-default,,,,,,,,2
+FilmTracer calcein violet,dye,2824,filmtracer-calcein-violet-default,,,,,,,,2
+Xylanase substrate,dye,2825,xylanase-substrate-default,,,,,,,,2
+Rhodamine 110,dye,2826,rhodamine-110-default,,,,,,,,2
+X-Rhod-1 (calcium bound),dye,2827,x-rhod-1-calcium-bound-default,,,,,,,,2
+SYTO 60,dye,2828,syto-60-default,,,,,,,,2
+Nile blue,dye,2829,nile-blue-default,,,,,,,,2
+Fixable Viability Dye eFluor 450,dye,2830,fixable-viability-dye-efluor-450-default,,,,,,,,2
+DyeCycle Orange,dye,2831,dyecycle-orange-default,,,,,,,,2
+PE-Texas Red,dye,2832,pe-texas-red-default,,,,,,,,2
+Super Bright 780,dye,2833,super-bright-780-default,,,,,,,,2
+Fixable Viability Dye eFluor 520,dye,2834,fixable-viability-dye-efluor-520-default,,,,,,,,2
+NucSpot 568/580,dye,2835,nucspot-568-580-default,,,,,,,,2
+Epoxide hydrolase substrate,dye,2836,epoxide-hydrolase-substrate-default,,,,,,,,2
+HCS LipidTOX Red phospholipidosis reagent,dye,2837,hcs-lipidtox-red-phospholipidosis-reagent-default,,,,,,,,2
+SYPRO Orange protein gel stain,dye,2838,sypro-orange-protein-gel-stain-default,,,,,,,,2
+MitoHealth stain,dye,2839,mitohealth-stain-default,,,,,,,,2
+BOBO-1,dye,2840,bobo-1-default,,,,,,,,2
+EQ1,dye,2841,eq1-default,,,39200.0,0.0001,,,,1
+Calcein Violet 450 AM,dye,2842,calcein-violet-450-am-default,,,,,,,,2
+CellMask Deep Red plasma membrane stain,dye,2844,cellmask-deep-red-plasma-membrane-stain-default,,,,,,,,2
+POPO-3,dye,2845,popo-3-default,,,,,,,,2
+POPO-1,dye,2846,popo-1-default,,,,,,,,2
+Super Bright 436,dye,2847,super-bright-436-default,,,,,,,,2
+Cy5.5-Allophycocyanin (APC),dye,2848,cy55-allophycocyanin-apc-default,,,,,,,,2
+Vybrant DyeCycle Violet stain,dye,2849,vybrant-dyecycle-violet-stain-default,,,,,,,,2
+BODIPY TR,dye,2850,bodipy-tr-default,,,,,,,,2
+BOBO-3,dye,2851,bobo-3-default,,,,,,,,2
+DyeCycle Violet,dye,2852,dyecycle-violet-default,,,,,,,,2
+Indo-1 (calcium free),dye,2853,indo-1-calcium-free-default,,,,,,,,2
+Amplex UltraRed,dye,2854,amplex-ultrared-default,,,,,,,,2
+HBTN,dye,2855,hbtn-default,,,,,,,,1
+NeuroTrace 530_615 red fluorescent Nissl stain,dye,2856,neurotrace-530_615-red-fluorescent-nissl-stain-default,,,,,,,,2
+7-AAD (7-aminoactinomycin D),dye,2857,7-aad-7-aminoactinomycin-d-default,,,,,,,,2
+HPF,dye,2858,hpf-default,,,,,,,,2
+CellTrace Violet stain,dye,2859,celltrace-violet-stain-default,,,,,,,,2
+Eosin,dye,2860,eosin-default,,,,,,,,2
+Calcein Blue AM (calcein blue),dye,2861,calcein-blue-am-calcein-blue-default,,,,,,,,2
+FilmTracer calcein red-orange,dye,2862,filmtracer-calcein-red-orange-default,,,,,,,,2
+APC/Cy7,dye,2863,apc-cy7-default,,,,,,,,2
+Flipper-TR,dye,2864,flipper-tr-default,,,,,,,,2
+APC/H7,dye,2865,apc-h7-default,,,,,,,,2
+DY-XL511,dye,2866,dy-xl511-default,,,,,,,,2
+BD Horizon V450,dye,2867,bd-horizon-v450-default,,,,,,,,2
+BD Horizon V500,dye,2868,bd-horizon-v500-default,,,,,,,,2
+BD Horizon BB515,dye,2869,bd-horizon-bb515-default,,,,,,,,2
+Seta-PerCP-680,dye,2870,seta-percp-680-default,,,,,,,,2
+BD Horizon BUV395,dye,2871,bd-horizon-buv395-default,,,,,,,,2
+NovaYellow 570,dye,2872,novayellow-570-default,,,,,,,,2
+BD Horizon BUV496,dye,2873,bd-horizon-buv496-default,,,,,,,,2
+BD Horizon BUV563,dye,2874,bd-horizon-buv563-default,,,,,,,,2
+BD Horizon BUV661,dye,2875,bd-horizon-buv661-default,,,,,,,,2
+BD Horizon BUV737,dye,2876,bd-horizon-buv737-default,,,,,,,,2
+2-NBDG,dye,2877,2-nbdg-default,,,,,,,,2
+BD Horizon BUV805,dye,2878,bd-horizon-buv805-default,,,,,,,,2
+DY-480XL,dye,2879,dy-480xl-default,,,,,,,,2
+Brilliant Violet 421,dye,2880,brilliant-violet-421-default,,,,,,,,2
+DY-XL520,dye,2881,dy-xl520-default,,,,,,,,2
+Brilliant Violet 510,dye,2882,brilliant-violet-510-default,,,,,,,,2
+Cy5.5,dye,2883,cy55-default,,,250000.0,0.28,,,,2
+Brilliant Violet 570,dye,2884,brilliant-violet-570-default,,,,,,,,2
+Brilliant Violet 605,dye,2885,brilliant-violet-605-default,,,,,,,,2
+Seta-PE-615,dye,2886,seta-pe-615-default,,,,,,,,2
+Brilliant Violet 650,dye,2887,brilliant-violet-650-default,,,,,,,,2
+Brilliant Violet 711,dye,2888,brilliant-violet-711-default,,,,,,,,2
+NovaYellow 610,dye,2889,novayellow-610-default,,,,,,,,2
+SeTau-405-NHS,dye,2890,setau-405-nhs-default,,,,,,,,2
+Brilliant Violet 750,dye,2891,brilliant-violet-750-default,,,,,,,,2
+Brilliant Violet 785,dye,2892,brilliant-violet-785-default,,,,,,,,2
+DY-481XL,dye,2893,dy-481xl-default,,,,,,,,2
+Cytophase Violet,dye,2894,cytophase-violet-default,,,,,,,,2
+DY-XL521,dye,2895,dy-xl521-default,,,,,,,,2
+DRAQ7,dye,2896,draq7-default,,,,,,,,2
+Seta-APC-705,dye,2897,seta-apc-705-default,,,,,,,,2
+Flash Phalloidin Green 488,dye,2898,flash-phalloidin-green-488-default,,,,,,,,2
+Flash Phalloidin Red 594,dye,2899,flash-phalloidin-red-594-default,,,,,,,,2
+Erythrosine B,dye,2900,erythrosine-b-default,,,,,,,,2
+VIC,dye,2901,vic-default,,,,,,,,1
+Flash Phalloidin NIR 647,dye,2902,flash-phalloidin-nir-647-default,,,,,,,,2
+Helix NP NIR,dye,2903,helix-np-nir-default,,,,,,,,2
+SYTO Deep Red Nucleic Acid Stain,dye,2904,syto-deep-red-nucleic-acid-stain-default,,,,,,,,2
+Helix NP Green,dye,2905,helix-np-green-default,,,,,,,,2
+Helix NP Blue,dye,2906,helix-np-blue-default,,,,,,,,2
+BD Horizon - BB700,dye,2907,bd-horizon-bb700-default,,,,,,,,2
+LIVE/DEAD Fixable Aqua,dye,2908,live-dead-fixable-aqua-default,,,,,,,,2
+Cy3B,dye,2909,cy3b-default,,,130000.0,0.67,,,,2
+LIVE/DEAD Fixable Blue,dye,2910,live-dead-fixable-blue-default,,,,,,,,2
+Opal 620,dye,2911,opal-620-default,,,,,,,,2
+DyLight 554,dye,2912,dylight-554-default,,,,,,,,2
+BODIPY 558/568 C12,dye,2913,bodipy-558-568-c12-default,,,,,,,,2
+SeTau-647-NHS,dye,2914,setau-647-nhs-default,,,,,,,,2
+Opal 670,dye,2915,opal-670-default,,,,,,,,2
+SeTau-488-NHS,dye,2916,setau-488-nhs-default,,,,,,,,2
+NovaBlue 530,dye,2917,novablue-530-default,,,,,,,,2
+NovaYellow 660,dye,2918,novayellow-660-default,,,,,,,,2
+SeTau-680-NHS,dye,2919,setau-680-nhs-default,,,,,,,,2
+SiR650,dye,2920,sir650-default,,,,,,,,2
+Janelia Fluor JF549-HaloTag conjugate,dye,2921,janelia-fluor-jf549-halotag-conjugate-default,557.0,576.0,83000.0,0.8118,,,,3
+CAL Fluor Orange 560,dye,2922,cal-fluor-orange-560-default,,,87800.0,,,,,2
+Brilliant Violet 480,dye,2923,brilliant-violet-480-default,,,,,,,,2
+Janelia Fluor JF525-HaloTag conjugate,dye,2924,janelia-fluor-jf525-halotag-conjugate-default,534.0,554.0,95000.0,0.8262000000000002,,,,3
+Janelia Fluor JF526-HaloTag conjugate,dye,2925,janelia-fluor-jf526-halotag-conjugate-default,535.0,557.0,61000.0,0.7311333333333334,,,,3
+Janelia Fluor JF559-HaloTag conjugate,dye,2926,janelia-fluor-jf559-halotag-conjugate-default,562.0,580.0,114000.0,0.7137333333333333,,,,3
+Janelia Fluor JF552-HaloTag conjugate,dye,2927,janelia-fluor-jf552-halotag-conjugate-default,560.0,580.0,104000.0,0.8022666666666667,,,,3
+Janelia Fluor JF570-HaloTag conjugate,dye,2928,janelia-fluor-jf570-halotag-conjugate-default,578.0,599.0,98000.0,0.6185999999999999,,,,3
+Janelia Fluor JF635-HaloTag conjugate,dye,2929,janelia-fluor-jf635-halotag-conjugate-default,642.0,656.0,88000.0,0.6851333333333333,,,,3
+Janelia Fluor JF585-HaloTag conjugate,dye,2930,janelia-fluor-jf585-halotag-conjugate-default,594.0,610.0,112000.0,0.8699333333333333,,,,3
+abberior STAR ORANGE,dye,2931,abberior-star-orange-default,,,,,,,,2
+Janelia Fluor JF608-HaloTag conjugate,dye,2932,janelia-fluor-jf608-halotag-conjugate-default,617.0,630.0,134000.0,0.7557333333333334,,,,3
+Janelia Fluor JF646-HaloTag conjugate,dye,2933,janelia-fluor-jf646-halotag-conjugate-default,654.0,667.0,140000.0,0.5890000000000001,,,,3
+Janelia Fluor JFX650-HaloTag conjugate,dye,2934,janelia-fluor-jfx650-halotag-conjugate-default,659.0,672.0,164000.0,0.6409333333333332,,,,3
+Janelia Fluor JF669-HaloTag conjugate,dye,2935,janelia-fluor-jf669-halotag-conjugate-default,676.0,685.0,139000.0,0.4508,,,,3
+SCT144,dye,3296,sct144-default,,,,,,,,2
+Janelia Fluor JF722-HaloTag conjugate,dye,2936,janelia-fluor-jf722-halotag-conjugate-default,733.0,746.0,92000.0,0.11926666666666667,,,,3
+Janelia Fluor JF479-HaloTag conjugate,dye,2937,janelia-fluor-jf479-halotag-conjugate-default,485.0,514.0,42000.0,0.642,,,,3
+LIVE/DEAD Fixable Far Red,dye,2938,live-dead-fixable-far-red-default,,,,,,,,2
+DY-485XL,dye,2939,dy-485xl-default,,,,,,,,2
+LIVE/DEAD Fixable Yellow,dye,2940,live-dead-fixable-yellow-default,,,,,,,,2
+DY-XL601,dye,2941,dy-xl601-default,,,,,,,,2
+LIVE/DEAD Fixable Green,dye,2942,live-dead-fixable-green-default,,,,,,,,2
+LIVE/DEAD Fixable Near-IR,dye,2943,live-dead-fixable-near-ir-default,,,,,,,,2
+DY-634,dye,2944,dy-634-default,,,,,,,,2
+LIVE/DEAD Fixable Red,dye,2945,live-dead-fixable-red-default,,,,,,,,2
+SeTau-665-NHS,dye,2946,setau-665-nhs-default,,,,,,,,2
+LIVE/DEAD Fixable Violet,dye,2947,live-dead-fixable-violet-default,,,,,,,,2
+Seta-PE-670,dye,2948,seta-pe-670-default,,,,,,,,2
+SPY555,dye,2949,spy555-default,,,,,,,,2
+MitoSpy Green FM,dye,2950,mitospy-green-fm-default,,,,,,,,2
+SeTau-425-NHS,dye,2951,setau-425-nhs-default,,,,,,,,2
+MitoSpy NIR DiIC1(5),dye,2952,mitospy-nir-diic15-default,,,,,,,,2
+MitoSpy Orange CMTMRos,dye,2953,mitospy-orange-cmtmros-default,,,,,,,,2
+SeTau-670-NHS,dye,2954,setau-670-nhs-default,,,,,,,,2
+MitoSpy Red CMXRos,dye,2955,mitospy-red-cmxros-default,,,,,,,,2
+NADH,dye,2956,nadh-default,,,,,,,,2
+Seta-PE-775,dye,2957,seta-pe-775-default,,,,,,,,2
+Opal 540,dye,2958,opal-540-default,,,,,,,,2
+SiR680,dye,2959,sir680-default,,,,,,,,2
+CAL Fluor Red 610,dye,2960,cal-fluor-red-610-default,,,106000.0,,,,,2
+Janelia Fluor JF503-HaloTag conjugate,dye,2961,janelia-fluor-jf503-halotag-conjugate-default,510.0,532.0,31000.0,0.821,,,,3
+Janelia Fluor JFX554-HaloTag conjugate,dye,2962,janelia-fluor-jfx554-halotag-conjugate-default,563.0,581.0,99000.0,0.8103333333333335,,,,3
+Janelia Fluor JFX612-HaloTag conjugate,dye,2963,janelia-fluor-jfx612-halotag-conjugate-default,621.0,636.0,59000.0,0.7424,,,,3
+Janelia Fluor JF711-HaloTag conjugate,dye,2964,janelia-fluor-jf711-halotag-conjugate-default,716.0,722.0,39000.0,0.14459999999999998,,,,3
+Janelia Fluor JF724-HaloTag conjugate,dye,2965,janelia-fluor-jf724-halotag-conjugate-default,727.0,742.0,51000.0,0.0862,,,,3
+PE-CF594,dye,2966,pe-cf594-default,,,,,,,,2
+DY-XL510,dye,2967,dy-xl510-default,,,,,,,,2
+PE/Dazzle 594,dye,2968,pe-dazzle-594-default,,,,,,,,2
+PE/Fire 780,dye,2969,pe-fire-780-default,,,,,,,,2
+Riboflavin,dye,2970,riboflavin-default,,,,,,,,2
+Tag-it Violet,dye,2971,tag-it-violet-default,,,,,,,,2
+Seta-APC-780,dye,2972,seta-apc-780-default,,,,,,,,2
+Zombie Aqua,dye,2973,zombie-aqua-default,,,,,,,,2
+Seta-650-NHS,dye,2974,seta-650-nhs-default,,,,,,,,2
+Zombie Green,dye,2975,zombie-green-default,,,,,,,,2
+HEX,dye,2976,hex-default,,,,,,,,2
+Zombie NIR,dye,2977,zombie-nir-default,,,,,,,,2
+Opal 570,dye,2978,opal-570-default,,,,,,,,2
+Zombie Red,dye,2979,zombie-red-default,,,,,,,,2
+SiR700,dye,2980,sir700-default,,,,,,,,2
+Zombie UV,dye,2981,zombie-uv-default,,,,,,,,2
+Zombie Violet,dye,2982,zombie-violet-default,,,,,,,,2
+CAL Fluor Red 635,dye,2983,cal-fluor-red-635-default,,,112000.0,,,,,2
+Zombie Yellow,dye,2984,zombie-yellow-default,,,,,,,,2
+NovaRed 660,dye,2985,novared-660-default,,,,,,,,2
+NovaYellow 690,dye,2986,novayellow-690-default,,,,,,,,2
+NovaYellow 700,dye,2987,novayellow-700-default,,,,,,,,2
+NovaRed 700,dye,2988,novared-700-default,,,,,,,,2
+NovaBlue 610 / 70S,dye,2989,novablue-610-70s-default,,,,,,,,2
+NovaBlue 660 / 120S,dye,2990,novablue-660-120s-default,,,,,,,,2
+NovaBlue 510,dye,2991,novablue-510-default,,,,,,,,2
+NovaBlue 555,dye,2992,novablue-555-default,,,,,,,,2
+CellTracker™ Green CMFDA Dye,dye,2993,celltrackertm-green-cmfda-dye-default,,,,,,,,1
+NovaBlue 660 / 40S,dye,2994,novablue-660-40s-default,,,,,,,,2
+NovaBlue 610 / 30S,dye,2995,novablue-610-30s-default,,,,,,,,2
+NorthernLights-557,dye,2996,northernlights-557-default,,,,,,,,2
+SPY620,dye,2997,spy620-default,,,,,,,,2
+SPY650,dye,2998,spy650-default,,,,,,,,2
+SPY700,dye,2999,spy700-default,,,,,,,,2
+Spark Violet 538,dye,3000,spark-violet-538-default,,,,,,,,2
+Spark Blue 550,dye,3001,spark-blue-550-default,,,,,,,,2
+6-FAM,dye,3002,6-fam-default,,,,,,,,2
+abberior STAR 635,dye,3003,abberior-star-635-default,,,,,,,,2
+Alexa Fluor Plus 405,dye,3004,alexa-fluor-plus-405-default,,,,,,,,2
+abberior STAR 580,dye,3005,abberior-star-580-default,,,,,,,,2
+tauroDBD,dye,3006,taurodbd-default,,,,,,,,2
+RH414,dye,3007,rh414-default,,,,,,,,2
+BHQ-3,dye,3008,bhq-3-default,,,42700.0,0.0001,,,,1
+BHQ-2,dye,3009,bhq-2-default,,,38000.0,0.0001,,,,1
+Calbryte 590,dye,3010,calbryte-590-default,,,,,,,,0
+ATTO 540Q,dye,3011,atto-540q-default,,,105000.0,0.0001,,,,1
+ATTO 575Q,dye,3012,atto-575q-default,,,120000.0,0.0001,,,,1
+ATTO 580Q,dye,3013,atto-580q-default,,,110000.0,0.0001,,,,1
+ATTO 612Q,dye,3014,atto-612q-default,,,115000.0,0.0001,,,,1
+QSY 7,dye,3015,qsy-7-default,,,90000.0,0.0001,,,,1
+QSY 35,dye,3016,qsy-35-default,,,23000.0,0.0001,,,,1
+QSY 9,dye,3017,qsy-9-default,,,85000.0,0.0001,,,,1
+QSY 21,dye,3018,qsy-21-default,,,90000.0,0.0001,,,,1
+abberior CAGE 635 (On),dye,3019,abberior-cage-635-on-default,,,,,,,,1
+G Nucleotide In-Situ Sequencing (540 nm Excitation),dye,3020,g-nucleotide-in-situ-sequencing-540-nm-excitation-default,,,,,,,,1
+T Nuc In-Situ Seq (540 nm Excitation),dye,3021,t-nuc-in-situ-seq-540-nm-excitation-default,,,,,,,,1
+G Nuc In-Situ Seq (540 nm Excitation),dye,3022,g-nuc-in-situ-seq-540-nm-excitation-default,,,,,,,,1
+C Nuc In-Situ Seq (635 nm Excitation),dye,3023,c-nuc-in-situ-seq-635-nm-excitation-default,,,,,,,,1
+TQ4,dye,3024,tq4-default,,,23000.0,0.0001,,,,1
+TQ7WS,dye,3025,tq7ws-default,,,140000.0,0.0001,,,,1
+TQ6WS,dye,3026,tq6ws-default,,,130000.0,0.0001,,,,1
+NucSpot 594/615,dye,3027,nucspot-594-615-default,,,,,,,,2
+TQ5WS,dye,3028,tq5ws-default,,,130000.0,0.0001,,,,1
+TQ4WS,dye,3029,tq4ws-default,,,90000.0,0.0001,,,,1
+TQ3WS,dye,3030,tq3ws-default,,,90000.0,0.0001,,,,1
+TQ3,dye,3031,tq3-default,,,22000.0,0.0001,,,,1
+TQ2WS,dye,3032,tq2ws-default,,,48000.0,0.0001,,,,1
+TQ2,dye,3033,tq2-default,,,21000.0,0.0001,,,,1
+QXL 670,dye,3034,qxl-670-default,,,,0.0001,,,,1
+QXL 570,dye,3035,qxl-570-default,,,,0.0001,,,,1
+EQ2,dye,3036,eq2-default,,,37000.0,0.0001,,,,1
+IRDye QC-1,dye,3037,irdye-qc-1-default,,,96000.0,0.0001,,,,1
+A Nuc In-Situ Seq (635 nm Excitation),dye,3038,a-nuc-in-situ-seq-635-nm-excitation-default,,,,,,,,1
+CF 583R,dye,3039,cf-583r-default,,,,,,,,2
+CF 597R,dye,3040,cf-597r-default,,,,,,,,2
+Rhodamine B,dye,3041,rhodamine-b-default,,,,,,,,2
+HBC599,dye,3042,hbc599-default,,,,,,,,2
+HBC525,dye,3043,hbc525-default,,,,,,,,2
+HBC497,dye,3044,hbc497-default,,,,,,,,2
+HBC485,dye,3045,hbc485-default,,,,,,,,2
+Pyranine (pH=12),dye,3046,pyranine-ph12-default,,,,,,,,2
+HBC620,dye,3047,hbc620-default,,,,,,,,2
+Seta-646,dye,3048,seta-646-default,,,,,,,,2
+Quasar 705,dye,3049,quasar-705-default,,,,,,,,2
+Pyranine (pH=2),dye,3050,pyranine-ph2-default,,,,,,,,2
+TMRE,dye,3051,tmre-default,,,,,,,,2
+HBTP (aq),dye,3052,hbtp-aq-default,,,,,,,,2
+HBTPQ (aq),dye,3053,hbtpq-aq-default,,,,,,,,2
+HBTN (aq),dye,3054,hbtn-aq-default,,,,,,,,2
+HBTN-poc (aq),dye,3055,hbtn-poc-aq-default,,,,,,,,2
+Thorlabs FSK4,dye,3056,thorlabs-fsk4-default,,,,,,,,1
+Thorlabs FSK6,dye,3057,thorlabs-fsk6-default,,,,,,,,1
+Thorlabs FSK3,dye,3058,thorlabs-fsk3-default,,,,,,,,1
+Thorlabs FSK2,dye,3059,thorlabs-fsk2-default,,,,,,,,1
+Thorlabs FSK1,dye,3060,thorlabs-fsk1-default,,,,,,,,1
+CellTracker Green CMFDA,dye,3061,celltracker-green-cmfda-default,,,,,,,,2
+SiR-DNA,dye,3062,sir-dna-default,,,,,,,,2
+Dojindo Nucleolus Bright Red,dye,3063,dojindo-nucleolus-bright-red-default,,,,,,,,2
+abberior LIVE 510,dye,3064,abberior-live-510-default,,,,,,,,2
+Spectrum Orange,dye,3065,spectrum-orange-default,,,,,,,,2
+abberior LIVE 590,dye,3066,abberior-live-590-default,,,105000.0,0.6,,,,2
+SPY595,dye,3067,spy595-default,,,75000.0,0.5,,,,2
+Hoechst 34580,dye,3068,hoechst-34580-default,,,,,,,,2
+PKMITO Red,dye,3069,pkmito-red-default,,,,,,,,2
+PKMITO Deep Red,dye,3070,pkmito-deep-red-default,,,,,,,,2
+PKMITO Orange,dye,3071,pkmito-orange-default,,,,,,,,2
+Chronos (opsin),dye,3072,chronos-opsin-default,,,,,,,,1
+CellTracker™ Orange CMRA Dye,dye,3073,celltrackertm-orange-cmra-dye-default,,,,,,,,2
+Cospheric UVPMS-BG,dye,3074,cospheric-uvpms-bg-default,,,,,,,,2
+Cospheric UVPMS-BR,dye,3075,cospheric-uvpms-br-default,,,,,,,,2
+Europium,dye,3076,europium-default,,,,,,,,2
+Terbium,dye,3077,terbium-default,,,,,,,,2
+Thorlabs VRC1,dye,3078,thorlabs-vrc1-default,,,,,,,,2
+Thorlabs VRC2,dye,3079,thorlabs-vrc2-default,,,,,,,,3
+Indocyanine Green,dye,3080,indocyanine-green-default,,,,,,,,2
+Kiravia Blue 520,dye,3081,kiravia-blue-520-default,,,,,,,,2
+SpyRho,dye,3082,spyrho-default,,,,,,,,2
+Alexa Fluor 514,dye,3083,alexa-fluor-514-default,518.0,543.0,80000.0,0.1,,,,2
+iFluor 488,dye,3084,ifluor-488-default,,,,,,,,2
+iFluor 440,dye,3085,ifluor-440-default,,,,,,,,2
+Qdot 525,dye,3086,qdot-525-default,300.0,525.0,,,,,,3
+"1,6-diphenylhexatriene (DPH)",dye,3088,16-diphenylhexatriene-dph-default,,,,,,,,2
+iFluor 450,dye,3089,ifluor-450-default,,,,,,,,2
+DyLight 550,dye,3090,dylight-550-default,,,,,,,,2
+iFluor 350,dye,3091,ifluor-350-default,,,,,,,,2
+DyLight 755,dye,3092,dylight-755-default,,,,,,,,2
+Chrimson eyeballed from nmeth.2836,dye,3093,chrimson-eyeballed-from-nmeth2836-default,,,,,,,,1
+Opal 780,dye,3094,opal-780-default,,,,,,,,2
+Opal 480,dye,3095,opal-480-default,,,,,,,,2
+CoraFluor-1,dye,3096,corafluor-1-default,,,23100.0,0.58,,,,2
+TSA Vivid™ Fluorophore Kit 650,dye,3097,tsa-vividtm-fluorophore-kit-650-default,,,,,,,,2
+TSA Vivid™ Fluorophore Kit 570,dye,3098,tsa-vividtm-fluorophore-kit-570-default,,,,,,,,2
+Luminicell Tracker LCTC 670,dye,3099,luminicell-tracker-lctc-670-default,,,,,,,,2
+mFluor Blue 630,dye,3100,mfluor-blue-630-default,,,,,,,,0
+Luminicell Tracker LCTC 540,dye,3101,luminicell-tracker-lctc-540-default,,,,,,,,2
+Calcofluor M2R,dye,3102,calcofluor-m2r-default,,,,,,,,2
+Thorlabs FSK2 - Green Fluorescent Microscope slide,dye,3103,thorlabs-fsk2-green-fluorescent-microscope-slide-default,,,,,,,,1
+iFluor 647,dye,3104,ifluor-647-default,,,,,,,,2
+Alexa Fluor 405,dye,3105,alexa-fluor-405-default,401.0,422.0,35000.0,0.72,,,,2
+NADA-Green,dye,3106,nada-green-default,,,25000.0,0.011,,,,2
+10-Acetyl-37-dihydroxyphenoxazin,dye,3107,10-acetyl-37-dihydroxyphenoxazin-default,,,,,,,,2
+HADA,dye,3108,hada-default,,,36700.0,0.82,,,,2
+7-AAD,dye,3109,7-aad-default,,,,,,,,2
+RADA,dye,3110,rada-default,,,95000.0,0.69,,,,2
+AccuClear,dye,3111,accuclear-default,,,,,,,,2
+AccuGreen HS,dye,3112,accugreen-hs-default,,,,,,,,2
+AccuOrange,dye,3113,accuorange-default,,,,,,,,2
+APC (allophycocyanin),dye,3114,apc-allophycocyanin-default,,,,,,,,2
+APC-Astral813,dye,3115,apc-astral813-default,,,,,,,,2
+BactoView Dead 500/515,dye,3116,bactoview-dead-500-515-default,,,,,,,,2
+BactoView Dead 560/570,dye,3117,bactoview-dead-560-570-default,,,,,,,,2
+BactoView Dead 570/585,dye,3118,bactoview-dead-570-585-default,,,,,,,,2
+BactoView Dead 600/615,dye,3119,bactoview-dead-600-615-default,,,,,,,,2
+BactoView Dead 655/670,dye,3120,bactoview-dead-655-670-default,,,,,,,,2
+BactoView Dead 690/710,dye,3121,bactoview-dead-690-710-default,,,,,,,,2
+BactoView Dead 760/780,dye,3122,bactoview-dead-760-780-default,,,,,,,,2
+BactoView Live Green,dye,3123,bactoview-live-green-default,,,,,,,,2
+BactoView Live Red,dye,3124,bactoview-live-red-default,,,,,,,,2
+CellBrite Blue,dye,3125,cellbrite-blue-default,,,,,,,,2
+CellBrite Fix 488,dye,3126,cellbrite-fix-488-default,,,,,,,,2
+CellBrite Fix 555,dye,3127,cellbrite-fix-555-default,,,,,,,,2
+CellBrite Fix 640,dye,3128,cellbrite-fix-640-default,,,,,,,,2
+CellBrite Green,dye,3129,cellbrite-green-default,,,,,,,,2
+CellBrite NIR 680,dye,3130,cellbrite-nir-680-default,,,,,,,,2
+CellBrite NIR 750,dye,3131,cellbrite-nir-750-default,,,,,,,,2
+CellBrite Steady 405,dye,3132,cellbrite-steady-405-default,,,,,,,,2
+CellBrite NIR 770,dye,3133,cellbrite-nir-770-default,,,,,,,,2
+CellBrite NIR 790,dye,3134,cellbrite-nir-790-default,,,,,,,,2
+CellBrite Orange,dye,3135,cellbrite-orange-default,,,,,,,,2
+CellBrite Red,dye,3136,cellbrite-red-default,,,,,,,,2
+CellBrite Steady 488,dye,3137,cellbrite-steady-488-default,,,,,,,,2
+CellBrite Steady 550,dye,3138,cellbrite-steady-550-default,,,,,,,,2
+CellBrite Steady 650,dye,3139,cellbrite-steady-650-default,,,,,,,,2
+CellBrite Steady 685,dye,3140,cellbrite-steady-685-default,,,,,,,,2
+CF350,dye,3141,cf350-default,,,18000.0,,,,,2
+CF405L,dye,3142,cf405l-default,,,24000.0,,,,,2
+CF405M,dye,3143,cf405m-default,,,41000.0,,,,,2
+CF405S,dye,3144,cf405s-default,,,33000.0,,,,,2
+CF410,dye,3145,cf410-default,,,,,,,,2
+CF430,dye,3146,cf430-default,,,40000.0,,,,,2
+CF440,dye,3147,cf440-default,,,40000.0,,,,,2
+CF450,dye,3148,cf450-default,,,40000.0,,,,,2
+CF488A,dye,3149,cf488a-default,,,70000.0,,,,,2
+CF500,dye,3150,cf500-default,,,,,,,,2
+CF503R,dye,3151,cf503r-default,,,,,,,,2
+CF505,dye,3152,cf505-default,,,,,,,,2
+CF514,dye,3153,cf514-default,,,105000.0,,,,,2
+CF532,dye,3154,cf532-default,,,96000.0,,,,,2
+CF535ST,dye,3155,cf535st-default,,,95000.0,,,,,2
+CF540,dye,3156,cf540-default,,,,,,,,2
+CF543,dye,3157,cf543-default,,,100000.0,,,,,2
+CF550R,dye,3158,cf550r-default,,,,,,,,2
+CF555,dye,3159,cf555-default,,,150000.0,,,,,2
+CF568,dye,3160,cf568-default,,,100000.0,,,,,2
+CF570,dye,3161,cf570-default,,,,,,,,2
+CF575,dye,3162,cf575-default,,,,,,,,2
+CF583,dye,3163,cf583-default,,,,,,,,2
+CF583R,dye,3164,cf583r-default,,,,,,,,2
+CF594,dye,3165,cf594-default,,,115000.0,,,,,2
+CF594ST,dye,3166,cf594st-default,,,115000.0,,,,,2
+CF597R,dye,3167,cf597r-default,,,,,,,,2
+CF620R,dye,3168,cf620r-default,,,115000.0,,,,,2
+CF633,dye,3169,cf633-default,,,100000.0,,,,,2
+CF640R,dye,3170,cf640r-default,,,105000.0,,,,,2
+CF647,dye,3171,cf647-default,,,240000.0,,,,,2
+CF647Plus,dye,3172,cf647plus-default,,,,,,,,2
+CF660C,dye,3173,cf660c-default,,,100000.0,,,,,2
+CF660R,dye,3174,cf660r-default,,,,,,,,2
+CF680,dye,3175,cf680-default,,,210000.0,,,,,2
+CF680R,dye,3176,cf680r-default,,,140000.0,,,,,2
+CF680T,dye,3177,cf680t-default,,,,,,,,2
+CF700,dye,3178,cf700-default,,,,,,,,2
+CF750,dye,3179,cf750-default,,,250000.0,,,,,2
+CF754 Tyramide,dye,3180,cf754-tyramide-default,,,,,,,,2
+CF770,dye,3181,cf770-default,,,220000.0,,,,,2
+CF770T,dye,3182,cf770t-default,,,,,,,,2
+CF790,dye,3183,cf790-default,,,210000.0,,,,,2
+CF800,dye,3184,cf800-default,,,210000.0,,,,,2
+CF850,dye,3185,cf850-default,,,,,,,,2
+CF870,dye,3186,cf870-default,,,,,,,,2
+Cy3,dye,3187,cy3-default,554.0,566.0,136000.0,0.15,,,,3
+Cy5,dye,3188,cy5-default,644.0,662.0,250000.0,0.3,,,,3
+DYQ 661,dye,3189,dyq-661-default,,,,,,,,1
+DiI,dye,3190,dii-default,,,,,,,,3
+DiO,dye,3191,dio-default,,,,,,,,3
+DiR,dye,3192,dir-default,,,,,,,,3
+Ethidium Bromide,dye,3193,ethidium-bromide-default,,,,,,,,2
+Ethidium Homodimer I,dye,3194,ethidium-homodimer-i-default,,,,,,,,2
+Violacein,dye,3347,violacein-default,,,,,,,,0
+Ethidium Homodimer III,dye,3195,ethidium-homodimer-iii-default,,,,,,,,2
+EvaGreen,dye,3196,evagreen-default,,,,,,,,2
+EvaGreen Plus,dye,3197,evagreen-plus-default,,,,,,,,2
+EvaRuby,dye,3198,evaruby-default,,,,,,,,2
+ExoBrite 410/450,dye,3199,exobrite-410-450-default,,,,,,,,2
+ExoBrite 490/515,dye,3200,exobrite-490-515-default,,,,,,,,2
+ExoBrite 560/585,dye,3201,exobrite-560-585-default,,,,,,,,2
+ExoBrite 640/660,dye,3202,exobrite-640-660-default,,,,,,,,2
+ExoBrite 650/665,dye,3203,exobrite-650-665-default,,,,,,,,2
+ExoBrite 655/670,dye,3204,exobrite-655-670-default,,,,,,,,2
+Fluo-3,dye,3205,fluo-3-default,,,,,,,,2
+Fluo-4,dye,3206,fluo-4-default,,,,,,,,2
+Fluorescein (FITC),dye,3207,fluorescein-fitc-default,498.0,517.0,88000.0,0.92,,,,3
+GelGreen,dye,3208,gelgreen-default,,,,,,,,2
+GelRed,dye,3209,gelred-default,,,,,,,,2
+LipidSpot 488,dye,3210,lipidspot-488-default,,,,,,,,2
+LipidSpot 610,dye,3211,lipidspot-610-default,,,,,,,,2
+Live-or-Dye 330/410,dye,3212,live-or-dye-330-410-default,,,,,,,,2
+Live-or-Dye 350/448,dye,3213,live-or-dye-350-448-default,,,,,,,,2
+Live-or-Dye 375/600,dye,3214,live-or-dye-375-600-default,,,,,,,,2
+Live-or-Dye 405/452,dye,3215,live-or-dye-405-452-default,,,,,,,,2
+Live-or-Dye 405/545,dye,3216,live-or-dye-405-545-default,,,,,,,,2
+Live-or-Dye 488/515,dye,3217,live-or-dye-488-515-default,,,,,,,,2
+Live-or-Dye 510/550,dye,3218,live-or-dye-510-550-default,,,,,,,,2
+Live-or-Dye 568/583,dye,3219,live-or-dye-568-583-default,,,,,,,,2
+Live-or-Dye 594/614,dye,3220,live-or-dye-594-614-default,,,,,,,,2
+Live-or-Dye 615/740,dye,3221,live-or-dye-615-740-default,,,,,,,,2
+Live-or-Dye 640/662,dye,3222,live-or-dye-640-662-default,,,,,,,,2
+Live-or-Dye 665/685,dye,3223,live-or-dye-665-685-default,,,,,,,,2
+Live-or-Dye 750/777,dye,3224,live-or-dye-750-777-default,,,,,,,,2
+Live-or-Dye 787/808,dye,3225,live-or-dye-787-808-default,,,,,,,,2
+Live-or-Dye NucFix Red,dye,3226,live-or-dye-nucfix-red-default,,,,,,,,2
+LysoView 405,dye,3227,lysoview-405-default,,,,,,,,2
+LysoView 488,dye,3228,lysoview-488-default,,,,,,,,2
+LysoView 540,dye,3229,lysoview-540-default,,,,,,,,2
+LysoView 550,dye,3230,lysoview-550-default,,,,,,,,2
+LysoView 594,dye,3231,lysoview-594-default,,,,,,,,2
+LysoView 633,dye,3232,lysoview-633-default,,,,,,,,2
+LysoView 640,dye,3233,lysoview-640-default,,,,,,,,2
+LysoView 680,dye,3234,lysoview-680-default,,,,,,,,2
+MemBrite Fix 405/430,dye,3235,membrite-fix-405-430-default,,,,,,,,2
+MemBrite Fix 488/515,dye,3236,membrite-fix-488-515-default,,,,,,,,2
+MemBrite Fix 543/560,dye,3237,membrite-fix-543-560-default,,,,,,,,2
+MemBrite Fix 568/580,dye,3238,membrite-fix-568-580-default,,,,,,,,2
+MemBrite Fix 594/615,dye,3239,membrite-fix-594-615-default,,,,,,,,2
+MemBrite Fix 640/660,dye,3240,membrite-fix-640-660-default,,,,,,,,2
+MemBrite Fix 660/680,dye,3241,membrite-fix-660-680-default,,,,,,,,2
+MemBrite Fix 680/700,dye,3242,membrite-fix-680-700-default,,,,,,,,2
+MemBrite Fix-ST 650/665,dye,3243,membrite-fix-st-650-665-default,,,,,,,,2
+MemBrite Fix-ST 667/685,dye,3244,membrite-fix-st-667-685-default,,,,,,,,2
+MemBrite Fix-ST 681/698,dye,3245,membrite-fix-st-681-698-default,,,,,,,,2
+MemBrite Fix-ST 755/777,dye,3246,membrite-fix-st-755-777-default,,,,,,,,2
+MitoView 405,dye,3247,mitoview-405-default,,,,,,,,2
+MitoView 633,dye,3248,mitoview-633-default,,,,,,,,2
+MitoView 650,dye,3249,mitoview-650-default,,,,,,,,2
+MitoView 720,dye,3250,mitoview-720-default,,,,,,,,2
+MitoView Green,dye,3251,mitoview-green-default,,,,,,,,2
+MitoView Fix 640,dye,3252,mitoview-fix-640-default,,,,,,,,2
+Neuro-DiO,dye,3253,neuro-dio-default,,,,,,,,2
+NucSpot 470,dye,3254,nucspot-470-default,,,,,,,,2
+NucSpot 650/665,dye,3255,nucspot-650-665-default,,,,,,,,2
+NucSpot Far-Red,dye,3256,nucspot-far-red-default,,,,,,,,2
+NucSpot 680/700,dye,3257,nucspot-680-700-default,,,,,,,,2
+NucSpot 750/780,dye,3258,nucspot-750-780-default,,,,,,,,3
+NucSpot 640,dye,3259,nucspot-640-default,,,,,,,,2
+NucSpot Live 488,dye,3260,nucspot-live-488-default,,,,,,,,2
+NucSpot Live 650,dye,3261,nucspot-live-650-default,,,,,,,,2
+NucView 405,dye,3262,nucview-405-default,,,,,,,,2
+NucView 488,dye,3263,nucview-488-default,,,,,,,,2
+NucView 530,dye,3264,nucview-530-default,,,,,,,,2
+Oxazole Blue (PO-PRO-1),dye,3265,oxazole-blue-po-pro-1-default,,,,,,,,2
+Oxazole Yellow (YO-PRO-1),dye,3266,oxazole-yellow-yo-pro-1-default,,,,,,,,2
+PE (R-PE / R-phycoerythrin),dye,3267,pe-r-pe-r-phycoerythrin-default,,,,,,,,3
+PerCP,dye,3268,percp-default,,,,,,,,2
+PMA,dye,3269,pma-default,,,,,,,,2
+PMAxx,dye,3270,pmaxx-default,,,,,,,,2
+Propidium Iodide,dye,3271,propidium-iodide-default,,,,,,,,2
+RedDot1,dye,3272,reddot1-default,,,,,,,,2
+RedDot2,dye,3273,reddot2-default,,,,,,,,2
+Resazurin,dye,3274,resazurin-default,,,,,,,,2
+Resorufin,dye,3275,resorufin-default,,,,,,,,3
+RPE-Astral616,dye,3276,rpe-astral616-default,,,,,,,,2
+SynaptoGreen,dye,3277,synaptogreen-default,,,,,,,,2
+SynaptoRed,dye,3278,synaptored-default,,,,,,,,2
+"Tetramethylrhodamine (TAMRA, TRITC)",dye,3279,tetramethylrhodamine-tamra-tritc-default,552.0,578.0,,,,,,3
+Texas Red,dye,3280,texas-red-default,595.0,613.0,,,,,,3
+Thiazole Green (SYBR Green I),dye,3281,thiazole-green-sybr-green-i-default,,,,,,,,2
+Thiazole Orange Homodimer (TOTO-1),dye,3282,thiazole-orange-homodimer-toto-1-default,,,,,,,,2
+Thiazole Orange Iodide (TO-PRO-1),dye,3283,thiazole-orange-iodide-to-pro-1-default,,,,,,,,2
+Thiazole Red (TO-PRO-3),dye,3284,thiazole-red-to-pro-3-default,,,,,,,,2
+Thiazole Red Homodimer (TOTO-3),dye,3285,thiazole-red-homodimer-toto-3-default,,,,,,,,2
+TrueBlack,dye,3286,trueblack-default,,,,,,,,1
+TrueBlack Plus,dye,3287,trueblack-plus-default,,,,,,,,1
+ViaFluor 405 Microtubule,dye,3288,viafluor-405-microtubule-default,,,,,,,,2
+ViaFluor 405 SE Proliferation,dye,3289,viafluor-405-se-proliferation-default,,,,,,,,2
+ViaFluor 488 Microtubule,dye,3290,viafluor-488-microtubule-default,,,,,,,,2
+ViaFluor 488 SE Proliferation,dye,3291,viafluor-488-se-proliferation-default,,,,,,,,2
+ViaFluor 647 Microtubule,dye,3292,viafluor-647-microtubule-default,,,,,,,,2
+Nile Red,dye,3293,nile-red-default,,,38000.0,0.7,,,,2
+CytoPainter LysoRed,dye,3294,cytopainter-lysored-default,,,,,,,,2
+Halo-Coumarin,dye,3295,halo-coumarin-default,,,,,,,,2
+Dipicrylamine/Hexanitrodiphenylamine,dye,3297,dipicrylamine-hexanitrodiphenylamine-default,,,,,,,,1
+abberior STAR 635P,dye,3298,abberior-star-635p-default,,,,,,,,2
+IRDye 680RD,dye,3299,irdye-680rd-default,,,,,,,,2
+TYE 563,dye,3300,tye-563-default,,,,,,,,2
+Rf470DL,dye,3301,rf470dl-default,,,,,,,,2
+JF657,dye,3302,jf657-default,,,,,,,,2
+tCO,dye,3303,tco-default,,,,,,,,1
+ONPG,dye,3304,onpg-default,,,,,,,,1
+LD 655,dye,3305,ld-655-default,,,,,,,,2
+abberior FLUX 647,dye,3306,abberior-flux-647-default,,,,,,,,1
+MQAE_em,dye,3307,mqae_em-default,,,,,,,,1
+MQAE_ex,dye,3308,mqae_ex-default,,,,,,,,1
+mitoLite FX490,dye,3309,mitolite-fx490-default,,,,,,,,2
+mitoLite FX570 Orange,dye,3310,mitolite-fx570-orange-default,,,,,,,,2
+Amytracker 540 (bound),dye,3311,amytracker-540-bound-default,,,,,,,,2
+DBThD-IA,dye,3312,dbthd-ia-default,,,,,,,,1
+SNAP-Cell 430,dye,3313,snap-cell-430-default,,,,,,,,2
+TSA Vivid™ Fluorophore Kit 520,dye,3314,tsa-vividtm-fluorophore-kit-520-default,,,,,,,,2
+abberior FLUX 660,dye,3315,abberior-flux-660-default,,,,,,,,1
+CF_647,dye,3316,cf_647-default,,,,,,,,0
+9-aminoacridine,dye,3317,9-aminoacridine-default,,,,,,,,1
+Zinc-Tetrakis(4-carboxyphenyl)porphyrin,dye,3318,zinc-tetrakis4-carboxyphenylporphyrin-default,,,,,,,,1
+DY-396XL,dye,3319,dy-396xl-default,,,,,,,,2
+Amytracker 630 (bound),dye,3320,amytracker-630-bound-default,,,,,,,,2
+Amytracker 680 (bound),dye,3321,amytracker-680-bound-default,,,,,,,,2
+Amytracker 520 (bound),dye,3322,amytracker-520-bound-default,,,,,,,,2
+Amytracker 480 (bound),dye,3323,amytracker-480-bound-default,,,,,,,,2
+ChRmine,dye,3324,chrmine-default,,,,,,,,1
+RealBlue 705,dye,3325,realblue-705-default,,,,,,,,1
+Real Blue 705,dye,3326,real-blue-705-default,,,,,,,,1
+ONP,dye,3327,onp-default,,,,,,,,1
+JUN,dye,3328,jun-default,,,,,,,,2
+Acridonylalanine,dye,3329,acridonylalanine-default,385.0,421.0,6000.0,0.95,,,,2
+BHQ-1,dye,3330,bhq-1-default,,,,,,,,1
+"TR-X-carboxylic acid, 5-isomer",dye,3331,tr-x-carboxylic-acid-5-isomer-default,582.0,600.0,98000.0,0.79,,,,2
+Fabfluor-pH Red,dye,3332,fabfluor-ph-red-default,,,,,,,,2
+Sulforhodamine B,dye,3333,sulforhodamine-b-default,,,,,,,,2
+Cy2,dye,3334,cy2-default,,,,,,,,2
+CytoLiner 410/450,dye,3335,cytoliner-410-450-default,,,,,,,,2
+iFluor® 546 maleimide,dye,3336,ifluor-546-maleimide-default,,,,,,,,2
+TF Poppy,dye,3337,tf-poppy-default,,,,,,,,2
+Di-4-ANEPPDHQ (Ordered giant plasma membrane vesicles),dye,3338,di-4-aneppdhq-ordered-giant-plasma-membrane-vesicles-default,,,,,,,,1
+Di-4-ANEPPDHQ (Disordered giant plasma membrane vesicles),dye,3339,di-4-aneppdhq-disordered-giant-plasma-membrane-vesicles-default,,,,,,,,1
+TMR,dye,3340,tmr-default,,,,,,,,0
+Coomassie Brilliant Blue R-250,dye,3341,coomassie-brilliant-blue-r-250-default,,,,,,,,1
+MitoSOX Red - hydroxylated product,dye,3342,mitosox-red-hydroxylated-product-default,,,,,,,,2
+TYE705,dye,3343,tye705-default,,,,,,,,2
+DAPI,dye,3344,dapi-default,359.0,461.0,27000.0,0.58,,,,3
+Coumarin 102,dye,3345,coumarin-102-default,,,,,,,,0
+Xylenol Orange,dye,3346,xylenol-orange-default,,,,,,,,0
+CytoLiner 570/590,dye,3349,cytoliner-570-590-default,,,,,,,,0
+Calcofluor White,dye,3350,calcofluor-white-default,,,,,,,,2
+abberior STAR RED,dye,3351,abberior-star-red-default,,,,,,,,2
+abberior CAGE 500 (On),dye,3352,abberior-cage-500-on-default,,,,,,,,2
+Tubulin Tracker Deep Red,dye,3353,tubulin-tracker-deep-red-default,,,,,,,,2
+Dehydroergosterol,dye,3354,dehydroergosterol-default,,,,,,,,1
+abberior CAGE 552 (On),dye,3355,abberior-cage-552-on-default,,,,,,,,2
+abberior CAGE 590 (On),dye,3356,abberior-cage-590-on-default,,,,,,,,2
+abberior FLUX 640,dye,3357,abberior-flux-640-default,,,,,,,,1
+abberior FLUX 680,dye,3358,abberior-flux-680-default,,,,,,,,1
+abberior LIVE 460L,dye,3359,abberior-live-460l-default,,,,,,,,0
+abberior LIVE ORANGE,dye,3360,abberior-live-orange-default,,,,,,,,0
+abberior LIVE RED,dye,3361,abberior-live-red-default,,,,,,,,0
+abberior STAR 440L,dye,3362,abberior-star-440l-default,,,,,,,,1
+mFluor Green 620,dye,3363,mfluor-green-620-default,,,,,,,,2
+mFluor Blue 659,dye,3364,mfluor-blue-659-default,,,,,,,,2
+abberior STAR 488,dye,3365,abberior-star-488-default,,,,,,,,2
+abberior STAR 520L,dye,3366,abberior-star-520l-default,,,,,,,,2
+abberior LIVE 560,dye,3367,abberior-live-560-default,,,,,,,,2
+abberior LIVE 610,dye,3368,abberior-live-610-default,,,100000.0,0.5,,,,2
+abberior LIVE 550,dye,3369,abberior-live-550-default,,,,,,,,2
+abberior STAR GREEN,dye,3370,abberior-star-green-default,,,,,,,,2
+abberior STAR 520SXP,dye,3371,abberior-star-520sxp-default,,,,,,,,2
+mFluor Violet 610,dye,3372,mfluor-violet-610-default,,,,,,,,0
+RealBlue 670,dye,3373,realblue-670-default,,,,,,,,2
+StarBright Yellow 665,dye,3374,starbright-yellow-665-default,,,,,,,,2
+mFluor™ Violet 610,dye,3375,mfluortm-violet-610-default,,,,,,,,2
+mFluor™ Blue 630,dye,3376,mfluortm-blue-630-default,,,,,,,,2
+DyLigh 521-LS,dye,3377,dyligh-521-ls-default,,,,,,,,0
+DyLight 521-LS,dye,3378,dylight-521-ls-default,,,,,,,,2
+Opal 690,dye,3379,opal-690-default,,,,,,,,2
+Opal 520,dye,3380,opal-520-default,,,,,,,,2
+NucRed Live 647 ReadyProbes Reagent,dye,3381,nucred-live-647-readyprobes-reagent-default,,,,,,,,2
+Janelia Fluor JF657 conjugate,dye,3382,janelia-fluor-jf657-conjugate-default,,,,,,,,3
+Janelia Fluor JF596 conjugate,dye,3383,janelia-fluor-jf596-conjugate-default,,,,,,,,3
+Janelia Fluor JF494 conjugate,dye,3384,janelia-fluor-jf494-conjugate-default,,,,,,,,3
+Alexa Fluor Plus 800,dye,3385,alexa-fluor-plus-800-default,,,,,,,,0
+Dragon green,dye,3386,dragon-green-default,,,,,,,,0
+Abberior STAR 460L,dye,3348,abberior-star-460l-default,,,,,,,,1
+TyraMax 740/770,dye,3578,tyramax-740770-default,,,,,,,,2
+ATTOIrida 390,dye,3624,attoirida-390-default,,,,,,,,0
