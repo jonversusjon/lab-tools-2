@@ -233,13 +233,13 @@ describe('Panel Workflow Integration', () => {
     expect(screen.getByText('FITC')).toBeInTheDocument()
   })
 
-  it('clicking "+ Add Target" creates a pending row with placeholder text', () => {
+  it('clicking "+ Add Target" creates a pending row with omnibox', () => {
     renderDesigner()
 
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
 
-    expect(screen.getByText('Select antibody...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search target or antibody...')).toBeInTheDocument()
   })
 
   it('removing a target calls the backend', async () => {

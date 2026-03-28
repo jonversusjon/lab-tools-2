@@ -16,6 +16,7 @@ import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { getLaserColor } from '@/utils/colors'
 import { computeSpilloverMatrix } from '@/utils/spillover'
 import type { SpilloverInput } from '@/utils/spillover'
+import AntibodyOmnibox from './AntibodyOmnibox'
 import FluorophorePicker from './FluorophorePicker'
 import SpilloverHeatmap from './SpilloverHeatmap'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
@@ -231,27 +232,9 @@ export default function PanelDesigner() {
   }
 
   const targetAntibodyIds = useMemo(
-    () => new Set(state.targets.map((t) => t.antibody_id)),
+    () => new Set(state.targets.map((t) => t.antibody_id).filter((id): id is string => id !== null)),
     [state.targets]
   )
-
-  const handleAddTarget = async (antibody: Antibody) => {
-    if (!id) return
-    try {
-      const target = await addTargetMutation.mutateAsync({
-        panelId: id,
-        antibodyId: antibody.id,
-      })
-      addTarget(target)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to add target'
-      setAssignError(message)
-    }
-  }
-
-  // Phase 2 will use these for the row-level omnibox
-  void targetAntibodyIds
-  void handleAddTarget
 
   // Pending rows (no antibody selected yet — purely client-side)
   const [pendingRows, setPendingRows] = useState<string[]>([])
@@ -261,7 +244,22 @@ export default function PanelDesigner() {
   }
 
   const handleRemovePendingRow = (pendingId: string) => {
-    setPendingRows((prev) => prev.filter((id) => id !== pendingId))
+    setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
+  }
+
+  const handlePendingRowSelect = async (pendingId: string, antibody: Antibody) => {
+    if (!id) return
+    try {
+      const target = await addTargetMutation.mutateAsync({
+        panelId: id,
+        antibodyId: antibody.id,
+      })
+      addTarget(target)
+      setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add target'
+      setAssignError(message)
+    }
   }
 
   const handleRemoveTarget = async (targetId: string, antibodyId: string) => {
@@ -790,8 +788,14 @@ export default function PanelDesigner() {
                   key={pendingId}
                   className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
-                  <td className="sticky left-0 z-10 px-3 py-2 text-gray-400 dark:text-gray-500 italic">
-                    Select antibody...
+                  <td className="sticky left-0 z-10 px-3 py-2" style={{ minWidth: '200px' }}>
+                    <AntibodyOmnibox
+                      antibodies={antibodies}
+                      excludeIds={targetAntibodyIds}
+                      onSelect={(ab) => handlePendingRowSelect(pendingId, ab)}
+                      onCancel={() => handleRemovePendingRow(pendingId)}
+                      autoFocus
+                    />
                   </td>
                   <td className="px-3 py-2" />
                   <td className="px-3 py-2" />

@@ -164,22 +164,22 @@ describe('PanelDesigner', () => {
     expect(screen.queryByText('Change Instrument')).not.toBeInTheDocument()
   })
 
-  it('"+ Add Target" button creates a pending row', () => {
+  it('"+ Add Target" button creates a pending row with omnibox', () => {
     renderDesigner()
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
-    expect(screen.getByText('Select antibody...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search target or antibody...')).toBeInTheDocument()
   })
 
   it('pending row can be removed with × button', () => {
     renderDesigner()
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
-    expect(screen.getByText('Select antibody...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search target or antibody...')).toBeInTheDocument()
 
     const removeBtn = screen.getByLabelText('Remove pending row')
     fireEvent.click(removeBtn)
-    expect(screen.queryByText('Select antibody...')).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText('Search target or antibody...')).not.toBeInTheDocument()
   })
 
   it('removing a target removes its row', async () => {
