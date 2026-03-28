@@ -164,36 +164,22 @@ describe('PanelDesigner', () => {
     expect(screen.queryByText('Change Instrument')).not.toBeInTheDocument()
   })
 
-  it('"Add Target" dropdown shows antibodies not already in panel', () => {
+  it('"+ Add Target" button creates a pending row', () => {
     renderDesigner()
-    const input = screen.getByPlaceholderText('Add target antibody...')
-    fireEvent.focus(input)
-    fireEvent.change(input, { target: { value: '' } })
-    // ab1 (CD3) is already a target, so should not appear
-    // ab2 (CD4) and ab3 (CD8) should appear
-    expect(screen.getByText('CD4')).toBeInTheDocument()
-    expect(screen.getByText('CD8')).toBeInTheDocument()
-    // CD3 should only appear in the target table, not in the dropdown
-    const cd3Elements = screen.getAllByText('CD3')
-    expect(cd3Elements).toHaveLength(1) // only in the table row
+    const addBtn = screen.getByText('Add Target')
+    fireEvent.click(addBtn)
+    expect(screen.getByText('Select antibody...')).toBeInTheDocument()
   })
 
-  it('adding a target adds a row to the table', async () => {
-    const newTarget = { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 0 }
-    mockAddTargetMutateAsync.mockResolvedValue(newTarget)
-
+  it('pending row can be removed with × button', () => {
     renderDesigner()
-    const input = screen.getByPlaceholderText('Add target antibody...')
-    fireEvent.focus(input)
-    fireEvent.change(input, { target: { value: 'CD4' } })
+    const addBtn = screen.getByText('Add Target')
+    fireEvent.click(addBtn)
+    expect(screen.getByText('Select antibody...')).toBeInTheDocument()
 
-    const option = screen.getByText('CD4')
-    fireEvent.click(option)
-
-    expect(mockAddTargetMutateAsync).toHaveBeenCalledWith({
-      panelId: 'p1',
-      antibodyId: 'ab2',
-    })
+    const removeBtn = screen.getByLabelText('Remove pending row')
+    fireEvent.click(removeBtn)
+    expect(screen.queryByText('Select antibody...')).not.toBeInTheDocument()
   })
 
   it('removing a target removes its row', async () => {

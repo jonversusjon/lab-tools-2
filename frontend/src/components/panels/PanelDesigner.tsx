@@ -230,31 +230,13 @@ export default function PanelDesigner() {
     }
   }
 
-  // Target search
-  const [targetSearch, setTargetSearch] = useState('')
-  const [targetDropdownOpen, setTargetDropdownOpen] = useState(false)
-  const [targetError, setTargetError] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
   const targetAntibodyIds = useMemo(
     () => new Set(state.targets.map((t) => t.antibody_id)),
     [state.targets]
   )
 
-  const filteredAntibodies = useMemo(() => {
-    const term = targetSearch.toLowerCase()
-    return antibodies.filter(
-      (ab) =>
-        !targetAntibodyIds.has(ab.id) &&
-        ab.target.toLowerCase().includes(term)
-    )
-  }, [antibodies, targetAntibodyIds, targetSearch])
-
   const handleAddTarget = async (antibody: Antibody) => {
     if (!id) return
-    setTargetError('')
-    setTargetSearch('')
-    setTargetDropdownOpen(false)
     try {
       const target = await addTargetMutation.mutateAsync({
         panelId: id,
@@ -263,8 +245,23 @@ export default function PanelDesigner() {
       addTarget(target)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add target'
-      setTargetError(message)
+      setAssignError(message)
     }
+  }
+
+  // Phase 2 will use these for the row-level omnibox
+  void targetAntibodyIds
+  void handleAddTarget
+
+  // Pending rows (no antibody selected yet — purely client-side)
+  const [pendingRows, setPendingRows] = useState<string[]>([])
+
+  const handleAddRowClick = () => {
+    setPendingRows((prev) => [...prev, 'pending-' + Date.now()])
+  }
+
+  const handleRemovePendingRow = (pendingId: string) => {
+    setPendingRows((prev) => prev.filter((id) => id !== pendingId))
   }
 
   const handleRemoveTarget = async (targetId: string, antibodyId: string) => {
@@ -276,17 +273,6 @@ export default function PanelDesigner() {
       // Target may have already been removed
     }
   }
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setTargetDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
 
   // Build antibody lookup
   const antibodyMap = useMemo(() => {
@@ -588,48 +574,11 @@ export default function PanelDesigner() {
 
       {/* Section B: Assignment Table */}
       <div>
-        {/* Add Target control */}
-        <div className="mb-3 flex items-center gap-3">
-          <div ref={dropdownRef} className="relative z-20">
-            <input
-              type="text"
-              placeholder="Add target antibody..."
-              value={targetSearch}
-              onChange={(e) => {
-                setTargetSearch(e.target.value)
-                setTargetDropdownOpen(true)
-                setTargetError('')
-              }}
-              onFocus={() => setTargetDropdownOpen(true)}
-              className="w-64 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
-            />
-            {targetDropdownOpen && filteredAntibodies.length > 0 && (
-              <div className="absolute z-30 mt-1 max-h-48 w-80 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
-                {filteredAntibodies.map((ab) => (
-                  <button
-                    key={ab.id}
-                    onClick={() => handleAddTarget(ab)}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30"
-                  >
-                    <span className="font-medium">{ab.target}</span>
-                    {ab.clone && (
-                      <span className="ml-2 text-gray-500 dark:text-gray-400">({ab.clone})</span>
-                    )}
-                    {ab.fluorophore_name && (
-                      <span className="ml-2 text-teal-600 dark:text-teal-400">— {ab.fluorophore_name}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {targetError && (
-            <span className="text-sm text-red-600">{targetError}</span>
-          )}
-          {assignError && (
+        {assignError && (
+          <div className="mb-3">
             <span className="text-sm text-red-600">{assignError}</span>
-          )}
-        </div>
+          </div>
+        )}
 
         {!instrumentId && (
           <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-700 dark:text-blue-400">
@@ -691,13 +640,13 @@ export default function PanelDesigner() {
               </tr>
             </thead>
             <tbody>
-              {state.targets.length === 0 ? (
+              {state.targets.length === 0 && pendingRows.length === 0 ? (
                 <tr>
                   <td
                     colSpan={3 + totalDetectors + 1}
                     className="px-3 py-6 text-center text-gray-400 dark:text-gray-500"
                   >
-                    No targets added yet. Use the search above to add antibody targets.
+                    No targets added yet. Click &ldquo;+ Add Target&rdquo; below to begin.
                   </td>
                 </tr>
               ) : (
@@ -836,6 +785,42 @@ export default function PanelDesigner() {
                   )
                 })
               )}
+              {pendingRows.map((pendingId) => (
+                <tr
+                  key={pendingId}
+                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <td className="sticky left-0 z-10 px-3 py-2 text-gray-400 dark:text-gray-500 italic">
+                    Select antibody...
+                  </td>
+                  <td className="px-3 py-2" />
+                  <td className="px-3 py-2" />
+                  {laserGroups.flatMap((g) =>
+                    g.detectors.map((det) => (
+                      <td key={det.id} className="px-2 py-2" />
+                    ))
+                  )}
+                  <td className="px-3 py-2 text-center">
+                    <button
+                      onClick={() => handleRemovePendingRow(pendingId)}
+                      className="text-red-500 hover:text-red-700"
+                      aria-label="Remove pending row"
+                    >
+                      &times;
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <td colSpan={3 + totalDetectors + 1} className="px-3 py-2">
+                  <button
+                    onClick={handleAddRowClick}
+                    className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                  >
+                    <span className="text-lg leading-none">+</span> Add Target
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

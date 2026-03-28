@@ -233,26 +233,13 @@ describe('Panel Workflow Integration', () => {
     expect(screen.getByText('FITC')).toBeInTheDocument()
   })
 
-  it('adding a target calls the backend', async () => {
-    mockAddTargetMutateAsync.mockResolvedValue({
-      id: 't-new',
-      panel_id: 'p1',
-      antibody_id: 'ab1',
-      sort_order: 0,
-    })
-
+  it('clicking "+ Add Target" creates a pending row with placeholder text', () => {
     renderDesigner()
 
-    const input = screen.getByPlaceholderText('Add target antibody...')
-    fireEvent.focus(input)
-    fireEvent.change(input, { target: { value: 'CD3' } })
-    const option = screen.getByText('CD3')
-    fireEvent.click(option)
+    const addBtn = screen.getByText('Add Target')
+    fireEvent.click(addBtn)
 
-    expect(mockAddTargetMutateAsync).toHaveBeenCalledWith({
-      panelId: 'p1',
-      antibodyId: 'ab1',
-    })
+    expect(screen.getByText('Select antibody...')).toBeInTheDocument()
   })
 
   it('removing a target calls the backend', async () => {
