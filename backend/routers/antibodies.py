@@ -96,7 +96,7 @@ def list_antibodies(
     storage_temp: str | None = None,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = (
         select(Antibody)
         .options(joinedload(Antibody.fluorophore), selectinload(Antibody.tags))

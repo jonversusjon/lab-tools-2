@@ -34,7 +34,7 @@ export default function PanelDesigner() {
   const navigate = useNavigate()
   const { data: panel, refetch: refetchPanel } = usePanel(id ?? '')
   const { data: instrumentsData } = useInstruments(0, 500)
-  const { data: antibodiesData } = useAntibodies(0, 500)
+  const { data: antibodiesData } = useAntibodies({ skip: 0, limit: 2000 })
   const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000, has_spectra: true })
   const { data: allFluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const { data: secondariesData } = useSecondaries()
