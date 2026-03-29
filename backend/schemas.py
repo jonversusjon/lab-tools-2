@@ -229,6 +229,9 @@ class AntibodyBase(BaseModel):
     flow_dilution: str | None = None
     icc_if_dilution: str | None = None
     wb_dilution: str | None = None
+    flow_dilution_factor: int | None = None
+    icc_if_dilution_factor: int | None = None
+    wb_dilution_factor: int | None = None
     reacts_with: list[str] | None = None
     storage_temp: str | None = None
     validation_notes: str | None = None

@@ -38,6 +38,7 @@ from schemas import ParseErrorRow
 from schemas import TagAssignRequest
 from schemas import TagRead
 from services.csv_import import parse_csv_file
+from services.dilutions import parse_dilution
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +173,17 @@ def create_antibody(
     if data.reacts_with is not None:
         reacts_with_json = json.dumps(data.reacts_with)
 
+    # Auto-parse dilution factors from free text if not explicitly provided
+    flow_factor = data.flow_dilution_factor
+    if flow_factor is None and data.flow_dilution:
+        flow_factor = parse_dilution(data.flow_dilution)
+    icc_if_factor = data.icc_if_dilution_factor
+    if icc_if_factor is None and data.icc_if_dilution:
+        icc_if_factor = parse_dilution(data.icc_if_dilution)
+    wb_factor = data.wb_dilution_factor
+    if wb_factor is None and data.wb_dilution:
+        wb_factor = parse_dilution(data.wb_dilution)
+
     antibody = Antibody(
         name=data.name,
         target=data.target,
@@ -187,6 +199,9 @@ def create_antibody(
         flow_dilution=data.flow_dilution,
         icc_if_dilution=data.icc_if_dilution,
         wb_dilution=data.wb_dilution,
+        flow_dilution_factor=flow_factor,
+        icc_if_dilution_factor=icc_if_factor,
+        wb_dilution_factor=wb_factor,
         reacts_with=reacts_with_json,
         storage_temp=data.storage_temp,
         validation_notes=data.validation_notes,
@@ -235,6 +250,17 @@ def update_antibody(
         if fl is None:
             raise HTTPException(status_code=404, detail="Fluorophore not found")
 
+    # Auto-parse dilution factors from free text if not explicitly provided
+    flow_factor = data.flow_dilution_factor
+    if flow_factor is None and data.flow_dilution:
+        flow_factor = parse_dilution(data.flow_dilution)
+    icc_if_factor = data.icc_if_dilution_factor
+    if icc_if_factor is None and data.icc_if_dilution:
+        icc_if_factor = parse_dilution(data.icc_if_dilution)
+    wb_factor = data.wb_dilution_factor
+    if wb_factor is None and data.wb_dilution:
+        wb_factor = parse_dilution(data.wb_dilution)
+
     antibody.name = data.name
     antibody.target = data.target
     antibody.clone = data.clone
@@ -249,6 +275,9 @@ def update_antibody(
     antibody.flow_dilution = data.flow_dilution
     antibody.icc_if_dilution = data.icc_if_dilution
     antibody.wb_dilution = data.wb_dilution
+    antibody.flow_dilution_factor = flow_factor
+    antibody.icc_if_dilution_factor = icc_if_factor
+    antibody.wb_dilution_factor = wb_factor
     antibody.reacts_with = json.dumps(data.reacts_with) if data.reacts_with is not None else None
     antibody.storage_temp = data.storage_temp
     antibody.validation_notes = data.validation_notes
@@ -475,6 +504,9 @@ def import_confirm(
                 flow_dilution=item.flow_dilution,
                 icc_if_dilution=item.icc_if_dilution,
                 wb_dilution=item.wb_dilution,
+                flow_dilution_factor=parse_dilution(item.flow_dilution),
+                icc_if_dilution_factor=parse_dilution(item.icc_if_dilution),
+                wb_dilution_factor=parse_dilution(item.wb_dilution),
                 reacts_with=reacts_with_json,
                 storage_temp=item.storage_temp,
                 validation_notes=item.validation_notes,

@@ -126,6 +126,9 @@ class Antibody(Base):
     flow_dilution = Column(String, nullable=True)
     icc_if_dilution = Column(String, nullable=True)
     wb_dilution = Column(String, nullable=True)
+    flow_dilution_factor = Column(Integer, nullable=True)       # N in 1:N
+    icc_if_dilution_factor = Column(Integer, nullable=True)     # N in 1:N
+    wb_dilution_factor = Column(Integer, nullable=True)         # N in 1:N
     reacts_with = Column(Text, nullable=True)  # JSON array string
     storage_temp = Column(String, nullable=True)
     validation_notes = Column(Text, nullable=True)

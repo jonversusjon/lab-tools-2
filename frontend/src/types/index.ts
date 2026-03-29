@@ -127,6 +127,9 @@ export interface Antibody {
   flow_dilution: string | null
   icc_if_dilution: string | null
   wb_dilution: string | null
+  flow_dilution_factor: number | null
+  icc_if_dilution_factor: number | null
+  wb_dilution_factor: number | null
   reacts_with: string[] | null
   storage_temp: string | null
   validation_notes: string | null
@@ -268,6 +271,9 @@ export interface AntibodyCreate {
   flow_dilution?: string | null
   icc_if_dilution?: string | null
   wb_dilution?: string | null
+  flow_dilution_factor?: number | null
+  icc_if_dilution_factor?: number | null
+  wb_dilution_factor?: number | null
   reacts_with?: string[] | null
   storage_temp?: string | null
   validation_notes?: string | null

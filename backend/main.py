@@ -12,6 +12,7 @@ from sqlalchemy import select
 from database import Base
 from database import SessionLocal
 from database import engine
+from models import Antibody
 from models import AntibodyTag
 from models import Fluorophore
 from models import Instrument
@@ -177,6 +178,45 @@ def seed_non_fluorescent_conjugates() -> None:
         session.close()
 
 
+def migrate_dilution_factors() -> None:
+    """One-time migration: parse existing free-text dilution fields into integer factors."""
+    from services.dilutions import parse_dilution
+
+    session = SessionLocal()
+    try:
+        antibodies = session.query(Antibody).filter(
+            Antibody.flow_dilution_factor.is_(None) | Antibody.icc_if_dilution_factor.is_(None) | Antibody.wb_dilution_factor.is_(None)
+        ).all()
+        updated = 0
+        for ab in antibodies:
+            changed = False
+            if ab.flow_dilution_factor is None and ab.flow_dilution:
+                factor = parse_dilution(ab.flow_dilution)
+                if factor is not None:
+                    ab.flow_dilution_factor = factor
+                    changed = True
+            if ab.icc_if_dilution_factor is None and ab.icc_if_dilution:
+                factor = parse_dilution(ab.icc_if_dilution)
+                if factor is not None:
+                    ab.icc_if_dilution_factor = factor
+                    changed = True
+            if ab.wb_dilution_factor is None and ab.wb_dilution:
+                factor = parse_dilution(ab.wb_dilution)
+                if factor is not None:
+                    ab.wb_dilution_factor = factor
+                    changed = True
+            if changed:
+                updated += 1
+        if updated:
+            session.commit()
+            logger.info("Migrated dilution factors for %d antibodies.", updated)
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to migrate dilution factors.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -184,6 +224,7 @@ async def lifespan(app: FastAPI):
     seed_fluorophores_if_needed()
     seed_non_fluorescent_conjugates()
     seed_tags_if_needed()
+    migrate_dilution_factors()
     yield
 
 

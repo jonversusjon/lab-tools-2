@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Modal from '@/components/layout/Modal'
 import ConjugateOmnibox from '@/components/antibodies/ConjugateOmnibox'
+import DilutionInput from '@/components/antibodies/DilutionInput'
+import { formatDilution } from '@/utils/dilutions'
 import { useCreateAntibody, useUpdateAntibody } from '@/hooks/useAntibodies'
 import type { Antibody, AntibodyCreate, Fluorophore } from '@/types'
 
@@ -26,9 +28,9 @@ export default function AntibodyForm({
   const [conjugate, setConjugate] = useState(antibody?.conjugate ?? '')
   const [vendor, setVendor] = useState(antibody?.vendor ?? '')
   const [catalogNumber, setCatalogNumber] = useState(antibody?.catalog_number ?? '')
-  const [flowDilution, setFlowDilution] = useState(antibody?.flow_dilution ?? '')
-  const [iccIfDilution, setIccIfDilution] = useState(antibody?.icc_if_dilution ?? '')
-  const [wbDilution, setWbDilution] = useState(antibody?.wb_dilution ?? '')
+  const [flowDilutionFactor, setFlowDilutionFactor] = useState<number | null>(antibody?.flow_dilution_factor ?? null)
+  const [iccIfDilutionFactor, setIccIfDilutionFactor] = useState<number | null>(antibody?.icc_if_dilution_factor ?? null)
+  const [wbDilutionFactor, setWbDilutionFactor] = useState<number | null>(antibody?.wb_dilution_factor ?? null)
   const [storageTemp, setStorageTemp] = useState(antibody?.storage_temp ?? '')
   const [confirmedInStock, setConfirmedInStock] = useState(antibody?.confirmed_in_stock ?? false)
   const [notes, setNotes] = useState(antibody?.notes ?? '')
@@ -57,9 +59,12 @@ export default function AntibodyForm({
       conjugate: conjugate.trim() || null,
       vendor: vendor.trim() || null,
       catalog_number: catalogNumber.trim() || null,
-      flow_dilution: flowDilution.trim() || null,
-      icc_if_dilution: iccIfDilution.trim() || null,
-      wb_dilution: wbDilution.trim() || null,
+      flow_dilution: formatDilution(flowDilutionFactor) || null,
+      icc_if_dilution: formatDilution(iccIfDilutionFactor) || null,
+      wb_dilution: formatDilution(wbDilutionFactor) || null,
+      flow_dilution_factor: flowDilutionFactor,
+      icc_if_dilution_factor: iccIfDilutionFactor,
+      wb_dilution_factor: wbDilutionFactor,
       storage_temp: storageTemp || null,
       confirmed_in_stock: confirmedInStock,
       notes: notes.trim() || null,
@@ -159,18 +164,24 @@ export default function AntibodyForm({
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Flow Dilution</label>
-            <input type="text" value={flowDilution} onChange={(e) => setFlowDilution(e.target.value)} className={inputClass} />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">ICC/IF Dilution</label>
-            <input type="text" value={iccIfDilution} onChange={(e) => setIccIfDilution(e.target.value)} className={inputClass} />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">WB Dilution</label>
-            <input type="text" value={wbDilution} onChange={(e) => setWbDilution(e.target.value)} className={inputClass} />
-          </div>
+          <DilutionInput
+            label="Flow Dilution"
+            value={flowDilutionFactor}
+            rawText={antibody?.flow_dilution ?? null}
+            onChange={setFlowDilutionFactor}
+          />
+          <DilutionInput
+            label="ICC/IF Dilution"
+            value={iccIfDilutionFactor}
+            rawText={antibody?.icc_if_dilution ?? null}
+            onChange={setIccIfDilutionFactor}
+          />
+          <DilutionInput
+            label="WB Dilution"
+            value={wbDilutionFactor}
+            rawText={antibody?.wb_dilution ?? null}
+            onChange={setWbDilutionFactor}
+          />
         </div>
 
         <div className="grid grid-cols-3 gap-4">
