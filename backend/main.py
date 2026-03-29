@@ -12,13 +12,9 @@ from sqlalchemy import select
 from database import Base
 from database import SessionLocal
 from database import engine
-from models import Antibody
 from models import AntibodyTag
-from models import Detector
 from models import Fluorophore
 from models import Instrument
-from models import Laser
-from models import SecondaryAntibody
 from routers import antibodies
 from routers import fluorophores
 from routers import instruments
@@ -32,7 +28,7 @@ SEED_DIR = Path(__file__).parent / "seed_data"
 
 
 def load_seed_data() -> None:
-    """Load instruments and antibodies from seed JSON if instruments table is empty."""
+    """Load instruments from seed JSON if instruments table is empty."""
     session = SessionLocal()
     try:
         count = session.scalar(select(Instrument.id).limit(1))
@@ -40,10 +36,13 @@ def load_seed_data() -> None:
             logger.info("Seed data already present — skipping.")
             return
 
-        logger.info("Loading seed data (instruments + antibodies)...")
+        logger.info("Loading seed data (instruments)...")
 
         with open(SEED_DIR / "instruments.json") as f:
             instruments_data = json.load(f)
+
+        from models import Detector
+        from models import Laser
 
         for inst_data in instruments_data:
             instrument = Instrument(name=inst_data["name"])
@@ -66,26 +65,10 @@ def load_seed_data() -> None:
                     )
                     session.add(detector)
 
-        with open(SEED_DIR / "antibodies.json") as f:
-            antibodies_data = json.load(f)
-
-        for ab_data in antibodies_data:
-            antibody = Antibody(
-                target=ab_data["target"],
-                clone=ab_data.get("clone"),
-                host=ab_data.get("host"),
-                isotype=ab_data.get("isotype"),
-                fluorophore_id=ab_data.get("fluorophore_id"),
-                vendor=ab_data.get("vendor"),
-                catalog_number=ab_data.get("catalog_number"),
-            )
-            session.add(antibody)
-
         session.commit()
         logger.info(
-            "Seed data loaded: %d instruments, %d antibodies",
+            "Seed data loaded: %d instruments",
             len(instruments_data),
-            len(antibodies_data),
         )
     except Exception:
         session.rollback()
@@ -105,51 +88,6 @@ DEFAULT_TAGS = [
     {"name": "intracellular", "color": "#6366f1"},
     {"name": "flow validated", "color": "#22c55e"},
 ]
-
-
-def seed_secondary_antibodies_if_needed() -> None:
-    """Seed secondary antibodies if none exist."""
-    session = SessionLocal()
-    try:
-        count = session.scalar(select(SecondaryAntibody.id).limit(1))
-        if count is not None:
-            return
-
-        logger.info("Seeding secondary antibodies...")
-        with open(SEED_DIR / "secondary_antibodies.json") as f:
-            secondaries_data = json.load(f)
-
-        # Build a lookup of fluorophore names for matching
-        fluorophores = list(session.scalars(select(Fluorophore)))
-        fl_by_name_lower = {fl.name.lower(): fl for fl in fluorophores}
-
-        for sa_data in secondaries_data:
-            # Try to match fluorophore from the secondary name (e.g., "AF488" in name)
-            fluorophore_id = None
-            name = sa_data["name"]
-            for fl_name, fl in fl_by_name_lower.items():
-                if fl_name in name.lower():
-                    fluorophore_id = fl.id
-                    break
-
-            sa = SecondaryAntibody(
-                name=sa_data["name"],
-                host=sa_data["host"],
-                target_species=sa_data["target_species"],
-                target_isotype=sa_data.get("target_isotype"),
-                fluorophore_id=fluorophore_id,
-                vendor=sa_data.get("vendor"),
-                catalog_number=sa_data.get("catalog_number"),
-            )
-            session.add(sa)
-
-        session.commit()
-        logger.info("Seeded %d secondary antibodies.", len(secondaries_data))
-    except Exception:
-        session.rollback()
-        logger.exception("Failed to seed secondary antibodies.")
-    finally:
-        session.close()
 
 
 def seed_tags_if_needed() -> None:
@@ -208,7 +146,6 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     load_seed_data()
     seed_fluorophores_if_needed()
-    seed_secondary_antibodies_if_needed()
     seed_tags_if_needed()
     yield
 

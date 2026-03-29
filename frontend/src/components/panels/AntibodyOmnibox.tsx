@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { fuzzyFilterAntibodies } from '@/utils/fuzzySearch'
 import type { Antibody } from '@/types'
 
 interface AntibodyOmniboxProps {
@@ -23,19 +24,10 @@ export default function AntibodyOmnibox({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null)
 
-  const filtered = useMemo(() => {
-    const term = search.toLowerCase()
-    return antibodies.filter((ab) => {
-      if (excludeIds.has(ab.id)) return false
-      if (!term) return true
-      return (
-        ab.target.toLowerCase().includes(term) ||
-        (ab.name && ab.name.toLowerCase().includes(term)) ||
-        (ab.clone && ab.clone.toLowerCase().includes(term)) ||
-        (ab.catalog_number && ab.catalog_number.toLowerCase().includes(term))
-      )
-    })
-  }, [antibodies, excludeIds, search])
+  const filtered = useMemo(
+    () => fuzzyFilterAntibodies(antibodies, search, excludeIds, (ab) => ab.id),
+    [antibodies, excludeIds, search]
+  )
 
   // Reset highlight when filtered list changes
   useEffect(() => {
@@ -127,26 +119,59 @@ export default function AntibodyOmnibox({
                     : ' hover:bg-gray-50 dark:hover:bg-gray-700')
                 }
               >
-                <span className="font-medium">{ab.target}</span>
-                {ab.clone && (
-                  <span className="ml-2 text-gray-500 dark:text-gray-400">({ab.clone})</span>
-                )}
-                {ab.fluorophore_name && (
-                  <span className="ml-2 text-teal-600 dark:text-teal-400">&mdash; {ab.fluorophore_name}</span>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span>
+                    <span className="font-medium">{ab.target}</span>
+                    {ab.clone && (
+                      <span className="ml-2 text-gray-500 dark:text-gray-400">({ab.clone})</span>
+                    )}
+                  </span>
+                  {ab.host && (
+                    <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">{ab.host}</span>
+                  )}
+                </div>
+                {(ab.fluorophore_name || ab.vendor) && (
+                  <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                    {ab.fluorophore_name && (
+                      <span className="text-teal-600 dark:text-teal-400">{ab.fluorophore_name}</span>
+                    )}
+                    {ab.fluorophore_name && ab.vendor && (
+                      <span className="mx-1">&middot;</span>
+                    )}
+                    {ab.vendor && <span>{ab.vendor}</span>}
+                  </div>
                 )}
               </button>
             ))}
           </div>,
           document.body
         )
-      : null
+      : dropdownPos && search.trim() && filtered.length === 0
+        ? createPortal(
+            <div
+              ref={dropdownRef}
+              className="w-80 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+              style={{
+                position: 'fixed',
+                top: dropdownPos.top,
+                left: dropdownPos.left,
+                zIndex: 9999,
+              }}
+            >
+              <div className="px-3 py-3 text-sm text-gray-400 dark:text-gray-500">
+                No matches for &ldquo;{search}&rdquo;
+              </div>
+            </div>,
+            document.body
+          )
+        : null
 
   return (
     <>
       <input
         ref={inputRef}
         type="text"
-        placeholder="Search target or antibody..."
+        placeholder="Search target, clone, host, vendor..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={handleKeyDown}

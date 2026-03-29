@@ -173,18 +173,28 @@ def _load_seed(session):
                     )
                 )
 
-    # Load antibodies from JSON (all unconjugated, no fluorophore_id)
-    with open(SEED_DIR / "antibodies.json") as f:
-        antibodies_data = json.load(f)
-    for ab_data in antibodies_data:
-        antibody = Antibody(
+    # Seed test antibodies
+    test_antibodies = [
+        {"target": "CD3", "clone": "UCHT1", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "CD4", "clone": "RPA-T4", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "CD8", "clone": "SK1", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "CD14", "clone": "M5E2", "host": "Mouse", "isotype": "IgG2a"},
+        {"target": "CD19", "clone": "HIB19", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "CD25", "clone": "M-A251", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "CD45", "clone": "HI30", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "CD56", "clone": "NCAM16.2", "host": "Mouse", "isotype": "IgG2b"},
+        {"target": "CD127", "clone": "A019D5", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "HLA-DR", "clone": "L243", "host": "Mouse", "isotype": "IgG2a"},
+        {"target": "Ki-67", "clone": "Ki-67", "host": "Mouse", "isotype": "IgG1"},
+        {"target": "FoxP3", "clone": "236A/E7", "host": "Mouse", "isotype": "IgG1"},
+    ]
+    for ab_data in test_antibodies:
+        session.add(Antibody(
             target=ab_data["target"],
-            clone=ab_data.get("clone"),
-            host=ab_data.get("host"),
-            isotype=ab_data.get("isotype"),
-            fluorophore_id=ab_data.get("fluorophore_id"),
-        )
-        session.add(antibody)
+            clone=ab_data["clone"],
+            host=ab_data["host"],
+            isotype=ab_data["isotype"],
+        ))
 
     # Seed secondary antibodies
     sa1 = SecondaryAntibody(
