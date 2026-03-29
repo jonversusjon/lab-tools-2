@@ -941,7 +941,7 @@ export default function PanelDesigner() {
                 <th className="sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">
                   Target
                 </th>
-                <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">Clone</th>
+                <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">Host / Isotype</th>
                 <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">Conjugate</th>
                 {laserGroups.flatMap((g) =>
                   g.detectors.map((det) => {
@@ -1014,7 +1014,9 @@ export default function PanelDesigner() {
                         )}
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
-                        {ab?.clone ?? ''}
+                        {ab?.host || ab?.isotype
+                          ? (ab?.host ?? '') + (ab?.host && ab?.isotype ? ' ' : '') + (ab?.isotype ?? '')
+                          : '\u2014'}
                       </td>
                       {ab?.fluorophore_id && !isOverridden ? (
                         <td className="px-3 py-2 group relative">
