@@ -141,11 +141,48 @@ def seed_fluorophores_if_needed() -> None:
         )
 
 
+NON_FLUORESCENT_CONJUGATES = [
+    {"id": "biotin", "name": "Biotin", "fluor_type": "non-fluorescent", "source": "system"},
+    {"id": "hrp", "name": "HRP", "fluor_type": "non-fluorescent", "source": "system"},
+    {"id": "ap", "name": "Alkaline Phosphatase", "fluor_type": "non-fluorescent", "source": "system"},
+    {"id": "digoxigenin", "name": "Digoxigenin", "fluor_type": "non-fluorescent", "source": "system"},
+    {"id": "agarose", "name": "Agarose", "fluor_type": "non-fluorescent", "source": "system"},
+    {"id": "gold-np", "name": "Gold Nanoparticle", "fluor_type": "non-fluorescent", "source": "system"},
+]
+
+
+def seed_non_fluorescent_conjugates() -> None:
+    """Seed non-fluorescent conjugates into the fluorophores table (idempotent)."""
+    session = SessionLocal()
+    try:
+        for entry in NON_FLUORESCENT_CONJUGATES:
+            existing = session.get(Fluorophore, entry["id"])
+            if existing is not None:
+                continue
+            fl = Fluorophore(
+                id=entry["id"],
+                name=entry["name"],
+                fluor_type=entry["fluor_type"],
+                source=entry["source"],
+                has_spectra=False,
+                is_favorite=False,
+            )
+            session.add(fl)
+        session.commit()
+        logger.info("Non-fluorescent conjugates seeded.")
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to seed non-fluorescent conjugates.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     load_seed_data()
     seed_fluorophores_if_needed()
+    seed_non_fluorescent_conjugates()
     seed_tags_if_needed()
     yield
 

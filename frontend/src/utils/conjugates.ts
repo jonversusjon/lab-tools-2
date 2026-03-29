@@ -1,3 +1,5 @@
+import type { Fluorophore } from '@/types'
+
 export const NON_FLUORESCENT_CONJUGATES = new Set([
   'biotin', 'hrp', 'ap', 'alkaline phosphatase',
   'dig', 'digoxigenin', 'gold', 'agarose',
@@ -6,6 +8,10 @@ export const NON_FLUORESCENT_CONJUGATES = new Set([
 export function isNonFluorescentConjugate(conjugate: string | null | undefined): boolean {
   if (!conjugate) return true
   return NON_FLUORESCENT_CONJUGATES.has(conjugate.toLowerCase())
+}
+
+export function isNonFluorescentFluorophore(fl: Fluorophore): boolean {
+  return fl.fluor_type === 'non-fluorescent'
 }
 
 export function needsSecondary(antibody: { fluorophore_id: string | null; conjugate: string | null }): boolean {

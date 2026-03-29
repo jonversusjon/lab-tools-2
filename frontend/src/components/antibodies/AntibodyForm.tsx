@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from '@/components/layout/Modal'
+import ConjugateOmnibox from '@/components/antibodies/ConjugateOmnibox'
 import { useCreateAntibody, useUpdateAntibody } from '@/hooks/useAntibodies'
 import type { Antibody, AntibodyCreate, Fluorophore } from '@/types'
 
@@ -127,35 +128,23 @@ export default function AntibodyForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Conjugate</label>
-            <input
-              type="text"
-              value={conjugate}
-              onChange={(e) => setConjugate(e.target.value)}
-              placeholder="e.g. AF488, PE, FITC"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Linked Fluorophore
-            </label>
-            <select
-              value={fluorophoreId}
-              onChange={(e) => setFluorophoreId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">-- None --</option>
-              {fluorophores.map((fl) => (
-                <option key={fl.id} value={fl.id}>{fl.name}</option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              For pre-conjugated antibodies in the spectra database.
-            </p>
-          </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Conjugate / Fluorophore
+          </label>
+          <ConjugateOmnibox
+            fluorophores={fluorophores}
+            currentFluorophoreId={fluorophoreId || null}
+            currentConjugateText={conjugate || null}
+            onSelect={(flId, displayName) => {
+              setFluorophoreId(flId)
+              setConjugate(displayName)
+            }}
+            onClear={() => {
+              setFluorophoreId('')
+              setConjugate('')
+            }}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
