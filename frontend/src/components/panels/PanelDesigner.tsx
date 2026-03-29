@@ -295,6 +295,9 @@ export default function PanelDesigner() {
     [state.targets]
   )
 
+  // Click-to-replace target editing
+  const [editingTargetId, setEditingTargetId] = useState<string | null>(null)
+
   // Pending rows (no antibody selected yet — purely client-side)
   const [pendingRows, setPendingRows] = useState<string[]>([])
   const [pendingAutoAssign, setPendingAutoAssign] = useState<{
@@ -374,6 +377,66 @@ export default function PanelDesigner() {
       removeTarget(targetId, antibodyId)
     } catch {
       // Target may have already been removed
+    }
+  }
+
+  const handleReplaceTargetAntibody = async (targetId: string, newAntibody: Antibody) => {
+    if (!id) return
+    const target = state.targets.find((t) => t.id === targetId)
+    if (!target || !target.antibody_id) return
+
+    const oldAntibodyId = target.antibody_id
+    if (oldAntibodyId === newAntibody.id) {
+      setEditingTargetId(null)
+      return
+    }
+
+    const oldAb = antibodyMap.get(oldAntibodyId)
+    const existingAssignment = assignmentByAntibody.get(oldAntibodyId)
+    const isOverridden = overriddenRows.has(targetId)
+    const hasSecondary = !!target.secondary_antibody_id
+
+    // Determine if we should clear the assignment:
+    // Clear when the previous antibody was pre-conjugated, NOT overridden, and no secondary
+    const shouldClearAssignment = existingAssignment &&
+      oldAb?.fluorophore_id && !isOverridden && !hasSecondary
+
+    try {
+      const updated = await updateTargetMutation.mutateAsync({
+        panelId: id,
+        targetId,
+        data: { antibody_id: newAntibody.id },
+      })
+
+      if (shouldClearAssignment) {
+        // Backend re-pointed the assignment to new antibody, but we want to delete it
+        dispatch({ type: 'UPDATE_TARGET', target: updated })
+        dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existingAssignment.id })
+        try {
+          await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existingAssignment.id })
+        } catch {
+          // Assignment may have already been cleaned up
+        }
+      } else {
+        // Preserve assignment — backend already re-pointed it
+        dispatch({
+          type: 'REPLACE_TARGET_ANTIBODY',
+          targetId,
+          oldAntibodyId,
+          newAntibodyId: newAntibody.id,
+          updatedTarget: updated,
+        })
+      }
+
+      // Queue auto-assign if new antibody is pre-conjugated
+      if (newAntibody.fluorophore_id && !assignmentByAntibody.get(newAntibody.id)) {
+        setPendingAutoAssign({ antibodyId: newAntibody.id, fluorophoreId: newAntibody.fluorophore_id })
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to replace target'
+      setAssignError(message)
+    } finally {
+      setEditingTargetId(null)
     }
   }
 
@@ -966,8 +1029,25 @@ export default function PanelDesigner() {
                       }
                       data-assigned={hasAssignment ? 'true' : undefined}
                     >
-                      <td className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900 dark:text-gray-100" style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined }}>
-                        {ab?.target ?? '—'}
+                      <td
+                        className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
+                        style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined, minWidth: '200px' }}
+                        onClick={() => {
+                          if (editingTargetId !== t.id) setEditingTargetId(t.id)
+                        }}
+                        title="Click to replace antibody"
+                      >
+                        {editingTargetId === t.id ? (
+                          <AntibodyOmnibox
+                            antibodies={antibodies}
+                            excludeIds={targetAntibodyIds}
+                            onSelect={(newAb) => handleReplaceTargetAntibody(t.id, newAb)}
+                            onCancel={() => setEditingTargetId(null)}
+                            autoFocus
+                          />
+                        ) : (
+                          ab?.target ?? '—'
+                        )}
                       </td>
                       <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                         {ab?.clone ?? ''}

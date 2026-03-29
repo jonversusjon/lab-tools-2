@@ -26,6 +26,7 @@ export type PanelDesignerAction =
   | { type: 'UNDO' }
   | { type: 'REDO' }
   | { type: 'UPDATE_ASSIGNMENT_ID'; oldId: string; newId: string }
+  | { type: 'REPLACE_TARGET_ANTIBODY'; targetId: string; oldAntibodyId: string; newAntibodyId: string; updatedTarget: PanelTarget }
 
 const initialState: PanelDesignerState = {
   panel: null,
@@ -136,6 +137,22 @@ export function panelDesignerReducer(
         past: [...state.past, state.assignments],
         future,
         isDirty: true,
+      }
+    }
+    case 'REPLACE_TARGET_ANTIBODY': {
+      const undo = pushUndo(state)
+      return {
+        ...state,
+        targets: state.targets.map((t) =>
+          t.id === action.targetId ? action.updatedTarget : t
+        ),
+        assignments: state.assignments.map((a) =>
+          a.antibody_id === action.oldAntibodyId
+            ? { ...a, antibody_id: action.newAntibodyId }
+            : a
+        ),
+        isDirty: true,
+        ...undo,
       }
     }
     case 'UPDATE_ASSIGNMENT_ID': {
