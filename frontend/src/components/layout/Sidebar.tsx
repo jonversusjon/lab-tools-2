@@ -5,6 +5,7 @@ const navItems = [
   { to: '/instruments', label: 'Instruments' },
   { to: '/fluorophores', label: 'Fluorophores' },
   { to: '/antibodies', label: 'Antibodies' },
+  { to: '/secondaries', label: 'Secondaries' },
   { to: '/panels', label: 'Panels' },
   { to: '/settings', label: 'Settings' },
 ]

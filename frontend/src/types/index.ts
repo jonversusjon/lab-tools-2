@@ -373,6 +373,33 @@ export interface PanelAssignmentCreate {
   notes?: string | null
 }
 
+export interface SecondaryImportItem {
+  name: string
+  host: string
+  target_species: string
+  target_isotype: string | null
+  fluorophore_name: string | null
+  fluorophore_id: string | null
+  vendor: string | null
+  catalog_number: string | null
+  lot_number: string | null
+  warnings: string[]
+  row_number: number
+}
+
+export interface SecondaryImportResponse {
+  items: SecondaryImportItem[]
+  total_rows: number
+  valid_rows: number
+  warning_count: number
+}
+
+export interface SecondaryImportConfirmResponse {
+  created: number
+  skipped: number
+  errors: string[]
+}
+
 export interface FpbaseCatalogItem {
   name: string
   id: string

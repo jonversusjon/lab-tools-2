@@ -6,6 +6,7 @@ import FluorophoreTable from '@/components/fluorophores/FluorophoreTable'
 import AntibodyTable from '@/components/antibodies/AntibodyTable'
 import PanelList from '@/components/panels/PanelList'
 import PanelDesigner from '@/components/panels/PanelDesigner'
+import SecondaryList from '@/components/secondaries/SecondaryList'
 import Settings from '@/components/settings/Settings'
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/instruments/:id" element={<InstrumentEditor />} />
         <Route path="/fluorophores" element={<FluorophoreTable />} />
         <Route path="/antibodies" element={<AntibodyTable />} />
+        <Route path="/secondaries" element={<SecondaryList />} />
         <Route path="/panels" element={<PanelList />} />
         <Route path="/panels/:id" element={<PanelDesigner />} />
         <Route path="/settings" element={<Settings />} />

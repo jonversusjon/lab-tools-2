@@ -73,7 +73,9 @@ vi.mock('@/hooks/usePanels', () => ({
   useDeletePanel: () => ({ mutate: vi.fn() }),
   useUpdatePanel: () => ({ mutate: mockUpdateMutate }),
   useAddTarget: () => ({ mutateAsync: mockAddTargetMutateAsync }),
+  useUpdateTarget: () => ({ mutateAsync: vi.fn() }),
   useRemoveTarget: () => ({ mutateAsync: mockRemoveTargetMutateAsync }),
+  useReorderTargets: () => ({ mutateAsync: vi.fn() }),
   useAddAssignment: () => ({ mutateAsync: vi.fn() }),
   useRemoveAssignment: () => ({ mutateAsync: vi.fn() }),
 }))
@@ -104,6 +106,14 @@ vi.mock('@/hooks/useFluorophores', () => ({
     error: null,
   }),
   useBatchSpectra: () => ({ data: null }),
+}))
+
+vi.mock('@/hooks/useSecondaries', () => ({
+  useSecondaries: () => ({
+    data: { items: [], total: 0, skip: 0, limit: 100 },
+    isLoading: false,
+    error: null,
+  }),
 }))
 
 import PanelDesigner from '@/components/panels/PanelDesigner'

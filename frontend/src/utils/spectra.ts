@@ -116,6 +116,131 @@ export function isCompatible(
 }
 
 /**
+ * Excitation efficiency: 0-1 score for how well a laser excites this fluorophore.
+ */
+export function excitationEfficiency(
+  fluorophore: FluorophoreWithSpectra,
+  laserWavelength: number
+): number {
+  const ex = fluorophore.spectra?.EX ?? fluorophore.spectra?.AB
+  if (ex && ex.length > 0) {
+    const intensity = interpolateAt(ex, laserWavelength)
+    const peak = Math.max(...ex.map((p) => p[1]))
+    if (peak <= 0) return 0
+    const ratio = intensity / peak
+    // Noise floor: excitation below 5% of peak is not practically useful
+    // for flow cytometry. Prevents minor absorption bands (e.g. cyanine
+    // vibronic shoulders at ~488nm for Cy5/AF647) from producing spurious
+    // channel scores. The boolean isExcitable() uses 15%; 5% is conservative.
+    if (ratio < 0.05) return 0
+    return ratio
+  }
+  if (fluorophore.ex_max_nm != null) {
+    const sigma = 21
+    const delta = laserWavelength - fluorophore.ex_max_nm
+    const result = Math.exp(-(delta * delta) / (2 * sigma * sigma))
+    // Apply same 5% floor to Gaussian fallback
+    return result < 0.05 ? 0 : result
+  }
+  return 0
+}
+
+/**
+ * Detection efficiency: 0-1 score for what fraction of emission falls in the bandpass.
+ */
+export function detectionEfficiency(
+  fluorophore: FluorophoreWithSpectra,
+  filterMidpoint: number,
+  filterWidth: number
+): number {
+  const em = fluorophore.spectra?.EM
+  if (em && em.length > 0) {
+    const low = filterMidpoint - filterWidth / 2
+    const high = filterMidpoint + filterWidth / 2
+    let bandpassIntegral = 0
+    for (let wl = Math.round(low); wl <= Math.round(high); wl++) {
+      bandpassIntegral += interpolateAt(em, wl)
+    }
+    let totalIntegral = 0
+    const startWl = Math.round(em[0][0])
+    const endWl = Math.round(em[em.length - 1][0])
+    for (let wl = startWl; wl <= endWl; wl++) {
+      totalIntegral += interpolateAt(em, wl)
+    }
+    if (totalIntegral <= 0) return 0
+    return bandpassIntegral / totalIntegral
+  }
+  if (fluorophore.em_max_nm != null) {
+    const sigma = 17
+    const delta = filterMidpoint - fluorophore.em_max_nm
+    return Math.exp(-(delta * delta) / (2 * sigma * sigma)) * Math.min(filterWidth / (sigma * 2.5), 1)
+  }
+  return 0
+}
+
+/**
+ * Combined channel score: excitation × detection efficiency.
+ */
+export function channelScore(
+  fluorophore: FluorophoreWithSpectra,
+  laserWavelength: number,
+  filterMidpoint: number,
+  filterWidth: number
+): number {
+  return excitationEfficiency(fluorophore, laserWavelength) *
+         detectionEfficiency(fluorophore, filterMidpoint, filterWidth)
+}
+
+export interface ChannelRanking {
+  detectorId: string
+  laserId: string
+  laserWavelength: number
+  filterMidpoint: number
+  filterWidth: number
+  score: number
+  excitationEff: number
+  detectionEff: number
+}
+
+/**
+ * Score and rank all channels on an instrument for a given fluorophore.
+ * Returns all channels with score > 0.001, sorted descending by score.
+ */
+export function rankChannels(
+  fluorophore: FluorophoreWithSpectra,
+  instrument: {
+    lasers: Array<{
+      id: string
+      wavelength_nm: number
+      detectors: Array<{ id: string; filter_midpoint: number; filter_width: number }>
+    }>
+  }
+): ChannelRanking[] {
+  const rankings: ChannelRanking[] = []
+  for (const laser of instrument.lasers) {
+    for (const det of laser.detectors) {
+      const excEff = excitationEfficiency(fluorophore, laser.wavelength_nm)
+      const detEff = detectionEfficiency(fluorophore, det.filter_midpoint, det.filter_width)
+      const score = excEff * detEff
+      if (score > 0.001) {
+        rankings.push({
+          detectorId: det.id,
+          laserId: laser.id,
+          laserWavelength: laser.wavelength_nm,
+          filterMidpoint: det.filter_midpoint,
+          filterWidth: det.filter_width,
+          score,
+          excitationEff: excEff,
+          detectionEff: detEff,
+        })
+      }
+    }
+  }
+  rankings.sort((a, b) => b.score - a.score)
+  return rankings
+}
+
+/**
  * Downsample spectra by taking every Nth point, where N = stepNm / avgStep.
  * If the input is already sparse enough, returns a copy.
  */

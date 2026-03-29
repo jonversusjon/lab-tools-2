@@ -1,6 +1,9 @@
 import type {
   SecondaryAntibody,
   SecondaryAntibodyCreate,
+  SecondaryImportItem,
+  SecondaryImportResponse,
+  SecondaryImportConfirmResponse,
   PaginatedResponse,
 } from '@/types'
 
@@ -65,4 +68,29 @@ export async function deleteSecondary(id: string): Promise<void> {
     method: 'DELETE',
   })
   if (!res.ok) throw new Error('Failed to delete secondary antibody')
+}
+
+export async function uploadSecondaryCsv(
+  file: File
+): Promise<SecondaryImportResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch('/api/v1/secondary-antibodies/import-csv', {
+    method: 'POST',
+    body: formData,
+  })
+  if (!res.ok) throw new Error('Failed to parse CSV')
+  return res.json()
+}
+
+export async function confirmSecondaryImport(
+  items: SecondaryImportItem[]
+): Promise<SecondaryImportConfirmResponse> {
+  const res = await fetch('/api/v1/secondary-antibodies/import-confirm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+  if (!res.ok) throw new Error('Failed to import secondaries')
+  return res.json()
 }

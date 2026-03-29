@@ -5,9 +5,11 @@ import {
   createSecondary,
   updateSecondary,
   deleteSecondary,
+  uploadSecondaryCsv,
+  confirmSecondaryImport,
 } from '@/api/secondaries'
 import type { SecondaryListParams } from '@/api/secondaries'
-import type { SecondaryAntibodyCreate } from '@/types'
+import type { SecondaryAntibodyCreate, SecondaryImportItem } from '@/types'
 
 export function useSecondaries(params: SecondaryListParams = {}) {
   return useQuery({
@@ -46,6 +48,20 @@ export function useDeleteSecondary() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => deleteSecondary(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['secondary-antibodies'] }),
+  })
+}
+
+export function useUploadSecondaryCsv() {
+  return useMutation({
+    mutationFn: (file: File) => uploadSecondaryCsv(file),
+  })
+}
+
+export function useConfirmSecondaryImport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (items: SecondaryImportItem[]) => confirmSecondaryImport(items),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['secondary-antibodies'] }),
   })
 }

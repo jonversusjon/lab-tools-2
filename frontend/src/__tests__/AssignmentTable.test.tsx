@@ -22,7 +22,7 @@ const mockInstrument = {
 }
 
 const mockAntibodies = [
-  { id: 'ab1', target: 'CD3', clone: 'OKT3', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: null, catalog_number: null },
+  { id: 'ab1', target: 'CD3', clone: 'OKT3', host: 'mouse', isotype: 'IgG1', fluorophore_id: 'fl-fitc', fluorophore_name: 'FITC', vendor: null, catalog_number: null },
   { id: 'ab2', target: 'CD4', clone: null, host: null, isotype: null, fluorophore_id: null, fluorophore_name: null, vendor: null, catalog_number: null },
 ]
 
@@ -48,7 +48,9 @@ vi.mock('@/hooks/usePanels', () => ({
   useDeletePanel: () => ({ mutate: vi.fn() }),
   useUpdatePanel: () => ({ mutate: mockUpdateMutate }),
   useAddTarget: () => ({ mutateAsync: mockAddTargetMutateAsync }),
+  useUpdateTarget: () => ({ mutateAsync: vi.fn() }),
   useRemoveTarget: () => ({ mutateAsync: mockRemoveTargetMutateAsync }),
+  useReorderTargets: () => ({ mutateAsync: vi.fn() }),
   useAddAssignment: () => ({ mutateAsync: mockAddAssignmentMutateAsync }),
   useRemoveAssignment: () => ({ mutateAsync: mockRemoveAssignmentMutateAsync }),
 }))
@@ -79,6 +81,14 @@ vi.mock('@/hooks/useFluorophores', () => ({
     error: null,
   }),
   useBatchSpectra: () => ({ data: null }),
+}))
+
+vi.mock('@/hooks/useSecondaries', () => ({
+  useSecondaries: () => ({
+    data: { items: [], total: 0, skip: 0, limit: 100 },
+    isLoading: false,
+    error: null,
+  }),
 }))
 
 import PanelDesigner from '@/components/panels/PanelDesigner'
@@ -115,9 +125,9 @@ describe('AssignmentTable', () => {
     renderDesigner(panel)
     const cell = screen.getByTestId('cell-ab1-d1')
     fireEvent.click(cell)
-    // Picker should open — look for "No compatible fluorophores" or a fluorophore name
-    // Since we have no spectra data and FITC fallback: ex 494 within ±40 of 488 → yes; em 519 within 530±30 (500-560) → yes
-    expect(screen.getByText('FITC')).toBeInTheDocument()
+    // Picker should open — FITC appears in conjugate column AND in picker
+    const fitcElements = screen.getAllByText('FITC')
+    expect(fitcElements.length).toBeGreaterThanOrEqual(2)
   })
 
   it('assigned cell shows fluorophore name with colored background', () => {

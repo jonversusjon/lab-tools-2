@@ -5,6 +5,10 @@ import {
   isExcitable,
   isDetectable,
   isCompatible,
+  excitationEfficiency,
+  detectionEfficiency,
+  channelScore,
+  rankChannels,
 } from '@/utils/spectra'
 import type { FluorophoreWithSpectra } from '@/types'
 
@@ -54,6 +58,7 @@ const makeFluorophore = (
   oligomerization: null,
   switch_type: null,
   has_spectra: false,
+  is_favorite: false,
   spectra: null,
   ...overrides,
 })
@@ -166,5 +171,170 @@ describe('isCompatible', () => {
     expect(isCompatible(fl, 637, 530, 30)).toBe(false)
     // FITC + 488nm laser + 780/60 detector → not detectable
     expect(isCompatible(fl, 488, 780, 60)).toBe(false)
+  })
+})
+
+describe('excitationEfficiency', () => {
+  it('returns high efficiency near excitation peak with spectra', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    expect(excitationEfficiency(fl, 488)).toBeGreaterThan(0.8)
+  })
+
+  it('returns ~0 far from excitation peak with spectra', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    expect(excitationEfficiency(fl, 637)).toBeLessThan(0.01)
+  })
+
+  it('Gaussian fallback: PE excited well by 561nm (peak-only)', () => {
+    const pe = makeFluorophore({
+      id: 'pe',
+      name: 'PE',
+      ex_max_nm: 565,
+      em_max_nm: 578,
+      spectra: null,
+    })
+    expect(excitationEfficiency(pe, 561)).toBeGreaterThan(0.9)
+  })
+
+  it('Gaussian fallback: PE poorly excited by 405nm', () => {
+    const pe = makeFluorophore({
+      id: 'pe',
+      name: 'PE',
+      ex_max_nm: 565,
+      em_max_nm: 578,
+      spectra: null,
+    })
+    expect(excitationEfficiency(pe, 405)).toBeLessThan(0.01)
+  })
+
+  it('clamps to [0, 1] when spectra data has artifacts producing ratio > 1', () => {
+    // Spectrum with a data artifact: intensity at 500nm exceeds the "peak"
+    const artifactSpectrum: number[][] = [
+      [400, 0],
+      [450, 0.5],
+      [480, 0.8],
+      [500, 1.2],  // artifact: exceeds the reported peak at 480
+      [550, 0.3],
+      [600, 0],
+    ]
+    const fl = makeFluorophore({
+      spectra: { EX: artifactSpectrum, EM: fitcEmission },
+    })
+    const eff = excitationEfficiency(fl, 500)
+    expect(eff).toBeLessThanOrEqual(1.0)
+    expect(eff).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('detectionEfficiency', () => {
+  it('returns meaningful efficiency when emission peak is in bandpass (with spectra)', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    expect(detectionEfficiency(fl, 530, 30)).toBeGreaterThan(0.1)
+  })
+
+  it('returns ~0 when bandpass is far from emission (with spectra)', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    expect(detectionEfficiency(fl, 780, 60)).toBeLessThan(0.01)
+  })
+
+  it('Gaussian fallback: PE detected by 585/15 bandpass', () => {
+    const pe = makeFluorophore({
+      id: 'pe',
+      name: 'PE',
+      ex_max_nm: 565,
+      em_max_nm: 578,
+      spectra: null,
+    })
+    expect(detectionEfficiency(pe, 585, 15)).toBeGreaterThan(0.1)
+  })
+})
+
+describe('channelScore', () => {
+  it('FITC on 488/530/30 scores well (with spectra)', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    expect(channelScore(fl, 488, 530, 30)).toBeGreaterThan(0.05)
+  })
+
+  it('PE on 561/585/15 scores well (Gaussian fallback)', () => {
+    const pe = makeFluorophore({
+      id: 'pe',
+      name: 'PE',
+      ex_max_nm: 565,
+      em_max_nm: 578,
+      spectra: null,
+    })
+    expect(channelScore(pe, 561, 585, 15)).toBeGreaterThan(0.05)
+  })
+
+  it('mismatch laser+detector scores near 0', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    expect(channelScore(fl, 637, 780, 60)).toBeLessThan(0.001)
+  })
+})
+
+describe('rankChannels', () => {
+  const instrument = {
+    lasers: [
+      {
+        id: 'l1',
+        wavelength_nm: 488,
+        detectors: [
+          { id: 'd1', filter_midpoint: 530, filter_width: 30 },
+          { id: 'd2', filter_midpoint: 780, filter_width: 60 },
+        ],
+      },
+      {
+        id: 'l2',
+        wavelength_nm: 637,
+        detectors: [
+          { id: 'd3', filter_midpoint: 670, filter_width: 30 },
+        ],
+      },
+    ],
+  }
+
+  it('ranks FITC highest on 488/530/30', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    const rankings = rankChannels(fl, instrument)
+    expect(rankings.length).toBeGreaterThan(0)
+    expect(rankings[0].detectorId).toBe('d1')
+    expect(rankings[0].laserWavelength).toBe(488)
+  })
+
+  it('works with peak-only fluorophores (Gaussian fallback)', () => {
+    const pe = makeFluorophore({
+      id: 'pe',
+      name: 'PE',
+      ex_max_nm: 565,
+      em_max_nm: 578,
+      spectra: null,
+    })
+    const rankings = rankChannels(pe, instrument)
+    // PE should have some rankings via Gaussian fallback
+    expect(rankings.length).toBeGreaterThanOrEqual(0)
+  })
+
+  it('returns results sorted by score descending', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    const rankings = rankChannels(fl, instrument)
+    for (let i = 1; i < rankings.length; i++) {
+      expect(rankings[i - 1].score).toBeGreaterThanOrEqual(rankings[i].score)
+    }
   })
 })

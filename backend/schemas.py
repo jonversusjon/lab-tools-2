@@ -370,6 +370,37 @@ class SecondaryAntibodyUpdate(SecondaryAntibodyCreate):
     pass
 
 
+class SecondaryImportItem(BaseModel):
+    name: str
+    host: str
+    target_species: str
+    target_isotype: str | None = None
+    fluorophore_name: str | None = None
+    fluorophore_id: str | None = None
+    vendor: str | None = None
+    catalog_number: str | None = None
+    lot_number: str | None = None
+    warnings: list[str] = []
+    row_number: int
+
+
+class SecondaryImportResponse(BaseModel):
+    items: list[SecondaryImportItem]
+    total_rows: int
+    valid_rows: int
+    warning_count: int
+
+
+class SecondaryImportConfirmRequest(BaseModel):
+    items: list[SecondaryImportItem]
+
+
+class SecondaryImportConfirmResponse(BaseModel):
+    created: int
+    skipped: int
+    errors: list[str]
+
+
 class SecondaryAntibodyResponse(BaseModel):
     id: str
     name: str

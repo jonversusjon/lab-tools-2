@@ -1,0 +1,32 @@
+name,host,target_species,target_isotype,fluorophore,vendor,catalog_number
+Goat anti-Mouse IgG (H+L) AF488,Goat,Mouse,IgG,Alexa Fluor 488,Thermo Fisher,A-11001
+Goat anti-Mouse IgG (H+L) AF647,Goat,Mouse,IgG,Alexa Fluor 647,Thermo Fisher,A-21235
+Goat anti-Mouse IgG (H+L) PE,Goat,Mouse,IgG,PE,Thermo Fisher,12-4010-82
+Goat anti-Mouse IgG1 AF488,Goat,Mouse,IgG1,Alexa Fluor 488,Thermo Fisher,A-21121
+Goat anti-Mouse IgG1 AF647,Goat,Mouse,IgG1,Alexa Fluor 647,Thermo Fisher,A-21240
+Goat anti-Mouse IgG1 PE,Goat,Mouse,IgG1,PE,BioLegend,405108
+Goat anti-Mouse IgG2a AF488,Goat,Mouse,IgG2a,Alexa Fluor 488,Thermo Fisher,A-21131
+Goat anti-Mouse IgG2a AF647,Goat,Mouse,IgG2a,Alexa Fluor 647,Thermo Fisher,A-21241
+Goat anti-Mouse IgG2b AF488,Goat,Mouse,IgG2b,Alexa Fluor 488,Thermo Fisher,A-21141
+Goat anti-Rabbit IgG (H+L) AF488,Goat,Rabbit,IgG,Alexa Fluor 488,Thermo Fisher,A-11008
+Goat anti-Rabbit IgG (H+L) AF647,Goat,Rabbit,IgG,Alexa Fluor 647,Thermo Fisher,A-21244
+Goat anti-Rabbit IgG (H+L) PE,Goat,Rabbit,IgG,PE,Thermo Fisher,12-4739-81
+Goat anti-Rabbit IgG (H+L) AF594,Goat,Rabbit,IgG,Alexa Fluor 594,Thermo Fisher,A-11012
+Goat anti-Rabbit IgG (H+L) AF555,Goat,Rabbit,IgG,Alexa Fluor 555,Thermo Fisher,A-21428
+Donkey anti-Mouse IgG (H+L) AF488,Donkey,Mouse,IgG,Alexa Fluor 488,Thermo Fisher,A-21202
+Donkey anti-Mouse IgG (H+L) AF647,Donkey,Mouse,IgG,Alexa Fluor 647,Thermo Fisher,A-31571
+Donkey anti-Rabbit IgG (H+L) AF488,Donkey,Rabbit,IgG,Alexa Fluor 488,Thermo Fisher,A-21206
+Donkey anti-Rabbit IgG (H+L) AF647,Donkey,Rabbit,IgG,Alexa Fluor 647,Thermo Fisher,A-31573
+Goat anti-Rat IgG (H+L) AF488,Goat,Rat,IgG,Alexa Fluor 488,Thermo Fisher,A-11006
+Goat anti-Rat IgG (H+L) AF647,Goat,Rat,IgG,Alexa Fluor 647,Thermo Fisher,A-21247
+Goat anti-Rat IgG (H+L) PE,Goat,Rat,IgG,PE,BioLegend,405406
+Goat anti-Armenian Hamster IgG AF488,Goat,Armenian Hamster,IgG,Alexa Fluor 488,Thermo Fisher,A-21110
+Goat anti-Armenian Hamster IgG AF647,Goat,Armenian Hamster,IgG,Alexa Fluor 647,Thermo Fisher,A-21451
+Goat anti-Human IgG (H+L) AF488,Goat,Human,IgG,Alexa Fluor 488,Thermo Fisher,A-11013
+Goat anti-Human IgG (H+L) AF647,Goat,Human,IgG,Alexa Fluor 647,Thermo Fisher,A-21445
+Donkey anti-Goat IgG (H+L) AF488,Donkey,Goat,IgG,Alexa Fluor 488,Thermo Fisher,A-11055
+Donkey anti-Goat IgG (H+L) AF647,Donkey,Goat,IgG,Alexa Fluor 647,Thermo Fisher,A-21447
+Streptavidin AF488,n/a,n/a,,Alexa Fluor 488,Thermo Fisher,S11223
+Streptavidin AF647,n/a,n/a,,Alexa Fluor 647,Thermo Fisher,S21374
+Streptavidin PE,n/a,n/a,,PE,Thermo Fisher,S866
+Streptavidin APC,n/a,n/a,,APC,Thermo Fisher,S868

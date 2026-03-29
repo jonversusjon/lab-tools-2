@@ -18,6 +18,7 @@ export type PanelDesignerAction =
   | { type: 'SET_PANEL'; panel: Panel }
   | { type: 'SET_INSTRUMENT'; instrument: Instrument | null }
   | { type: 'ADD_TARGET'; target: PanelTarget }
+  | { type: 'UPDATE_TARGET'; target: PanelTarget }
   | { type: 'REMOVE_TARGET'; targetId: string; antibodyId: string }
   | { type: 'ADD_ASSIGNMENT'; assignment: PanelAssignment }
   | { type: 'REMOVE_ASSIGNMENT'; assignmentId: string }
@@ -66,6 +67,14 @@ export function panelDesignerReducer(
       return {
         ...state,
         targets: [...state.targets, action.target],
+        isDirty: true,
+      }
+    case 'UPDATE_TARGET':
+      return {
+        ...state,
+        targets: state.targets.map((t) =>
+          t.id === action.target.id ? action.target : t
+        ),
         isDirty: true,
       }
     case 'REMOVE_TARGET':
