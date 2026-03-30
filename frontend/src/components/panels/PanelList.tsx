@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePanels, useCreatePanel, useDeletePanel, useUpdatePanel } from '@/hooks/usePanels'
+import { useInstruments } from '@/hooks/useInstruments'
 import Modal from '@/components/layout/Modal'
 import HoverActionsRow from '@/components/layout/HoverActionsRow'
 
@@ -14,6 +15,9 @@ export default function PanelList() {
   const [newName, setNewName] = useState('')
   const [editingPanel, setEditingPanel] = useState<{id: string, name: string} | null>(null)
   const [renameValue, setRenameValue] = useState('')
+
+  const { data: instrumentsData } = useInstruments(0, 500)
+  const instruments = instrumentsData?.items ?? []
 
   const items = data?.items ?? []
 
@@ -102,7 +106,23 @@ export default function PanelList() {
                 <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{p.name}</td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">
                   {p.instrument_id ? (
-                    <span className="text-gray-600 dark:text-gray-400">Configured</span>
+                    (() => {
+                      const inst = instruments.find(i => i.id === p.instrument_id)
+                      return inst ? (
+                        <button
+                          type="button"
+                          className="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            navigate('/instruments/' + inst.id)
+                          }}
+                        >
+                          {inst.name}
+                        </button>
+                      ) : (
+                        <span className="text-gray-600 dark:text-gray-400">Configured</span>
+                      )
+                    })()
                   ) : (
                     <span className="italic text-gray-400 dark:text-gray-500">No instrument</span>
                   )}
