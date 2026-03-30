@@ -415,3 +415,44 @@ export interface BatchFetchFpbaseResult {
   fetched: Fluorophore[]
   errors: { name: string; detail: string }[]
 }
+
+export interface FluorophoreImportItem {
+  name: string
+  fluor_type: string | null
+  ex_max_nm: number | null
+  em_max_nm: number | null
+  ext_coeff: number | null
+  qy: number | null
+  lifetime_ns: number | null
+  oligomerization: string | null
+  switch_type: string | null
+  spectra: Record<string, number[][]> | null
+  row_number: number
+  warnings: string[]
+}
+
+export interface FluorophoreImportDuplicate {
+  row_number: number
+  name: string
+  existing_id: string
+}
+
+export interface FluorophoreImportError {
+  row_number: number
+  error: string
+  raw_data: Record<string, unknown> | null
+}
+
+export interface FluorophoreImportPreview {
+  new_items: FluorophoreImportItem[]
+  duplicates: FluorophoreImportDuplicate[]
+  parse_errors: FluorophoreImportError[]
+  format_detected: 'csv' | 'json'
+  total_rows: number
+}
+
+export interface FluorophoreImportConfirmResponse {
+  created: number
+  skipped: number
+  errors: string[]
+}

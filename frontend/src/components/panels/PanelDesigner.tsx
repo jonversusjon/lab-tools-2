@@ -335,9 +335,30 @@ export default function PanelDesigner() {
   // Track which pre-conjugated rows have been unlocked by user (client-side only)
   const [overriddenRows, setOverriddenRows] = useState<Set<string>>(new Set())
 
+  // Track raw fluorophore overrides (antibodyId → fluorophoreId) for rows where user picked
+  // a fluorophore directly from the omnibox without a secondary antibody
+  const [rawFluorophoreOverrides, setRawFluorophoreOverrides] = useState<Map<string, string>>(new Map())
+
   const handleSetSecondary = async (targetId: string, secondaryId: string) => {
     if (!id) return
     try {
+      const target = state.targets.find((t) => t.id === targetId)
+      const antibodyId = target?.antibody_id
+      const sec = secondaries.find((s) => s.id === secondaryId)
+
+      // If the fluorophore is changing, remove the old assignment first
+      if (antibodyId) {
+        const existing = assignmentByAntibody.get(antibodyId)
+        if (existing && sec?.fluorophore_id && existing.fluorophore_id !== sec.fluorophore_id) {
+          dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+          try {
+            await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
+          } catch {
+            // Assignment may have already been removed
+          }
+        }
+      }
+
       const updated = await updateTargetMutation.mutateAsync({
         panelId: id,
         targetId,
@@ -345,7 +366,6 @@ export default function PanelDesigner() {
       })
       dispatch({ type: 'UPDATE_TARGET', target: updated })
       // Queue auto-assign (deferred until fluorophore data is ready)
-      const sec = secondaries.find((s) => s.id === secondaryId)
       if (sec?.fluorophore_id && updated.antibody_id) {
         setPendingAutoAssign({ antibodyId: updated.antibody_id, fluorophoreId: sec.fluorophore_id })
       }
@@ -358,6 +378,32 @@ export default function PanelDesigner() {
   const handleClearSecondary = async (targetId: string) => {
     if (!id) return
     try {
+      const target = state.targets.find((t) => t.id === targetId)
+      const antibodyId = target?.antibody_id
+
+      // Remove the assignment that was based on the secondary's fluorophore
+      if (antibodyId) {
+        const existing = assignmentByAntibody.get(antibodyId)
+        if (existing) {
+          dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+          try {
+            await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
+          } catch {
+            // Assignment may have already been removed
+          }
+        }
+      }
+
+      // Clear any raw fluorophore override
+      if (antibodyId) {
+        setRawFluorophoreOverrides((prev) => {
+          if (!prev.has(antibodyId)) return prev
+          const next = new Map(prev)
+          next.delete(antibodyId)
+          return next
+        })
+      }
+
       const updated = await updateTargetMutation.mutateAsync({
         panelId: id,
         targetId,
@@ -495,12 +541,14 @@ export default function PanelDesigner() {
         if (sec?.fluorophore_id) {
           map.set(t.antibody_id, sec.fluorophore_id)
         }
+      } else if (rawFluorophoreOverrides.has(t.antibody_id)) {
+        map.set(t.antibody_id, rawFluorophoreOverrides.get(t.antibody_id)!)
       } else if (ab.fluorophore_id) {
         map.set(t.antibody_id, ab.fluorophore_id)
       }
     }
     return map
-  }, [state.targets, antibodyMap, assignmentByAntibody, secondaries])
+  }, [state.targets, antibodyMap, assignmentByAntibody, secondaries, rawFluorophoreOverrides])
 
   // Compute channel rankings for each row with a known fluorophore
   const rowChannelScores = useMemo(() => {
@@ -634,6 +682,23 @@ export default function PanelDesigner() {
     autoAssignChannel(antibodyId, fluorophoreId)
   }, [pendingAutoAssign, allFluorophoresForScoring, autoAssignChannel])
 
+  // Unassign: remove detector assignment but keep fluorophore known for the row
+  const handleUnassign = useCallback(async (antibodyId: string, assignmentId: string, fluorophoreId: string) => {
+    if (!id) return
+    // Preserve the fluorophore in rawFluorophoreOverrides so the row still shows scores
+    setRawFluorophoreOverrides((prev) => {
+      const next = new Map(prev)
+      next.set(antibodyId, fluorophoreId)
+      return next
+    })
+    dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId })
+    try {
+      await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId })
+    } catch {
+      // Rollback handled by refetch
+    }
+  }, [id, dispatch, removeAssignmentMutation])
+
   const handleCellClick = useCallback(
     (
       e: React.MouseEvent<HTMLTableCellElement>,
@@ -649,22 +714,27 @@ export default function PanelDesigner() {
 
       setAssignError('')
 
+      // If this antibody is already assigned to THIS detector, unassign it
+      const abAssignment = assignmentByAntibody.get(antibodyId)
+      if (abAssignment && abAssignment.detector_id === detectorId) {
+        handleUnassign(antibodyId, abAssignment.id, abAssignment.fluorophore_id)
+        return
+      }
+
       // If we already know the fluorophore for this row, assign directly (skip picker)
-      // handleDirectAssign already handles clearing an existing assignment for this antibody
       const knownFlId = rowFluorophoreMap.get(antibodyId)
       if (knownFlId) {
         handleDirectAssign(antibodyId, knownFlId, detectorId)
         return
       }
 
-      // Check if this antibody already has an assignment — if so, only allow clicking the same detector
-      const abAssignment = assignmentByAntibody.get(antibodyId)
+      // Check if this antibody already has an assignment to a different detector
       if (abAssignment && abAssignment.detector_id !== detectorId) return
 
       // No fluorophore known — open the picker
       setPickerCell({ antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
     },
-    [assignmentByDetector, assignmentByAntibody, rowFluorophoreMap, handleDirectAssign]
+    [assignmentByDetector, assignmentByAntibody, rowFluorophoreMap, handleDirectAssign, handleUnassign]
   )
 
   const handleSelectFluorophore = async (fluorophoreId: string) => {
@@ -1042,9 +1112,27 @@ export default function PanelDesigner() {
                               fluorophores={fluorophoreList}
                               currentSecondaryId={t.secondary_antibody_id}
                               currentSecondaryName={t.secondary_antibody_name}
-                              currentFluorophoreName={t.secondary_fluorophore_name}
+                              currentFluorophoreName={t.secondary_fluorophore_name ?? (t.antibody_id && rawFluorophoreOverrides.has(t.antibody_id) ? fluorophoreMap.get(rawFluorophoreOverrides.get(t.antibody_id)!) ?? null : null)}
                               onSelectSecondary={(secId) => handleSetSecondary(t.id, secId)}
-                              onSelectFluorophore={() => {/* Phase 3+ standalone fluorophore override */}}
+                              onSelectFluorophore={(flId) => {
+                                const abId = t.antibody_id
+                                if (!abId) return
+                                // Remove existing assignment if fluorophore is changing
+                                const existing = assignmentByAntibody.get(abId)
+                                if (existing && existing.fluorophore_id !== flId) {
+                                  dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+                                  if (id) {
+                                    removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id }).catch(() => {})
+                                  }
+                                }
+                                // Track the raw fluorophore so the row shows scores
+                                setRawFluorophoreOverrides((prev) => {
+                                  const next = new Map(prev)
+                                  next.set(abId, flId)
+                                  return next
+                                })
+                                setPendingAutoAssign({ antibodyId: abId, fluorophoreId: flId })
+                              }}
                               onClear={() => handleClearSecondary(t.id)}
                             />
                           )}

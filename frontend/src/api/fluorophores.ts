@@ -2,6 +2,9 @@ import type {
   BatchFetchFpbaseResult,
   Fluorophore,
   FluorophoreCreate,
+  FluorophoreImportConfirmResponse,
+  FluorophoreImportItem,
+  FluorophoreImportPreview,
   FluorophoreSpectra,
   FpbaseCatalogItem,
   InstrumentCompatibilityResponse,
@@ -123,5 +126,36 @@ export async function toggleFluorophoreFavorite(
 export async function getRecentFluorophores(): Promise<string[]> {
   const res = await fetch('/api/v1/fluorophores/recent')
   if (!res.ok) throw new Error('Failed to fetch recent fluorophores')
+  return res.json()
+}
+
+export async function uploadFluorophoresForImport(
+  file: File
+): Promise<FluorophoreImportPreview> {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await fetch('/api/v1/fluorophores/import/upload', {
+    method: 'POST',
+    body: formData,
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new Error(body?.detail ?? 'Failed to parse fluorophore file')
+  }
+  return res.json()
+}
+
+export async function confirmFluorophoreImport(
+  items: FluorophoreImportItem[]
+): Promise<FluorophoreImportConfirmResponse> {
+  const res = await fetch('/api/v1/fluorophores/import/confirm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => null)
+    throw new Error(body?.detail ?? 'Failed to confirm fluorophore import')
+  }
   return res.json()
 }

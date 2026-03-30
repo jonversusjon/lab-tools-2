@@ -9,6 +9,7 @@ import {
 } from '@/hooks/useFluorophores'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 import FpbaseFetchModal from './FpbaseFetchModal'
+import FluorophoreImportWizard from './FluorophoreImportWizard'
 import FavoriteButton from '@/components/antibodies/FavoriteButton'
 import type { Fluorophore, SpectraData } from '@/types'
 
@@ -25,6 +26,7 @@ export default function FluorophoreBrowser() {
   const [overlayMap, setOverlayMap] = useState<Map<string, string>>(new Map())
   const toggleFavorite = useToggleFluorophoreFavorite()
   const [showFpbaseModal, setShowFpbaseModal] = useState(false)
+  const [showImportWizard, setShowImportWizard] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -72,12 +74,20 @@ export default function FluorophoreBrowser() {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold dark:text-gray-100">Fluorophores</h1>
-          <button
-            onClick={() => setShowFpbaseModal(true)}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            Fetch from FPbase
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowImportWizard(true)}
+              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Import CSV / JSON
+            </button>
+            <button
+              onClick={() => setShowFpbaseModal(true)}
+              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            >
+              Fetch from FPbase
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -254,6 +264,9 @@ export default function FluorophoreBrowser() {
       )}
 
       {showFpbaseModal && <FpbaseFetchModal onClose={() => setShowFpbaseModal(false)} />}
+      {showImportWizard && (
+        <FluorophoreImportWizard onClose={() => setShowImportWizard(false)} />
+      )}
     </div>
   )
 }

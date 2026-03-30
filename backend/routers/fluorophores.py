@@ -17,12 +17,17 @@ from models import FluorophoreSpectrum
 from models import Instrument
 from models import Laser
 from models import PanelAssignment
+from fastapi import File as FastAPIFile
+from fastapi import UploadFile
 from schemas import BatchFetchFpbaseRequest
 from schemas import BatchFetchFpbaseResult
 from schemas import BatchSpectraRequest
 from schemas import DetectorCompatibility
 from schemas import FetchFpbaseRequest
 from schemas import FluorophoreCreate
+from schemas import FluorophoreImportConfirmRequest
+from schemas import FluorophoreImportConfirmResponse
+from schemas import FluorophoreImportPreview
 from schemas import FluorophoreRead
 from schemas import FluorophoreSpectraResponse
 from schemas import FpbaseCatalogItem
@@ -30,6 +35,9 @@ from schemas import InstrumentCompatibility
 from schemas import InstrumentCompatibilityResponse
 from schemas import LaserCompatibility
 from schemas import PaginatedResponse
+from services.fluorophore_import import confirm_import as do_confirm_import
+from services.fluorophore_import import parse_csv
+from services.fluorophore_import import parse_json
 from services.spectra import integrate_bandpass
 from services.spectra import interpolate_at
 from services.spectra import load_spectra_for
@@ -331,6 +339,49 @@ def batch_spectra(
         result[fl_id][stype].append([wl, intensity])
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# Bulk import (upload preview + confirm) — MUST be before /{id} routes
+# ---------------------------------------------------------------------------
+
+@router.post("/import/upload", response_model=FluorophoreImportPreview)
+async def upload_fluorophores_for_import(
+    file: UploadFile = FastAPIFile(...),
+    db: Session = Depends(get_db),
+):
+    """Upload a CSV or JSON file of fluorophores. Returns a preview for user review."""
+    content_bytes = await file.read()
+    try:
+        content = content_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        content = content_bytes.decode("latin-1")
+
+    filename = (file.filename or "").lower()
+
+    if filename.endswith(".json"):
+        return parse_json(content, db)
+    elif filename.endswith(".csv"):
+        return parse_csv(content, db)
+    else:
+        stripped = content.strip()
+        if stripped.startswith("{") or stripped.startswith("["):
+            return parse_json(content, db)
+        return parse_csv(content, db)
+
+
+@router.post("/import/confirm", response_model=FluorophoreImportConfirmResponse)
+def confirm_fluorophore_import(
+    body: FluorophoreImportConfirmRequest,
+    db: Session = Depends(get_db),
+):
+    """Confirm and create fluorophores from a reviewed import."""
+    created, skipped, errors = do_confirm_import(body.items, db)
+    return FluorophoreImportConfirmResponse(
+        created=created,
+        skipped=skipped,
+        errors=errors,
+    )
 
 
 # ---------------------------------------------------------------------------

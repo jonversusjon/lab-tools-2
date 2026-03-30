@@ -192,6 +192,55 @@ class BatchFetchFpbaseResult(BaseModel):
     errors: list[dict]
 
 
+# --- Fluorophore Bulk Import ---
+
+class FluorophoreImportItem(BaseModel):
+    """A single fluorophore from a CSV or JSON import, after parsing."""
+    name: str
+    fluor_type: str | None = None
+    ex_max_nm: float | None = None
+    em_max_nm: float | None = None
+    ext_coeff: float | None = None
+    qy: float | None = None
+    lifetime_ns: float | None = None
+    oligomerization: str | None = None
+    switch_type: str | None = None
+    spectra: dict[str, list[list[float]]] | None = None
+    row_number: int = 0
+    warnings: list[str] = []
+
+
+class FluorophoreImportDuplicate(BaseModel):
+    row_number: int
+    name: str
+    existing_id: str
+
+
+class FluorophoreImportError(BaseModel):
+    row_number: int
+    error: str
+    raw_data: dict | None = None
+
+
+class FluorophoreImportPreview(BaseModel):
+    """Response from the parse/preview endpoint."""
+    new_items: list[FluorophoreImportItem]
+    duplicates: list[FluorophoreImportDuplicate]
+    parse_errors: list[FluorophoreImportError]
+    format_detected: str
+    total_rows: int
+
+
+class FluorophoreImportConfirmRequest(BaseModel):
+    items: list[FluorophoreImportItem]
+
+
+class FluorophoreImportConfirmResponse(BaseModel):
+    created: int
+    skipped: int
+    errors: list[str]
+
+
 class FpbaseCatalogItem(BaseModel):
     name: str
     id: str

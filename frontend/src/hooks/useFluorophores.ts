@@ -10,8 +10,10 @@ import {
   batchFetchFpbase,
   toggleFluorophoreFavorite,
   getRecentFluorophores,
+  uploadFluorophoresForImport,
+  confirmFluorophoreImport,
 } from '@/api/fluorophores'
-import type { FluorophoreCreate } from '@/types'
+import type { FluorophoreCreate, FluorophoreImportItem } from '@/types'
 import type { FluorophoreListParams as ApiParams } from '@/api/fluorophores'
 
 export function useFluorophores(params: ApiParams = {}) {
@@ -97,5 +99,19 @@ export function useRecentFluorophores() {
     queryKey: ['recentFluorophores'],
     queryFn: () => getRecentFluorophores(),
     staleTime: 10 * 60 * 1000,
+  })
+}
+
+export function useUploadFluorophoreCsv() {
+  return useMutation({
+    mutationFn: (file: File) => uploadFluorophoresForImport(file),
+  })
+}
+
+export function useConfirmFluorophoreImport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (items: FluorophoreImportItem[]) => confirmFluorophoreImport(items),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['fluorophores'] }),
   })
 }
