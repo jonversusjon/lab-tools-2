@@ -161,6 +161,15 @@ export default function PanelDesigner() {
     }))
   }, [fluorophoreList, spectraCache])
 
+  // Lookup: conjugate name (lowercased) → fluorophore ID for auto-resolving imported antibodies
+  const conjugateToFluorophoreId = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const fl of allFluorophores) {
+      map.set(fl.name.toLowerCase(), fl.id)
+    }
+    return map
+  }, [allFluorophores])
+
   // All fluorophores for scoring (includes vendor dyes with only peak values — Gaussian fallback)
   const allFluorophoresForScoring: FluorophoreWithSpectra[] = useMemo(() => {
     return allFluorophores.map((fl) => ({
@@ -323,8 +332,17 @@ export default function PanelDesigner() {
       addTarget(target)
       setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
       // Queue auto-assign (deferred until fluorophore data is ready)
-      if (antibody.fluorophore_id) {
-        setPendingAutoAssign({ antibodyId: antibody.id, fluorophoreId: antibody.fluorophore_id })
+      const resolvedFlId = antibody.fluorophore_id
+        ?? (antibody.conjugate ? conjugateToFluorophoreId.get(antibody.conjugate.toLowerCase()) ?? null : null)
+      if (resolvedFlId) {
+        if (!antibody.fluorophore_id) {
+          setRawFluorophoreOverrides((prev) => {
+            const next = new Map(prev)
+            next.set(antibody.id, resolvedFlId)
+            return next
+          })
+        }
+        setPendingAutoAssign({ antibodyId: antibody.id, fluorophoreId: resolvedFlId })
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add target'
@@ -474,9 +492,18 @@ export default function PanelDesigner() {
         })
       }
 
-      // Queue auto-assign if new antibody is pre-conjugated
-      if (newAntibody.fluorophore_id && !assignmentByAntibody.get(newAntibody.id)) {
-        setPendingAutoAssign({ antibodyId: newAntibody.id, fluorophoreId: newAntibody.fluorophore_id })
+      // Queue auto-assign if new antibody has a known fluorophore (pre-conjugated or conjugate text)
+      const resolvedFlId = newAntibody.fluorophore_id
+        ?? (newAntibody.conjugate ? conjugateToFluorophoreId.get(newAntibody.conjugate.toLowerCase()) ?? null : null)
+      if (resolvedFlId && !assignmentByAntibody.get(newAntibody.id)) {
+        if (!newAntibody.fluorophore_id) {
+          setRawFluorophoreOverrides((prev) => {
+            const next = new Map(prev)
+            next.set(newAntibody.id, resolvedFlId)
+            return next
+          })
+        }
+        setPendingAutoAssign({ antibodyId: newAntibody.id, fluorophoreId: resolvedFlId })
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to replace target'
@@ -496,11 +523,13 @@ export default function PanelDesigner() {
   // Build detector column structure from instrument
   const laserGroups = useMemo(() => {
     if (!state.instrument) return []
-    return state.instrument.lasers.map((laser) => ({
-      laser,
-      detectors: laser.detectors,
-      color: getLaserColor(laser.wavelength_nm),
-    }))
+    return [...state.instrument.lasers]
+      .sort((a, b) => a.wavelength_nm - b.wavelength_nm)
+      .map((laser) => ({
+        laser,
+        detectors: laser.detectors,
+        color: getLaserColor(laser.wavelength_nm),
+      }))
   }, [state.instrument])
 
   const totalDetectors = useMemo(

@@ -97,7 +97,7 @@ export default function PanelSpectraByLaser({
 
   return (
     <div className="space-y-3 pt-3">
-      {instrument.lasers.map((laser) => {
+      {[...instrument.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm).map((laser) => {
         const laserColor = getLaserColor(laser.wavelength_nm)
         const isCollapsed = collapsedLasers.has(laser.id)
 
