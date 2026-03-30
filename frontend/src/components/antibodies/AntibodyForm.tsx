@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Modal from '@/components/layout/Modal'
 import ConjugateOmnibox from '@/components/antibodies/ConjugateOmnibox'
 import DilutionInput from '@/components/antibodies/DilutionInput'
+import ListEditor from '@/components/shared/ListEditor'
 import { formatDilution } from '@/utils/dilutions'
 import { useCreateAntibody, useUpdateAntibody } from '@/hooks/useAntibodies'
 import type { Antibody, AntibodyCreate, Fluorophore } from '@/types'
@@ -123,10 +124,12 @@ export default function AntibodyForm({
             <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Clone</label>
             <input type="text" value={clone} onChange={(e) => setClone(e.target.value)} className={inputClass} />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Host</label>
-            <input type="text" value={host} onChange={(e) => setHost(e.target.value)} className={inputClass} />
-          </div>
+          <ListEditor
+            listType="host"
+            label="Host"
+            value={host}
+            onChange={setHost}
+          />
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Isotype</label>
             <input type="text" value={isotype} onChange={(e) => setIsotype(e.target.value)} className={inputClass} />

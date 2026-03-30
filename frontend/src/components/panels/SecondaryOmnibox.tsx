@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import type { Antibody, SecondaryAntibody, Fluorophore } from '@/types'
+import type { DetectionStrategy } from '@/utils/conjugates'
 
 interface SecondaryOmniboxProps {
   primaryAntibody: Antibody
+  detectionStrategy: DetectionStrategy
   secondaryAntibodies: SecondaryAntibody[]
   fluorophores: Fluorophore[]
   currentSecondaryId: string | null
@@ -16,6 +18,7 @@ interface SecondaryOmniboxProps {
 
 export default function SecondaryOmnibox({
   primaryAntibody,
+  detectionStrategy,
   secondaryAntibodies,
   fluorophores,
   currentSecondaryId,
@@ -33,15 +36,16 @@ export default function SecondaryOmnibox({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null)
 
-  // Filter secondaries by host/isotype compatibility with primary
-  const compatibleSecondaries = useMemo(() => {
+  // Species-matched secondaries (anti-host)
+  const speciesSecondaries = useMemo(() => {
+    if (detectionStrategy.type === 'direct') return []
+    if (detectionStrategy.type === 'conjugate') return []
     const term = search.toLowerCase()
     return secondaryAntibodies.filter((sec) => {
-      // target_species should match primary's host
+      if (sec.binding_mode !== 'species') return false
       if (primaryAntibody.host && sec.target_species.toLowerCase() !== primaryAntibody.host.toLowerCase()) {
         return false
       }
-      // Optionally filter by isotype
       if (sec.target_isotype && primaryAntibody.isotype &&
           sec.target_isotype.toLowerCase() !== primaryAntibody.isotype.toLowerCase()) {
         return false
@@ -53,7 +57,24 @@ export default function SecondaryOmnibox({
         (sec.vendor && sec.vendor.toLowerCase().includes(term))
       )
     })
-  }, [secondaryAntibodies, primaryAntibody.host, primaryAntibody.isotype, search])
+  }, [secondaryAntibodies, primaryAntibody.host, primaryAntibody.isotype, detectionStrategy, search])
+
+  // Conjugate-matched secondaries (streptavidin, anti-DIG, etc.)
+  const conjugateSecondaries = useMemo(() => {
+    if (detectionStrategy.type === 'direct' || detectionStrategy.type === 'species') return []
+    const targetConj = detectionStrategy.conjugate
+    const term = search.toLowerCase()
+    return secondaryAntibodies.filter((sec) => {
+      if (sec.binding_mode !== 'conjugate') return false
+      if (!sec.target_conjugate || sec.target_conjugate.toLowerCase() !== targetConj) return false
+      if (!term) return true
+      return (
+        sec.name.toLowerCase().includes(term) ||
+        (sec.fluorophore_name && sec.fluorophore_name.toLowerCase().includes(term)) ||
+        (sec.vendor && sec.vendor.toLowerCase().includes(term))
+      )
+    })
+  }, [secondaryAntibodies, detectionStrategy, search])
 
   const filteredFluorophores = useMemo(() => {
     const term = search.toLowerCase()
@@ -61,13 +82,14 @@ export default function SecondaryOmnibox({
     return fluorophores.filter((fl) => fl.name.toLowerCase().includes(term))
   }, [fluorophores, search])
 
-  // Flat list for keyboard navigation: secondaries first, then fluorophores
+  // Flat list for keyboard navigation: species secondaries, conjugate secondaries, then fluorophores
   const allItems = useMemo(() => {
     const items: Array<{ type: 'secondary'; item: SecondaryAntibody } | { type: 'fluorophore'; item: Fluorophore }> = []
-    for (const sec of compatibleSecondaries) items.push({ type: 'secondary', item: sec })
+    for (const sec of speciesSecondaries) items.push({ type: 'secondary', item: sec })
+    for (const sec of conjugateSecondaries) items.push({ type: 'secondary', item: sec })
     for (const fl of filteredFluorophores) items.push({ type: 'fluorophore', item: fl })
     return items
-  }, [compatibleSecondaries, filteredFluorophores])
+  }, [speciesSecondaries, conjugateSecondaries, filteredFluorophores])
 
   useEffect(() => {
     setHighlightIndex(0)
@@ -142,6 +164,34 @@ export default function SecondaryOmnibox({
 
   const hasSelection = currentSecondaryId || currentFluorophoreName
 
+  // Helper to render a secondary button row
+  const renderSecondaryButton = (sec: SecondaryAntibody) => {
+    const idx = allItems.findIndex((it) => it.type === 'secondary' && it.item.id === sec.id)
+    return (
+      <button
+        key={'sec-' + sec.id}
+        onMouseDown={(e) => {
+          e.preventDefault()
+          onSelectSecondary(sec.id)
+          setOpen(false)
+          setSearch('')
+        }}
+        onMouseEnter={() => setHighlightIndex(idx)}
+        className={
+          'w-full px-3 py-2 text-left text-sm' +
+          (idx === highlightIndex
+            ? ' bg-blue-50 dark:bg-blue-900/30'
+            : ' hover:bg-gray-50 dark:hover:bg-gray-700')
+        }
+      >
+        <span className="font-medium">{sec.name}</span>
+        {sec.fluorophore_name && (
+          <span className="ml-2 text-teal-600 dark:text-teal-400">{sec.fluorophore_name}</span>
+        )}
+      </button>
+    )
+  }
+
   const dropdown =
     open && dropdownPos
       ? createPortal(
@@ -180,37 +230,22 @@ export default function SecondaryOmnibox({
               </button>
             )}
             <div className="max-h-60 overflow-y-auto">
-              {compatibleSecondaries.length > 0 && (
+              {speciesSecondaries.length > 0 && (
                 <>
                   <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
-                    Secondary Antibodies
+                    Anti-{primaryAntibody.host ?? 'Host'} Secondaries
                   </div>
-                  {compatibleSecondaries.map((sec) => {
-                    const idx = allItems.findIndex((it) => it.type === 'secondary' && it.item.id === sec.id)
-                    return (
-                      <button
-                        key={'sec-' + sec.id}
-                        onMouseDown={(e) => {
-                          e.preventDefault()
-                          onSelectSecondary(sec.id)
-                          setOpen(false)
-                          setSearch('')
-                        }}
-                        onMouseEnter={() => setHighlightIndex(idx)}
-                        className={
-                          'w-full px-3 py-2 text-left text-sm' +
-                          (idx === highlightIndex
-                            ? ' bg-blue-50 dark:bg-blue-900/30'
-                            : ' hover:bg-gray-50 dark:hover:bg-gray-700')
-                        }
-                      >
-                        <span className="font-medium">{sec.name}</span>
-                        {sec.fluorophore_name && (
-                          <span className="ml-2 text-teal-600 dark:text-teal-400">{sec.fluorophore_name}</span>
-                        )}
-                      </button>
-                    )
-                  })}
+                  {speciesSecondaries.map((sec) => renderSecondaryButton(sec))}
+                </>
+              )}
+              {conjugateSecondaries.length > 0 && (
+                <>
+                  <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                    {detectionStrategy.type === 'both' || detectionStrategy.type === 'conjugate'
+                      ? detectionStrategy.label
+                      : 'Conjugate Reagents'}
+                  </div>
+                  {conjugateSecondaries.map((sec) => renderSecondaryButton(sec))}
                 </>
               )}
               {filteredFluorophores.length > 0 && (
@@ -248,7 +283,7 @@ export default function SecondaryOmnibox({
                   })}
                 </>
               )}
-              {compatibleSecondaries.length === 0 && filteredFluorophores.length === 0 && (
+              {speciesSecondaries.length === 0 && conjugateSecondaries.length === 0 && filteredFluorophores.length === 0 && (
                 <div className="px-3 py-4 text-center text-sm text-gray-400 dark:text-gray-500">
                   No results found
                 </div>

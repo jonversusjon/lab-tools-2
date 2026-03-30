@@ -159,6 +159,8 @@ export interface SecondaryAntibody {
   host: string
   target_species: string
   target_isotype: string | null
+  binding_mode: 'species' | 'conjugate'
+  target_conjugate: string | null
   fluorophore_id: string | null
   fluorophore_name: string | null
   vendor: string | null
@@ -174,6 +176,8 @@ export interface SecondaryAntibodyCreate {
   host: string
   target_species: string
   target_isotype?: string | null
+  binding_mode?: 'species' | 'conjugate'
+  target_conjugate?: string | null
   fluorophore_id?: string | null
   vendor?: string | null
   catalog_number?: string | null
@@ -384,6 +388,8 @@ export interface SecondaryImportItem {
   host: string
   target_species: string
   target_isotype: string | null
+  binding_mode: string
+  target_conjugate: string | null
   fluorophore_name: string | null
   fluorophore_id: string | null
   vendor: string | null
@@ -404,6 +410,13 @@ export interface SecondaryImportConfirmResponse {
   created: number
   skipped: number
   errors: string[]
+}
+
+export interface ListEntry {
+  id: string
+  list_type: string
+  value: string
+  sort_order: number
 }
 
 export interface FpbaseCatalogItem {

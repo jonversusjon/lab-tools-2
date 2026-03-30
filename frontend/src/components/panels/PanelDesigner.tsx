@@ -17,7 +17,7 @@ import { useSecondaries } from '@/hooks/useSecondaries'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { getLaserColor } from '@/utils/colors'
 import { computeSpilloverMatrix } from '@/utils/spillover'
-import { needsSecondary } from '@/utils/conjugates'
+import { getDetectionStrategy } from '@/utils/conjugates'
 import { rankChannels } from '@/utils/spectra'
 import type { ChannelRanking } from '@/utils/spectra'
 import type { SpilloverInput } from '@/utils/spillover'
@@ -1081,7 +1081,7 @@ export default function PanelDesigner() {
                   const rowAssignment = assignmentByAntibody.get(t.antibody_id)
                   const hasAssignment = !!rowAssignment
                   const isOverridden = overriddenRows.has(t.id)
-                  const rowNeedsSecondary = ab ? needsSecondary(ab) : false
+                  const strategy = ab ? getDetectionStrategy(ab) : null
 
                   return (
                     <tr
@@ -1132,11 +1132,22 @@ export default function PanelDesigner() {
                             &#9998;
                           </button>
                         </td>
-                      ) : rowNeedsSecondary || isOverridden ? (
+                      ) : strategy && strategy.type !== 'direct' ? (
                         <td className="px-3 py-2">
+                          {ab && strategy.type === 'conjugate' && (
+                            <span className="mr-1 text-xs text-amber-600 dark:text-amber-400" title={`Conjugated: ${ab.conjugate}`}>
+                              {ab.conjugate}
+                            </span>
+                          )}
+                          {ab && strategy.type === 'both' && (
+                            <span className="mr-1 text-xs text-amber-600 dark:text-amber-400" title={`Conjugated: ${ab.conjugate} — select detection reagent`}>
+                              {ab.conjugate} ·
+                            </span>
+                          )}
                           {ab && (
                             <SecondaryOmnibox
                               primaryAntibody={ab}
+                              detectionStrategy={strategy}
                               secondaryAntibodies={secondaries}
                               fluorophores={fluorophoreList}
                               currentSecondaryId={t.secondary_antibody_id}
@@ -1146,7 +1157,6 @@ export default function PanelDesigner() {
                               onSelectFluorophore={(flId) => {
                                 const abId = t.antibody_id
                                 if (!abId) return
-                                // Remove existing assignment if fluorophore is changing
                                 const existing = assignmentByAntibody.get(abId)
                                 if (existing && existing.fluorophore_id !== flId) {
                                   dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
@@ -1154,7 +1164,39 @@ export default function PanelDesigner() {
                                     removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id }).catch(() => {})
                                   }
                                 }
-                                // Track the raw fluorophore so the row shows scores
+                                setRawFluorophoreOverrides((prev) => {
+                                  const next = new Map(prev)
+                                  next.set(abId, flId)
+                                  return next
+                                })
+                                setPendingAutoAssign({ antibodyId: abId, fluorophoreId: flId })
+                              }}
+                              onClear={() => handleClearSecondary(t.id)}
+                            />
+                          )}
+                        </td>
+                      ) : isOverridden ? (
+                        <td className="px-3 py-2">
+                          {ab && (
+                            <SecondaryOmnibox
+                              primaryAntibody={ab}
+                              detectionStrategy={strategy ?? { type: 'species' }}
+                              secondaryAntibodies={secondaries}
+                              fluorophores={fluorophoreList}
+                              currentSecondaryId={t.secondary_antibody_id}
+                              currentSecondaryName={t.secondary_antibody_name}
+                              currentFluorophoreName={t.secondary_fluorophore_name ?? (t.antibody_id && rawFluorophoreOverrides.has(t.antibody_id) ? fluorophoreMap.get(rawFluorophoreOverrides.get(t.antibody_id)!) ?? null : null)}
+                              onSelectSecondary={(secId) => handleSetSecondary(t.id, secId)}
+                              onSelectFluorophore={(flId) => {
+                                const abId = t.antibody_id
+                                if (!abId) return
+                                const existing = assignmentByAntibody.get(abId)
+                                if (existing && existing.fluorophore_id !== flId) {
+                                  dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+                                  if (id) {
+                                    removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id }).catch(() => {})
+                                  }
+                                }
                                 setRawFluorophoreOverrides((prev) => {
                                   const next = new Map(prev)
                                   next.set(abId, flId)

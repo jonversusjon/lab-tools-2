@@ -148,6 +148,23 @@ class InstrumentCompatibilityResponse(BaseModel):
     instrument_compatibilities: list[InstrumentCompatibility]
 
 
+class ListEntryCreate(BaseModel):
+    value: str
+
+
+class ListEntryUpdate(BaseModel):
+    value: str
+
+
+class ListEntryRead(BaseModel):
+    id: str
+    list_type: str
+    value: str
+    sort_order: int
+
+    model_config = {"from_attributes": True}
+
+
 class PreferenceBase(BaseModel):
     value: str
 
@@ -411,6 +428,8 @@ class SecondaryAntibodyCreate(BaseModel):
     host: str
     target_species: str
     target_isotype: str | None = None
+    binding_mode: str = "species"
+    target_conjugate: str | None = None
     fluorophore_id: str | None = None
     vendor: str | None = None
     catalog_number: str | None = None
@@ -427,6 +446,8 @@ class SecondaryImportItem(BaseModel):
     host: str
     target_species: str
     target_isotype: str | None = None
+    binding_mode: str = "species"
+    target_conjugate: str | None = None
     fluorophore_name: str | None = None
     fluorophore_id: str | None = None
     vendor: str | None = None
@@ -459,6 +480,8 @@ class SecondaryAntibodyResponse(BaseModel):
     host: str
     target_species: str
     target_isotype: str | None
+    binding_mode: str
+    target_conjugate: str | None
     fluorophore_id: str | None
     fluorophore_name: str | None = None
     vendor: str | None

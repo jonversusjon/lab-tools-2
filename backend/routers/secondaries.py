@@ -35,6 +35,8 @@ def _to_response(sa: SecondaryAntibody) -> dict:
         "host": sa.host,
         "target_species": sa.target_species,
         "target_isotype": sa.target_isotype,
+        "binding_mode": sa.binding_mode or "species",
+        "target_conjugate": sa.target_conjugate,
         "fluorophore_id": sa.fluorophore_id,
         "fluorophore_name": sa.fluorophore.name if sa.fluorophore else None,
         "vendor": sa.vendor,
@@ -85,6 +87,15 @@ def create_secondary_antibody(
     data: SecondaryAntibodyCreate,
     db: Session = Depends(get_db),
 ):
+    if data.binding_mode not in ("species", "conjugate"):
+        raise HTTPException(status_code=400, detail="binding_mode must be 'species' or 'conjugate'")
+    if data.binding_mode == "conjugate":
+        if not data.target_conjugate or not data.target_conjugate.strip():
+            raise HTTPException(status_code=400, detail="target_conjugate is required when binding_mode is 'conjugate'")
+        data.target_conjugate = data.target_conjugate.strip().lower()
+    if data.binding_mode == "species" and not data.target_species.strip():
+        raise HTTPException(status_code=400, detail="target_species is required when binding_mode is 'species'")
+
     if data.fluorophore_id is not None:
         fl = db.get(Fluorophore, data.fluorophore_id)
         if fl is None:
@@ -190,6 +201,8 @@ async def import_csv(
             "host": host,
             "target_species": target_species,
             "target_isotype": mapped.get("target_isotype"),
+            "binding_mode": "conjugate" if name.lower().find("streptavidin") >= 0 else "species",
+            "target_conjugate": "biotin" if name.lower().find("streptavidin") >= 0 else None,
             "fluorophore_name": fluorophore_name,
             "fluorophore_id": fluorophore_id,
             "vendor": mapped.get("vendor"),
@@ -240,6 +253,8 @@ def import_confirm(
                 host=item.host,
                 target_species=item.target_species,
                 target_isotype=item.target_isotype,
+                binding_mode=item.binding_mode or "species",
+                target_conjugate=item.target_conjugate.strip().lower() if item.target_conjugate else None,
                 fluorophore_id=item.fluorophore_id,
                 vendor=item.vendor,
                 catalog_number=item.catalog_number,
@@ -275,6 +290,13 @@ def update_secondary_antibody(
     sa = db.get(SecondaryAntibody, id)
     if sa is None:
         raise HTTPException(status_code=404, detail="Secondary antibody not found")
+
+    if data.binding_mode not in ("species", "conjugate"):
+        raise HTTPException(status_code=400, detail="binding_mode must be 'species' or 'conjugate'")
+    if data.binding_mode == "conjugate":
+        if not data.target_conjugate or not data.target_conjugate.strip():
+            raise HTTPException(status_code=400, detail="target_conjugate is required when binding_mode is 'conjugate'")
+        data.target_conjugate = data.target_conjugate.strip().lower()
 
     if data.fluorophore_id is not None:
         fl = db.get(Fluorophore, data.fluorophore_id)

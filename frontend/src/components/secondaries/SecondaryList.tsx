@@ -10,10 +10,9 @@ import {
 import { useFluorophores } from '@/hooks/useFluorophores'
 import Modal from '@/components/layout/Modal'
 import HoverActionsRow from '@/components/layout/HoverActionsRow'
+import ListEditor from '@/components/shared/ListEditor'
 import type { SecondaryAntibody, SecondaryAntibodyCreate, SecondaryImportItem, Fluorophore } from '@/types'
 
-const COMMON_HOSTS = ['Goat', 'Donkey', 'Chicken', 'Rabbit', 'Rat', 'Mouse']
-const COMMON_TARGETS = ['Mouse', 'Rabbit', 'Rat', 'Human', 'Goat', 'Armenian Hamster', 'Syrian Hamster']
 const COMMON_ISOTYPES = ['IgG', 'IgG1', 'IgG2a', 'IgG2b', 'IgG2c', 'IgG3', 'IgM', 'IgA']
 
 interface FormState {
@@ -21,6 +20,8 @@ interface FormState {
   host: string
   target_species: string
   target_isotype: string
+  binding_mode: 'species' | 'conjugate'
+  target_conjugate: string
   fluorophore_id: string | null
   fluorophore_name: string
   vendor: string
@@ -34,6 +35,8 @@ const emptyForm: FormState = {
   host: '',
   target_species: '',
   target_isotype: '',
+  binding_mode: 'species',
+  target_conjugate: '',
   fluorophore_id: null,
   fluorophore_name: '',
   vendor: '',
@@ -48,6 +51,10 @@ function formToCreate(form: FormState): SecondaryAntibodyCreate {
     host: form.host.trim(),
     target_species: form.target_species.trim(),
     target_isotype: form.target_isotype.trim() || null,
+    binding_mode: form.binding_mode,
+    target_conjugate: form.binding_mode === 'conjugate'
+      ? form.target_conjugate.trim().toLowerCase() || null
+      : null,
     fluorophore_id: form.fluorophore_id,
     vendor: form.vendor.trim() || null,
     catalog_number: form.catalog_number.trim() || null,
@@ -178,6 +185,8 @@ export default function SecondaryList() {
       host: sa.host,
       target_species: sa.target_species,
       target_isotype: sa.target_isotype ?? '',
+      binding_mode: sa.binding_mode ?? 'species',
+      target_conjugate: sa.target_conjugate ?? '',
       fluorophore_id: sa.fluorophore_id,
       fluorophore_name: sa.fluorophore_name ?? '',
       vendor: sa.vendor ?? '',
@@ -189,7 +198,12 @@ export default function SecondaryList() {
   }
 
   const handleSubmit = () => {
-    if (!form.name.trim() || !form.host.trim() || !form.target_species.trim()) return
+    const canSubmit = form.name.trim() && form.host.trim() && (
+      form.binding_mode === 'species'
+        ? form.target_species.trim()
+        : form.target_conjugate.trim()
+    )
+    if (!canSubmit) return
     const payload = formToCreate(form)
     if (editingId) {
       updateMutation.mutate(
@@ -312,7 +326,15 @@ export default function SecondaryList() {
               >
                 <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{sa.name}</td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">{sa.host}</td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{sa.target_species}</td>
+              <td className="py-2 text-gray-600 dark:text-gray-400">
+                  {sa.binding_mode === 'conjugate' ? (
+                    <span className="text-amber-600 dark:text-amber-400" title="Targets conjugate">
+                      {sa.target_conjugate ?? '?'}
+                    </span>
+                  ) : (
+                    sa.target_species
+                  )}
+                </td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">{sa.target_isotype ?? '—'}</td>
                 <td className="py-2">
                   {sa.fluorophore_name ? (
@@ -348,70 +370,137 @@ export default function SecondaryList() {
               autoFocus
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Host <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                list="host-list"
-                value={form.host}
-                onChange={(e) => setField('host', e.target.value)}
-                className={inputClass}
-                placeholder="e.g. Goat"
-              />
-              <datalist id="host-list">
-                {COMMON_HOSTS.map((h) => <option key={h} value={h} />)}
-              </datalist>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Binding Mode <span className="text-red-500">*</span>
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setField('binding_mode', 'species')}
+                className={`rounded border px-3 py-1.5 text-sm ${
+                  form.binding_mode === 'species'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                Anti-Species
+              </button>
+              <button
+                type="button"
+                onClick={() => setField('binding_mode', 'conjugate')}
+                className={`rounded border px-3 py-1.5 text-sm ${
+                  form.binding_mode === 'conjugate'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                Conjugate Reagent
+              </button>
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Target Species <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                list="target-species-list"
-                value={form.target_species}
-                onChange={(e) => setField('target_species', e.target.value)}
-                className={inputClass}
-                placeholder="e.g. Mouse"
-              />
-              <datalist id="target-species-list">
-                {COMMON_TARGETS.map((t) => <option key={t} value={t} />)}
-              </datalist>
-            </div>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {form.binding_mode === 'species'
+                ? 'Traditional secondary \u2014 targets host species/isotype of the primary.'
+                : 'Conjugate reagent (e.g. Streptavidin) \u2014 targets a non-fluorescent conjugate on the primary.'}
+            </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Target Isotype
-              </label>
-              <input
-                type="text"
-                list="isotype-list"
-                value={form.target_isotype}
-                onChange={(e) => setField('target_isotype', e.target.value)}
-                className={inputClass}
-                placeholder="e.g. IgG"
-              />
-              <datalist id="isotype-list">
-                {COMMON_ISOTYPES.map((i) => <option key={i} value={i} />)}
-              </datalist>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Vendor
-              </label>
-              <input
-                type="text"
-                value={form.vendor}
-                onChange={(e) => setField('vendor', e.target.value)}
-                className={inputClass}
-                placeholder="e.g. Thermo Fisher"
-              />
-            </div>
-          </div>
+          {form.binding_mode === 'species' && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <ListEditor
+                  listType="host"
+                  label="Host"
+                  value={form.host}
+                  onChange={(v) => setField('host', v)}
+                  placeholder="e.g. Goat"
+                  required
+                />
+                <ListEditor
+                  listType="target_species"
+                  label="Target Species"
+                  value={form.target_species}
+                  onChange={(v) => setField('target_species', v)}
+                  placeholder="e.g. Mouse"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Target Isotype
+                  </label>
+                  <input
+                    type="text"
+                    list="isotype-list"
+                    value={form.target_isotype}
+                    onChange={(e) => setField('target_isotype', e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. IgG"
+                  />
+                  <datalist id="isotype-list">
+                    {COMMON_ISOTYPES.map((i) => <option key={i} value={i} />)}
+                  </datalist>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Vendor
+                  </label>
+                  <input
+                    type="text"
+                    value={form.vendor}
+                    onChange={(e) => setField('vendor', e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. Thermo Fisher"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          {form.binding_mode === 'conjugate' && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <ListEditor
+                  listType="host"
+                  label="Host"
+                  value={form.host}
+                  onChange={(v) => setField('host', v)}
+                  placeholder="e.g. N/A"
+                  required
+                />
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Target Conjugate <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    list="target-conjugate-list"
+                    value={form.target_conjugate}
+                    onChange={(e) => setField('target_conjugate', e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. biotin, digoxigenin"
+                  />
+                  <datalist id="target-conjugate-list">
+                    <option value="biotin" />
+                    <option value="digoxigenin" />
+                  </datalist>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Vendor
+                  </label>
+                  <input
+                    type="text"
+                    value={form.vendor}
+                    onChange={(e) => setField('vendor', e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. Thermo Fisher"
+                  />
+                </div>
+              </div>
+            </>
+          )}
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Fluorophore
@@ -475,7 +564,11 @@ export default function SecondaryList() {
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!form.name.trim() || !form.host.trim() || !form.target_species.trim()}
+              disabled={!(form.name.trim() && form.host.trim() && (
+                form.binding_mode === 'species'
+                  ? form.target_species.trim()
+                  : form.target_conjugate.trim()
+              ))}
               className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {editingId ? 'Save' : 'Create'}

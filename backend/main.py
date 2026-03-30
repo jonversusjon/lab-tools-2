@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
+from sqlalchemy import text
 
 from database import Base
 from database import SessionLocal
@@ -19,6 +20,7 @@ from models import Instrument
 from routers import antibodies
 from routers import fluorophores
 from routers import instruments
+from routers import list_entries
 from routers import panels
 from routers import preferences
 from routers import secondaries
@@ -178,6 +180,48 @@ def seed_non_fluorescent_conjugates() -> None:
         session.close()
 
 
+DEFAULT_HOSTS = [
+    "Goat", "Donkey", "Chicken", "Rabbit", "Rat", "Mouse", "N/A",
+]
+
+DEFAULT_TARGET_SPECIES = [
+    "Mouse", "Rabbit", "Rat", "Human", "Goat",
+    "Armenian Hamster", "Syrian Hamster", "Biotin",
+]
+
+
+def seed_list_entries_if_needed() -> None:
+    """Seed default host and target_species list entries if none exist."""
+    from models import ListEntry
+
+    session = SessionLocal()
+    try:
+        has_hosts = session.scalar(
+            select(ListEntry.id).where(ListEntry.list_type == "host").limit(1)
+        )
+        if has_hosts is None:
+            logger.info("Seeding default host list entries...")
+            for i, value in enumerate(DEFAULT_HOSTS):
+                session.add(ListEntry(list_type="host", value=value, sort_order=i))
+            session.commit()
+            logger.info("Seeded %d host entries.", len(DEFAULT_HOSTS))
+
+        has_targets = session.scalar(
+            select(ListEntry.id).where(ListEntry.list_type == "target_species").limit(1)
+        )
+        if has_targets is None:
+            logger.info("Seeding default target species list entries...")
+            for i, value in enumerate(DEFAULT_TARGET_SPECIES):
+                session.add(ListEntry(list_type="target_species", value=value, sort_order=i))
+            session.commit()
+            logger.info("Seeded %d target species entries.", len(DEFAULT_TARGET_SPECIES))
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to seed list entries.")
+    finally:
+        session.close()
+
+
 def migrate_dilution_factors() -> None:
     """One-time migration: parse existing free-text dilution fields into integer factors."""
     from services.dilutions import parse_dilution
@@ -217,13 +261,47 @@ def migrate_dilution_factors() -> None:
         session.close()
 
 
+def migrate_secondary_binding_mode() -> None:
+    """One-time migration: add binding_mode and target_conjugate columns to secondary_antibodies."""
+    session = SessionLocal()
+    try:
+        conn = session.connection()
+        # Check if columns already exist
+        result = conn.execute(
+            text("PRAGMA table_info(secondary_antibodies)")
+        )
+        existing_cols = {row[1] for row in result.fetchall()}
+        if "binding_mode" not in existing_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE secondary_antibodies ADD COLUMN binding_mode VARCHAR(20) NOT NULL DEFAULT 'species'"
+                )
+            )
+            logger.info("Added binding_mode column to secondary_antibodies.")
+        if "target_conjugate" not in existing_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE secondary_antibodies ADD COLUMN target_conjugate VARCHAR DEFAULT NULL"
+                )
+            )
+            logger.info("Added target_conjugate column to secondary_antibodies.")
+        session.commit()
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to migrate secondary_antibodies binding_mode.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    migrate_secondary_binding_mode()
     load_seed_data()
     seed_fluorophores_if_needed()
     seed_non_fluorescent_conjugates()
     seed_tags_if_needed()
+    seed_list_entries_if_needed()
     migrate_dilution_factors()
     yield
 
@@ -245,3 +323,4 @@ app.include_router(panels.router, prefix="/api/v1/panels", tags=["panels"])
 app.include_router(secondaries.router, prefix="/api/v1/secondary-antibodies", tags=["secondary-antibodies"])
 app.include_router(tags.router, prefix="/api/v1/tags", tags=["tags"])
 app.include_router(preferences.router, prefix="/api/v1/preferences", tags=["preferences"])
+app.include_router(list_entries.router, prefix="/api/v1/list-entries", tags=["list-entries"])

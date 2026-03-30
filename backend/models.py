@@ -177,6 +177,8 @@ class SecondaryAntibody(Base):
     host = Column(String, nullable=False)
     target_species = Column(String, nullable=False)
     target_isotype = Column(String, nullable=True)
+    binding_mode = Column(String(20), nullable=False, default="species")
+    target_conjugate = Column(String, nullable=True)
     fluorophore_id = Column(
         String(100),
         ForeignKey("fluorophores.id", ondelete="SET NULL"),
@@ -289,3 +291,16 @@ class UserPreference(Base):
 
     key = Column(String, primary_key=True)
     value = Column(String, nullable=False)
+
+
+class ListEntry(Base):
+    __tablename__ = "list_entries"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    list_type = Column(String, nullable=False)  # "host" or "target_species"
+    value = Column(String, nullable=False)
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        UniqueConstraint("list_type", "value", name="uq_list_entry"),
+    )
