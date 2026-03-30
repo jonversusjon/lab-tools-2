@@ -165,6 +165,25 @@ class ListEntryRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ConjugateChemistryCreate(BaseModel):
+    name: str
+    label: str
+
+
+class ConjugateChemistryUpdate(BaseModel):
+    name: str | None = None
+    label: str | None = None
+
+
+class ConjugateChemistryRead(BaseModel):
+    id: str
+    name: str
+    label: str
+    sort_order: int
+
+    model_config = {"from_attributes": True}
+
+
 class PreferenceBase(BaseModel):
     value: str
 

@@ -11,6 +11,7 @@ import { useFluorophores } from '@/hooks/useFluorophores'
 import Modal from '@/components/layout/Modal'
 import HoverActionsRow from '@/components/layout/HoverActionsRow'
 import ListEditor from '@/components/shared/ListEditor'
+import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import type { SecondaryAntibody, SecondaryAntibodyCreate, SecondaryImportItem, Fluorophore } from '@/types'
 
 const COMMON_ISOTYPES = ['IgG', 'IgG1', 'IgG2a', 'IgG2b', 'IgG2c', 'IgG3', 'IgM', 'IgA']
@@ -160,6 +161,7 @@ export default function SecondaryList() {
 
   const fluorophores = fluorophoreData?.items ?? []
   const items = data?.items ?? []
+  const { data: conjugateChemistries = [] } = useConjugateChemistries()
 
   // Create/Edit modal
   const [showModal, setShowModal] = useState(false)
@@ -480,8 +482,7 @@ export default function SecondaryList() {
                     placeholder="e.g. biotin, digoxigenin"
                   />
                   <datalist id="target-conjugate-list">
-                    <option value="biotin" />
-                    <option value="digoxigenin" />
+                    {conjugateChemistries.map((c) => <option key={c.id} value={c.name} />)}
                   </datalist>
                 </div>
               </div>

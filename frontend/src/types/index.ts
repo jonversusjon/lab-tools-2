@@ -419,6 +419,13 @@ export interface ListEntry {
   sort_order: number
 }
 
+export interface ConjugateChemistry {
+  id: string
+  name: string
+  label: string
+  sort_order: number
+}
+
 export interface FpbaseCatalogItem {
   name: string
   id: string

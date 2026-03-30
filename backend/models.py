@@ -304,3 +304,12 @@ class ListEntry(Base):
     __table_args__ = (
         UniqueConstraint("list_type", "value", name="uq_list_entry"),
     )
+
+
+class ConjugateChemistry(Base):
+    __tablename__ = "conjugate_chemistries"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False, unique=True)  # Lowercase key, e.g. "biotin"
+    label = Column(String, nullable=False)  # Display label for binding partner, e.g. "Streptavidin / Anti-Biotin"
+    sort_order = Column(Integer, nullable=False, default=0)

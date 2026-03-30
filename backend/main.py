@@ -18,6 +18,7 @@ from models import AntibodyTag
 from models import Fluorophore
 from models import Instrument
 from routers import antibodies
+from routers import conjugate_chemistries
 from routers import fluorophores
 from routers import instruments
 from routers import list_entries
@@ -293,6 +294,44 @@ def migrate_secondary_binding_mode() -> None:
         session.close()
 
 
+DEFAULT_CONJUGATE_CHEMISTRIES = [
+    {"name": "biotin", "label": "Streptavidin / Anti-Biotin"},
+    {"name": "dig", "label": "Anti-DIG"},
+    {"name": "digoxigenin", "label": "Anti-DIG"},
+    {"name": "hrp", "label": "Anti-HRP"},
+    {"name": "ap", "label": "Anti-AP"},
+    {"name": "alkaline phosphatase", "label": "Anti-Alkaline Phosphatase"},
+    {"name": "gold", "label": "Anti-Gold"},
+    {"name": "agarose", "label": "Anti-Agarose"},
+]
+
+
+def seed_conjugate_chemistries_if_needed() -> None:
+    """Seed default conjugate chemistries if none exist."""
+    from models import ConjugateChemistry
+
+    session = SessionLocal()
+    try:
+        count = session.scalar(select(ConjugateChemistry.id).limit(1))
+        if count is not None:
+            return
+
+        logger.info("Seeding default conjugate chemistries...")
+        for i, entry in enumerate(DEFAULT_CONJUGATE_CHEMISTRIES):
+            session.add(ConjugateChemistry(
+                name=entry["name"],
+                label=entry["label"],
+                sort_order=i,
+            ))
+        session.commit()
+        logger.info("Seeded %d conjugate chemistries.", len(DEFAULT_CONJUGATE_CHEMISTRIES))
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to seed conjugate chemistries.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -302,6 +341,7 @@ async def lifespan(app: FastAPI):
     seed_non_fluorescent_conjugates()
     seed_tags_if_needed()
     seed_list_entries_if_needed()
+    seed_conjugate_chemistries_if_needed()
     migrate_dilution_factors()
     yield
 
@@ -324,3 +364,4 @@ app.include_router(secondaries.router, prefix="/api/v1/secondary-antibodies", ta
 app.include_router(tags.router, prefix="/api/v1/tags", tags=["tags"])
 app.include_router(preferences.router, prefix="/api/v1/preferences", tags=["preferences"])
 app.include_router(list_entries.router, prefix="/api/v1/list-entries", tags=["list-entries"])
+app.include_router(conjugate_chemistries.router, prefix="/api/v1/conjugate-chemistries", tags=["conjugate-chemistries"])

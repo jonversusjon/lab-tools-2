@@ -17,7 +17,8 @@ import { useSecondaries } from '@/hooks/useSecondaries'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { getLaserColor } from '@/utils/colors'
 import { computeSpilloverMatrix } from '@/utils/spillover'
-import { getDetectionStrategy } from '@/utils/conjugates'
+import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
+import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import { rankChannels } from '@/utils/spectra'
 import type { ChannelRanking } from '@/utils/spectra'
 import type { SpilloverInput } from '@/utils/spillover'
@@ -38,6 +39,7 @@ export default function PanelDesigner() {
   const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000, has_spectra: true })
   const { data: allFluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const { data: secondariesData } = useSecondaries()
+  const { data: conjugateChemistries = [] } = useConjugateChemistries()
 
   const updateMutation = useUpdatePanel()
   const createPanelMutation = useCreatePanel()
@@ -139,6 +141,10 @@ export default function PanelDesigner() {
   const fluorophoreList = fluorophoreData?.items ?? []
   const allFluorophores = allFluorophoreData?.items ?? []
   const secondaries = secondariesData?.items ?? []
+
+  // Build dynamic conjugate sets from API data
+  const conjugateSet = useMemo(() => buildConjugateSet(conjugateChemistries), [conjugateChemistries])
+  const bindingPartners = useMemo(() => buildBindingPartners(conjugateChemistries), [conjugateChemistries])
 
   // Batch-fetch spectra: include has_spectra fluorophores PLUS any assigned fluorophores
   const fluorophoreIdsToFetch = useMemo(() => {
@@ -1081,7 +1087,7 @@ export default function PanelDesigner() {
                   const rowAssignment = assignmentByAntibody.get(t.antibody_id)
                   const hasAssignment = !!rowAssignment
                   const isOverridden = overriddenRows.has(t.id)
-                  const strategy = ab ? getDetectionStrategy(ab) : null
+                  const strategy = ab ? getDetectionStrategy(ab, conjugateSet, bindingPartners) : null
 
                   return (
                     <tr
