@@ -14,7 +14,13 @@ import { Line } from 'react-chartjs-2'
 import { excitationEfficiency, downsampleSpectra } from '@/utils/spectra'
 import { getLaserColor } from '@/utils/colors'
 import { useTheme } from '@/components/layout/ThemeContext'
-import type { Instrument, PanelAssignment, FluorophoreWithSpectra } from '@/types'
+import type { Instrument, FluorophoreWithSpectra } from '@/types'
+
+export interface ActiveTarget {
+  id: string
+  fluorophore_id: string
+  detector_id: string | null
+}
 
 ChartJS.register(
   CategoryScale,
@@ -36,15 +42,16 @@ const PALETTE = [
 
 interface PanelSpectraByLaserProps {
   instrument: Instrument
-  assignments: PanelAssignment[]
-  fluorophoresWithSpectra?: FluorophoreWithSpectra[]
+  activeTargets: ActiveTarget[]
   allFluorophoresForScoring: FluorophoreWithSpectra[]
+  activeDetectors: Set<string>
 }
 
 export default function PanelSpectraByLaser({
   instrument,
-  assignments,
+  activeTargets,
   allFluorophoresForScoring,
+  activeDetectors,
 }: PanelSpectraByLaserProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -52,12 +59,12 @@ export default function PanelSpectraByLaser({
   // Build consistent color map per fluorophore across all laser plots
   const fluorophoreColorMap = useMemo(() => {
     const map = new Map<string, string>()
-    const assignedFlIds = [...new Set(assignments.map((a) => a.fluorophore_id))]
+    const assignedFlIds = [...new Set(activeTargets.map((a) => a.fluorophore_id))]
     assignedFlIds.forEach((flId, i) => {
       map.set(flId, PALETTE[i % PALETTE.length])
     })
     return map
-  }, [assignments])
+  }, [activeTargets])
 
   // Build detector → laser mapping for determining on-target vs spillover
   const detectorToLaser = useMemo(() => {
@@ -87,10 +94,10 @@ export default function PanelSpectraByLaser({
     })
   }
 
-  if (assignments.length === 0) {
+  if (activeTargets.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
-        Assign fluorophores to detectors to see per-laser spectra
+        Assign fluorophores to targets to see per-laser spectra
       </p>
     )
   }
@@ -102,13 +109,13 @@ export default function PanelSpectraByLaser({
         const isCollapsed = collapsedLasers.has(laser.id)
 
         // Find assigned fluorophores excited by this laser (>= 5% efficiency)
-        const excitedFluorophores = assignments
+        const excitedFluorophores = activeTargets
           .map((a) => {
             const fl = allFluorophoresForScoring.find((f) => f.id === a.fluorophore_id)
             if (!fl) return null
             const excEff = excitationEfficiency(fl, laser.wavelength_nm)
             if (excEff < 0.05) return null
-            return { fl, assignment: a, excEff }
+            return { fl, target: a, excEff }
           })
           .filter((x): x is NonNullable<typeof x> => x !== null)
 
@@ -148,6 +155,7 @@ export default function PanelSpectraByLaser({
                     detectorToLaser={detectorToLaser}
                     fluorophoreColorMap={fluorophoreColorMap}
                     isDark={isDark}
+                    activeDetectors={activeDetectors}
                   />
                 )}
               </div>
@@ -164,12 +172,13 @@ interface LaserSpectraChartProps {
   laserColor: string
   excitedFluorophores: Array<{
     fl: FluorophoreWithSpectra
-    assignment: PanelAssignment
+    target: ActiveTarget
     excEff: number
   }>
   detectorToLaser: Map<string, string>
   fluorophoreColorMap: Map<string, string>
   isDark: boolean
+  activeDetectors: Set<string>
 }
 
 function LaserSpectraChart({
@@ -179,6 +188,7 @@ function LaserSpectraChart({
   detectorToLaser,
   fluorophoreColorMap,
   isDark,
+  activeDetectors,
 }: LaserSpectraChartProps) {
   const tickColor = isDark ? '#9CA3AF' : '#374151'
   const gridColor = isDark ? '#374151' : '#E5E7EB'
@@ -197,14 +207,21 @@ function LaserSpectraChart({
     pointRadius: number
   }> = []
 
-  for (const { fl, assignment, excEff } of excitedFluorophores) {
+  for (const { fl, target, excEff } of excitedFluorophores) {
     const em = fl.spectra?.EM
     if (!em || em.length === 0) continue
 
     const color = fluorophoreColorMap.get(fl.id) ?? '#888888'
     // Is this fluorophore assigned to a detector on THIS laser?
-    const assignedLaserId = detectorToLaser.get(assignment.detector_id)
+    const assignedLaserId = target.detector_id ? detectorToLaser.get(target.detector_id) : null
     const isOnTarget = assignedLaserId === laser.id
+
+    let label = fl.name
+    if (!target.detector_id) {
+      label += ' (unassigned)'
+    } else if (!isOnTarget) {
+      label += ' (spillover)'
+    }
 
     const downsampled = downsampleSpectra(em, 2)
     const scaledData = downsampled.map(([wl, intensity]) => ({
@@ -213,7 +230,7 @@ function LaserSpectraChart({
     }))
 
     datasets.push({
-      label: fl.name + (isOnTarget ? '' : ' (spillover)'),
+      label,
       data: scaledData,
       borderColor: color,
       backgroundColor: color + (isOnTarget ? '30' : '12'),
@@ -228,6 +245,7 @@ function LaserSpectraChart({
   // Build detector bandpass annotations
   const annotations: Record<string, object> = {}
   for (const det of laser.detectors) {
+    if (!activeDetectors.has(det.id)) continue
     const low = det.filter_midpoint - det.filter_width / 2
     const high = det.filter_midpoint + det.filter_width / 2
     annotations['det-' + det.id] = {

@@ -90,6 +90,8 @@ vi.mock('@/hooks/useFluorophores', () => ({
     error: null,
   }),
   useBatchSpectra: () => ({ data: null }),
+  useToggleFluorophoreFavorite: () => ({ mutate: vi.fn() }),
+  useRecentFluorophores: () => ({ data: [] }),
 }))
 
 vi.mock('@/hooks/useSecondaries', () => ({
@@ -131,9 +133,9 @@ describe('Panel Target Persistence', () => {
       created_at: null,
       updated_at: null,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
-        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1 },
-        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', sort_order: 2 },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', sort_order: 2, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [],
     }
@@ -154,8 +156,8 @@ describe('Panel Target Persistence', () => {
       created_at: null,
       updated_at: null,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
-        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1 },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [],
     }
@@ -180,7 +182,7 @@ describe('Panel Target Persistence', () => {
       created_at: null,
       updated_at: null,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [
         { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-1', detector_id: 'd1', notes: null },
@@ -204,7 +206,7 @@ describe('Panel Target Persistence', () => {
       created_at: null,
       updated_at: null,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [],
     }

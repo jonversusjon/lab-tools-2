@@ -294,7 +294,7 @@ export default function PanelDesigner() {
       for (const target of state.targets) {
         await addTargetMutation.mutateAsync({
           panelId: newPanel.id,
-          antibodyId: target.antibody_id,
+          antibodyId: target.antibody_id ?? undefined,
         })
       }
       setInstrumentChangeModal(null)
@@ -440,11 +440,11 @@ export default function PanelDesigner() {
     }
   }
 
-  const handleRemoveTarget = async (targetId: string, antibodyId: string) => {
+  const handleRemoveTarget = async (targetId: string, antibodyId: string | null) => {
     if (!id) return
     try {
       await removeTargetMutation.mutateAsync({ panelId: id, targetId })
-      removeTarget(targetId, antibodyId)
+      removeTarget(targetId, antibodyId ?? '')
     } catch {
       // Target may have already been removed
     }
@@ -898,6 +898,49 @@ export default function PanelDesigner() {
     return { spillover: computeSpilloverMatrix(inputs), missingSpectraWarnings: warnings }
   }, [state.assignments, allFluorophoresForScoring, fluorophoresWithSpectra, detectorMap, spectraCache])
 
+  // activeTargets: all targets that have a known fluorophore
+  const activeTargets = useMemo(() => {
+    const list: { id: string, fluorophore_id: string, detector_id: string | null }[] = []
+    for (const t of state.targets) {
+      if (!t.antibody_id) continue
+      const flId = rowFluorophoreMap.get(t.antibody_id)
+      if (flId) {
+        const assignment = assignmentByAntibody.get(t.antibody_id)
+        list.push({
+          id: t.antibody_id,
+          fluorophore_id: flId,
+          detector_id: assignment?.detector_id ?? null
+        })
+      }
+    }
+    return list
+  }, [state.targets, rowFluorophoreMap, assignmentByAntibody])
+
+  const activeDetectors = useMemo(() => {
+    const assignedIds = new Set(Array.from(assignmentByDetector.keys()))
+    
+    // Check if there are any unassigned targets with known fluorophores
+    const unassignedTargets = activeTargets.filter((t) => !t.detector_id)
+    
+    if (unassignedTargets.length === 0) {
+      // all targets are assigned a specific detector -> only show detectors with at least one target assigned
+      return assignedIds
+    }
+    
+    // some targets are unassigned -> all detectors that show up as options (score >= 0.01 and not occupied)
+    const active = new Set(assignedIds)
+    for (const t of unassignedTargets) {
+      const rankings = rowChannelScores.get(t.id)
+      if (!rankings) continue
+      for (const r of rankings) {
+        if (r.score >= 0.01 && !assignedIds.has(r.detectorId)) {
+          active.add(r.detectorId)
+        }
+      }
+    }
+    return active
+  }, [activeTargets, assignmentByDetector, rowChannelScores])
+
   const [spectraCollapsed, setSpectraCollapsed] = useState(false)
 
   if (!panel) return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
@@ -1083,8 +1126,8 @@ export default function PanelDesigner() {
                 </tr>
               ) : (
                 state.targets.map((t) => {
-                  const ab = antibodyMap.get(t.antibody_id)
-                  const rowAssignment = assignmentByAntibody.get(t.antibody_id)
+                  const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
+                  const rowAssignment = t.antibody_id ? assignmentByAntibody.get(t.antibody_id) : undefined
                   const hasAssignment = !!rowAssignment
                   const isOverridden = overriddenRows.has(t.id)
                   const strategy = ab ? getDetectionStrategy(ab, conjugateSet, bindingPartners) : null
@@ -1237,7 +1280,7 @@ export default function PanelDesigner() {
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="assigned"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.antibody_id, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
                                 }
                               >
                                 {flName}
@@ -1308,7 +1351,7 @@ export default function PanelDesigner() {
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="incompatible"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.antibody_id, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
                                 }
                               >
                                 &mdash;
@@ -1327,7 +1370,7 @@ export default function PanelDesigner() {
                               data-state="compatible"
                               title={'Score: ' + Math.round(score * 100) + '% (Ex: ' + Math.round((ranking?.excitationEff ?? 0) * 100) + '%, Det: ' + Math.round((ranking?.detectionEff ?? 0) * 100) + '%)'}
                               onClick={(e) =>
-                                handleCellClick(e, t.antibody_id, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                handleCellClick(e, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
                               }
                             >
                               {Math.round(score * 100)}%
@@ -1439,16 +1482,16 @@ export default function PanelDesigner() {
             <span>{spectraCollapsed ? '\u25B6' : '\u25BC'}</span>
             Panel Spectra
             <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
-              ({state.assignments.length} assignment{state.assignments.length !== 1 ? 's' : ''})
+              ({activeTargets.length} fluorophore{activeTargets.length !== 1 ? 's' : ''})
             </span>
           </button>
           {!spectraCollapsed && (
             <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-4">
               <PanelSpectraByLaser
                 instrument={state.instrument}
-                assignments={state.assignments}
-                fluorophoresWithSpectra={fluorophoresWithSpectra}
+                activeTargets={activeTargets}
                 allFluorophoresForScoring={allFluorophoresForScoring}
+                activeDetectors={activeDetectors}
               />
             </div>
           )}

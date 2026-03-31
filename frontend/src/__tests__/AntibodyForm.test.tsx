@@ -14,8 +14,8 @@ import AntibodyForm from '@/components/antibodies/AntibodyForm'
 import type { Antibody, Fluorophore } from '@/types'
 
 const fluorophores: Fluorophore[] = [
-  { id: 'fl-1', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
-  { id: 'fl-2', name: 'PE', ex_max_nm: 565, em_max_nm: 578, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true },
+  { id: 'fl-1', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true, is_favorite: false },
+  { id: 'fl-2', name: 'PE', ex_max_nm: 565, em_max_nm: 578, source: 'FPbase', fluor_type: 'dye', ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: true, is_favorite: false },
 ]
 
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -39,7 +39,7 @@ describe('AntibodyForm', () => {
   })
 
   it('renders pre-populated form for editing', () => {
-    const ab: Antibody = {
+    const ab = {
       id: 'ab-1',
       target: 'CD3',
       clone: 'OKT3',
@@ -49,7 +49,7 @@ describe('AntibodyForm', () => {
       fluorophore_name: 'FITC',
       vendor: 'BioLegend',
       catalog_number: '300401',
-    }
+    } as Antibody
     render(
       <AntibodyForm antibody={ab} fluorophores={fluorophores} onClose={vi.fn()} />,
       { wrapper }
@@ -57,9 +57,8 @@ describe('AntibodyForm', () => {
     expect(screen.getByText('Edit Antibody')).toBeInTheDocument()
     expect(screen.getByDisplayValue('CD3')).toBeInTheDocument()
     expect(screen.getByDisplayValue('OKT3')).toBeInTheDocument()
-    // Fluorophore dropdown should have FITC selected
-    const select = screen.getByDisplayValue('FITC')
-    expect(select).toBeInTheDocument()
+    // Fluorophore chip should show FITC selected
+    expect(screen.getByText('FITC')).toBeInTheDocument()
   })
 
   it('submit with empty target shows validation error', () => {

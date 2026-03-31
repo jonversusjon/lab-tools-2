@@ -24,6 +24,7 @@ const fitcFl: FluorophoreWithSpectra = {
   switch_type: null,
   has_spectra: true,
   source: 'FPbase',
+  is_favorite: false,
   spectra: {
     EX: gaussianSpectrum(494, 20, 400, 600),
     EM: gaussianSpectrum(519, 25, 400, 700),
@@ -43,6 +44,7 @@ const peFl: FluorophoreWithSpectra = {
   switch_type: null,
   has_spectra: true,
   source: 'FPbase',
+  is_favorite: false,
   spectra: {
     EX: gaussianSpectrum(565, 20, 400, 700),
     EM: gaussianSpectrum(578, 25, 400, 700),
@@ -62,13 +64,14 @@ const apcFl: FluorophoreWithSpectra = {
   switch_type: null,
   has_spectra: true,
   source: 'FPbase',
+  is_favorite: false,
   spectra: {
     EX: gaussianSpectrum(650, 20, 550, 750),
     EM: gaussianSpectrum(660, 15, 550, 750),
   },
 }
 
-const unconjugatedAb: Antibody = {
+const unconjugatedAb = {
   id: 'ab1',
   target: 'CD3',
   clone: 'OKT3',
@@ -78,9 +81,9 @@ const unconjugatedAb: Antibody = {
   fluorophore_name: null,
   vendor: null,
   catalog_number: null,
-}
+} as Antibody
 
-const conjugatedAb: Antibody = {
+const conjugatedAb = {
   id: 'ab2',
   target: 'CD4',
   clone: null,
@@ -90,7 +93,7 @@ const conjugatedAb: Antibody = {
   fluorophore_name: 'FITC',
   vendor: null,
   catalog_number: null,
-}
+} as Antibody
 
 const allFluorophores = [fitcFl, peFl, apcFl]
 

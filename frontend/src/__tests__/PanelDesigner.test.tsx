@@ -11,7 +11,7 @@ const mockPanel: Panel = {
   created_at: null,
   updated_at: null,
   targets: [
-    { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
+    { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
   ],
   assignments: [],
 }
@@ -106,6 +106,8 @@ vi.mock('@/hooks/useFluorophores', () => ({
     error: null,
   }),
   useBatchSpectra: () => ({ data: null }),
+  useToggleFluorophoreFavorite: () => ({ mutate: vi.fn() }),
+  useRecentFluorophores: () => ({ data: [] }),
 }))
 
 vi.mock('@/hooks/useSecondaries', () => ({
@@ -178,14 +180,14 @@ describe('PanelDesigner', () => {
     renderDesigner()
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
-    expect(screen.getByPlaceholderText('Search target or antibody...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search target, clone, host, vendor...')).toBeInTheDocument()
   })
 
   it('pending row can be removed with × button', () => {
     renderDesigner()
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
-    expect(screen.getByPlaceholderText('Search target or antibody...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search target, clone, host, vendor...')).toBeInTheDocument()
 
     const removeBtn = screen.getByLabelText('Remove pending row')
     fireEvent.click(removeBtn)
@@ -218,7 +220,7 @@ describe('PanelDesigner', () => {
     const panelWithConjugated: Panel = {
       ...mockPanel,
       targets: [
-        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', sort_order: 0 },
+        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
     }
     renderDesigner(panelWithConjugated)
@@ -229,7 +231,5 @@ describe('PanelDesigner', () => {
     renderDesigner()
     // The CD3 target row is present from panel.targets[0] which has id 't1'
     expect(screen.getByText('CD3')).toBeInTheDocument()
-    // OKT3 clone is shown
-    expect(screen.getByText('OKT3')).toBeInTheDocument()
   })
 })

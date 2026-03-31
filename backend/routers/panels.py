@@ -323,16 +323,14 @@ def update_target(
             raise HTTPException(
                 status_code=409, detail="Antibody already a target in this panel"
             )
-        # Re-point any existing PanelAssignment from old antibody to new
+        # Delete any existing PanelAssignment for the old antibody
         old_ab_id = target.antibody_id
         if old_ab_id is not None:
             db.execute(
-                PanelAssignment.__table__.update()
-                .where(
+                PanelAssignment.__table__.delete().where(
                     PanelAssignment.panel_id == id,
                     PanelAssignment.antibody_id == old_ab_id,
                 )
-                .values(antibody_id=data.antibody_id)
             )
         target.antibody_id = data.antibody_id
     elif "antibody_id" in (data.model_fields_set or set()) and data.antibody_id is None:

@@ -18,6 +18,13 @@ const mockTarget: PanelTarget = {
   panel_id: 'p1',
   antibody_id: 'ab1',
   sort_order: 0,
+  staining_mode: "direct" as const,
+  secondary_antibody_id: null,
+  antibody_name: null,
+  antibody_target: null,
+  secondary_antibody_name: null,
+  secondary_fluorophore_id: null,
+  secondary_fluorophore_name: null,
 }
 
 const mockAssignment: PanelAssignment = {

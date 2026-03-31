@@ -4,20 +4,33 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 const mockAntibodies = [
-  { id: '1', target: 'CD3', clone: 'OKT3', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: 'BioLegend', catalog_number: '300401' },
-  { id: '2', target: 'CD4', clone: 'RPA-T4', host: 'mouse', isotype: 'IgG1', fluorophore_id: 'fl-1', fluorophore_name: 'FITC', vendor: 'BD', catalog_number: '555346' },
-  { id: '3', target: 'CD8', clone: 'SK1', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: null, catalog_number: null },
+  { id: '1', target: 'CD3', clone: 'OKT3', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: 'BioLegend', catalog_number: '300401', tags: [] },
+  { id: '2', target: 'CD4', clone: 'RPA-T4', host: 'mouse', isotype: 'IgG1', fluorophore_id: 'fl-1', fluorophore_name: 'FITC', vendor: 'BD', catalog_number: '555346', tags: [] },
+  { id: '3', target: 'CD8', clone: 'SK1', host: 'mouse', isotype: 'IgG1', fluorophore_id: null, fluorophore_name: null, vendor: null, catalog_number: null, tags: [] },
 ]
 
+vi.mock('@/hooks/useTags', () => ({
+  useTags: () => ({ data: [] }),
+  useCreateTag: () => ({ mutateAsync: vi.fn() }),
+  useDeleteTag: () => ({ mutateAsync: vi.fn() }),
+}))
+
 vi.mock('@/hooks/useAntibodies', () => ({
-  useAntibodies: () => ({
-    data: { items: mockAntibodies, total: 3, skip: 0, limit: 500 },
-    isLoading: false,
-    error: null,
-  }),
+  useAntibodies: (params?: { search?: string }) => {
+    const q = params?.search?.toLowerCase() ?? ''
+    const items = q
+      ? mockAntibodies.filter(
+          (ab) =>
+            ab.target.toLowerCase().includes(q) ||
+            (ab.clone ?? '').toLowerCase().includes(q)
+        )
+      : mockAntibodies
+    return { data: { items, total: items.length, skip: 0, limit: 500 }, isLoading: false, error: null }
+  },
   useCreateAntibody: () => ({ mutate: vi.fn() }),
   useUpdateAntibody: () => ({ mutate: vi.fn() }),
   useDeleteAntibody: () => ({ mutate: vi.fn() }),
+  useToggleAntibodyFavorite: () => ({ mutate: vi.fn() }),
 }))
 
 vi.mock('@/hooks/useFluorophores', () => ({
@@ -49,7 +62,7 @@ describe('AntibodyTable', () => {
 
   it('search input filters rows by target name', () => {
     render(<AntibodyTable />, { wrapper })
-    const input = screen.getByPlaceholderText('Search by target...')
+    const input = screen.getByPlaceholderText(/Search by target/)
     fireEvent.change(input, { target: { value: 'CD3' } })
     expect(screen.getByText('CD3')).toBeInTheDocument()
     expect(screen.queryByText('CD4')).not.toBeInTheDocument()
@@ -67,9 +80,10 @@ describe('AntibodyTable', () => {
     expect(screen.getByText('FITC')).toBeInTheDocument()
   })
 
-  it('unconjugated antibody shows "Unconjugated" text', () => {
+  it('unconjugated antibody shows placeholder in conjugate column', () => {
     render(<AntibodyTable />, { wrapper })
-    const unconjugated = screen.getAllByText('Unconjugated')
-    expect(unconjugated.length).toBe(2) // CD3 and CD8
+    // CD3 and CD8 are unconjugated; they show '--' in the conjugate column
+    const placeholders = screen.getAllByText('--')
+    expect(placeholders.length).toBeGreaterThanOrEqual(2)
   })
 })

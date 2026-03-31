@@ -45,6 +45,8 @@ vi.mock('@/hooks/useFluorophores', () => ({
     isPending: false,
     error: null,
   }),
+  useToggleFluorophoreFavorite: () => ({ mutate: vi.fn() }),
+  useRecentFluorophores: () => ({ data: [] }),
 }))
 
 import FluorophoreTable from '@/components/fluorophores/FluorophoreTable'

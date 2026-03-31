@@ -4,6 +4,11 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { Panel } from '@/types'
 
+vi.mock('react-chartjs-2', () => ({
+  Line: () => <canvas data-testid="chart" />,
+}))
+vi.mock('chartjs-plugin-annotation', () => ({ default: {} }))
+
 const mockInstrument = {
   id: 'inst-1',
   name: 'Test Cytometer',
@@ -27,7 +32,7 @@ const mockAntibodies = [
 ]
 
 const mockFluorophores = [
-  { id: 'fl-fitc', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: null, ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: false },
+  { id: 'fl-fitc', name: 'FITC', ex_max_nm: 494, em_max_nm: 519, source: 'FPbase', fluor_type: null, ext_coeff: null, qy: null, lifetime_ns: null, oligomerization: null, switch_type: null, has_spectra: false, is_favorite: false },
 ]
 
 const mockAddTargetMutateAsync = vi.fn()
@@ -81,6 +86,8 @@ vi.mock('@/hooks/useFluorophores', () => ({
     error: null,
   }),
   useBatchSpectra: () => ({ data: null }),
+  useToggleFluorophoreFavorite: () => ({ mutate: vi.fn() }),
+  useRecentFluorophores: () => ({ data: [] }),
 }))
 
 vi.mock('@/hooks/useSecondaries', () => ({
@@ -119,7 +126,7 @@ describe('AssignmentTable', () => {
       instrument_id: 'inst-1',
       created_at: null,
       updated_at: null,
-      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 }],
+      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null }],
       assignments: [],
     }
     renderDesigner(panel)
@@ -137,7 +144,7 @@ describe('AssignmentTable', () => {
       instrument_id: 'inst-1',
       created_at: null,
       updated_at: null,
-      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 }],
+      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null }],
       assignments: [
         { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-fitc', detector_id: 'd1', notes: null },
       ],
@@ -156,8 +163,8 @@ describe('AssignmentTable', () => {
       created_at: null,
       updated_at: null,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 },
-        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1 },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [
         { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-fitc', detector_id: 'd1', notes: null },
@@ -176,7 +183,7 @@ describe('AssignmentTable', () => {
       instrument_id: 'inst-1',
       created_at: null,
       updated_at: null,
-      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 }],
+      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null }],
       assignments: [
         { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-fitc', detector_id: 'd1', notes: null },
       ],
@@ -193,7 +200,7 @@ describe('AssignmentTable', () => {
       instrument_id: 'inst-1',
       created_at: null,
       updated_at: null,
-      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 }],
+      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null }],
       assignments: [
         { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-fitc', detector_id: 'd1', notes: null },
       ],
@@ -212,7 +219,7 @@ describe('AssignmentTable', () => {
       instrument_id: null,
       created_at: null,
       updated_at: null,
-      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0 }],
+      targets: [{ id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null }],
       assignments: [],
     }
     renderDesigner(panel)
