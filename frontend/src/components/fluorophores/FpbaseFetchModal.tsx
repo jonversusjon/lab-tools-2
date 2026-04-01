@@ -22,7 +22,7 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const catalogQuery = useFpbaseCatalog()
-  const fluorophoresQuery = useFluorophores({ skip: 0, limit: 500 })
+  const fluorophoresQuery = useFluorophores({ skip: 0, limit: 5000 })
   const batchMutation = useBatchFetchFpbase()
 
   const importedNames = useMemo(() => {

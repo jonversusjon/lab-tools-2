@@ -35,7 +35,7 @@ export default function AntibodyTable() {
     vendor: vendorFilter || undefined,
     in_stock: inStockFilter ?? undefined,
   })
-  const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 500 })
+  const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const { data: allTags } = useTags()
   const deleteMutation = useDeleteAntibody()
   const favoriteMutation = useToggleAntibodyFavorite()
