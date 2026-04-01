@@ -1,6 +1,23 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import {
   usePanel,
   useUpdatePanel,
   useCreatePanel,
@@ -9,6 +26,7 @@ import {
   useUpdateTarget,
   useAddAssignment,
   useRemoveAssignment,
+  useReorderTargets,
 } from '@/hooks/usePanels'
 import { useInstruments, useInstrument } from '@/hooks/useInstruments'
 import { useAntibodies } from '@/hooks/useAntibodies'
@@ -30,6 +48,41 @@ import SpilloverHeatmap from './SpilloverHeatmap'
 import PanelSpectraByLaser from './PanelSpectraByLaser'
 import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
+function SortableRow({
+  id,
+  className,
+  'data-assigned': dataAssigned,
+  children,
+}: {
+  id: string
+  className?: string
+  'data-assigned'?: string
+  children: (listeners: Record<string, any>) => React.ReactNode
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    ...(isDragging ? { opacity: 0.5, position: 'relative', zIndex: 50 } : {}),
+  }
+
+  // Adding bg-white dark:bg-gray-800 so the dragging preview isn't completely transparent
+  const finalClassName = (className ?? '') + ' bg-white dark:bg-gray-800'
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={finalClassName}
+      data-assigned={dataAssigned}
+      {...attributes}
+    >
+      {children(listeners ?? {})}
+    </tr>
+  )
+}
+
 export default function PanelDesigner() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -48,11 +101,12 @@ export default function PanelDesigner() {
   const updateTargetMutation = useUpdateTarget()
   const addAssignmentMutation = useAddAssignment()
   const removeAssignmentMutation = useRemoveAssignment()
+  const reorderTargetsMutation = useReorderTargets()
 
   const instrumentId = panel?.instrument_id ?? null
   const { data: instrument } = useInstrument(instrumentId ?? '')
 
-  const { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo } = usePanelDesigner(
+  const { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo, reorderTargets } = usePanelDesigner(
     panel ?? null,
     instrument ?? null
   )
@@ -141,6 +195,37 @@ export default function PanelDesigner() {
   const fluorophoreList = fluorophoreData?.items ?? []
   const allFluorophores = allFluorophoreData?.items ?? []
   const secondaries = secondariesData?.items ?? []
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      if (!over || active.id === over.id || !id) return
+
+      const oldIndex = state.targets.findIndex((t) => t.id === active.id)
+      const newIndex = state.targets.findIndex((t) => t.id === over.id)
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newTargets = arrayMove(state.targets, oldIndex, newIndex)
+        const newTargetIds = newTargets.map((t) => t.id)
+        
+        reorderTargets(newTargetIds)
+        // Optimistically reorder will happen immediately through the dispatcher ^
+        reorderTargetsMutation.mutate({ panelId: id, targetIds: newTargetIds })
+      }
+    },
+    [state.targets, id, reorderTargets, reorderTargetsMutation]
+  )
 
   // Build dynamic conjugate sets from API data
   const conjugateSet = useMemo(() => buildConjugateSet(conjugateChemistries), [conjugateChemistries])
@@ -1062,12 +1147,15 @@ export default function PanelDesigner() {
         )}
 
         {/* Scrollable table */}
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
-          <table className="w-full border-collapse text-left text-sm">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
+            <SortableContext items={state.targets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+              <table className="w-full border-collapse text-left text-sm">
             <thead>
               {/* Laser group header row */}
               {state.instrument && (
                 <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="bg-gray-50 dark:bg-gray-800 w-6 px-1 py-2" />
                   <th className="sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-2" />
                   <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2" />
                   <th className="bg-gray-50 dark:bg-gray-800 px-3 py-2" />
@@ -1086,6 +1174,7 @@ export default function PanelDesigner() {
               )}
               {/* Detector sub-header row */}
               <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                <th className="bg-gray-50 dark:bg-gray-800 w-6 px-1 py-2" />
                 <th className="sticky left-0 z-10 bg-gray-50 dark:bg-gray-800 px-3 py-2 font-medium">
                   Target
                 </th>
@@ -1118,7 +1207,7 @@ export default function PanelDesigner() {
               {state.targets.length === 0 && pendingRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={3 + totalDetectors + 1}
+                    colSpan={4 + totalDetectors + 1}
                     className="px-3 py-6 text-center text-gray-400 dark:text-gray-500"
                   >
                     No targets added yet. Click &ldquo;+ Add Target&rdquo; below to begin.
@@ -1133,35 +1222,45 @@ export default function PanelDesigner() {
                   const strategy = ab ? getDetectionStrategy(ab, conjugateSet, bindingPartners) : null
 
                   return (
-                    <tr
+                    <SortableRow
                       key={t.id}
+                      id={t.id}
                       className={
                         'border-b border-gray-100 dark:border-gray-700' +
                         (hasAssignment ? ' bg-blue-50/40 dark:bg-blue-900/20' : ' hover:bg-gray-50 dark:hover:bg-gray-800')
                       }
                       data-assigned={hasAssignment ? 'true' : undefined}
                     >
-                      <td
-                        className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
-                        style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined, minWidth: '200px' }}
-                        onClick={() => {
-                          if (editingTargetId !== t.id) setEditingTargetId(t.id)
-                        }}
-                        title="Click to replace antibody"
-                      >
-                        {editingTargetId === t.id ? (
-                          <AntibodyOmnibox
-                            antibodies={antibodies}
-                            excludeIds={targetAntibodyIds}
-                            onSelect={(newAb) => handleReplaceTargetAntibody(t.id, newAb)}
-                            onCancel={() => setEditingTargetId(null)}
-                            autoFocus
-                          />
-                        ) : (
-                          ab?.target ?? '—'
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                      {(listeners) => (
+                        <>
+                          <td
+                            {...listeners}
+                            className="w-6 px-1 py-2 cursor-grab text-gray-400 hover:text-gray-600 active:cursor-grabbing dark:text-gray-500 dark:hover:text-gray-300 select-none"
+                            title="Drag to reorder"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto"><path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z"/></svg>
+                          </td>
+                          <td
+                            className="sticky left-0 z-10 px-3 py-2 font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
+                            style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined, minWidth: '200px' }}
+                            onClick={() => {
+                              if (editingTargetId !== t.id) setEditingTargetId(t.id)
+                            }}
+                            title="Click to replace antibody"
+                          >
+                              {editingTargetId === t.id ? (
+                                <AntibodyOmnibox
+                                  antibodies={antibodies}
+                                  excludeIds={targetAntibodyIds}
+                                  onSelect={(newAb) => handleReplaceTargetAntibody(t.id, newAb)}
+                                  onCancel={() => setEditingTargetId(null)}
+                                  autoFocus
+                                />
+                              ) : (
+                                ab?.target ?? '—'
+                              )}
+                          </td>
+                          <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
                         {ab?.host || ab?.isotype
                           ? (ab?.host ?? '') + (ab?.host && ab?.isotype ? ' ' : '') + (ab?.isotype ?? '')
                           : '\u2014'}
@@ -1387,7 +1486,9 @@ export default function PanelDesigner() {
                           &times;
                         </button>
                       </td>
-                    </tr>
+                        </>
+                      )}
+                    </SortableRow>
                   )
                 })
               )}
@@ -1396,6 +1497,7 @@ export default function PanelDesigner() {
                   key={pendingId}
                   className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
+                  <td className="w-6 px-1 py-2" />
                   <td className="sticky left-0 z-10 px-3 py-2" style={{ minWidth: '200px' }}>
                     <AntibodyOmnibox
                       antibodies={antibodies}
@@ -1424,7 +1526,7 @@ export default function PanelDesigner() {
                 </tr>
               ))}
               <tr>
-                <td colSpan={3 + totalDetectors + 1} className="px-3 py-2">
+                <td colSpan={4 + totalDetectors + 1} className="px-3 py-2">
                   <button
                     onClick={handleAddRowClick}
                     className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
@@ -1447,7 +1549,9 @@ export default function PanelDesigner() {
               <span>&middot; = awaiting fluorophore</span>
             </div>
           )}
-        </div>
+            </SortableContext>
+          </div>
+        </DndContext>
       </div>
 
       {/* Fluorophore Picker (portaled to body) */}

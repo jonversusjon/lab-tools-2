@@ -27,6 +27,7 @@ export type PanelDesignerAction =
   | { type: 'REDO' }
   | { type: 'UPDATE_ASSIGNMENT_ID'; oldId: string; newId: string }
   | { type: 'REPLACE_TARGET_ANTIBODY'; targetId: string; oldAntibodyId: string; newAntibodyId: string; updatedTarget: PanelTarget }
+  | { type: 'REORDER_TARGETS'; targetIds: string[] }
 
 const initialState: PanelDesignerState = {
   panel: null,
@@ -165,6 +166,19 @@ export function panelDesignerReducer(
         future: state.future.map((snap) => snap.map(updateId)),
       }
     }
+    case 'REORDER_TARGETS': {
+      const orderMap = new Map(action.targetIds.map((id, idx) => [id, idx]))
+      const sorted = [...state.targets].sort((a, b) => {
+        const orderA = orderMap.get(a.id) ?? 0
+        const orderB = orderMap.get(b.id) ?? 0
+        return orderA - orderB
+      })
+      return {
+        ...state,
+        targets: sorted,
+        isDirty: true,
+      }
+    }
     default:
       return state
   }
@@ -195,6 +209,10 @@ export function usePanelDesigner(panel: Panel | null, instrument: Instrument | n
     dispatch({ type: 'CLEAR_ASSIGNMENTS' })
   }, [])
 
+  const reorderTargets = useCallback((targetIds: string[]) => {
+    dispatch({ type: 'REORDER_TARGETS', targetIds })
+  }, [])
+
   const undo = useCallback(() => {
     dispatch({ type: 'UNDO' })
   }, [])
@@ -206,5 +224,5 @@ export function usePanelDesigner(panel: Panel | null, instrument: Instrument | n
   const canUndo = state.past.length > 0
   const canRedo = state.future.length > 0
 
-  return { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo }
+  return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, undo, redo, canUndo, canRedo }
 }
