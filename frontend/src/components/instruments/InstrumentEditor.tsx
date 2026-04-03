@@ -96,7 +96,7 @@ export default function InstrumentEditor() {
       } else {
         await updateMutation.mutateAsync({ id: id!, data: payload })
       }
-      navigate('/instruments')
+      navigate('/flow/instruments')
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -132,7 +132,7 @@ export default function InstrumentEditor() {
     }
     try {
       await deleteMutation.mutateAsync(id!)
-      navigate('/instruments')
+      navigate('/flow/instruments')
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -149,7 +149,7 @@ export default function InstrumentEditor() {
           {isNew ? 'New Instrument' : 'Edit Instrument'}
         </h1>
         <button
-          onClick={() => navigate('/instruments')}
+          onClick={() => navigate('/flow/instruments')}
           className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
         >
           Back to list

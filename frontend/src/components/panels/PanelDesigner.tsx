@@ -384,7 +384,7 @@ export default function PanelDesigner() {
       }
       setInstrumentChangeModal(null)
       setCopyInProgress(false)
-      navigate('/panels/' + newPanel.id)
+      navigate('/flow/panels/' + newPanel.id)
     } catch {
       setCopyInProgress(false)
     }

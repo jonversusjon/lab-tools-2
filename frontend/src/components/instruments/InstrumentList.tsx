@@ -103,7 +103,7 @@ export default function InstrumentList() {
             {importMutation.isPending ? 'Importing...' : 'Import'}
           </button>
           <button
-            onClick={() => navigate('/instruments/new')}
+            onClick={() => navigate('/flow/instruments/new')}
             className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
             New Instrument
@@ -138,7 +138,7 @@ export default function InstrumentList() {
                 <HoverActionsRow
                   key={inst.id}
                   as="tr"
-                  onClick={() => navigate('/instruments/' + inst.id)}
+                  onClick={() => navigate('/flow/instruments/' + inst.id)}
                   className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
                   actions={{
                     onRename: () => {

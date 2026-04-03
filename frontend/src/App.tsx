@@ -13,16 +13,18 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Shell />}>
-        <Route path="/instruments" element={<InstrumentList />} />
-        <Route path="/instruments/new" element={<InstrumentEditor />} />
-        <Route path="/instruments/:id" element={<InstrumentEditor />} />
-        <Route path="/fluorophores" element={<FluorophoreTable />} />
-        <Route path="/antibodies" element={<AntibodyTable />} />
-        <Route path="/secondaries" element={<SecondaryList />} />
-        <Route path="/panels" element={<PanelList />} />
-        <Route path="/panels/:id" element={<PanelDesigner />} />
+        {/* Flow Cytometry */}
+        <Route path="/flow/instruments" element={<InstrumentList />} />
+        <Route path="/flow/instruments/new" element={<InstrumentEditor />} />
+        <Route path="/flow/instruments/:id" element={<InstrumentEditor />} />
+        <Route path="/flow/fluorophores" element={<FluorophoreTable />} />
+        <Route path="/flow/antibodies" element={<AntibodyTable />} />
+        <Route path="/flow/secondaries" element={<SecondaryList />} />
+        <Route path="/flow/panels" element={<PanelList />} />
+        <Route path="/flow/panels/:id" element={<PanelDesigner />} />
+
         <Route path="/settings" element={<Settings />} />
-        <Route path="/" element={<Navigate to="/instruments" replace />} />
+        <Route path="/" element={<Navigate to="/flow/panels" replace />} />
       </Route>
     </Routes>
   )

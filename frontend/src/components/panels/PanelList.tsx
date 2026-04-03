@@ -29,7 +29,7 @@ export default function PanelList() {
         onSuccess: (panel) => {
           setShowCreate(false)
           setNewName('')
-          navigate('/panels/' + panel.id)
+          navigate('/flow/panels/' + panel.id)
         },
       }
     )
@@ -92,7 +92,7 @@ export default function PanelList() {
                 key={p.id}
                 as="tr"
                 className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
-                onClick={() => navigate('/panels/' + p.id)}
+                onClick={() => navigate('/flow/panels/' + p.id)}
                 actions={{
                   onRename: () => {
                     setEditingPanel({ id: p.id, name: p.name })
@@ -114,7 +114,7 @@ export default function PanelList() {
                           className="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
                           onClick={(e) => {
                             e.stopPropagation()
-                            navigate('/instruments/' + inst.id)
+                            navigate('/flow/instruments/' + inst.id)
                           }}
                         >
                           {inst.name}
