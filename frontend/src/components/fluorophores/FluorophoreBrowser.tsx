@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   useFluorophores,
@@ -7,6 +7,7 @@ import {
   useBatchSpectra,
   useToggleFluorophoreFavorite,
 } from '@/hooks/useFluorophores'
+import { tokenSearch } from '@/utils/search'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 import FpbaseFetchModal from './FpbaseFetchModal'
 import FluorophoreImportWizard from './FluorophoreImportWizard'
@@ -38,17 +39,29 @@ export default function FluorophoreBrowser() {
 
   useEffect(() => { setPage(0) }, [typeFilter, hasSpectraOnly])
 
+  const isSearching = debouncedSearch.trim().length > 0
+
   const { data, isLoading, error } = useFluorophores({
-    skip: page * PAGE_SIZE,
-    limit: PAGE_SIZE,
+    skip: isSearching ? 0 : page * PAGE_SIZE,
+    limit: isSearching ? 2000 : PAGE_SIZE,
     type: typeFilter !== 'all' ? typeFilter : undefined,
-    search: debouncedSearch || undefined,
     has_spectra: hasSpectraOnly ? true : undefined,
   })
 
-  const items = data?.items ?? []
-  const total = data?.total ?? 0
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const items = useMemo(() => {
+    const fetched = data?.items ?? []
+    if (!isSearching) return fetched
+    return tokenSearch(fetched, debouncedSearch, (fl) => [
+      { value: fl.name, weight: 3 },
+      { value: fl.fluor_type, weight: 1 },
+      { value: fl.source, weight: 0.5 },
+      { value: fl.ex_max_nm != null ? String(fl.ex_max_nm) : null, weight: 0.5 },
+      { value: fl.em_max_nm != null ? String(fl.em_max_nm) : null, weight: 0.5 },
+    ])
+  }, [data?.items, isSearching, debouncedSearch])
+
+  const total = isSearching ? items.length : (data?.total ?? 0)
+  const totalPages = isSearching ? 1 : Math.ceil(total / PAGE_SIZE)
 
   const toggleOverlay = (fl: Fluorophore) => {
     setOverlayMap((prev) => {
