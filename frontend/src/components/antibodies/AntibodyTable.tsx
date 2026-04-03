@@ -96,7 +96,7 @@ export default function AntibodyTable() {
   const handleDelete = (ab: Antibody) => {
     if (
       !confirm(
-        'Deleting this antibody will also remove it from any panels where it is a target or has assignments. Continue?'
+        'Deleting this primary antibody will also remove it from any panels where it is a target or has assignments. Continue?'
       )
     )
       return
@@ -113,7 +113,7 @@ export default function AntibodyTable() {
     <div>
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Antibodies</h1>
+        <h1 className="text-2xl font-bold dark:text-gray-100">Primary Antibodies</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowImport(true)}
@@ -125,7 +125,7 @@ export default function AntibodyTable() {
             onClick={() => setShowNew(true)}
             className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
           >
-            New Antibody
+            New Primary
           </button>
         </div>
       </div>
@@ -282,8 +282,8 @@ export default function AntibodyTable() {
                 className="py-6 text-center text-gray-400 dark:text-gray-500"
               >
                 {search || showFavoritesOnly || selectedTagIds.length > 0
-                  ? 'No antibodies matching your filters.'
-                  : 'No antibodies yet. Create one or import from CSV.'}
+                  ? 'No primary antibodies matching your filters.'
+                  : 'No primary antibodies yet. Create one or import from CSV.'}
               </td>
             </tr>
           ) : null}
