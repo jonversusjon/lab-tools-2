@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { tokenSearch } from '@/utils/search'
 import {
   useSecondaries,
   useCreateSecondary,
@@ -91,8 +92,9 @@ function FluorophoreSearch({
 
   const filtered = useMemo(() => {
     if (!query.trim()) return fluorophores.slice(0, 30)
-    const q = query.toLowerCase()
-    return fluorophores.filter((f) => f.name.toLowerCase().includes(q)).slice(0, 30)
+    return tokenSearch(fluorophores, query, (f) => [
+      { value: f.name, weight: 3 },
+    ]).slice(0, 30)
   }, [fluorophores, query])
 
   if (selectedId) {
@@ -151,7 +153,7 @@ function FluorophoreSearch({
 
 export default function SecondaryList() {
   const [search, setSearch] = useState('')
-  const { data, isLoading, error } = useSecondaries({ skip: 0, limit: 500, search: search || undefined })
+  const { data, isLoading, error } = useSecondaries({ skip: 0, limit: 500 })
   const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const createMutation = useCreateSecondary()
   const updateMutation = useUpdateSecondary()
@@ -160,8 +162,21 @@ export default function SecondaryList() {
   const confirmImportMutation = useConfirmSecondaryImport()
 
   const fluorophores = fluorophoreData?.items ?? []
-  const items = data?.items ?? []
+  const allItems = data?.items ?? []
   const { data: conjugateChemistries = [] } = useConjugateChemistries()
+
+  const items = useMemo(() => {
+    if (!search.trim()) return allItems
+    return tokenSearch(allItems, search, (sa) => [
+      { value: sa.name, weight: 2 },
+      { value: sa.host, weight: 1 },
+      { value: sa.target_species, weight: 1.5 },
+      { value: sa.target_isotype, weight: 1 },
+      { value: sa.fluorophore_name, weight: 2 },
+      { value: sa.vendor, weight: 0.5 },
+      { value: sa.catalog_number, weight: 0.5 },
+    ])
+  }, [allItems, search])
 
   // Create/Edit modal
   const [showModal, setShowModal] = useState(false)
