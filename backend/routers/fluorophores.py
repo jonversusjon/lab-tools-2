@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import get_db
+from utils import tokenize_search
 from models import Detector
 from models import Fluorophore
 from models import FluorophoreSpectrum
@@ -87,9 +88,10 @@ def list_fluorophores(
         stmt = stmt.where(Fluorophore.fluor_type == type)
         count_stmt = count_stmt.where(Fluorophore.fluor_type == type)
     if search is not None and search.strip():
-        pattern = "%" + search.strip() + "%"
-        stmt = stmt.where(Fluorophore.name.ilike(pattern))
-        count_stmt = count_stmt.where(Fluorophore.name.ilike(pattern))
+        for token in tokenize_search(search):
+            pattern = "%%%s%%" % token
+            stmt = stmt.where(Fluorophore.name.ilike(pattern))
+            count_stmt = count_stmt.where(Fluorophore.name.ilike(pattern))
     if has_spectra is not None:
         stmt = stmt.where(Fluorophore.has_spectra == has_spectra)
         count_stmt = count_stmt.where(Fluorophore.has_spectra == has_spectra)

@@ -18,6 +18,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import selectinload
 
 from database import get_db
+from utils import tokenize_search
 from models import Antibody
 from models import AntibodyTag
 from models import AntibodyTagAssignment
@@ -105,15 +106,19 @@ def list_antibodies(
 
     # Apply filters
     if search:
-        term = "%%%s%%" % search.lower()
-        stmt = stmt.where(
-            or_(
-                func.lower(Antibody.target).contains(search.lower()),
-                func.lower(Antibody.name).contains(search.lower()),
-                func.lower(Antibody.catalog_number).contains(search.lower()),
-                func.lower(Antibody.vendor).contains(search.lower()),
+        for token in tokenize_search(search):
+            pattern = "%%%s%%" % token
+            stmt = stmt.where(
+                or_(
+                    Antibody.name.ilike(pattern),
+                    Antibody.target.ilike(pattern),
+                    Antibody.clone.ilike(pattern),
+                    Antibody.catalog_number.ilike(pattern),
+                    Antibody.conjugate.ilike(pattern),
+                    Antibody.vendor.ilike(pattern),
+                    Antibody.host.ilike(pattern),
+                )
             )
-        )
 
     if favorites is True:
         stmt = stmt.where(Antibody.is_favorite == True)

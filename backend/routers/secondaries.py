@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import get_db
+from utils import tokenize_search
 from models import Fluorophore
 from models import SecondaryAntibody
 from schemas import PaginatedResponse
@@ -62,13 +63,17 @@ def list_secondary_antibodies(
     stmt = select(SecondaryAntibody)
 
     if search:
-        pattern = "%%%s%%" % search
-        stmt = stmt.where(
-            or_(
-                SecondaryAntibody.name.ilike(pattern),
-                SecondaryAntibody.catalog_number.ilike(pattern),
+        for token in tokenize_search(search):
+            pattern = "%%%s%%" % token
+            stmt = stmt.where(
+                or_(
+                    SecondaryAntibody.name.ilike(pattern),
+                    SecondaryAntibody.host.ilike(pattern),
+                    SecondaryAntibody.target_species.ilike(pattern),
+                    SecondaryAntibody.vendor.ilike(pattern),
+                    SecondaryAntibody.catalog_number.ilike(pattern),
+                )
             )
-        )
     if host:
         stmt = stmt.where(SecondaryAntibody.host == host)
     if target_species:
