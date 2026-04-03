@@ -178,6 +178,8 @@ export default function SecondaryList() {
     ])
   }, [allItems, search])
 
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
   // Create/Edit modal
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -336,6 +338,7 @@ export default function SecondaryList() {
                 key={sa.id}
                 as="tr"
                 className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                onClick={() => setExpandedId(expandedId === sa.id ? null : sa.id)}
                 actions={{
                   onRename: () => openEdit(sa),
                   onDelete: () => handleDelete(sa),
@@ -366,6 +369,13 @@ export default function SecondaryList() {
           </tbody>
         </table>
       )}
+
+      {/* Expanded detail */}
+      {expandedId && (() => {
+        const sa = items.find((s) => s.id === expandedId)
+        if (!sa) return null
+        return <SecondaryDetail secondary={sa} onEdit={openEdit} />
+      })()}
 
       {/* Create / Edit Modal */}
       <Modal
@@ -754,6 +764,58 @@ export default function SecondaryList() {
           )}
         </div>
       </Modal>
+    </div>
+  )
+}
+
+function SecondaryDetail({
+  secondary: sa,
+  onEdit,
+}: {
+  secondary: SecondaryAntibody
+  onEdit: (sa: SecondaryAntibody) => void
+}) {
+  return (
+    <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold dark:text-gray-100">
+          {sa.name}
+        </h3>
+        <button
+          onClick={() => onEdit(sa)}
+          className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+        >
+          Edit
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-x-6 gap-y-2 text-xs">
+        <DetailField label="Host" value={sa.host} />
+        <DetailField label="Target Species" value={sa.target_species} />
+        <DetailField label="Target Isotype" value={sa.target_isotype} />
+        <DetailField label="Binding Mode" value={sa.binding_mode} />
+        <DetailField label="Target Conjugate" value={sa.target_conjugate} />
+        <DetailField label="Fluorophore" value={sa.fluorophore_name} />
+        <DetailField label="Vendor" value={sa.vendor} />
+        <DetailField label="Catalog #" value={sa.catalog_number} />
+        <DetailField label="Lot #" value={sa.lot_number} />
+      </div>
+      {sa.notes && (
+        <div className="mt-2">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Notes:</span>
+          <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">{sa.notes}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DetailField({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div>
+      <span className="text-gray-500 dark:text-gray-400">{label}: </span>
+      <span className="text-gray-800 dark:text-gray-200">
+        {value || <span className="italic text-gray-400">--</span>}
+      </span>
     </div>
   )
 }
