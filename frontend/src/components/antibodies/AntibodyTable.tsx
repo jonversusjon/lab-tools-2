@@ -35,6 +35,10 @@ export default function AntibodyTable() {
     vendor: vendorFilter || undefined,
     in_stock: inStockFilter ?? undefined,
   })
+  // Unfiltered fetch for dropdown options — TanStack Query dedupes when no filters are active
+  const { data: unfilteredData } = useAntibodies({ skip: 0, limit: 500 })
+  const allItemsForDropdowns = unfilteredData?.items ?? []
+
   const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const { data: allTags } = useTags()
   const deleteMutation = useDeleteAntibody()
@@ -52,18 +56,18 @@ export default function AntibodyTable() {
   const fluorophores = fluorophoreData?.items ?? []
   const tags = allTags ?? []
 
-  // Unique values for filter dropdowns
+  // Unique values for filter dropdowns — derived from unfiltered data
   const uniqueHosts = useMemo(() => {
     const hosts = new Set<string>()
-    items.forEach((ab) => ab.host && hosts.add(ab.host))
+    allItemsForDropdowns.forEach((ab) => ab.host && hosts.add(ab.host))
     return Array.from(hosts).sort()
-  }, [items])
+  }, [allItemsForDropdowns])
 
   const uniqueVendors = useMemo(() => {
     const vendors = new Set<string>()
-    items.forEach((ab) => ab.vendor && vendors.add(ab.vendor))
+    allItemsForDropdowns.forEach((ab) => ab.vendor && vendors.add(ab.vendor))
     return Array.from(vendors).sort()
-  }, [items])
+  }, [allItemsForDropdowns])
 
   const sorted = useMemo(() => {
     const copy = [...items]
@@ -259,7 +263,7 @@ export default function AntibodyTable() {
           </tr>
         </thead>
         <tbody>
-          {isLoading ? (
+          {isLoading && !data ? (
             <tr>
               <td colSpan={10} className="py-6 text-center text-gray-400 dark:text-gray-500">
                 Loading antibodies...
@@ -283,7 +287,7 @@ export default function AntibodyTable() {
               </td>
             </tr>
           ) : null}
-          {!isLoading && !error && sorted.map((ab) => (
+          {!(isLoading && !data) && !error && sorted.map((ab) => (
             <HoverActionsRow
               key={ab.id}
               as="tr"
