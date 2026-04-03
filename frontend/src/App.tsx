@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Shell from '@/components/layout/Shell'
 import InstrumentList from '@/components/instruments/InstrumentList'
 import InstrumentEditor from '@/components/instruments/InstrumentEditor'
@@ -17,15 +17,25 @@ export default function App() {
       <Route element={<Shell />}>
         <Route path="/" element={<Homepage />} />
 
+        {/* Resources (shared across experiment types) */}
+        <Route path="/resources/primaries" element={<AntibodyTable />} />
+        <Route path="/resources/secondaries" element={<SecondaryList />} />
+        <Route path="/resources/fluorophores" element={<FluorophoreTable />} />
+
         {/* Flow Cytometry */}
         <Route path="/flow/instruments" element={<InstrumentList />} />
         <Route path="/flow/instruments/new" element={<InstrumentEditor />} />
         <Route path="/flow/instruments/:id" element={<InstrumentEditor />} />
-        <Route path="/flow/fluorophores" element={<FluorophoreTable />} />
-        <Route path="/flow/antibodies" element={<AntibodyTable />} />
-        <Route path="/flow/secondaries" element={<SecondaryList />} />
         <Route path="/flow/panels" element={<PanelList />} />
         <Route path="/flow/panels/:id" element={<PanelDesigner />} />
+
+        {/* Legacy redirects — namespace migration */}
+        <Route path="/flow/antibodies" element={<Navigate to="/resources/primaries" replace />} />
+        <Route path="/flow/secondaries" element={<Navigate to="/resources/secondaries" replace />} />
+        <Route path="/flow/fluorophores" element={<Navigate to="/resources/fluorophores" replace />} />
+        <Route path="/antibodies" element={<Navigate to="/resources/primaries" replace />} />
+        <Route path="/secondaries" element={<Navigate to="/resources/secondaries" replace />} />
+        <Route path="/fluorophores" element={<Navigate to="/resources/fluorophores" replace />} />
 
         {/* IF / IHC (placeholder) */}
         <Route
