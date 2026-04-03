@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { tokenSearch } from '@/utils/search'
 import type { Antibody, SecondaryAntibody, Fluorophore } from '@/types'
 import type { DetectionStrategy } from '@/utils/conjugates'
 
@@ -40,8 +41,7 @@ export default function SecondaryOmnibox({
   const speciesSecondaries = useMemo(() => {
     if (detectionStrategy.type === 'direct') return []
     if (detectionStrategy.type === 'conjugate') return []
-    const term = search.toLowerCase()
-    return secondaryAntibodies.filter((sec) => {
+    const compatible = secondaryAntibodies.filter((sec) => {
       if (sec.binding_mode !== 'species') return false
       if (primaryAntibody.host && sec.target_species.toLowerCase() !== primaryAntibody.host.toLowerCase()) {
         return false
@@ -50,36 +50,41 @@ export default function SecondaryOmnibox({
           sec.target_isotype.toLowerCase() !== primaryAntibody.isotype.toLowerCase()) {
         return false
       }
-      if (!term) return true
-      return (
-        sec.name.toLowerCase().includes(term) ||
-        (sec.fluorophore_name && sec.fluorophore_name.toLowerCase().includes(term)) ||
-        (sec.vendor && sec.vendor.toLowerCase().includes(term))
-      )
+      return true
     })
+    if (!search.trim()) return compatible
+    return tokenSearch(compatible, search, (sec) => [
+      { value: sec.name, weight: 2 },
+      { value: sec.fluorophore_name, weight: 2 },
+      { value: sec.target_species, weight: 1 },
+      { value: sec.vendor, weight: 0.5 },
+    ])
   }, [secondaryAntibodies, primaryAntibody.host, primaryAntibody.isotype, detectionStrategy, search])
 
   // Conjugate-matched secondaries (streptavidin, anti-DIG, etc.)
   const conjugateSecondaries = useMemo(() => {
     if (detectionStrategy.type === 'direct' || detectionStrategy.type === 'species') return []
     const targetConj = detectionStrategy.conjugate
-    const term = search.toLowerCase()
-    return secondaryAntibodies.filter((sec) => {
+    const compatible = secondaryAntibodies.filter((sec) => {
       if (sec.binding_mode !== 'conjugate') return false
       if (!sec.target_conjugate || sec.target_conjugate.toLowerCase() !== targetConj) return false
-      if (!term) return true
-      return (
-        sec.name.toLowerCase().includes(term) ||
-        (sec.fluorophore_name && sec.fluorophore_name.toLowerCase().includes(term)) ||
-        (sec.vendor && sec.vendor.toLowerCase().includes(term))
-      )
+      return true
     })
+    if (!search.trim()) return compatible
+    return tokenSearch(compatible, search, (sec) => [
+      { value: sec.name, weight: 2 },
+      { value: sec.fluorophore_name, weight: 2 },
+      { value: sec.vendor, weight: 0.5 },
+    ])
   }, [secondaryAntibodies, detectionStrategy, search])
 
   const filteredFluorophores = useMemo(() => {
-    const term = search.toLowerCase()
-    if (!term) return fluorophores.slice(0, 20)
-    return fluorophores.filter((fl) => fl.name.toLowerCase().includes(term))
+    if (!search.trim()) return fluorophores.slice(0, 20)
+    return tokenSearch(fluorophores, search, (fl) => [
+      { value: fl.name, weight: 3 },
+      { value: fl.ex_max_nm != null ? String(fl.ex_max_nm) : null, weight: 0.5 },
+      { value: fl.em_max_nm != null ? String(fl.em_max_nm) : null, weight: 0.5 },
+    ])
   }, [fluorophores, search])
 
   // Flat list for keyboard navigation: species secondaries, conjugate secondaries, then fluorophores
