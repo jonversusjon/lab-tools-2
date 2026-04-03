@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { fuzzyFilterAntibodies } from '@/utils/fuzzySearch'
+import { tokenSearch } from '@/utils/search'
 import type { Antibody } from '@/types'
 
 interface AntibodyOmniboxProps {
@@ -24,10 +24,19 @@ export default function AntibodyOmnibox({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null)
 
-  const filtered = useMemo(
-    () => fuzzyFilterAntibodies(antibodies, search, excludeIds, (ab) => ab.id),
-    [antibodies, excludeIds, search]
-  )
+  const filtered = useMemo(() => {
+    const available = antibodies.filter((ab) => !excludeIds.has(ab.id))
+    if (!search.trim()) return available
+    return tokenSearch(available, search, (ab) => [
+      { value: ab.target, weight: 3 },
+      { value: ab.name, weight: 2 },
+      { value: ab.clone, weight: 2 },
+      { value: ab.catalog_number, weight: 1.5 },
+      { value: ab.conjugate, weight: 1 },
+      { value: ab.fluorophore_name, weight: 1 },
+      { value: ab.vendor, weight: 0.5 },
+    ])
+  }, [antibodies, excludeIds, search])
 
   // Reset highlight when filtered list changes
   useEffect(() => {
