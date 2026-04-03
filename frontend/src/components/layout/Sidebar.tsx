@@ -25,14 +25,24 @@ const sidebarEntries: SidebarEntry[] = [
   {
     type: 'group',
     group: {
+      key: 'resources',
+      label: 'Resources',
+      icon: '📦',
+      children: [
+        { to: '/resources/primaries', label: 'Primaries', icon: '🧬' },
+        { to: '/resources/secondaries', label: 'Secondaries', icon: '🔗' },
+        { to: '/resources/fluorophores', label: 'Fluorophores', icon: '🌈' },
+      ],
+    },
+  },
+  {
+    type: 'group',
+    group: {
       key: 'flow',
       label: 'Flow Cytometry',
       icon: '🔬',
       children: [
         { to: '/flow/instruments', label: 'Instruments', icon: '🔧' },
-        { to: '/flow/fluorophores', label: 'Fluorophores', icon: '🌈' },
-        { to: '/flow/antibodies', label: 'Antibodies', icon: '🧬' },
-        { to: '/flow/secondaries', label: 'Secondaries', icon: '🔗' },
         { to: '/flow/panels', label: 'Panels', icon: '📋' },
       ],
     },
@@ -67,7 +77,7 @@ const sidebarEntries: SidebarEntry[] = [
 const STORAGE_KEY = 'sidebar-collapsed'
 const GROUPS_STORAGE_KEY = 'sidebar-groups'
 
-const defaultGroupState: Record<string, boolean> = { flow: true, 'if-ihc': false, qpcr: false }
+const defaultGroupState: Record<string, boolean> = { resources: true, flow: true, 'if-ihc': false, qpcr: false }
 
 function readGroupState(): Record<string, boolean> {
   try {
