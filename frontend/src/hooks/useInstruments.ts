@@ -7,6 +7,9 @@ import {
   deleteInstrument,
   importInstrument,
   getFluorophoreCompatibility,
+  toggleInstrumentFavorite,
+  recordInstrumentView,
+  getRecentInstruments,
 } from '@/api/instruments'
 import type { InstrumentCreate } from '@/types'
 
@@ -55,6 +58,31 @@ export function useImportInstrument() {
   return useMutation({
     mutationFn: (data: InstrumentCreate) => importInstrument(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['instruments'] }),
+  })
+}
+
+export function useToggleInstrumentFavorite() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, is_favorite }: { id: string; is_favorite: boolean }) =>
+      toggleInstrumentFavorite(id, is_favorite),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['instruments'] })
+    },
+  })
+}
+
+export function useRecordInstrumentView() {
+  return useMutation({
+    mutationFn: (id: string) => recordInstrumentView(id),
+  })
+}
+
+export function useRecentInstruments() {
+  return useQuery({
+    queryKey: ['instruments', 'recent'],
+    queryFn: () => getRecentInstruments(),
+    staleTime: 5 * 60 * 1000,
   })
 }
 

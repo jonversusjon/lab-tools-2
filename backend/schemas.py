@@ -58,6 +58,7 @@ class LaserRead(LaserBase):
 
 class InstrumentBase(BaseModel):
     name: str
+    location: str | None = None
 
 
 class InstrumentCreate(InstrumentBase):
@@ -70,6 +71,7 @@ class InstrumentUpdate(InstrumentBase):
 
 class InstrumentRead(InstrumentBase):
     id: str
+    is_favorite: bool = False
     lasers: list[LaserRead] = []
 
     model_config = {"from_attributes": True}
@@ -139,6 +141,7 @@ class DetectorCompatibility(BaseModel):
 class InstrumentCompatibility(BaseModel):
     instrument_id: str
     instrument_name: str
+    is_favorite: bool = False
     laser_lines: list[LaserCompatibility]
     detectors: list[DetectorCompatibility]
 

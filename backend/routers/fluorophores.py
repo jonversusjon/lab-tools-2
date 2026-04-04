@@ -516,6 +516,7 @@ def get_instrument_compatibility(
             InstrumentCompatibility(
                 instrument_id=inst.id,
                 instrument_name=inst.name,
+                is_favorite=inst.is_favorite,
                 laser_lines=laser_lines,
                 detectors=detector_rows,
             )

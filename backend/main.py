@@ -262,6 +262,31 @@ def migrate_dilution_factors() -> None:
         session.close()
 
 
+def migrate_instrument_fields() -> None:
+    """One-time migration: add is_favorite, location to instruments and create instrument_views."""
+    session = SessionLocal()
+    try:
+        conn = session.connection()
+        result = conn.execute(text("PRAGMA table_info(instruments)"))
+        existing_cols = {row[1] for row in result.fetchall()}
+        if "is_favorite" not in existing_cols:
+            conn.execute(
+                text("ALTER TABLE instruments ADD COLUMN is_favorite BOOLEAN NOT NULL DEFAULT 0")
+            )
+            logger.info("Added is_favorite column to instruments.")
+        if "location" not in existing_cols:
+            conn.execute(
+                text("ALTER TABLE instruments ADD COLUMN location VARCHAR DEFAULT NULL")
+            )
+            logger.info("Added location column to instruments.")
+        session.commit()
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to migrate instruments fields.")
+    finally:
+        session.close()
+
+
 def migrate_secondary_binding_mode() -> None:
     """One-time migration: add binding_mode and target_conjugate columns to secondary_antibodies."""
     session = SessionLocal()
@@ -335,6 +360,7 @@ def seed_conjugate_chemistries_if_needed() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    migrate_instrument_fields()
     migrate_secondary_binding_mode()
     load_seed_data()
     seed_fluorophores_if_needed()

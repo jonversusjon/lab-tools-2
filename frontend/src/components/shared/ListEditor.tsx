@@ -20,6 +20,8 @@ interface ListEditorProps {
   placeholder?: string
   /** Whether the field is required */
   required?: boolean
+  /** When true, renders a strict <select> dropdown instead of a free-text input with datalist */
+  selectOnly?: boolean
 }
 
 export default function ListEditor({
@@ -30,6 +32,7 @@ export default function ListEditor({
   className = '',
   placeholder,
   required,
+  selectOnly = false,
 }: ListEditorProps) {
   const { data: entries = [] } = useListEntries(listType)
   const createMut = useCreateListEntry(listType)
@@ -120,19 +123,34 @@ export default function ListEditor({
         </button>
       </div>
 
-      <input
-        type="text"
-        list={'list-' + listType}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={inputClass}
-        placeholder={placeholder}
-      />
-      <datalist id={'list-' + listType}>
-        {entries.map((e) => (
-          <option key={e.id} value={e.value} />
-        ))}
-      </datalist>
+      {selectOnly ? (
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={inputClass}
+        >
+          <option value="">{placeholder || 'Select...'}</option>
+          {entries.map((e) => (
+            <option key={e.id} value={e.value}>{e.value}</option>
+          ))}
+        </select>
+      ) : (
+        <>
+          <input
+            type="text"
+            list={'list-' + listType}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className={inputClass}
+            placeholder={placeholder}
+          />
+          <datalist id={'list-' + listType}>
+            {entries.map((e) => (
+              <option key={e.id} value={e.value} />
+            ))}
+          </datalist>
+        </>
+      )}
 
       {editorOpen && (
         <div

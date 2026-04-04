@@ -78,6 +78,29 @@ export async function importInstrument(
   return res.json()
 }
 
+export async function toggleInstrumentFavorite(
+  id: string,
+  is_favorite: boolean
+): Promise<Instrument> {
+  const res = await fetch(`/api/v1/instruments/${id}/favorite`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_favorite }),
+  })
+  if (!res.ok) throw new Error('Failed to toggle instrument favorite')
+  return res.json()
+}
+
+export async function recordInstrumentView(id: string): Promise<void> {
+  await fetch(`/api/v1/instruments/${id}/view`, { method: 'POST' })
+}
+
+export async function getRecentInstruments(limit = 10): Promise<string[]> {
+  const res = await fetch(`/api/v1/instruments/recent?limit=${limit}`)
+  if (!res.ok) throw new Error('Failed to fetch recent instruments')
+  return res.json()
+}
+
 export async function getFluorophoreCompatibility(
   id: string,
   min_excitation_pct?: number,

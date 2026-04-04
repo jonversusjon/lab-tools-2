@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
@@ -13,10 +15,13 @@ from models import Detector
 from models import Fluorophore
 from models import FluorophoreSpectrum
 from models import Instrument
+from models import InstrumentView
 from models import Laser
+from models import Panel
 from models import PanelAssignment
 from models import UserPreference
 from schemas import DetectorCompatibilityResponse
+from schemas import FavoriteToggle
 from schemas import FluorophoreCompatibilityDetail
 from schemas import InstrumentCreate
 from schemas import InstrumentExport
@@ -77,7 +82,7 @@ def create_instrument(
     data: InstrumentCreate,
     db: Session = Depends(get_db),
 ):
-    instrument = Instrument(name=data.name)
+    instrument = Instrument(name=data.name, location=data.location)
     db.add(instrument)
     db.flush()
 
@@ -100,6 +105,67 @@ def create_instrument(
 
     db.commit()
     return _load_instrument(db, instrument.id)
+
+
+@router.patch("/{id}/favorite", response_model=InstrumentRead)
+def toggle_instrument_favorite(
+    id: str,
+    data: FavoriteToggle,
+    db: Session = Depends(get_db),
+):
+    instrument = db.get(Instrument, id)
+    if instrument is None:
+        raise HTTPException(status_code=404, detail="Instrument not found")
+    instrument.is_favorite = data.is_favorite
+    db.commit()
+    return _load_instrument(db, id)
+
+
+@router.post("/{id}/view", status_code=204)
+def record_instrument_view(id: str, db: Session = Depends(get_db)):
+    instrument = db.get(Instrument, id)
+    if instrument is None:
+        raise HTTPException(status_code=404, detail="Instrument not found")
+    view = InstrumentView(instrument_id=id)
+    db.add(view)
+    db.commit()
+
+
+@router.get("/recent", response_model=list[str])
+def get_recent_instruments(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+):
+    """Return recent instrument IDs merged from recent panels and explicit views."""
+    panel_stmt = (
+        select(Panel.instrument_id, Panel.updated_at)
+        .where(Panel.instrument_id.is_not(None))
+        .order_by(Panel.updated_at.desc())
+        .limit(20)
+    )
+    panel_rows = db.execute(panel_stmt).all()
+
+    view_stmt = (
+        select(
+            InstrumentView.instrument_id,
+            func.max(InstrumentView.viewed_at).label("last_viewed"),
+        )
+        .group_by(InstrumentView.instrument_id)
+        .order_by(func.max(InstrumentView.viewed_at).desc())
+        .limit(20)
+    )
+    view_rows = db.execute(view_stmt).all()
+
+    timestamps: dict[str, datetime] = {}
+    for inst_id, ts in panel_rows:
+        if ts is not None and (inst_id not in timestamps or ts > timestamps[inst_id]):
+            timestamps[inst_id] = ts
+    for inst_id, ts in view_rows:
+        if ts is not None and (inst_id not in timestamps or ts > timestamps[inst_id]):
+            timestamps[inst_id] = ts
+
+    sorted_ids = sorted(timestamps.keys(), key=lambda x: timestamps[x], reverse=True)
+    return sorted_ids[:limit]
 
 
 @router.get("/{id}", response_model=InstrumentRead)
@@ -145,8 +211,9 @@ def update_instrument(
         db.delete(laser)
     db.flush()
 
-    # Update name and create new lasers/detectors
+    # Update name/location and create new lasers/detectors
     instrument.name = data.name
+    instrument.location = data.location
     for laser_data in data.lasers:
         laser = Laser(
             instrument_id=instrument.id,

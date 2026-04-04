@@ -11,6 +11,8 @@ const mockDeleteMutation = { mutateAsync: vi.fn(), isPending: false }
 const existingInstrument = {
   id: 'inst-1',
   name: 'BD FACSAria III',
+  is_favorite: false,
+  location: null,
   lasers: [
     {
       id: 'l1',

@@ -11,6 +11,8 @@ vi.mock('@/hooks/useInstruments', () => ({
         {
           id: '1',
           name: 'BD FACSAria III',
+          is_favorite: false,
+          location: null,
           lasers: [
             {
               id: 'l1',
@@ -45,6 +47,7 @@ vi.mock('@/hooks/useInstruments', () => ({
   useUpdateInstrument: () => ({ mutate: vi.fn() }),
   useDeleteInstrument: () => ({ mutate: vi.fn() }),
   useImportInstrument: () => ({ mutate: vi.fn() }),
+  useToggleInstrumentFavorite: () => ({ mutate: vi.fn() }),
 }))
 
 function wrapper({ children }: { children: React.ReactNode }) {

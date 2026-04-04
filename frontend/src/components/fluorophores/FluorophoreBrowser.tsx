@@ -7,12 +7,13 @@ import {
   useBatchSpectra,
   useToggleFluorophoreFavorite,
 } from '@/hooks/useFluorophores'
+import { useRecentInstruments, useRecordInstrumentView } from '@/hooks/useInstruments'
 import { tokenSearch } from '@/utils/search'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 import FpbaseFetchModal from './FpbaseFetchModal'
 import FluorophoreImportWizard from './FluorophoreImportWizard'
 import FavoriteButton from '@/components/antibodies/FavoriteButton'
-import type { Fluorophore, SpectraData } from '@/types'
+import type { Fluorophore, InstrumentCompatibility, SpectraData } from '@/types'
 
 const PAGE_SIZE = 50
 
@@ -288,6 +289,169 @@ export default function FluorophoreBrowser() {
 // Detail panel shown when a row is expanded
 // ---------------------------------------------------------------------------
 
+function InstrumentCompatibilityCard({ compat }: { compat: InstrumentCompatibility }) {
+  const exByWl = new Map(
+    compat.laser_lines.map((l) => [l.wavelength_nm, l.excitation_efficiency])
+  )
+  let bestDet: typeof compat.detectors[0] | null = null
+  let bestExEff = 0
+  let bestScore = -1
+  for (const d of compat.detectors) {
+    const exEff = exByWl.get(d.laser_wavelength_nm) ?? 0
+    const score = exEff * d.collection_efficiency
+    if (score > bestScore) {
+      bestScore = score
+      bestDet = d
+      bestExEff = exEff
+    }
+  }
+  return (
+    <tr className="border-b border-gray-100 dark:border-gray-700">
+      <td className="py-1 pr-4 text-gray-700 dark:text-gray-300">
+        {compat.instrument_name}
+      </td>
+      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+        {bestDet ? bestDet.laser_wavelength_nm + ' nm' : '—'}
+      </td>
+      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+        {bestDet ? (bestExEff * 100).toFixed(1) + '%' : '—'}
+      </td>
+      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+        {bestDet ? (bestDet.name ?? bestDet.center_nm + '/' + bestDet.bandwidth_nm) : '—'}
+      </td>
+      <td className="py-1 text-gray-600 dark:text-gray-400">
+        {bestDet ? (bestDet.collection_efficiency * 100).toFixed(1) + '%' : '—'}
+      </td>
+    </tr>
+  )
+}
+
+function TieredCompatibilityTable({ compatibilities }: { compatibilities: InstrumentCompatibility[] }) {
+  const { data: recentIds = [] } = useRecentInstruments()
+  const recordView = useRecordInstrumentView()
+  const [showAll, setShowAll] = useState(false)
+
+  const recentIdSet = useMemo(() => new Set(recentIds), [recentIds])
+
+  const { favorites, recents, others } = useMemo(() => {
+    const favs: InstrumentCompatibility[] = []
+    const recs: InstrumentCompatibility[] = []
+    const rest: InstrumentCompatibility[] = []
+    for (const compat of compatibilities) {
+      if (compat.is_favorite) {
+        favs.push(compat)
+      } else if (recentIdSet.has(compat.instrument_id)) {
+        recs.push(compat)
+      } else {
+        rest.push(compat)
+      }
+    }
+    return { favorites: favs, recents: recs, others: rest }
+  }, [compatibilities, recentIdSet])
+
+  const tableHeader = (
+    <thead>
+      <tr className="border-b border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+        <th className="py-1 text-left font-medium pr-4">Instrument</th>
+        <th className="py-1 text-left font-medium pr-4">Best Laser</th>
+        <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
+        <th className="py-1 text-left font-medium pr-4">Best Detector</th>
+        <th className="py-1 text-left font-medium">Coll. Eff.</th>
+      </tr>
+    </thead>
+  )
+
+  const noTiers = favorites.length === 0 && recents.length === 0
+
+  if (noTiers) {
+    return (
+      <div className="overflow-x-auto">
+        <table className="text-xs w-full border-collapse">
+          {tableHeader}
+          <tbody>
+            {compatibilities.map((c) => (
+              <InstrumentCompatibilityCard key={c.instrument_id} compat={c} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      {favorites.length > 0 && (
+        <>
+          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Favorites
+          </div>
+          <table className="text-xs w-full border-collapse">
+            {tableHeader}
+            <tbody>
+              {favorites.map((c) => (
+                <InstrumentCompatibilityCard key={c.instrument_id} compat={c} />
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {favorites.length > 0 && recents.length > 0 && (
+        <hr className="my-3 border-gray-200 dark:border-gray-700" />
+      )}
+
+      {recents.length > 0 && (
+        <>
+          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Recent
+          </div>
+          <table className="text-xs w-full border-collapse">
+            {tableHeader}
+            <tbody>
+              {recents.map((c) => (
+                <InstrumentCompatibilityCard
+                  key={c.instrument_id}
+                  compat={c}
+                />
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {others.length > 0 && (
+        <>
+          <hr className="my-3 border-gray-200 dark:border-gray-700" />
+          <button
+            onClick={() => {
+              setShowAll(!showAll)
+              if (!showAll) {
+                others.forEach((c) => recordView.mutate(c.instrument_id))
+              }
+            }}
+            className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+          >
+            <span>{showAll ? '▼' : '▶'}</span>
+            {showAll ? 'Hide' : 'Show'} all instruments ({others.length})
+          </button>
+          {showAll && (
+            <div className="mt-2">
+              <table className="text-xs w-full border-collapse">
+                {tableHeader}
+                <tbody>
+                  {others.map((c) => (
+                    <InstrumentCompatibilityCard key={c.instrument_id} compat={c} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
   const { data: spectraData, isLoading: spectraLoading } = useFluorophoreSpectra(
     fluorophore.has_spectra ? fluorophore.id : ''
@@ -363,67 +527,7 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
             No instruments in database. Add an instrument to see compatibility.
           </p>
         ) : compatData ? (
-          <div className="overflow-x-auto">
-            <table className="text-xs w-full border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
-                  <th className="py-1 text-left font-medium pr-4">Instrument</th>
-                  <th className="py-1 text-left font-medium pr-4">Best Laser</th>
-                  <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
-                  <th className="py-1 text-left font-medium pr-4">Best Detector</th>
-                  <th className="py-1 text-left font-medium">Coll. Eff.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {compatData.instrument_compatibilities.map((inst) => {
-                  // Build a lookup from laser wavelength → excitation efficiency
-                  const exByWl = new Map(
-                    inst.laser_lines.map((l) => [l.wavelength_nm, l.excitation_efficiency])
-                  )
-                  // Pick the laser-detector pair with the highest relative brightness
-                  // (excitation × collection), which is proportional to total signal
-                  let bestDet: typeof inst.detectors[0] | null = null
-                  let bestExEff = 0
-                  let bestScore = -1
-                  for (const d of inst.detectors) {
-                    const exEff = exByWl.get(d.laser_wavelength_nm) ?? 0
-                    const score = exEff * d.collection_efficiency
-                    if (score > bestScore) {
-                      bestScore = score
-                      bestDet = d
-                      bestExEff = exEff
-                    }
-                  }
-                  return (
-                    <tr
-                      key={inst.instrument_id}
-                      className="border-b border-gray-100 dark:border-gray-700"
-                    >
-                      <td className="py-1 pr-4 text-gray-700 dark:text-gray-300">
-                        {inst.instrument_name}
-                      </td>
-                      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
-                        {bestDet ? bestDet.laser_wavelength_nm + ' nm' : '—'}
-                      </td>
-                      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
-                        {bestDet ? (bestExEff * 100).toFixed(1) + '%' : '—'}
-                      </td>
-                      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
-                        {bestDet
-                          ? (bestDet.name ?? bestDet.center_nm + '/' + bestDet.bandwidth_nm)
-                          : '—'}
-                      </td>
-                      <td className="py-1 text-gray-600 dark:text-gray-400">
-                        {bestDet
-                          ? (bestDet.collection_efficiency * 100).toFixed(1) + '%'
-                          : '—'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+          <TieredCompatibilityTable compatibilities={compatData.instrument_compatibilities} />
         ) : null}
       </div>
     </div>

@@ -24,6 +24,8 @@ export interface Laser {
 export interface Instrument {
   id: string
   name: string
+  is_favorite: boolean
+  location: string | null
   lasers: Laser[]
 }
 
@@ -72,6 +74,7 @@ export interface DetectorCompatibility {
 export interface InstrumentCompatibility {
   instrument_id: string
   instrument_name: string
+  is_favorite: boolean
   laser_lines: LaserCompatibility[]
   detectors: DetectorCompatibility[]
 }
@@ -232,6 +235,7 @@ export interface Panel {
 
 export interface InstrumentCreate {
   name: string
+  location?: string | null
   lasers?: LaserCreate[]
 }
 

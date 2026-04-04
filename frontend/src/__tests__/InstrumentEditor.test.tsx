@@ -11,6 +11,8 @@ const mockDeleteMutation = { mutateAsync: vi.fn(), isPending: false }
 const existingInstrument = {
   id: '1',
   name: 'Test Cytometer',
+  is_favorite: false,
+  location: null,
   lasers: [
     {
       id: 'l1',
