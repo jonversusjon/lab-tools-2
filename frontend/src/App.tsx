@@ -10,6 +10,8 @@ import SecondaryList from '@/components/secondaries/SecondaryList'
 import Settings from '@/components/settings/Settings'
 import Homepage from '@/components/home/Homepage'
 import PlaceholderPage from '@/components/placeholder/PlaceholderPage'
+import PlateMapList from '@/components/plate-maps/PlateMapList'
+import PlateMapEditor from '@/components/plate-maps/PlateMapEditor'
 
 export default function App() {
   return (
@@ -80,6 +82,10 @@ export default function App() {
             />
           }
         />
+
+        {/* Plate Maps */}
+        <Route path="/plate-maps" element={<PlateMapList />} />
+        <Route path="/plate-maps/:id" element={<PlateMapEditor />} />
 
         <Route path="/settings" element={<Settings />} />
       </Route>

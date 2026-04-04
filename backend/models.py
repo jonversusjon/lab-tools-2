@@ -331,3 +331,16 @@ class InstrumentView(Base):
     __table_args__ = (
         Index("ix_instrument_views_instrument_viewed", "instrument_id", "viewed_at"),
     )
+
+
+class PlateMap(Base):
+    __tablename__ = "plate_maps"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    plate_type = Column(String(20), nullable=False, default="96-well")
+    well_data = Column(Text, nullable=False, default="{}")
+    legend = Column(Text, nullable=False, default="{}")
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

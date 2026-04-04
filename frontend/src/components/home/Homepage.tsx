@@ -4,6 +4,7 @@ import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores } from '@/hooks/useFluorophores'
 import { useInstruments } from '@/hooks/useInstruments'
 import { useSecondaries } from '@/hooks/useSecondaries'
+import { usePlateMaps } from '@/hooks/usePlateMaps'
 
 function StatCard({ value, label }: { value: number | null; label: string }) {
   return (
@@ -61,12 +62,14 @@ export default function Homepage() {
   const fluorophoresQuery = useFluorophores({})
   const instrumentsQuery = useInstruments(0, 500)
   const secondariesQuery = useSecondaries({})
+  const plateMapsQuery = usePlateMaps(0, 1)
 
   const panelCount = panelsQuery.data?.total ?? null
   const antibodyCount = antibodiesQuery.data?.total ?? null
   const fluorophoreCount = fluorophoresQuery.data?.total ?? null
   const instrumentCount = instrumentsQuery.data?.total ?? null
   const secondaryCount = secondariesQuery.data?.total ?? null
+  const plateMapCount = plateMapsQuery.data?.total ?? null
 
   return (
     <div className="max-w-4xl space-y-8">
@@ -104,6 +107,22 @@ export default function Homepage() {
           </Link>
         </SectionCard>
 
+        <SectionCard icon="🧫" title="Plate Maps" active>
+          <div className="space-y-1 mb-4 text-sm text-gray-600 dark:text-gray-400">
+            {plateMapCount === null ? (
+              <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-4 w-24" />
+            ) : (
+              <p>{plateMapCount} plate map{plateMapCount !== 1 ? 's' : ''}</p>
+            )}
+          </div>
+          <Link
+            to="/plate-maps"
+            className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Open Plate Maps →
+          </Link>
+        </SectionCard>
+
         <SectionCard icon="🔬" title="IF / IHC" active={false}>
           <ComingSoon />
         </SectionCard>
@@ -118,11 +137,12 @@ export default function Homepage() {
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
           Quick Stats
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <StatCard value={antibodyCount} label="Antibodies" />
           <StatCard value={fluorophoreCount} label="Fluorophores" />
           <StatCard value={panelCount} label="Panels" />
           <StatCard value={instrumentCount} label="Instruments" />
+          <StatCard value={plateMapCount} label="Plate Maps" />
         </div>
       </div>
 

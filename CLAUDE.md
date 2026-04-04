@@ -1,4 +1,4 @@
-# CLAUDE.md — Flow Panel Designer
+# CLAUDE.md — Lab Tools 2
 
 ## ⚠️ NEVER FORGET — Check Every File Against This List
 
@@ -32,6 +32,10 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **When mocking `useFluorophores`, always include `useToggleFluorophoreFavorite` and `useRecentFluorophores`** — `FluorophoreBrowser` calls both unconditionally; missing them crashes any test that renders the fluorophore browser.
 - [ ] **Fluorophore/detector names in `PanelTargetRow` come from props, not `as any` casts** — pass `fluorophoreName: string | null` (looked up via `fluorophoreNameById`) and `detectorLabel: string | null` (from `detectorLabelMap`) from PanelDesigner. Never access `assignment.fluorophore_name` or `assignment.detector_name` — those fields don't exist on `PanelAssignment`.
 - [ ] **`useRemoveTarget`, `useUpdateTarget`, `useReorderTargets` must all be mocked** in any test that renders PanelDesigner — PanelDesigner imports and calls all three.
+- [ ] **PlateMap.well_data and legend are JSON text columns** — always `json.loads()` on read, `json.dumps()` on write in the router. Pydantic handles dict ↔ JSON at the API boundary but SQLAlchemy stores raw strings.
+- [ ] **PlateMapEditor auto-save uses debounce + keepalive** — same pattern as InstrumentEditor. `userEdited` ref prevents saving on initial load.
+- [ ] **`html2canvas-pro` not `html2canvas`** — the standard package has canvas size limits. The `-pro` fork handles larger canvases (needed for 384-well plates at scale 3).
+- [ ] **PlateMap: no FK columns, no cascade rules needed** — well_data and legend are JSON text columns, no child records.
 ---
 
 ## Read First

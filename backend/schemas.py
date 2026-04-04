@@ -603,3 +603,45 @@ class PanelRead(PanelBase):
     assignments: list[PanelAssignmentRead] = []
 
     model_config = {"from_attributes": True}
+
+
+# --- Plate Map ---
+
+class PlateMapCreate(BaseModel):
+    name: str
+    description: str | None = None
+    plate_type: str = "96-well"
+    well_data: dict = {}
+    legend: dict = {}
+
+
+class PlateMapUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    plate_type: str | None = None
+    well_data: dict | None = None
+    legend: dict | None = None
+
+
+class PlateMapRead(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    plate_type: str
+    well_data: dict
+    legend: dict
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class PlateMapListRead(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    plate_type: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    model_config = {"from_attributes": True}

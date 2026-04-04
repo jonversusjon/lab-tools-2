@@ -480,3 +480,69 @@ export interface FluorophoreImportConfirmResponse {
   skipped: number
   errors: string[]
 }
+
+// --- Plate Map ---
+
+export type PlateType =
+  | '384-well' | '96-well' | '48-well' | '24-well' | '12-well' | '6-well'
+  | '10cm' | '15cm'
+  | 'T25' | 'T75' | 'T175' | 'T225'
+  | '1-chamber' | '2-chamber' | '4-chamber' | '8-chamber' | '16-chamber'
+
+export type ColorLayer = 'fillColor' | 'borderColor' | 'backgroundColor'
+
+export interface WellColors {
+  fillColor?: string
+  borderColor?: string
+  backgroundColor?: string
+}
+
+/** Map of well IDs (e.g. "A1") to their color data */
+export type WellDataMap = Record<string, WellColors>
+
+export interface LegendColorEntry {
+  label: string
+  applyToWells: boolean
+}
+
+/** Legend structure: { colors: { fillColor: { "#hex": { label, applyToWells } } }, colorOrder: { fillColor: ["#hex1", "#hex2"] } } */
+export interface PlateMapLegend {
+  colors: Record<ColorLayer, Record<string, LegendColorEntry>>
+  colorOrder: Record<ColorLayer, string[]>
+}
+
+export interface PlateMap {
+  id: string
+  name: string
+  description: string | null
+  plate_type: PlateType
+  well_data: WellDataMap
+  legend: PlateMapLegend
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface PlateMapListItem {
+  id: string
+  name: string
+  description: string | null
+  plate_type: PlateType
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface PlateMapCreate {
+  name: string
+  description?: string | null
+  plate_type?: PlateType
+  well_data?: WellDataMap
+  legend?: PlateMapLegend
+}
+
+export interface PlateMapUpdate {
+  name?: string | null
+  description?: string | null
+  plate_type?: PlateType | null
+  well_data?: WellDataMap | null
+  legend?: PlateMapLegend | null
+}

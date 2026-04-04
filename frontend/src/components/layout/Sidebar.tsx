@@ -71,6 +71,7 @@ const sidebarEntries: SidebarEntry[] = [
       ],
     },
   },
+  { type: 'link', item: { to: '/plate-maps', label: 'Plate Maps', icon: '🧫' } },
   { type: 'link', item: { to: '/settings', label: 'Settings', icon: '⚙️' } },
 ]
 

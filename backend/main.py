@@ -17,12 +17,14 @@ from models import Antibody
 from models import AntibodyTag
 from models import Fluorophore
 from models import Instrument
+from models import PlateMap  # noqa: F401 — ensures table is created by create_all()
 from routers import antibodies
 from routers import conjugate_chemistries
 from routers import fluorophores
 from routers import instruments
 from routers import list_entries
 from routers import panels
+from routers import plate_maps
 from routers import preferences
 from routers import secondaries
 from routers import tags
@@ -372,7 +374,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Flow Panel Designer", lifespan=lifespan)
+app = FastAPI(title="Lab Tools 2", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -391,3 +393,4 @@ app.include_router(tags.router, prefix="/api/v1/tags", tags=["tags"])
 app.include_router(preferences.router, prefix="/api/v1/preferences", tags=["preferences"])
 app.include_router(list_entries.router, prefix="/api/v1/list-entries", tags=["list-entries"])
 app.include_router(conjugate_chemistries.router, prefix="/api/v1/conjugate-chemistries", tags=["conjugate-chemistries"])
+app.include_router(plate_maps.router, prefix="/api/v1/plate-maps", tags=["plate-maps"])
