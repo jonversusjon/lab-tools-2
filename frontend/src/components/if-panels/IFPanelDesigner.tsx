@@ -140,16 +140,6 @@ export default function IFPanelDesigner() {
     })
   }
 
-  // --- Panel type toggle ---
-  const handlePanelTypeToggle = () => {
-    if (!panel || !id) return
-    const newType = panel.panel_type === 'IF' ? 'IHC' : 'IF'
-    updateMutation.mutate(
-      { id, data: { panel_type: newType } },
-      { onSuccess: () => refetchPanel() }
-    )
-  }
-
   // --- Microscope change ---
   const handleMicroscopeChange = (newMicroscopeId: string) => {
     if (!panel || !id) return
@@ -435,7 +425,7 @@ export default function IFPanelDesigner() {
   )
 
   const showSpectral = state.viewMode === 'spectral' && state.microscope != null
-  const totalCols = 10 + (showSpectral ? 3 : 0) // drag, #, target, staining, primary ab, secondary, fluorophore, if dilution, notes, remove [+ channel, ex%, det%]
+  const totalCols = 9 + (showSpectral ? 3 : 0) // drag, target, staining, primary ab, secondary/fluorophore, if dilution, notes, remove [+ channel, ex%, det%]
 
   if (!panel) {
     return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
@@ -478,20 +468,6 @@ export default function IFPanelDesigner() {
               {panel.name}
             </h1>
           )}
-
-          {/* Panel type badge */}
-          <button
-            onClick={handlePanelTypeToggle}
-            className={
-              'rounded-full px-3 py-0.5 text-xs font-semibold border transition-colors ' +
-              (panel.panel_type === 'IF'
-                ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-600 hover:bg-purple-200 dark:hover:bg-purple-900/60'
-                : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600 hover:bg-blue-200 dark:hover:bg-blue-900/60')
-            }
-            title="Click to toggle IF / IHC"
-          >
-            {panel.panel_type}
-          </button>
 
           <div className="ml-auto flex items-center gap-2">
             {/* View mode toggle */}
@@ -575,7 +551,6 @@ export default function IFPanelDesigner() {
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                   <th className="w-7 px-1 py-2" />
-                  <th className="w-8 px-2 py-2 font-medium text-center">#</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Target</th>
                   <th className="px-3 py-2 font-medium" style={{ width: 100 }}>Staining</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Primary Ab</th>
@@ -606,7 +581,7 @@ export default function IFPanelDesigner() {
                     </td>
                   </tr>
                 ) : (
-                  state.targets.map((t, rowIndex) => {
+                  state.targets.map((t) => {
                     const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
                     const assignment = t.antibody_id ? assignmentByAntibody.get(t.antibody_id) : undefined
                     const hasAssignment = !!assignment
@@ -640,11 +615,6 @@ export default function IFPanelDesigner() {
                               <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto">
                                 <path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z" />
                               </svg>
-                            </td>
-
-                            {/* Row number */}
-                            <td className="w-8 px-2 py-2 text-center text-xs text-gray-400 dark:text-gray-500 tabular-nums">
-                              {rowIndex + 1}
                             </td>
 
                             {/* Target (antibody_target) */}
@@ -880,7 +850,6 @@ export default function IFPanelDesigner() {
                     className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   >
                     <td className="w-7 px-1 py-2" />
-                    <td className="w-8 px-2 py-2" />
                     <td className="px-3 py-2" style={{ minWidth: 160 }}>
                       <AntibodyOmnibox
                         antibodies={antibodies}
