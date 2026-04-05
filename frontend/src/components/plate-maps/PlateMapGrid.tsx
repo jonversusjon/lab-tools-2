@@ -42,6 +42,16 @@ function getWellLabel(
   return null
 }
 
+/**
+ * Returns the cell size in px so that well plates 6–96 all render at the same
+ * total width (~480 px of well area). The 384-well plate uses a slightly wider
+ * target (~576 px) so its tiny wells remain usable.
+ */
+function getCellPx(cols: number): number {
+  const targetWidth = cols >= 24 ? 576 : 480
+  return Math.floor(targetWidth / cols)
+}
+
 export default function PlateMapGrid({
   plateType,
   wellData,
@@ -154,14 +164,23 @@ export default function PlateMapGrid({
   }
 
   // Well plate layout with row/column headers
+  const cellPx = getCellPx(cols)
+  const circlePx = Math.max(14, Math.round(cellPx * 0.85))
+  const labelFontPx = Math.max(5, Math.min(16, Math.round(circlePx * 0.18)))
+  const headerTextClass = cols >= 24
+    ? 'text-[9px]'
+    : cols >= 12
+      ? 'text-xs'
+      : 'text-sm'
+
   return (
     <div id={id} className="w-full overflow-auto">
       <div
         className="inline-grid"
         style={{
-          gridTemplateColumns: `auto repeat(${cols}, minmax(0, 1fr))`,
-          gridTemplateRows: `auto repeat(${rows}, minmax(0, 1fr))`,
-          gap: rows >= 16 ? '2px' : rows >= 8 ? '3px' : '4px',
+          gridTemplateColumns: `auto repeat(${cols}, ${cellPx}px)`,
+          gridTemplateRows: `auto repeat(${rows}, ${cellPx}px)`,
+          gap: 0,
         }}
       >
         {/* Top-left empty corner */}
@@ -175,8 +194,8 @@ export default function PlateMapGrid({
             disabled={readOnly}
             onClick={(e) => handleColClick(e, colIdx, colLabel)}
             className={
-              'flex items-center justify-center rounded text-center font-medium ' +
-              (rows >= 16 ? 'text-[9px] py-0.5' : rows >= 8 ? 'text-xs py-1' : 'text-sm py-1') +
+              'flex items-center justify-center text-center font-medium ' +
+              headerTextClass +
               ' text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 ' +
               (readOnly ? 'cursor-default' : 'cursor-pointer')
             }
@@ -195,8 +214,8 @@ export default function PlateMapGrid({
               disabled={readOnly}
               onClick={(e) => handleRowClick(e, rowIdx, rowLabel)}
               className={
-                'flex items-center justify-center rounded font-medium ' +
-                (rows >= 16 ? 'text-[9px] px-0.5' : rows >= 8 ? 'text-xs px-1' : 'text-sm px-2') +
+                'flex items-center justify-center font-medium pr-1 ' +
+                headerTextClass +
                 ' text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 ' +
                 (readOnly ? 'cursor-default' : 'cursor-pointer')
               }
@@ -211,7 +230,6 @@ export default function PlateMapGrid({
               const isSelected = selectedSet.has(wellId)
               const isPreview = previewSet.has(wellId)
               const wellLabel = getWellLabel(wellId, wellData, legend)
-              const wellSize = rows >= 16 ? 'w-5 h-5' : rows >= 8 ? 'w-7 h-7' : 'w-10 h-10'
 
               return (
                 <div
@@ -222,7 +240,7 @@ export default function PlateMapGrid({
                     if (onContextMenu) { e.preventDefault(); onContextMenu(e, 'well', wellId) }
                   }}
                   className={
-                    'relative flex items-center justify-center rounded-sm ' +
+                    'relative flex items-center justify-center ' +
                     (readOnly ? 'cursor-default' : 'cursor-pointer') +
                     ' transition-all duration-75'
                   }
@@ -231,30 +249,27 @@ export default function PlateMapGrid({
                   }}
                 >
                   <div
-                    className={
-                      'rounded-full flex items-center justify-center ' +
-                      wellSize +
-                      (isSelected
-                        ? ' outline outline-2 outline-offset-1 outline-blue-500 dark:outline-blue-400'
-                        : '') +
-                      (isPreview && !isSelected
-                        ? ' outline outline-2 outline-offset-1 outline-blue-300 dark:outline-yellow-300'
-                        : '')
-                    }
+                    className="rounded-full flex items-center justify-center"
                     style={{
+                      width: circlePx,
+                      height: circlePx,
                       backgroundColor: colors.fillColor ?? 'var(--well-fill)',
-                      borderWidth: colors.borderColor ? 2 : 1,
+                      borderWidth: colors.borderColor ? 4 : 1,
                       borderStyle: 'solid',
                       borderColor: colors.borderColor ?? 'var(--well-border)',
+                      outline: isSelected
+                        ? '2px solid rgb(59 130 246)'
+                        : isPreview && !isSelected
+                          ? '2px solid rgb(147 197 253)'
+                          : undefined,
+                      outlineOffset: isSelected || (isPreview && !isSelected) ? 2 : undefined,
                     }}
                   >
                     {wellLabel && (
                       <span
-                        className={
-                          'font-medium text-center leading-tight overflow-hidden ' +
-                          (rows >= 16 ? 'text-[5px]' : rows >= 8 ? 'text-[7px]' : 'text-[9px]')
-                        }
+                        className="font-medium text-center leading-tight overflow-hidden"
                         style={{
+                          fontSize: labelFontPx,
                           color: colors.fillColor
                             ? isDark(colors.fillColor) ? '#fff' : '#111'
                             : 'var(--well-text)',

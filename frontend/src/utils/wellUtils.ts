@@ -98,21 +98,22 @@ export function toggleWellSelection(wells: string[], currentSelection: string[])
   return Array.from(next)
 }
 
-/** Find wells whose center falls within a drag-selection rectangle */
+/** Find wells whose bounding box intersects a drag-selection rectangle */
 export function getWellsInRectangle(
   rect: { startX: number; startY: number; endX: number; endY: number },
   wellPositions: Record<string, { x: number; y: number; width: number; height: number }>
 ): string[] {
-  const minX = Math.min(rect.startX, rect.endX)
-  const maxX = Math.max(rect.startX, rect.endX)
-  const minY = Math.min(rect.startY, rect.endY)
-  const maxY = Math.max(rect.startY, rect.endY)
+  const left = Math.min(rect.startX, rect.endX)
+  const right = Math.max(rect.startX, rect.endX)
+  const top = Math.min(rect.startY, rect.endY)
+  const bottom = Math.max(rect.startY, rect.endY)
 
   return Object.entries(wellPositions)
-    .filter(([, pos]) => {
-      const cx = pos.x + pos.width / 2
-      const cy = pos.y + pos.height / 2
-      return cx >= minX && cx <= maxX && cy >= minY && cy <= maxY
-    })
+    .filter(([, pos]) =>
+      pos.x < right &&
+      pos.x + pos.width > left &&
+      pos.y < bottom &&
+      pos.y + pos.height > top
+    )
     .map(([wellId]) => wellId)
 }

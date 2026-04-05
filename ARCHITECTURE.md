@@ -1,7 +1,7 @@
-# Flow Panel Designer — Master Context Document
+1# Lab Tools 2 — Master Context Document
 
 > **This file is NOT a build prompt.** It is the full project specification.
-> Each phase prompt references this document. Place it at `flow-panel-designer/ARCHITECTURE.md` during Phase 1 scaffold so it lives with the code and is always available for context.
+> Each phase prompt references this document. Place it at `lab-tools-2/ARCHITECTURE.md` during Phase 1 scaffold so it lives with the code and is always available for context.
 
 ---
 
@@ -187,7 +187,7 @@ Use **Chart.js** (canvas-based) via `react-chartjs-2` with `chartjs-plugin-annot
 ## Project Structure
 
 ```
-flow-panel-designer/
+lab-tools-2/
 ├── ARCHITECTURE.md          # This file
 ├── CLAUDE.md                # Claude Code conventions and rules
 ├── backend/

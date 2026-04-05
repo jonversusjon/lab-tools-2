@@ -33,6 +33,7 @@ interface LegendItemProps {
   wellIds: string[]
   onLabelChange: (label: string) => void
   onApplyToWellsChange: (checked: boolean) => void
+  onColorChange?: (newHex: string) => void
 }
 
 function LegendItem({
@@ -44,6 +45,7 @@ function LegendItem({
   wellIds,
   onLabelChange,
   onApplyToWellsChange,
+  onColorChange,
 }: LegendItemProps) {
   const [expanded, setExpanded] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -76,10 +78,25 @@ function LegendItem({
             </svg>
           </button>
         )}
-        <div
-          className="w-5 h-5 rounded-full shrink-0 border border-gray-300 dark:border-gray-600"
-          style={{ backgroundColor: hex }}
-        />
+        {onColorChange ? (
+          <label
+            className="w-5 h-5 rounded-full shrink-0 block cursor-pointer border border-gray-300 dark:border-gray-600 overflow-hidden"
+            style={{ backgroundColor: hex }}
+            title="Change border color"
+          >
+            <input
+              type="color"
+              value={hex}
+              onChange={(e) => onColorChange(e.target.value)}
+              className="sr-only"
+            />
+          </label>
+        ) : (
+          <div
+            className="w-5 h-5 rounded-full shrink-0 border border-gray-300 dark:border-gray-600"
+            style={{ backgroundColor: hex }}
+          />
+        )}
         {readOnly ? (
           <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">
             {entry.label || hex}
@@ -89,7 +106,7 @@ function LegendItem({
             type="text"
             value={entry.label}
             onChange={(e) => onLabelChange(e.target.value)}
-            placeholder={hex}
+            placeholder="Add label"
             className="flex-1 rounded border border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 bg-transparent px-1 py-0.5 text-sm text-gray-700 dark:text-gray-300 focus:outline-none"
           />
         )}
@@ -129,6 +146,7 @@ interface PlateMapLegendPanelProps {
   legend: PlateMapLegend
   readOnly?: boolean
   onLegendChange?: (legend: PlateMapLegend) => void
+  onWellDataChange?: (data: WellDataMap) => void
 }
 
 function buildEmptyLegend(): PlateMapLegend {
@@ -143,6 +161,7 @@ export default function PlateMapLegendPanel({
   legend,
   readOnly = false,
   onLegendChange,
+  onWellDataChange,
 }: PlateMapLegendPanelProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -190,6 +209,31 @@ export default function PlateMapLegendPanel({
         No colors applied yet.
       </div>
     )
+  }
+
+  function handleColorChange(layer: ColorLayer, oldHex: string, newHex: string) {
+    if (oldHex === newHex) return
+    if (onWellDataChange) {
+      const nextWellData: WellDataMap = {}
+      for (const [wellId, colors] of Object.entries(wellData)) {
+        nextWellData[wellId] = colors[layer] === oldHex
+          ? { ...colors, [layer]: newHex }
+          : colors
+      }
+      onWellDataChange(nextWellData)
+    }
+    if (onLegendChange) {
+      const next = JSON.parse(JSON.stringify(safeLegend)) as PlateMapLegend
+      const entry = next.colors[layer][oldHex]
+      if (entry) {
+        next.colors[layer][newHex] = entry
+        delete next.colors[layer][oldHex]
+      }
+      if (next.colorOrder[layer]) {
+        next.colorOrder[layer] = next.colorOrder[layer].map((h) => h === oldHex ? newHex : h)
+      }
+      onLegendChange(next)
+    }
   }
 
   function updateEntry(layer: ColorLayer, hex: string, patch: Partial<LegendColorEntry>) {
@@ -252,6 +296,11 @@ export default function PlateMapLegendPanel({
                         wellIds={wellIds}
                         onLabelChange={(label) => updateEntry(layer, hex, { label })}
                         onApplyToWellsChange={(checked) => updateEntry(layer, hex, { applyToWells: checked })}
+                        onColorChange={
+                          !readOnly && layer === 'borderColor'
+                            ? (newHex) => handleColorChange(layer, hex, newHex)
+                            : undefined
+                        }
                       />
                     )
                   })}

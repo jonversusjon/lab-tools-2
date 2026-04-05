@@ -1,4 +1,4 @@
-# Flow Panel Designer
+# Lab Tools 2
 
 A full-stack flow cytometry panel designer for building and optimizing fluorescence panels. Supports pre-conjugated and unconjugated antibodies, real-time spillover matrix calculation, spectra visualization, and FPbase integration.
 

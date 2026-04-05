@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { TAILWIND_COLORS } from '@/utils/plateMapColors'
 import { PLATE_CATEGORIES } from '@/utils/plateTypes'
 import type { ColorLayer, PlateType } from '@/types'
@@ -28,7 +28,6 @@ interface PlateMapControlsProps {
   currentColors: Record<ColorLayer, string>
   selectedWellCount: number
   canUndo: boolean
-  saveStatus: 'idle' | 'saving' | 'saved' | 'error'
   onPlateTypeChange: (type: PlateType) => void
   onLayerChange: (layer: ColorLayer) => void
   onApplyColor: (color: string) => void
@@ -50,7 +49,6 @@ export default function PlateMapControls({
   currentColors,
   selectedWellCount,
   canUndo,
-  saveStatus,
   onPlateTypeChange,
   onLayerChange,
   onApplyColor,
@@ -61,12 +59,25 @@ export default function PlateMapControls({
 }: PlateMapControlsProps) {
   const [customHex, setCustomHex] = useState('')
   const [presets, setPresets] = useState<string[]>(loadPresets)
+  const [showFullPalette, setShowFullPalette] = useState(false)
 
   const activeColor = currentColors[activeLayer]
 
   useEffect(() => {
     savePresets(presets)
   }, [presets])
+
+  const limitedColors = useMemo(() => {
+    return TAILWIND_COLORS
+      .filter((_, i) => i % 2 === 0)
+      .slice(0, 8)
+      .map((hue) => ({
+        ...hue,
+        shades: hue.shades.filter((_, i) => i % 2 === 0).slice(0, 5),
+      }))
+  }, [])
+
+  const displayColors = showFullPalette ? TAILWIND_COLORS : limitedColors
 
   const handleAddPreset = () => {
     const hex = customHex.trim()
@@ -159,7 +170,7 @@ export default function PlateMapControls({
             </button>
             <span className="text-xs text-gray-400 dark:text-gray-500">None</span>
           </div>
-          {TAILWIND_COLORS.map((hue) => (
+          {displayColors.map((hue) => (
             <div key={hue.name} className="flex gap-0.5">
               {hue.shades.map((swatch) => (
                 <button
@@ -179,6 +190,13 @@ export default function PlateMapControls({
             </div>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowFullPalette((v) => !v)}
+          className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          {showFullPalette ? 'Show fewer colors' : 'Show all colors'}
+        </button>
       </div>
 
       {/* Custom hex */}
@@ -291,11 +309,6 @@ export default function PlateMapControls({
         >
           Reset Plate
         </button>
-        <div className="text-xs text-center text-gray-400 dark:text-gray-500">
-          {saveStatus === 'saving' && 'Saving...'}
-          {saveStatus === 'saved' && '✓ Saved'}
-          {saveStatus === 'error' && '⚠ Save failed'}
-        </div>
       </div>
     </div>
   )

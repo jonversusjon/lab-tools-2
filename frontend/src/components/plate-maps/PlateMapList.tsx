@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { usePlateMaps, useCreatePlateMap, useDeletePlateMap, useUpdatePlateMap } from '@/hooks/usePlateMaps'
 import Modal from '@/components/layout/Modal'
 import HoverActionsRow from '@/components/layout/HoverActionsRow'
-import { PLATE_CATEGORIES } from '@/utils/plateTypes'
-import type { PlateType } from '@/types'
 
 export default function PlateMapList() {
   const { data, isLoading, error } = usePlateMaps(0, 500)
@@ -13,23 +11,26 @@ export default function PlateMapList() {
   const updateMutation = useUpdatePlateMap()
   const navigate = useNavigate()
 
-  const [showCreate, setShowCreate] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newPlateType, setNewPlateType] = useState<PlateType>('96-well')
   const [editingMap, setEditingMap] = useState<{ id: string; name: string } | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
   const items = data?.items ?? []
 
   const handleCreate = () => {
-    if (!newName.trim()) return
+    const now = new Date()
+    const defaultName = 'Plate \u2014 ' + now.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }) + ' ' + now.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+
     createMutation.mutate(
-      { name: newName.trim(), plate_type: newPlateType },
+      { name: defaultName, plate_type: '96-well' },
       {
         onSuccess: (pm) => {
-          setShowCreate(false)
-          setNewName('')
-          setNewPlateType('96-well')
           navigate('/plate-maps/' + pm.id)
         },
       }
@@ -62,15 +63,15 @@ export default function PlateMapList() {
 
   const inputClass =
     'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
-  const selectClass = inputClass
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold dark:text-gray-100">Plate Maps</h1>
         <button
-          onClick={() => setShowCreate(true)}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          onClick={handleCreate}
+          disabled={createMutation.isPending}
+          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
           New Plate Map
         </button>
@@ -113,67 +114,6 @@ export default function PlateMapList() {
           </tbody>
         </table>
       )}
-
-      <Modal
-        isOpen={showCreate}
-        onClose={() => {
-          setShowCreate(false)
-          setNewName('')
-          setNewPlateType('96-well')
-        }}
-        title="New Plate Map"
-      >
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="pm-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Name
-            </label>
-            <input
-              id="pm-name"
-              type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleCreate() }}
-              className={inputClass}
-              autoFocus
-            />
-          </div>
-          <div>
-            <label htmlFor="pm-type" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Plate Type
-            </label>
-            <select
-              id="pm-type"
-              value={newPlateType}
-              onChange={(e) => setNewPlateType(e.target.value as PlateType)}
-              className={selectClass}
-            >
-              {Object.entries(PLATE_CATEGORIES).map(([category, types]) => (
-                <optgroup key={category} label={category}>
-                  {types.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => { setShowCreate(false); setNewName(''); setNewPlateType('96-well') }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleCreate}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              Create
-            </button>
-          </div>
-        </div>
-      </Modal>
 
       <Modal
         isOpen={!!editingMap}
