@@ -11,20 +11,40 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 
 from database import get_db
+from models import Fluorophore
+from models import FluorophoreSpectrum
 from models import IFPanel
 from models import IFPanelAssignment
 from models import Microscope
 from models import MicroscopeFilter
 from models import MicroscopeLaser
 from models import MicroscopeView
+from models import UserPreference
+from schemas import DetectorCompatibilityResponse
 from schemas import FavoriteToggle
+from schemas import FluorophoreCompatibilityDetail
 from schemas import MicroscopeCreate
 from schemas import MicroscopeExport
 from schemas import MicroscopeRead
 from schemas import MicroscopeUpdate
 from schemas import PaginatedResponse
+from services.spectra import integrate_bandpass
+from services.spectra import interpolate_at
 
 router = APIRouter()
+
+_microscope_compat_cache: dict[str, tuple[str, DetectorCompatibilityResponse]] = {}
+
+
+def _get_microscope_cache_token(db: Session, microscope: Microscope) -> str:
+    fl_count = db.scalar(select(func.count()).select_from(Fluorophore)) or 0
+    fs_count = db.scalar(select(func.count()).select_from(FluorophoreSpectrum)) or 0
+    scope_hash = "%s-" % microscope.name
+    for laser in microscope.lasers:
+        scope_hash += "%s%s" % (laser.id, laser.wavelength_nm)
+        for filt in laser.filters:
+            scope_hash += "%s%s%s" % (filt.id, filt.filter_midpoint, filt.filter_width)
+    return "%s-%s-%s" % (fl_count, fs_count, scope_hash)
 
 
 def _load_microscope(db: Session, microscope_id: str) -> Microscope:
@@ -246,6 +266,110 @@ def export_microscope(id: str, db: Session = Depends(get_db)):
             for laser in microscope.lasers
         ],
     )
+
+
+@router.get("/{id}/fluorophore-compatibility", response_model=DetectorCompatibilityResponse)
+def get_microscope_fluorophore_compatibility(
+    id: str,
+    min_excitation_pct: int | None = None,
+    min_detection_pct: int | None = None,
+    db: Session = Depends(get_db),
+):
+    microscope = _load_microscope(db, id)
+    token = _get_microscope_cache_token(db, microscope)
+
+    if min_excitation_pct is None:
+        p = db.get(UserPreference, "min_excitation_pct")
+        min_excitation_pct = int(p.value) if p else 5
+    if min_detection_pct is None:
+        p = db.get(UserPreference, "min_detection_pct")
+        min_detection_pct = int(p.value) if p else 10
+
+    cache_key = "%s-%s-%s-%s" % (id, token, min_excitation_pct, min_detection_pct)
+    if cache_key in _microscope_compat_cache:
+        return _microscope_compat_cache[cache_key][1]
+
+    from collections import defaultdict
+    fl_spectra: dict[str, dict[str, list[tuple[float, float]]]] = defaultdict(lambda: defaultdict(list))
+    spectra_rows = db.execute(
+        select(
+            FluorophoreSpectrum.fluorophore_id,
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+            FluorophoreSpectrum.intensity,
+        )
+        .where(FluorophoreSpectrum.spectrum_type.in_(["EX", "EM", "AB"]))
+        .order_by(
+            FluorophoreSpectrum.fluorophore_id,
+            FluorophoreSpectrum.spectrum_type,
+            FluorophoreSpectrum.wavelength_nm,
+        )
+    ).all()
+    for fl_id, stype, wl, intensity in spectra_rows:
+        fl_spectra[fl_id][stype].append((wl, intensity))
+
+    fluorophores = list(db.scalars(select(Fluorophore)))
+
+    em_totals: dict[str, float] = {}
+    for fl in fluorophores:
+        em_spectra = fl_spectra[fl.id].get("EM", [])
+        if em_spectra:
+            em_totals[fl.id] = integrate_bandpass(em_spectra, em_spectra[0][0], em_spectra[-1][0])
+        else:
+            em_totals[fl.id] = 0.0
+
+    compatibility_map: dict[str, list[FluorophoreCompatibilityDetail]] = defaultdict(list)
+
+    for laser in microscope.lasers:
+        laser_wl = laser.wavelength_nm
+        for fl in fluorophores:
+            ex_spectra = fl_spectra[fl.id].get("EX") or fl_spectra[fl.id].get("AB") or []
+            ex_eff = 0.0
+            if ex_spectra:
+                ex_eff = interpolate_at(ex_spectra, float(laser_wl))
+                peak = max(p[1] for p in ex_spectra)
+                ex_eff = (ex_eff / peak) if peak > 0 else 0.0
+            else:
+                if fl.ex_max_nm is not None and abs(fl.ex_max_nm - laser_wl) <= 40:
+                    ex_eff = 1.0
+
+            if ex_eff < (min_excitation_pct / 100.0):
+                continue
+
+            em_spectra = fl_spectra[fl.id].get("EM", [])
+            em_total = em_totals[fl.id]
+
+            for filt in laser.filters:
+                det_eff = 0.0
+                if em_spectra and em_total > 0:
+                    low = filt.filter_midpoint - filt.filter_width / 2
+                    high = filt.filter_midpoint + filt.filter_width / 2
+                    bandpass_integral = integrate_bandpass(em_spectra, low, high)
+                    det_eff = bandpass_integral / em_total
+                else:
+                    if fl.em_max_nm is not None:
+                        if filt.filter_midpoint - filt.filter_width <= fl.em_max_nm <= filt.filter_midpoint + filt.filter_width:
+                            det_eff = 1.0
+
+                if det_eff >= (min_detection_pct / 100.0):
+                    compatibility_map[filt.id].append(
+                        FluorophoreCompatibilityDetail(
+                            fluorophore_id=fl.id,
+                            name=fl.name,
+                            excitation_efficiency=round(ex_eff, 4),
+                            detection_efficiency=round(det_eff, 4),
+                            is_favorite=fl.is_favorite,
+                        )
+                    )
+
+    resp = DetectorCompatibilityResponse(
+        instrument_id=id,
+        min_excitation_pct=min_excitation_pct,
+        min_detection_pct=min_detection_pct,
+        compatibility=dict(compatibility_map),
+    )
+    _microscope_compat_cache[cache_key] = (token, resp)
+    return resp
 
 
 @router.post("/import", response_model=MicroscopeRead, status_code=201)
