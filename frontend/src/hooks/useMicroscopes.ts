@@ -9,6 +9,7 @@ import {
   toggleMicroscopeFavorite,
   recordMicroscopeView,
   getRecentMicroscopes,
+  getMicroscopeFluorophoreCompatibility,
 } from '@/api/microscopes'
 import type { MicroscopeCreate } from '@/types'
 
@@ -81,6 +82,19 @@ export function useRecentMicroscopes() {
   return useQuery({
     queryKey: ['microscopes', 'recent'],
     queryFn: () => getRecentMicroscopes(),
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useMicroscopeFluorophoreCompatibility(
+  microscopeId: string | null,
+  minEx?: number,
+  minDet?: number
+) {
+  return useQuery({
+    queryKey: ['microscope-compatibility', microscopeId, minEx, minDet],
+    queryFn: () => getMicroscopeFluorophoreCompatibility(microscopeId!, minEx, minDet),
+    enabled: !!microscopeId,
     staleTime: 5 * 60 * 1000,
   })
 }
