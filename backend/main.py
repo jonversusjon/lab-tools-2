@@ -25,6 +25,7 @@ from routers import conjugate_chemistries
 from routers import fluorophores
 from routers import instruments
 from routers import list_entries
+from routers import if_panels
 from routers import microscopes
 from routers import panels
 from routers import plate_maps
@@ -398,3 +399,4 @@ app.include_router(list_entries.router, prefix="/api/v1/list-entries", tags=["li
 app.include_router(conjugate_chemistries.router, prefix="/api/v1/conjugate-chemistries", tags=["conjugate-chemistries"])
 app.include_router(plate_maps.router, prefix="/api/v1/plate-maps", tags=["plate-maps"])
 app.include_router(microscopes.router, prefix="/api/v1/microscopes", tags=["microscopes"])
+app.include_router(if_panels.router, prefix="/api/v1/if-panels", tags=["if-panels"])

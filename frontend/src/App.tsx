@@ -50,28 +50,6 @@ export default function App() {
         <Route path="/if-ihc/microscopes/new" element={<MicroscopeEditor />} />
         <Route path="/if-ihc/microscopes/:id" element={<MicroscopeEditor />} />
 
-        {/* IF / IHC (placeholder) */}
-        <Route
-          path="/if-ihc/protocols"
-          element={
-            <PlaceholderPage
-              title="IF / IHC Protocols"
-              description="Plan and manage your immunofluorescence and immunohistochemistry staining protocols."
-              icon="📝"
-            />
-          }
-        />
-        <Route
-          path="/if-ihc/experiments"
-          element={
-            <PlaceholderPage
-              title="IF / IHC Experiments"
-              description="Track experiments, imaging sessions, and results."
-              icon="🧪"
-            />
-          }
-        />
-
         {/* qPCR (placeholder) */}
         <Route
           path="/qpcr/primers"

@@ -54,10 +54,8 @@ const sidebarEntries: SidebarEntry[] = [
       label: 'IF / IHC',
       icon: '🔬',
       children: [
+        { to: '/if-ihc/microscopes', label: 'Microscopes', icon: '🔧' },
         { to: '/if-ihc/panels', label: 'Panels', icon: '📋' },
-        { to: '/if-ihc/microscopes', label: 'Microscopes', icon: '🔬' },
-        { to: '/if-ihc/protocols', label: 'Protocols', icon: '📝' },
-        { to: '/if-ihc/experiments', label: 'Experiments', icon: '🧪' },
       ],
     },
   },
@@ -80,7 +78,7 @@ const sidebarEntries: SidebarEntry[] = [
 const STORAGE_KEY = 'sidebar-collapsed'
 const GROUPS_STORAGE_KEY = 'sidebar-groups'
 
-const defaultGroupState: Record<string, boolean> = { resources: true, flow: true, 'if-ihc': false, qpcr: false }
+const defaultGroupState: Record<string, boolean> = { resources: true, flow: true, 'if-ihc': true, qpcr: false }
 
 function readGroupState(): Record<string, boolean> {
   try {

@@ -14,7 +14,7 @@
  *   />
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { PanelTarget, Antibody, SecondaryAntibody } from '@/types'
 import {
   buildParticipants,
@@ -96,6 +96,13 @@ function ConflictBanner({
   onHighlightTarget?: (targetId: string) => void
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
+
+  // Auto-clear expand state when the expanded conflict is resolved
+  useEffect(() => {
+    if (expandedId !== null && !conflicts.some((c) => c.id === expandedId)) {
+      setExpandedId(null)
+    }
+  }, [conflicts, expandedId])
 
   const wrapperClass =
     variant === 'warning'

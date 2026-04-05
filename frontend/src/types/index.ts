@@ -481,6 +481,132 @@ export interface FluorophoreImportConfirmResponse {
   errors: string[]
 }
 
+// --- Microscope types ---
+
+export interface MicroscopeFilter {
+  id: string
+  laser_id: string
+  filter_midpoint: number
+  filter_width: number
+  name: string | null
+}
+
+export interface MicroscopeLaser {
+  id: string
+  microscope_id: string
+  wavelength_nm: number
+  name: string
+  filters: MicroscopeFilter[]
+}
+
+export interface Microscope {
+  id: string
+  name: string
+  is_favorite: boolean
+  location: string | null
+  lasers: MicroscopeLaser[]
+}
+
+export interface MicroscopeCreate {
+  name: string
+  location?: string | null
+  lasers?: MicroscopeLaserCreate[]
+}
+
+export interface MicroscopeLaserCreate {
+  wavelength_nm: number
+  name: string
+  filters?: MicroscopeFilterCreate[]
+}
+
+export interface MicroscopeFilterCreate {
+  filter_midpoint: number
+  filter_width: number
+  name?: string | null
+}
+
+// --- IF Panel types ---
+
+export interface IFPanelListItem {
+  id: string
+  name: string
+  panel_type: string
+  microscope_id: string | null
+  view_mode: string
+  created_at: string | null
+  updated_at: string | null
+  target_count: number
+  assignment_count: number
+}
+
+export interface IFPanelTarget {
+  id: string
+  panel_id: string
+  antibody_id: string | null
+  staining_mode: "direct" | "indirect"
+  secondary_antibody_id: string | null
+  sort_order: number
+  antibody_name: string | null
+  antibody_target: string | null
+  secondary_antibody_name: string | null
+  secondary_fluorophore_id: string | null
+  secondary_fluorophore_name: string | null
+}
+
+export interface IFPanelTargetCreate {
+  antibody_id?: string | null
+  staining_mode?: "direct" | "indirect"
+  secondary_antibody_id?: string | null
+}
+
+export interface IFPanelTargetUpdate {
+  antibody_id?: string | null
+  staining_mode?: "direct" | "indirect"
+  secondary_antibody_id?: string | null
+}
+
+export interface IFPanelAssignment {
+  id: string
+  panel_id: string
+  antibody_id: string
+  fluorophore_id: string
+  filter_id: string | null
+  notes: string | null
+}
+
+export interface IFPanelAssignmentCreate {
+  antibody_id: string
+  fluorophore_id: string
+  filter_id?: string | null
+  notes?: string | null
+}
+
+export interface IFPanel {
+  id: string
+  name: string
+  panel_type: string
+  microscope_id: string | null
+  view_mode: string
+  created_at: string | null
+  updated_at: string | null
+  targets: IFPanelTarget[]
+  assignments: IFPanelAssignment[]
+}
+
+export interface IFPanelCreate {
+  name: string
+  panel_type?: string
+  microscope_id?: string | null
+  view_mode?: string
+}
+
+export interface IFPanelUpdate {
+  name?: string
+  panel_type?: string
+  microscope_id?: string | null
+  view_mode?: string
+}
+
 // --- Plate Map ---
 
 export type PlateType =
