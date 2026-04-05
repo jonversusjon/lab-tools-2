@@ -17,6 +17,8 @@ from models import Antibody
 from models import AntibodyTag
 from models import Fluorophore
 from models import Instrument
+from models import IFPanel  # noqa: F401 — ensures table is created by create_all()
+from models import Microscope  # noqa: F401 — ensures table is created by create_all()
 from models import PlateMap  # noqa: F401 — ensures table is created by create_all()
 from routers import antibodies
 from routers import conjugate_chemistries

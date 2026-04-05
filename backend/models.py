@@ -344,3 +344,145 @@ class PlateMap(Base):
     legend = Column(Text, nullable=False, default="{}")
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class Microscope(Base):
+    __tablename__ = "microscopes"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    is_favorite = Column(Boolean, nullable=False, default=False)
+    location = Column(String, nullable=True)
+
+    lasers = relationship("MicroscopeLaser", back_populates="microscope", cascade="all, delete-orphan")
+
+
+class MicroscopeLaser(Base):
+    __tablename__ = "microscope_lasers"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    microscope_id = Column(
+        String(36),
+        ForeignKey("microscopes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    wavelength_nm = Column(Integer, nullable=False)
+    name = Column(String, nullable=False)
+
+    microscope = relationship("Microscope", back_populates="lasers")
+    filters = relationship("MicroscopeFilter", back_populates="laser", cascade="all, delete-orphan")
+
+
+class MicroscopeFilter(Base):
+    __tablename__ = "microscope_filters"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    laser_id = Column(
+        String(36),
+        ForeignKey("microscope_lasers.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    filter_midpoint = Column(Integer, nullable=False)
+    filter_width = Column(Integer, nullable=False)
+    name = Column(String, nullable=True)
+
+    laser = relationship("MicroscopeLaser", back_populates="filters")
+
+
+class MicroscopeView(Base):
+    __tablename__ = "microscope_views"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    microscope_id = Column(
+        String(36),
+        ForeignKey("microscopes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    viewed_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_microscope_views_microscope_viewed", "microscope_id", "viewed_at"),
+    )
+
+
+class IFPanel(Base):
+    __tablename__ = "if_panels"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    panel_type = Column(String(3), nullable=False, default="IF")
+    microscope_id = Column(
+        String(36),
+        ForeignKey("microscopes.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    view_mode = Column(String(10), nullable=False, default="simple")
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    microscope = relationship("Microscope")
+    targets = relationship("IFPanelTarget", back_populates="panel", cascade="all, delete-orphan")
+    assignments = relationship("IFPanelAssignment", back_populates="panel", cascade="all, delete-orphan")
+
+
+class IFPanelTarget(Base):
+    __tablename__ = "if_panel_targets"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    panel_id = Column(
+        String(36),
+        ForeignKey("if_panels.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    antibody_id = Column(
+        String(36),
+        ForeignKey("antibodies.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+    staining_mode = Column(String(10), nullable=False, default="direct")
+    secondary_antibody_id = Column(
+        String(36),
+        ForeignKey("secondary_antibodies.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    panel = relationship("IFPanel", back_populates="targets")
+    antibody = relationship("Antibody")
+    secondary_antibody = relationship("SecondaryAntibody")
+
+
+class IFPanelAssignment(Base):
+    __tablename__ = "if_panel_assignments"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    panel_id = Column(
+        String(36),
+        ForeignKey("if_panels.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    antibody_id = Column(
+        String(36),
+        ForeignKey("antibodies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    fluorophore_id = Column(
+        String(100),
+        ForeignKey("fluorophores.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    filter_id = Column(
+        String(36),
+        ForeignKey("microscope_filters.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    notes = Column(Text, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint("panel_id", "antibody_id", name="uq_if_panel_antibody"),
+    )
+
+    panel = relationship("IFPanel", back_populates="assignments")
+    antibody = relationship("Antibody")
+    fluorophore = relationship("Fluorophore")
+    filter = relationship("MicroscopeFilter")
