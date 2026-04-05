@@ -81,6 +81,71 @@ class InstrumentExport(InstrumentBase):
     lasers: list[LaserCreate] = []
 
 
+# --- MicroscopeFilter ---
+
+class MicroscopeFilterBase(BaseModel):
+    filter_midpoint: int
+    filter_width: int
+    name: str | None = None
+
+
+class MicroscopeFilterCreate(MicroscopeFilterBase):
+    pass
+
+
+class MicroscopeFilterRead(MicroscopeFilterBase):
+    id: str
+    laser_id: str
+
+    model_config = {"from_attributes": True}
+
+
+# --- MicroscopeLaser ---
+
+class MicroscopeLaserBase(BaseModel):
+    wavelength_nm: int
+    name: str
+
+
+class MicroscopeLaserCreate(MicroscopeLaserBase):
+    filters: list[MicroscopeFilterCreate] = []
+
+
+class MicroscopeLaserRead(MicroscopeLaserBase):
+    id: str
+    microscope_id: str
+    filters: list[MicroscopeFilterRead] = []
+
+    model_config = {"from_attributes": True}
+
+
+# --- Microscope ---
+
+class MicroscopeBase(BaseModel):
+    name: str
+    location: str | None = None
+
+
+class MicroscopeCreate(MicroscopeBase):
+    lasers: list[MicroscopeLaserCreate] = []
+
+
+class MicroscopeUpdate(MicroscopeBase):
+    lasers: list[MicroscopeLaserCreate] = []
+
+
+class MicroscopeRead(MicroscopeBase):
+    id: str
+    is_favorite: bool = False
+    lasers: list[MicroscopeLaserRead] = []
+
+    model_config = {"from_attributes": True}
+
+
+class MicroscopeExport(MicroscopeBase):
+    lasers: list[MicroscopeLaserCreate] = []
+
+
 # --- Fluorophore ---
 
 class FluorophoreRead(BaseModel):
@@ -601,6 +666,100 @@ class PanelRead(PanelBase):
     updated_at: datetime | None = None
     targets: list[PanelTargetRead] = []
     assignments: list[PanelAssignmentRead] = []
+
+    model_config = {"from_attributes": True}
+
+
+# --- IFPanelTarget ---
+
+class IFPanelTargetCreate(BaseModel):
+    antibody_id: str | None = None
+    staining_mode: str = "direct"
+    secondary_antibody_id: str | None = None
+
+
+class IFPanelTargetUpdate(BaseModel):
+    antibody_id: str | None = None
+    staining_mode: str | None = None
+    secondary_antibody_id: str | None = None
+
+
+class IFPanelTargetReorder(BaseModel):
+    target_ids: list[str]
+
+
+class IFPanelTargetRead(BaseModel):
+    id: str
+    panel_id: str
+    antibody_id: str | None
+    staining_mode: str
+    secondary_antibody_id: str | None
+    sort_order: int
+    antibody_name: str | None = None
+    antibody_target: str | None = None
+    secondary_antibody_name: str | None = None
+    secondary_fluorophore_id: str | None = None
+    secondary_fluorophore_name: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+# --- IFPanelAssignment ---
+
+class IFPanelAssignmentCreate(BaseModel):
+    antibody_id: str
+    fluorophore_id: str
+    filter_id: str | None = None
+    notes: str | None = None
+
+
+class IFPanelAssignmentRead(BaseModel):
+    id: str
+    panel_id: str
+    antibody_id: str
+    fluorophore_id: str
+    filter_id: str | None = None
+    notes: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+# --- IFPanel ---
+
+class IFPanelBase(BaseModel):
+    name: str
+    panel_type: str = "IF"
+    microscope_id: str | None = None
+    view_mode: str = "simple"
+
+
+class IFPanelCreate(IFPanelBase):
+    pass
+
+
+class IFPanelUpdate(BaseModel):
+    name: str | None = None
+    panel_type: str | None = None
+    microscope_id: str | None = None
+    view_mode: str | None = None
+
+
+class IFPanelListRead(IFPanelBase):
+    id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    target_count: int = 0
+    assignment_count: int = 0
+
+    model_config = {"from_attributes": True}
+
+
+class IFPanelRead(IFPanelBase):
+    id: str
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    targets: list[IFPanelTargetRead] = []
+    assignments: list[IFPanelAssignmentRead] = []
 
     model_config = {"from_attributes": True}
 
