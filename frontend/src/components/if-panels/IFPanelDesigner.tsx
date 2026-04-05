@@ -163,6 +163,9 @@ export default function IFPanelDesigner() {
     updateMutation.mutate({ id, data: { view_mode: mode } })
   }
 
+  // --- Pre-conjugated override (client-side unlock) ---
+  const [overriddenRows, setOverriddenRows] = useState<Set<string>>(new Set())
+
   // --- Pending rows ---
   const [pendingRows, setPendingRows] = useState<string[]>([])
   const [editingTargetId, setEditingTargetId] = useState<string | null>(null)
@@ -185,6 +188,10 @@ export default function IFPanelDesigner() {
       })
       addTarget(target)
       setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
+      // Auto-assign pre-conjugated fluorophore
+      if (antibody.fluorophore_id) {
+        await handleAssignFluorophore(antibody.id, antibody.fluorophore_id)
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add target'
       setAssignError(message)
@@ -210,6 +217,12 @@ export default function IFPanelDesigner() {
       setEditingTargetId(null)
       return
     }
+    // Clear override flag on antibody change
+    setOverriddenRows((prev) => {
+      const next = new Set(prev)
+      next.delete(targetId)
+      return next
+    })
     try {
       const updated = await updateTargetMutation.mutateAsync({
         panelId: id,
@@ -217,6 +230,10 @@ export default function IFPanelDesigner() {
         data: { antibody_id: newAntibody.id },
       })
       dispatch({ type: 'UPDATE_TARGET', target: updated })
+      // Auto-assign pre-conjugated fluorophore
+      if (newAntibody.fluorophore_id) {
+        await handleAssignFluorophore(newAntibody.id, newAntibody.fluorophore_id)
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to replace target'
       setAssignError(message)
@@ -425,7 +442,7 @@ export default function IFPanelDesigner() {
   )
 
   const showSpectral = state.viewMode === 'spectral' && state.microscope != null
-  const totalCols = 9 + (showSpectral ? 3 : 0) // drag, target, staining, primary ab, secondary/fluorophore, if dilution, notes, remove [+ channel, ex%, det%]
+  const totalCols = 8 + (showSpectral ? 3 : 0) // drag, target, staining, primary ab, secondary/fluorophore, if dilution, notes, remove [+ channel, ex%, det%]
 
   if (!panel) {
     return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
@@ -554,8 +571,7 @@ export default function IFPanelDesigner() {
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Target</th>
                   <th className="px-3 py-2 font-medium" style={{ width: 100 }}>Staining</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Primary Ab</th>
-                  <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Secondary</th>
-                  <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Fluorophore</th>
+                  <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Secondary / Fluorophore</th>
                   {showSpectral && (
                     <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Channel</th>
                   )}
@@ -661,40 +677,64 @@ export default function IFPanelDesigner() {
                               </span>
                             </td>
 
-                            {/* Secondary (only visible in indirect mode) */}
-                            <td className="px-3 py-2" style={{ minWidth: 180 }}>
-                              {t.staining_mode === 'indirect' && ab ? (
-                                <SecondaryOmnibox
-                                  primaryAntibody={ab}
-                                  detectionStrategy={strategy}
-                                  secondaryAntibodies={secondaries}
-                                  fluorophores={fluorophores}
-                                  currentSecondaryId={t.secondary_antibody_id}
-                                  currentSecondaryName={t.secondary_antibody_name}
-                                  currentFluorophoreName={currentFluorophoreName}
-                                  onSelectSecondary={(secId) => handleSelectSecondary(t.id, secId)}
-                                  onSelectFluorophore={(flId) => handleSelectFluorophoreFromSecondary(t.id, flId)}
-                                  onClear={() => handleClearSecondary(t.id)}
-                                />
-                              ) : (
-                                <span className="text-xs italic text-gray-300 dark:text-gray-600">—</span>
-                              )}
-                            </td>
-
-                            {/* Fluorophore picker */}
-                            <td className="px-3 py-2" style={{ minWidth: 180 }}>
-                              {t.antibody_id ? (
-                                <IFFluorophorePicker
-                                  fluorophores={fluorophores}
-                                  currentFluorophoreId={currentFluorophoreId}
-                                  assignedFluorophoreIds={assignedFluorophoreIds}
-                                  onSelect={(flId) => handleAssignFluorophore(t.antibody_id!, flId)}
-                                  onClear={() => handleClearFluorophore(t.antibody_id!)}
-                                />
-                              ) : (
-                                <span className="text-xs italic text-gray-300 dark:text-gray-600">—</span>
-                              )}
-                            </td>
+                            {/* Secondary / Fluorophore (merged column) */}
+                            {(() => {
+                              const isOverridden = overriddenRows.has(t.id)
+                              // Case A: pre-conjugated and not overridden
+                              if (ab?.fluorophore_id && !isOverridden) {
+                                return (
+                                  <td className="px-3 py-2 group relative" style={{ minWidth: 180 }}>
+                                    <span className="inline-flex items-center gap-1 text-teal-700/60 dark:text-teal-400/60">
+                                      <span className="inline-block h-2 w-2 rounded-full bg-teal-500/50" />
+                                      {fluorophoreMap.get(ab.fluorophore_id) ?? ab.fluorophore_id}
+                                      <span className="text-[10px]" title="Pre-conjugated">&#128274;</span>
+                                    </span>
+                                    <button
+                                      onClick={() => setOverriddenRows((prev) => new Set(prev).add(t.id))}
+                                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-gray-400 hover:text-blue-500 transition-opacity"
+                                      title="Override pre-conjugated fluorophore"
+                                    >
+                                      &#9998;
+                                    </button>
+                                  </td>
+                                )
+                              }
+                              // Case B: needs secondary (indirect or species/conjugate strategy), or overridden with secondary option
+                              if (ab && (t.staining_mode === 'indirect' || strategy.type !== 'direct' || (isOverridden && strategy.type !== 'direct'))) {
+                                return (
+                                  <td className="px-3 py-2" style={{ minWidth: 180 }}>
+                                    <SecondaryOmnibox
+                                      primaryAntibody={ab}
+                                      detectionStrategy={strategy}
+                                      secondaryAntibodies={secondaries}
+                                      fluorophores={fluorophores}
+                                      currentSecondaryId={t.secondary_antibody_id}
+                                      currentSecondaryName={t.secondary_antibody_name}
+                                      currentFluorophoreName={currentFluorophoreName}
+                                      onSelectSecondary={(secId) => handleSelectSecondary(t.id, secId)}
+                                      onSelectFluorophore={(flId) => handleSelectFluorophoreFromSecondary(t.id, flId)}
+                                      onClear={() => handleClearSecondary(t.id)}
+                                    />
+                                  </td>
+                                )
+                              }
+                              // Case C: direct, no pre-conjugation (or overridden direct)
+                              return (
+                                <td className="px-3 py-2" style={{ minWidth: 180 }}>
+                                  {t.antibody_id ? (
+                                    <IFFluorophorePicker
+                                      fluorophores={fluorophores}
+                                      currentFluorophoreId={currentFluorophoreId}
+                                      assignedFluorophoreIds={assignedFluorophoreIds}
+                                      onSelect={(flId) => handleAssignFluorophore(t.antibody_id!, flId)}
+                                      onClear={() => handleClearFluorophore(t.antibody_id!)}
+                                    />
+                                  ) : (
+                                    <span className="text-xs italic text-gray-300 dark:text-gray-600">—</span>
+                                  )}
+                                </td>
+                              )
+                            })()}
 
                             {/* Channel (spectral mode only) */}
                             {showSpectral && (
@@ -859,7 +899,6 @@ export default function IFPanelDesigner() {
                         autoFocus
                       />
                     </td>
-                    <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />

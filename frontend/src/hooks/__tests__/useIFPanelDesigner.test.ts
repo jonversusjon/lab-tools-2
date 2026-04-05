@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { ifPanelDesignerReducer } from '../useIFPanelDesigner'
 import type { IFPanelDesignerState } from '../useIFPanelDesigner'
 import type { IFPanel, IFPanelTarget, IFPanelAssignment } from '@/types'
+import { getDetectionStrategy } from '@/utils/conjugates'
 
 // ---------------------------------------------------------------------------
 // Test factories
@@ -357,5 +358,61 @@ describe('REPLACE_TARGET_ANTIBODY', () => {
     expect(next.assignments[0].antibody_id).toBe('ab-new')
     expect(next.past).toHaveLength(1)
     expect(next.isDirty).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Merged Secondary/Fluorophore cell — detection strategy branching
+// ---------------------------------------------------------------------------
+
+// Helper mirrors the IFPanelDesigner merged-cell branch logic
+function mergedCellCase(
+  ab: { fluorophore_id: string | null; conjugate: string | null; host: string | null },
+  stainingMode: 'direct' | 'indirect',
+  isOverridden: boolean,
+): 'preconjugated' | 'secondary' | 'picker' {
+  const strategy = getDetectionStrategy(ab)
+  if (ab.fluorophore_id && !isOverridden) return 'preconjugated'
+  if (stainingMode === 'indirect' || strategy.type !== 'direct' || (isOverridden && strategy.type !== 'direct')) {
+    return 'secondary'
+  }
+  return 'picker'
+}
+
+describe('mergedCellCase — pre-conjugated antibody', () => {
+  const ab = { fluorophore_id: 'fl-fitc', conjugate: null, host: 'mouse' }
+
+  it('shows preconjugated when not overridden', () => {
+    expect(mergedCellCase(ab, 'direct', false)).toBe('preconjugated')
+  })
+
+  it('shows picker when overridden (direct strategy, no conjugate)', () => {
+    expect(mergedCellCase(ab, 'direct', true)).toBe('picker')
+  })
+})
+
+describe('mergedCellCase — unconjugated antibody with host', () => {
+  // getDetectionStrategy returns 'species' for any unfluoresced antibody,
+  // so strategy.type !== 'direct' → secondary shown regardless of staining_mode
+  const ab = { fluorophore_id: null, conjugate: null, host: 'rabbit' }
+
+  it('shows secondary when staining mode is indirect', () => {
+    expect(mergedCellCase(ab, 'indirect', false)).toBe('secondary')
+  })
+
+  it('shows secondary when staining mode is direct (strategy is species)', () => {
+    expect(mergedCellCase(ab, 'direct', false)).toBe('secondary')
+  })
+})
+
+describe('mergedCellCase — biotin-conjugated antibody', () => {
+  const ab = { fluorophore_id: null, conjugate: 'biotin', host: null }
+
+  it('shows secondary (conjugate strategy)', () => {
+    expect(mergedCellCase(ab, 'direct', false)).toBe('secondary')
+  })
+
+  it('still shows secondary when overridden (conjugate strategy)', () => {
+    expect(mergedCellCase(ab, 'direct', true)).toBe('secondary')
   })
 })
