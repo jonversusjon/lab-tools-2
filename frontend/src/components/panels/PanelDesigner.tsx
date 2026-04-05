@@ -36,6 +36,7 @@ import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { getLaserColor } from '@/utils/colors'
 import { computeSpilloverMatrix } from '@/utils/spillover'
 import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
+import type { DetectionStrategy } from '@/utils/conjugates'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import { rankChannels } from '@/utils/spectra'
 import type { ChannelRanking } from '@/utils/spectra'
@@ -46,6 +47,7 @@ import SecondaryOmnibox from './SecondaryOmnibox'
 import CellAssignmentPicker from './CellAssignmentPicker'
 import SpilloverHeatmap from './SpilloverHeatmap'
 import PanelSpectraByLaser from './PanelSpectraByLaser'
+import CrossReactivityWarnings from '@/components/shared/CrossReactivityWarnings'
 import type { Antibody, FluorophoreWithSpectra } from '@/types'
 
 function SortableRow({
@@ -836,28 +838,29 @@ export default function PanelDesigner() {
 
       setAssignError('')
 
-      // If this antibody is already assigned to THIS detector, unassign it
+      // State 4: This antibody already assigned to THIS detector → deselect detector, revert to State 3
       const abAssignment = assignmentByAntibody.get(antibodyId)
       if (abAssignment && abAssignment.detector_id === detectorId) {
         handleUnassign(antibodyId, abAssignment.id, abAssignment.fluorophore_id)
         return
       }
 
-      // Check if this antibody already has an assignment to a different detector
+      // If this antibody is assigned to a different detector, do nothing
       if (abAssignment && abAssignment.detector_id !== detectorId) return
 
-      // For pre-conjugated antibodies (locked, not overridden), direct-assign without a picker
-      const ab = antibodyMap.get(antibodyId)
-      const isOverridden = overriddenRows.has(targetId)
-      if (ab?.fluorophore_id && !isOverridden) {
-        handleDirectAssign(antibodyId, ab.fluorophore_id, detectorId)
+      // State 3: Fluorophore already known for this row → directly assign, no picker
+      const knownFlId = rowFluorophoreMap.get(antibodyId)
+      if (knownFlId) {
+        handleDirectAssign(antibodyId, knownFlId, detectorId)
         return
       }
 
-      // Open the detector-aware picker for all other cases
+      // States 1/2: No fluorophore known → open picker
+      // Picker filters by antibody compatibility when antibody is present (State 2),
+      // or by detector compatibility only when no antibody is selected (State 1).
       setPickerCell({ targetId, antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
     },
-    [assignmentByDetector, assignmentByAntibody, antibodyMap, overriddenRows, handleDirectAssign, handleUnassign]
+    [assignmentByDetector, assignmentByAntibody, rowFluorophoreMap, handleDirectAssign, handleUnassign]
   )
 
   // Called when user picks a secondary from the cell picker
@@ -1155,6 +1158,12 @@ export default function PanelDesigner() {
             <span className="text-sm text-red-600">{assignError}</span>
           </div>
         )}
+
+        <CrossReactivityWarnings
+          targets={state.targets}
+          antibodyMap={antibodyMap}
+          secondaries={secondaries}
+        />
 
         {!instrumentId && (
           <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-700 dark:text-blue-400">
@@ -1575,10 +1584,11 @@ export default function PanelDesigner() {
 
       {/* Cell Assignment Picker (portaled to body) */}
       {pickerCell && (() => {
-        const pickerAb = antibodyMap.get(pickerCell.antibodyId)
-        if (!pickerAb) return null
+        const pickerAb = antibodyMap.get(pickerCell.antibodyId) ?? null
         const pickerTarget = state.targets.find((t) => t.id === pickerCell.targetId)
-        const pickerStrategy = getDetectionStrategy(pickerAb, conjugateSet, bindingPartners)
+        const pickerStrategy: DetectionStrategy = pickerAb
+          ? getDetectionStrategy(pickerAb, conjugateSet, bindingPartners)
+          : { type: 'direct' }
         // Determine current secondary + fluorophore for this cell
         const currentSecondaryId = pickerTarget?.secondary_antibody_id ?? null
         const currentFluorophoreId = rawFluorophoreOverrides.get(pickerCell.antibodyId)
