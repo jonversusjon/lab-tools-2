@@ -43,7 +43,7 @@ import type { SpilloverInput } from '@/utils/spillover'
 import { getPreferences, updatePreference } from '@/api/preferences'
 import AntibodyOmnibox from './AntibodyOmnibox'
 import SecondaryOmnibox from './SecondaryOmnibox'
-import FluorophorePicker from './FluorophorePicker'
+import CellAssignmentPicker from './CellAssignmentPicker'
 import SpilloverHeatmap from './SpilloverHeatmap'
 import PanelSpectraByLaser from './PanelSpectraByLaser'
 import type { Antibody, FluorophoreWithSpectra } from '@/types'
@@ -719,6 +719,7 @@ export default function PanelDesigner() {
 
   // Picker state
   const [pickerCell, setPickerCell] = useState<{
+    targetId: string
     antibodyId: string
     detectorId: string
     laserWavelength: number
@@ -822,6 +823,7 @@ export default function PanelDesigner() {
   const handleCellClick = useCallback(
     (
       e: React.MouseEvent<HTMLTableCellElement>,
+      targetId: string,
       antibodyId: string,
       detectorId: string,
       laserWavelength: number,
@@ -841,89 +843,103 @@ export default function PanelDesigner() {
         return
       }
 
-      // If we already know the fluorophore for this row, assign directly (skip picker)
-      const knownFlId = rowFluorophoreMap.get(antibodyId)
-      if (knownFlId) {
-        handleDirectAssign(antibodyId, knownFlId, detectorId)
-        return
-      }
-
       // Check if this antibody already has an assignment to a different detector
       if (abAssignment && abAssignment.detector_id !== detectorId) return
 
-      // No fluorophore known — open the picker
-      setPickerCell({ antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
+      // For pre-conjugated antibodies (locked, not overridden), direct-assign without a picker
+      const ab = antibodyMap.get(antibodyId)
+      const isOverridden = overriddenRows.has(targetId)
+      if (ab?.fluorophore_id && !isOverridden) {
+        handleDirectAssign(antibodyId, ab.fluorophore_id, detectorId)
+        return
+      }
+
+      // Open the detector-aware picker for all other cases
+      setPickerCell({ targetId, antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
     },
-    [assignmentByDetector, assignmentByAntibody, rowFluorophoreMap, handleDirectAssign, handleUnassign]
+    [assignmentByDetector, assignmentByAntibody, antibodyMap, overriddenRows, handleDirectAssign, handleUnassign]
   )
 
-  const handleSelectFluorophore = async (fluorophoreId: string) => {
-    if (!id || !pickerCell) return
-    const { antibodyId, detectorId } = pickerCell
+  // Called when user picks a secondary from the cell picker
+  const handleCellPickerSelectSecondary = async (secondaryId: string) => {
+    if (!pickerCell) return
+    setPickerCell(null)
+    await handleSetSecondary(pickerCell.targetId, secondaryId)
+    // After setting secondary, auto-assign the secondary's fluorophore to the clicked detector
+    const sec = secondaries.find((s) => s.id === secondaryId)
+    if (sec?.fluorophore_id && pickerCell.antibodyId && id) {
+      const existing = assignmentByAntibody.get(pickerCell.antibodyId)
+      // Only assign to this specific detector if auto-assign would have placed it elsewhere or not at all
+      if (!existing || existing.detector_id !== pickerCell.detectorId) {
+        await handleDirectAssign(pickerCell.antibodyId, sec.fluorophore_id, pickerCell.detectorId)
+      }
+    }
+  }
 
-    // Optimistic: add assignment locally
-    const optimisticId = 'optimistic-' + Date.now()
-    const optimistic = {
-      id: optimisticId,
-      panel_id: id,
-      antibody_id: antibodyId,
-      fluorophore_id: fluorophoreId,
-      detector_id: detectorId,
-      notes: null,
+  // Called when user picks a fluorophore directly from the cell picker
+  const handleCellPickerSelectFluorophore = async (fluorophoreId: string) => {
+    if (!id || !pickerCell) return
+    const { antibodyId, detectorId, targetId } = pickerCell
+
+    // Update the raw fluorophore override for this row so the picker reflects the new selection
+    setRawFluorophoreOverrides((prev) => {
+      const next = new Map(prev)
+      next.set(antibodyId, fluorophoreId)
+      return next
+    })
+
+    // Clear any secondary on this target since the user is picking a direct fluorophore
+    const target = state.targets.find((t) => t.id === targetId)
+    if (target?.secondary_antibody_id) {
+      // Silently clear secondary without removing the assignment (we're about to assign directly)
+      updateTargetMutation.mutateAsync({
+        panelId: id,
+        targetId,
+        data: { staining_mode: 'direct', secondary_antibody_id: null },
+      }).then((updated) => {
+        dispatch({ type: 'UPDATE_TARGET', target: updated })
+      }).catch(() => {})
     }
 
-    // First remove any existing assignment for this antibody (reassign case)
+    setPickerCell(null)
+    await handleDirectAssign(antibodyId, fluorophoreId, detectorId)
+  }
+
+  const handleCellPickerClear = async () => {
+    if (!id || !pickerCell) return
+    const { antibodyId, targetId } = pickerCell
+    setPickerCell(null)
+
+    // Remove raw fluorophore override
+    setRawFluorophoreOverrides((prev) => {
+      if (!prev.has(antibodyId)) return prev
+      const next = new Map(prev)
+      next.delete(antibodyId)
+      return next
+    })
+
+    // Remove any existing assignment
     const existing = assignmentByAntibody.get(antibodyId)
     if (existing) {
       dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
       try {
         await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
       } catch {
-        // If removal fails, re-add and bail
         dispatch({ type: 'ADD_ASSIGNMENT', assignment: existing })
-        setAssignError('Failed to clear existing assignment')
-        setPickerCell(null)
-        return
+        setAssignError('Failed to clear assignment')
       }
     }
 
-    dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
-    setPickerCell(null)
-
-    try {
-      const real = await addAssignmentMutation.mutateAsync({
+    // Clear secondary if present
+    const target = state.targets.find((t) => t.id === targetId)
+    if (target?.secondary_antibody_id) {
+      updateTargetMutation.mutateAsync({
         panelId: id,
-        data: {
-          antibody_id: antibodyId,
-          fluorophore_id: fluorophoreId,
-          detector_id: detectorId,
-        },
-      })
-      // Replace optimistic with real
-      dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
-      dispatch({ type: 'ADD_ASSIGNMENT', assignment: real })
-    } catch (err: unknown) {
-      // Rollback optimistic
-      dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
-      const message = err instanceof Error ? err.message : 'Assignment failed'
-      setAssignError(message)
-    }
-  }
-
-  const handleClearAssignment = async () => {
-    if (!id || !pickerCell) return
-    const existing = assignmentByAntibody.get(pickerCell.antibodyId)
-    if (!existing) return
-
-    dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
-    setPickerCell(null)
-
-    try {
-      await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
-    } catch {
-      // Rollback
-      dispatch({ type: 'ADD_ASSIGNMENT', assignment: existing })
-      setAssignError('Failed to clear assignment')
+        targetId,
+        data: { staining_mode: 'direct', secondary_antibody_id: null },
+      }).then((updated) => {
+        dispatch({ type: 'UPDATE_TARGET', target: updated })
+      }).catch(() => {})
     }
   }
 
@@ -1379,7 +1395,7 @@ export default function PanelDesigner() {
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="assigned"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
                                 }
                               >
                                 {flName}
@@ -1423,13 +1439,16 @@ export default function PanelDesigner() {
                           // States A/B/C: check if fluorophore is known for this row
                           const knownFlId = t.antibody_id ? rowFluorophoreMap.get(t.antibody_id) : undefined
                           if (!knownFlId) {
-                            // State A: No fluorophore known
+                            // State A: No fluorophore known — open picker so user can pick secondary/fluorophore
                             return (
                               <td
                                 key={det.id}
-                                className="px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600"
+                                className="cursor-pointer px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="awaiting"
+                                onClick={(e) =>
+                                  handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                }
                               >
                                 &middot;
                               </td>
@@ -1450,7 +1469,7 @@ export default function PanelDesigner() {
                                 data-testid={`cell-${t.antibody_id}-${det.id}`}
                                 data-state="incompatible"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
                                 }
                               >
                                 &mdash;
@@ -1469,7 +1488,7 @@ export default function PanelDesigner() {
                               data-state="compatible"
                               title={'Score: ' + Math.round(score * 100) + '% (Ex: ' + Math.round((ranking?.excitationEff ?? 0) * 100) + '%, Det: ' + Math.round((ranking?.detectionEff ?? 0) * 100) + '%)'}
                               onClick={(e) =>
-                                handleCellClick(e, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
                               }
                             >
                               {Math.round(score * 100)}%
@@ -1554,23 +1573,33 @@ export default function PanelDesigner() {
         </DndContext>
       </div>
 
-      {/* Fluorophore Picker (portaled to body) */}
+      {/* Cell Assignment Picker (portaled to body) */}
       {pickerCell && (() => {
         const pickerAb = antibodyMap.get(pickerCell.antibodyId)
-        const pickerAssignment = assignmentByAntibody.get(pickerCell.antibodyId)
         if (!pickerAb) return null
+        const pickerTarget = state.targets.find((t) => t.id === pickerCell.targetId)
+        const pickerStrategy = getDetectionStrategy(pickerAb, conjugateSet, bindingPartners)
+        // Determine current secondary + fluorophore for this cell
+        const currentSecondaryId = pickerTarget?.secondary_antibody_id ?? null
+        const currentFluorophoreId = rawFluorophoreOverrides.get(pickerCell.antibodyId)
+          ?? assignmentByAntibody.get(pickerCell.antibodyId)?.fluorophore_id
+          ?? null
         return (
-          <FluorophorePicker
+          <CellAssignmentPicker
+            antibody={pickerAb}
+            detectionStrategy={pickerStrategy}
             laserWavelength={pickerCell.laserWavelength}
             filterMidpoint={pickerCell.filterMidpoint}
             filterWidth={pickerCell.filterWidth}
+            allFluorophores={allFluorophoresForScoring}
+            secondaryAntibodies={secondaries}
+            currentSecondaryId={currentSecondaryId}
+            currentFluorophoreId={currentFluorophoreId}
             assignedFluorophoreIds={assignedFluorophoreIds}
-            antibody={pickerAb}
-            fluorophores={fluorophoresWithSpectra}
-            currentAssignmentFluorophoreId={pickerAssignment?.fluorophore_id ?? null}
             anchorEl={pickerCell.anchorEl}
-            onSelect={handleSelectFluorophore}
-            onClear={handleClearAssignment}
+            onSelectSecondary={handleCellPickerSelectSecondary}
+            onSelectFluorophore={handleCellPickerSelectFluorophore}
+            onClear={handleCellPickerClear}
             onClose={() => setPickerCell(null)}
           />
         )
