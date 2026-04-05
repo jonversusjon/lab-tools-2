@@ -28,13 +28,14 @@ import {
   useRemoveIFAssignment,
   useReorderIFTargets,
 } from '@/hooks/useIFPanels'
-import { useMicroscopes, useMicroscope } from '@/hooks/useMicroscopes'
+import { useMicroscopes, useMicroscope, useMicroscopeFluorophoreCompatibility } from '@/hooks/useMicroscopes'
 import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import { useIFPanelDesigner } from '@/hooks/useIFPanelDesigner'
 import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
+import { getLaserColor } from '@/utils/colors'
 import AntibodyOmnibox from '@/components/panels/AntibodyOmnibox'
 import SecondaryOmnibox from '@/components/panels/SecondaryOmnibox'
 import Modal from '@/components/layout/Modal'
@@ -89,6 +90,7 @@ export default function IFPanelDesigner() {
 
   const microscopeId = panel?.microscope_id ?? null
   const { data: microscope } = useMicroscope(microscopeId ?? '')
+  const { data: compatibilityData } = useMicroscopeFluorophoreCompatibility(microscopeId)
 
   const { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode } =
     useIFPanelDesigner(panel ?? null, microscope ?? null)
@@ -432,7 +434,8 @@ export default function IFPanelDesigner() {
     [state.targets]
   )
 
-  const totalCols = 10 // drag, #, target, staining, primary ab, secondary, fluorophore, if dilution, notes, remove
+  const showSpectral = state.viewMode === 'spectral' && state.microscope != null
+  const totalCols = 10 + (showSpectral ? 3 : 0) // drag, #, target, staining, primary ab, secondary, fluorophore, if dilution, notes, remove [+ channel, ex%, det%]
 
   if (!panel) {
     return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
@@ -578,6 +581,15 @@ export default function IFPanelDesigner() {
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Primary Ab</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Secondary</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Fluorophore</th>
+                  {showSpectral && (
+                    <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Channel</th>
+                  )}
+                  {showSpectral && (
+                    <th className="px-3 py-2 font-medium text-center" style={{ width: 60 }}>Ex %</th>
+                  )}
+                  {showSpectral && (
+                    <th className="px-3 py-2 font-medium text-center" style={{ width: 60 }}>Det %</th>
+                  )}
                   <th className="px-3 py-2 font-medium" style={{ width: 90 }}>IF Dilution</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 120 }}>Notes</th>
                   <th className="w-7 px-1 py-2" />
@@ -714,6 +726,108 @@ export default function IFPanelDesigner() {
                               )}
                             </td>
 
+                            {/* Channel (spectral mode only) */}
+                            {showSpectral && (
+                              <td className="px-3 py-2" style={{ minWidth: 160 }}>
+                                {assignment ? (
+                                  <select
+                                    value={assignment.filter_id ?? ''}
+                                    onChange={async (e) => {
+                                      if (!id || !t.antibody_id) return
+                                      const newFilterId = e.target.value || null
+                                      const oldAssignment = assignment
+                                      dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: oldAssignment.id })
+                                      try {
+                                        await removeAssignmentMutation.mutateAsync({
+                                          panelId: id,
+                                          assignmentId: oldAssignment.id,
+                                        })
+                                      } catch {
+                                        dispatch({ type: 'ADD_ASSIGNMENT', assignment: oldAssignment })
+                                        setAssignError('Failed to update channel')
+                                        return
+                                      }
+                                      const optimisticId = 'optimistic-' + Date.now()
+                                      const optimistic: IFPanelAssignment = {
+                                        ...oldAssignment,
+                                        id: optimisticId,
+                                        filter_id: newFilterId,
+                                      }
+                                      dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
+                                      try {
+                                        const real = await addAssignmentMutation.mutateAsync({
+                                          panelId: id,
+                                          data: {
+                                            antibody_id: t.antibody_id,
+                                            fluorophore_id: oldAssignment.fluorophore_id,
+                                            filter_id: newFilterId,
+                                            notes: oldAssignment.notes ?? undefined,
+                                          },
+                                        })
+                                        dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: optimisticId, newId: real.id })
+                                      } catch (err: unknown) {
+                                        dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
+                                        const message = err instanceof Error ? err.message : 'Failed to assign channel'
+                                        setAssignError(message)
+                                      }
+                                    }}
+                                    className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-0.5 text-xs dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                                  >
+                                    <option value="">None</option>
+                                    {state.microscope?.lasers.map((laser) => (
+                                      <optgroup
+                                        key={laser.id}
+                                        label={`${laser.wavelength_nm}nm${laser.name ? ' — ' + laser.name : ''}`}
+                                        style={{ color: getLaserColor(laser.wavelength_nm) }}
+                                      >
+                                        {laser.filters.map((filt) => (
+                                          <option key={filt.id} value={filt.id}>
+                                            {laser.wavelength_nm}nm → {filt.name ?? `${filt.filter_midpoint}/${filt.filter_width}`}
+                                          </option>
+                                        ))}
+                                      </optgroup>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <span className="text-xs italic text-gray-300 dark:text-gray-600">—</span>
+                                )}
+                              </td>
+                            )}
+
+                            {/* Ex % (spectral mode only) */}
+                            {showSpectral && (() => {
+                              const filterId = assignment?.filter_id ?? null
+                              const fluorId = assignment?.fluorophore_id ?? null
+                              let exPct: string = '—'
+                              if (filterId && fluorId && compatibilityData) {
+                                const entries = compatibilityData.compatibility[filterId]
+                                const match = entries?.find((e) => e.fluorophore_id === fluorId)
+                                if (match) exPct = Math.round(match.excitation_efficiency * 100) + '%'
+                              }
+                              return (
+                                <td className="px-3 py-2 text-xs text-center text-gray-600 dark:text-gray-300 tabular-nums" style={{ width: 60 }}>
+                                  {exPct}
+                                </td>
+                              )
+                            })()}
+
+                            {/* Det % (spectral mode only) */}
+                            {showSpectral && (() => {
+                              const filterId = assignment?.filter_id ?? null
+                              const fluorId = assignment?.fluorophore_id ?? null
+                              let detPct: string = '—'
+                              if (filterId && fluorId && compatibilityData) {
+                                const entries = compatibilityData.compatibility[filterId]
+                                const match = entries?.find((e) => e.fluorophore_id === fluorId)
+                                if (match) detPct = Math.round(match.detection_efficiency * 100) + '%'
+                              }
+                              return (
+                                <td className="px-3 py-2 text-xs text-center text-gray-600 dark:text-gray-300 tabular-nums" style={{ width: 60 }}>
+                                  {detPct}
+                                </td>
+                              )
+                            })()}
+
                             {/* IF Dilution (read-only) */}
                             <td className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400" style={{ width: 90 }}>
                               {ab?.icc_if_dilution ?? '\u2014'}
@@ -782,6 +896,9 @@ export default function IFPanelDesigner() {
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
+                    {showSpectral && <td className="px-3 py-2" />}
+                    {showSpectral && <td className="px-3 py-2" />}
+                    {showSpectral && <td className="px-3 py-2" />}
                     <td className="w-7 px-1 py-2 text-center">
                       <button
                         onClick={() => handleRemovePendingRow(pendingId)}
@@ -806,17 +923,6 @@ export default function IFPanelDesigner() {
                   </td>
                 </tr>
 
-                {/* Spectral mode placeholder columns note */}
-                {state.viewMode === 'spectral' && state.targets.length > 0 && (
-                  <tr>
-                    <td
-                      colSpan={totalCols}
-                      className="px-3 py-2 text-xs text-center text-gray-400 dark:text-gray-500 italic border-t border-gray-100 dark:border-gray-700"
-                    >
-                      Spectral channel columns (Ex %, Det %) coming in next update.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </SortableContext>
