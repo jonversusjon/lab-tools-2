@@ -54,6 +54,8 @@ const sidebarEntries: SidebarEntry[] = [
       label: 'IF / IHC',
       icon: '🔬',
       children: [
+        { to: '/if-ihc/panels', label: 'Panels', icon: '📋' },
+        { to: '/if-ihc/microscopes', label: 'Microscopes', icon: '🔬' },
         { to: '/if-ihc/protocols', label: 'Protocols', icon: '📝' },
         { to: '/if-ihc/experiments', label: 'Experiments', icon: '🧪' },
       ],

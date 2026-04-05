@@ -12,6 +12,10 @@ import Homepage from '@/components/home/Homepage'
 import PlaceholderPage from '@/components/placeholder/PlaceholderPage'
 import PlateMapList from '@/components/plate-maps/PlateMapList'
 import PlateMapEditor from '@/components/plate-maps/PlateMapEditor'
+import IFPanelList from '@/components/if-panels/IFPanelList'
+import IFPanelDesigner from '@/components/if-panels/IFPanelDesigner'
+import MicroscopeList from '@/components/microscopes/MicroscopeList'
+import MicroscopeEditor from '@/components/microscopes/MicroscopeEditor'
 
 export default function App() {
   return (
@@ -38,6 +42,13 @@ export default function App() {
         <Route path="/antibodies" element={<Navigate to="/resources/primaries" replace />} />
         <Route path="/secondaries" element={<Navigate to="/resources/secondaries" replace />} />
         <Route path="/fluorophores" element={<Navigate to="/resources/fluorophores" replace />} />
+
+        {/* IF / IHC */}
+        <Route path="/if-ihc/panels" element={<IFPanelList />} />
+        <Route path="/if-ihc/panels/:id" element={<IFPanelDesigner />} />
+        <Route path="/if-ihc/microscopes" element={<MicroscopeList />} />
+        <Route path="/if-ihc/microscopes/new" element={<MicroscopeEditor />} />
+        <Route path="/if-ihc/microscopes/:id" element={<MicroscopeEditor />} />
 
         {/* IF / IHC (placeholder) */}
         <Route
