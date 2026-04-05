@@ -6,7 +6,7 @@ import type { Antibody, SecondaryAntibody, FluorophoreWithSpectra } from '@/type
 import type { DetectionStrategy } from '@/utils/conjugates'
 
 interface CellAssignmentPickerProps {
-  antibody: Antibody
+  antibody: Antibody | null
   detectionStrategy: DetectionStrategy
   laserWavelength: number
   filterMidpoint: number
@@ -62,12 +62,12 @@ export default function CellAssignmentPicker({
     const compatible = secondaryAntibodies.filter((sec) => {
       if (sec.binding_mode !== 'species') return false
       if (
-        antibody.host &&
+        antibody?.host &&
         sec.target_species.toLowerCase() !== antibody.host.toLowerCase()
       ) return false
       if (
         sec.target_isotype &&
-        antibody.isotype &&
+        antibody?.isotype &&
         sec.target_isotype.toLowerCase() !== antibody.isotype.toLowerCase()
       ) return false
       // Must have a fluorophore compatible with this detector
@@ -85,7 +85,7 @@ export default function CellAssignmentPicker({
       { value: sec.vendor, weight: 0.5 },
     ])
   }, [
-    secondaryAntibodies, antibody.host, antibody.isotype,
+    secondaryAntibodies, antibody?.host, antibody?.isotype,
     detectionStrategy, fluorophoreById,
     laserWavelength, filterMidpoint, filterWidth, search,
   ])
@@ -271,8 +271,8 @@ export default function CellAssignmentPicker({
         {speciesSecondaries.length > 0 && (
           <>
             <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
-              Anti-{antibody.host ?? 'Host'} Secondaries
-              {antibody.isotype && (
+              Anti-{antibody?.host ?? 'Host'} Secondaries
+              {antibody?.isotype && (
                 <span className="ml-1 font-normal text-gray-400">({antibody.isotype})</span>
               )}
             </div>

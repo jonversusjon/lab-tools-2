@@ -33,85 +33,64 @@ function rgbToHex(r: number, g: number, b: number): string {
   )
 }
 
+type RGB = [number, number, number]
+
+function sampleGradient(stops: {t: number, c: RGB}[], value: number): string {
+  if (value <= stops[0].t) return rgbToHex(...stops[0].c)
+  if (value >= stops[stops.length - 1].t) return rgbToHex(...stops[stops.length - 1].c)
+  
+  for (let i = 0; i < stops.length - 1; i++) {
+    const s1 = stops[i]
+    const s2 = stops[i+1]
+    if (value >= s1.t && value <= s2.t) {
+      const range = s2.t - s1.t
+      const ratio = (value - s1.t) / range
+      return rgbToHex(
+        lerp(s1.c[0], s2.c[0], ratio),
+        lerp(s1.c[1], s2.c[1], ratio),
+        lerp(s1.c[2], s2.c[2], ratio)
+      )
+    }
+  }
+  return rgbToHex(...stops[stops.length - 1].c)
+}
+
+const LIGHT_STOPS: {t: number, c: RGB}[] = [
+  { t: 0.00, c: [255, 255, 255] }, // white
+  { t: 0.25, c: [219, 234, 254] }, // blue-100
+  { t: 0.50, c: [192, 132, 252] }, // fuchsia-400
+  { t: 0.75, c: [244, 114, 182] }, // pink-400
+  { t: 1.00, c: [251, 113, 133] }  // rose-400
+]
+
+const DARK_STOPS: {t: number, c: RGB}[] = [
+  { t: 0.00, c: [31, 41, 55] },    // gray-800
+  { t: 0.25, c: [30, 58, 138] },   // blue-900
+  { t: 0.50, c: [126, 34, 206] },  // purple-700
+  { t: 0.75, c: [190, 18, 60] },   // rose-700
+  { t: 1.00, c: [159, 18, 57] }    // rose-800
+]
+
 /**
  * Maps a spillover value (0.0–1.0) to a heatmap color for light backgrounds.
- * white (0.0) → yellow (0.1–0.2) → orange (0.3–0.5) → red (>0.5)
  */
 export function heatmapColor(value: number): string {
   if (value <= 0) return '#ffffff'
-  if (value >= 1) return '#dc2626'
-
-  // Breakpoints: 0→white, 0.1→yellow, 0.3→orange, 0.5→red
-  if (value <= 0.1) {
-    const t = value / 0.1
-    return rgbToHex(
-      lerp(255, 250, t),
-      lerp(255, 204, t),
-      lerp(255, 21, t)
-    )
-  }
-  if (value <= 0.3) {
-    const t = (value - 0.1) / 0.2
-    return rgbToHex(
-      lerp(250, 249, t),
-      lerp(204, 115, t),
-      lerp(21, 22, t)
-    )
-  }
-  if (value <= 0.5) {
-    const t = (value - 0.3) / 0.2
-    return rgbToHex(
-      lerp(249, 220, t),
-      lerp(115, 38, t),
-      lerp(22, 38, t)
-    )
-  }
-  // 0.5 → 1.0: deep red
-  const t = (value - 0.5) / 0.5
-  return rgbToHex(
-    lerp(220, 185, t),
-    lerp(38, 28, t),
-    lerp(38, 28, t)
-  )
+  if (value >= 1) return '#fb7185' // rose-400
+  
+  // Non-linear scaling: quiet the low values, accentuate the peaks (exponent 1.5)
+  const nonLinearValue = Math.pow(value, 1.5)
+  return sampleGradient(LIGHT_STOPS, nonLinearValue)
 }
 
 /**
  * Maps a spillover value (0.0–1.0) to a heatmap color for dark backgrounds.
- * dark gray (0.0) → dark blue (0.05) → blue (0.1) → amber (0.3) → orange-red (0.5+)
  */
 export function heatmapColorDark(value: number): string {
-  if (value <= 0) return '#1F2937'
-  if (value >= 1) return '#dc2626'
+  if (value <= 0) return '#1f2937' // gray-800
+  if (value >= 1) return '#9f1239' // rose-800
 
-  if (value <= 0.1) {
-    const t = value / 0.1
-    return rgbToHex(
-      lerp(31, 30, t),
-      lerp(41, 58, t),
-      lerp(55, 138, t)
-    )
-  }
-  if (value <= 0.3) {
-    const t = (value - 0.1) / 0.2
-    return rgbToHex(
-      lerp(30, 180, t),
-      lerp(58, 120, t),
-      lerp(138, 30, t)
-    )
-  }
-  if (value <= 0.5) {
-    const t = (value - 0.3) / 0.2
-    return rgbToHex(
-      lerp(180, 220, t),
-      lerp(120, 50, t),
-      lerp(30, 30, t)
-    )
-  }
-  // 0.5 → 1.0: deep red
-  const t = (value - 0.5) / 0.5
-  return rgbToHex(
-    lerp(220, 185, t),
-    lerp(50, 28, t),
-    lerp(30, 28, t)
-  )
+  // Non-linear scaling: quiet the low values, accentuate the peaks (exponent 1.5)
+  const nonLinearValue = Math.pow(value, 1.5)
+  return sampleGradient(DARK_STOPS, nonLinearValue)
 }

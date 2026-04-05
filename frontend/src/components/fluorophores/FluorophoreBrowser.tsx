@@ -326,6 +326,21 @@ function InstrumentCompatibilityCard({ compat }: { compat: InstrumentCompatibili
   )
 }
 
+function getBestInstrumentScore(compat: InstrumentCompatibility) {
+  const exByWl = new Map(
+    compat.laser_lines.map((l) => [l.wavelength_nm, l.excitation_efficiency])
+  )
+  let bestScore = -1
+  for (const d of compat.detectors) {
+    const exEff = exByWl.get(d.laser_wavelength_nm) ?? 0
+    const score = exEff * d.collection_efficiency
+    if (score > bestScore) {
+      bestScore = score
+    }
+  }
+  return bestScore
+}
+
 function TieredCompatibilityTable({ compatibilities }: { compatibilities: InstrumentCompatibility[] }) {
   const { data: recentIds = [] } = useRecentInstruments()
   const recordView = useRecordInstrumentView()
@@ -346,6 +361,15 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
         rest.push(compat)
       }
     }
+
+    const sortByScoreDesc = (a: InstrumentCompatibility, b: InstrumentCompatibility) => {
+      return getBestInstrumentScore(b) - getBestInstrumentScore(a)
+    }
+
+    favs.sort(sortByScoreDesc)
+    recs.sort(sortByScoreDesc)
+    rest.sort(sortByScoreDesc)
+
     return { favorites: favs, recents: recs, others: rest }
   }, [compatibilities, recentIdSet])
 
@@ -369,7 +393,7 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
         <table className="text-xs w-full border-collapse">
           {tableHeader}
           <tbody>
-            {compatibilities.map((c) => (
+            {others.map((c) => (
               <InstrumentCompatibilityCard key={c.instrument_id} compat={c} />
             ))}
           </tbody>
