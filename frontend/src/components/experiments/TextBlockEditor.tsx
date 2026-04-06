@@ -8,6 +8,7 @@ interface TextBlockEditorProps {
   block: ExperimentBlock
   onCreateBlockBelow: (blockId: string) => void
   onDeleteBlock: (blockId: string) => void
+  onSlashCommand?: (blockId: string) => void
   children?: React.ReactNode
 }
 
@@ -55,6 +56,7 @@ export default function TextBlockEditor({
   block,
   onCreateBlockBelow,
   onDeleteBlock,
+  onSlashCommand,
   children,
 }: TextBlockEditorProps) {
   const parsed = parseContent(block)
@@ -132,6 +134,15 @@ export default function TextBlockEditor({
     userEdited.current = true
     dirtyRef.current = true
     setValue(newValue)
+
+    // Trigger slash command menu when user types "/" at the start of an empty paragraph
+    if (
+      block.block_type === 'paragraph' &&
+      newValue === '/' &&
+      onSlashCommand
+    ) {
+      onSlashCommand(block.id)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
