@@ -4,6 +4,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { ExperimentBlock } from '@/types'
 import TextBlockEditor from './TextBlockEditor'
 import DividerBlock from './DividerBlock'
+import CalloutBlock from './CalloutBlock'
+import TableBlock from './TableBlock'
+import ColumnLayout from './ColumnLayout'
 
 interface BlockRendererProps {
   experimentId: string
@@ -143,37 +146,33 @@ export default function BlockRenderer({
 
     if (block.block_type === 'callout') {
       return (
-        <div
+        <CalloutBlock
           key={block.id}
-          data-block-id={block.id}
-          className="rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
-        >
-          Callout block (coming in next commit)
-        </div>
+          experimentId={experimentId}
+          block={block}
+        />
       )
     }
 
     if (block.block_type === 'table') {
       return (
-        <div
+        <TableBlock
           key={block.id}
-          data-block-id={block.id}
-          className="rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
-        >
-          Table block (coming in next commit)
-        </div>
+          experimentId={experimentId}
+          block={block}
+        />
       )
     }
 
     if (block.block_type === 'column_list') {
       return (
-        <div
+        <ColumnLayout
           key={block.id}
-          data-block-id={block.id}
-          className="rounded-lg bg-gray-100 dark:bg-gray-800 px-4 py-3 text-sm text-gray-500 dark:text-gray-400"
-        >
-          Column layout (coming in next commit)
-        </div>
+          experimentId={experimentId}
+          block={block}
+          childrenByParentId={childrenByParentId}
+          renderBlock={renderBlock}
+        />
       )
     }
 
