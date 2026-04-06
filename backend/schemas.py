@@ -810,3 +810,81 @@ class PlateMapListRead(BaseModel):
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+# --- ExperimentBlock ---
+
+class ExperimentBlockCreate(BaseModel):
+    block_type: str
+    content: dict = {}
+    sort_order: float
+    parent_id: str | None = None
+
+
+class ExperimentBlockUpdate(BaseModel):
+    block_type: str | None = None
+    content: dict | None = None
+    sort_order: float | None = None
+    parent_id: str | None = None
+
+
+class ExperimentBlockRead(BaseModel):
+    id: str
+    experiment_id: str
+    block_type: str
+    content: dict
+    sort_order: float
+    parent_id: str | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class ExperimentBlockReorderItem(BaseModel):
+    id: str
+    sort_order: float
+    parent_id: str | None = None
+
+
+class ExperimentBlockReorder(BaseModel):
+    blocks: list[ExperimentBlockReorderItem]
+
+
+# --- Experiment ---
+
+class ExperimentCreate(BaseModel):
+    name: str
+    description: str | None = None
+
+
+class ExperimentUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+
+
+class ExperimentRead(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    blocks: list[ExperimentBlockRead] = []
+
+    model_config = {"from_attributes": True}
+
+
+class ExperimentListRead(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    block_count: int = 0
+
+    model_config = {"from_attributes": True}
+
+
+class SnapshotPanelRequest(BaseModel):
+    source_panel_id: str
+    panel_type: str  # "flow" | "if"

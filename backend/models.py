@@ -489,3 +489,39 @@ class IFPanelAssignment(Base):
     antibody = relationship("Antibody")
     fluorophore = relationship("Fluorophore")
     filter = relationship("MicroscopeFilter")
+
+
+class Experiment(Base):
+    __tablename__ = "experiments"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    blocks = relationship("ExperimentBlock", back_populates="experiment", cascade="all, delete-orphan")
+
+
+class ExperimentBlock(Base):
+    __tablename__ = "experiment_blocks"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    experiment_id = Column(
+        String(36),
+        ForeignKey("experiments.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    block_type = Column(String(30), nullable=False)
+    content = Column(Text, nullable=False, default="{}")
+    sort_order = Column(Float, nullable=False)
+    parent_id = Column(
+        String(36),
+        ForeignKey("experiment_blocks.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    experiment = relationship("Experiment", back_populates="blocks")
+    parent = relationship("ExperimentBlock", remote_side="ExperimentBlock.id")
