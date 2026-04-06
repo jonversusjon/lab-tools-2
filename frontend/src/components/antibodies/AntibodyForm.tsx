@@ -130,10 +130,12 @@ export default function AntibodyForm({
             value={host}
             onChange={setHost}
           />
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Isotype</label>
-            <input type="text" value={isotype} onChange={(e) => setIsotype(e.target.value)} className={inputClass} />
-          </div>
+          <ListEditor
+            listType="isotype"
+            label="Isotype"
+            value={isotype}
+            onChange={setIsotype}
+          />
         </div>
 
         <div>

@@ -368,6 +368,8 @@ class MicroscopeLaser(Base):
     )
     wavelength_nm = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
+    excitation_type = Column(String(10), nullable=False, default="laser")  # "laser" | "arc"
+    ex_filter_width = Column(Integer, nullable=True)  # only used when excitation_type == "arc"
 
     microscope = relationship("Microscope", back_populates="lasers")
     filters = relationship("MicroscopeFilter", back_populates="laser", cascade="all, delete-orphan")

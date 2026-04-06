@@ -22,6 +22,7 @@ from models import Microscope  # noqa: F401 — ensures table is created by crea
 from models import PlateMap  # noqa: F401 — ensures table is created by create_all()
 from routers import antibodies
 from routers import conjugate_chemistries
+from routers import export_import
 from routers import fluorophores
 from routers import instruments
 from routers import list_entries
@@ -363,11 +364,39 @@ def seed_conjugate_chemistries_if_needed() -> None:
         session.close()
 
 
+def migrate_microscope_excitation() -> None:
+    """One-time migration: add excitation_type and ex_filter_width to microscope_lasers."""
+    session = SessionLocal()
+    try:
+        conn = session.connection()
+        result = conn.execute(text("PRAGMA table_info(microscope_lasers)"))
+        existing_cols = {row[1] for row in result.fetchall()}
+        if "excitation_type" not in existing_cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE microscope_lasers ADD COLUMN excitation_type VARCHAR(10) NOT NULL DEFAULT 'laser'"
+                )
+            )
+            logger.info("Added excitation_type column to microscope_lasers.")
+        if "ex_filter_width" not in existing_cols:
+            conn.execute(
+                text("ALTER TABLE microscope_lasers ADD COLUMN ex_filter_width INTEGER DEFAULT NULL")
+            )
+            logger.info("Added ex_filter_width column to microscope_lasers.")
+        session.commit()
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to migrate microscope_lasers excitation fields.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     migrate_instrument_fields()
     migrate_secondary_binding_mode()
+    migrate_microscope_excitation()
     load_seed_data()
     seed_fluorophores_if_needed()
     seed_non_fluorescent_conjugates()
@@ -400,3 +429,4 @@ app.include_router(conjugate_chemistries.router, prefix="/api/v1/conjugate-chemi
 app.include_router(plate_maps.router, prefix="/api/v1/plate-maps", tags=["plate-maps"])
 app.include_router(microscopes.router, prefix="/api/v1/microscopes", tags=["microscopes"])
 app.include_router(if_panels.router, prefix="/api/v1/if-panels", tags=["if-panels"])
+app.include_router(export_import.router, prefix="/api/v1", tags=["export-import"])

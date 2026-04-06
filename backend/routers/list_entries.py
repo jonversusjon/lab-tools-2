@@ -17,7 +17,7 @@ from schemas import ListEntryUpdate
 
 router = APIRouter()
 
-VALID_LIST_TYPES = {"host", "target_species", "instrument_location"}
+VALID_LIST_TYPES = {"host", "target_species", "instrument_location", "microscope_location", "isotype"}
 
 FUZZY_THRESHOLD = 0.85
 

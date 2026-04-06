@@ -1,29 +1,56 @@
 # CLAUDE.md — Lab Tools 2
 
+## Reference Documents
+@ARCHITECTURE.md
+@FRONTEND-CONVENTIONS.md
+@EXPERIMENT-PAGE-ARCHITECTURE.md
+
 ## ⚠️ NEVER FORGET — Check Every File Against This List
 
 These are the mistakes that cause the most rework. Verify every one before committing.
 
+### Database & Models
 - [ ] **FK pragma in BOTH `database.py` AND `tests/conftest.py`** — SQLite silently ignores FK constraints without it. If your FK tests pass without it, your tests are lying.
 - [ ] **`str(uuid.uuid4())` not `uuid.uuid4`** in model defaults — the bare call returns a UUID object, not a string. SQLite String(36) columns will silently store `UUID(...)` repr strings. Add `assert isinstance(model.id, str)` to model tests.
-- [ ] **No prefix on router files** — prefix is ONLY in `main.py`. If routing is broken, check for accidental `APIRouter(prefix=...)` before anything else.
-- [ ] **Proxy key is `/api` not `/api/v1`** — in `vite.config.ts`. The frontend calls `/api/v1/...`, the proxy strips nothing, it just forwards to port 8000.
-- [ ] **`animation: false`** on ALL Chart.js chart configs — without this, spectra charts lag on every data change.
-- [ ] **`pointRadius: 0`** on ALL Chart.js datasets — 400 dots on a spectra curve murders performance.
-- [ ] **`chartjs-plugin-annotation`** must be in `package.json` — needed for laser lines and detector window overlays.
-- [ ] **`@/` path alias** configured in BOTH `tsconfig.json` AND `vite.config.ts` AND `vitest` resolve config — tests will fail on `@/` imports if vitest doesn't know about the alias.
-- [ ] **`from __future__ import annotations`** at the top of every Python file.
 - [ ] **All `ondelete` rules specified** on every FK column — see Foreign Key Cascade Rules below. Missing `ondelete` with FK pragma ON = runtime IntegrityError on delete.
-- [ ] **Seed data source field mapping** — `fluorophores.json` uses `"source": "gaussian_approximation"` but the model expects `"seed"|"fpbase"|"user"`. The seed loader MUST map `gaussian_approximation` → `"seed"` during import.
-- [ ] **Race condition immunity** — all database writes that read-then-write MUST use a single transaction. No optimistic "check then act" patterns across separate requests. See Race Condition Policy below.
-- [ ] **Mock react-chartjs-2 in vitest** — canvas isn't available in jsdom. Use: `vi.mock('react-chartjs-2', () => ({ Line: (props: any) => <canvas data-testid="chart" /> }))`
-- [ ] Always run npx tsc --noEmit from inside the frontend/ directory. Running it from the project root installs the wrong tsc package.
+- [ ] **ExperimentBlock.sort_order is Float, not Integer** — enables O(1) insert-between for drag-and-drop. Insert between 1.0 and 2.0 → use 1.5. Compaction normalizes back to integers when fractional gap < 0.001.
+- [ ] **ExperimentBlock.content is JSON text** — always `json.loads()` on read, `json.dumps()` on write in the router. Same pattern as PlateMap.well_data.
+- [ ] **PlateMap.well_data and legend are JSON text columns** — always `json.loads()` on read, `json.dumps()` on write in the router. Pydantic handles dict ↔ JSON at the API boundary but SQLAlchemy stores raw strings.
+- [ ] **PlateMap: no FK columns, no cascade rules needed** — well_data and legend are JSON text columns, no child records.
 - [ ] **PanelTarget.antibody_id is NULLABLE** — empty rows are valid placeholders. Multiple null-antibody rows are allowed.
 - [ ] **PanelTarget uniqueness on (panel_id, antibody_id)** is enforced in APPLICATION CODE, not DB constraint (because antibody_id can be null).
 - [ ] **SecondaryAntibody.fluorophore_id** uses `ondelete="SET NULL"` (same pattern as Antibody).
 - [ ] **PanelTarget.secondary_antibody_id** uses `ondelete="SET NULL"`.
 - [ ] **Indirect staining PanelAssignment** — when creating a PanelAssignment for indirect staining, COPY `fluorophore_id` from `SecondaryAntibody` — do not reference it.
+- [ ] **Seed data source field mapping** — `fluorophores.json` uses `"source": "gaussian_approximation"` but the model expects `"seed"|"fpbase"|"user"`. The seed loader MUST map `gaussian_approximation` → `"seed"` during import.
+- [ ] **Race condition immunity** — all database writes that read-then-write MUST use a single transaction. No optimistic "check then act" patterns across separate requests. See Race Condition Policy below.
+
+### Routing & API
+- [ ] **No prefix on router files** — prefix is ONLY in `main.py`. If routing is broken, check for accidental `APIRouter(prefix=...)` before anything else.
+- [ ] **Proxy key is `/api` not `/api/v1`** — in `vite.config.ts`. The frontend calls `/api/v1/...`, the proxy strips nothing, it just forwards to port 8000.
 - [ ] **Reorder endpoint** expects ALL target IDs for the panel — validates no missing/extra.
+
+### Experiment Page System
+- [ ] **Panel instance blocks are one-way snapshots** — editing a flow_panel or if_panel block on an experiment page does NOT propagate changes back to the template panel. The snapshot is a detached copy.
+- [ ] **Panel snapshot stores antibody_id references** — the JSON blob includes both display data (names, dilutions) and `antibody_id` foreign keys for optional "refresh from library" operations.
+- [ ] **Volume calculations are frontend-only** — no backend endpoints for volume math. All arithmetic computed client-side from panel instance JSON.
+- [ ] **Mastermix only groups same panel type** — flow panels and IF panels sharing the same antibody cannot be combined (different dilution sources: flow_dilution_factor vs icc_if_dilution_factor). Show a warning if user tries.
+- [ ] **Mastermix dilution mismatch warning** — if two same-type panels share an antibody but at different dilution factors, do NOT add to mastermix. Display explicit warning explaining why.
+- [ ] **Table rows are inline JSON arrays** — table block `content.rows` is an ordered array. Drag-and-drop reorders the array. No separate child blocks or sort_order for rows.
+- [ ] **Block text is plain text only (no rich text)** — headings, paragraphs, list items, callouts store `{ "text": "..." }`, not Notion-style rich_text arrays. Rich text annotations are deferred to a future update.
+- [ ] **heading_4 is internal only** — Notion API supports heading_1 through heading_3 only. On Notion export, heading_4 maps to a bold paragraph.
+- [ ] **Toggle headings use `is_toggleable: true`** — matches Notion API pattern. Children stored via `parent_id` reference to the heading block.
+
+### Chart.js
+- [ ] **`animation: false`** on ALL Chart.js chart configs — without this, spectra charts lag on every data change.
+- [ ] **`pointRadius: 0`** on ALL Chart.js datasets — 400 dots on a spectra curve murders performance.
+- [ ] **`chartjs-plugin-annotation`** must be in `package.json` — needed for laser lines and detector window overlays.
+
+### Frontend Patterns
+- [ ] **`@/` path alias** configured in BOTH `tsconfig.json` AND `vite.config.ts` AND `vitest` resolve config — tests will fail on `@/` imports if vitest doesn't know about the alias.
+- [ ] **`from __future__ import annotations`** at the top of every Python file.
+- [ ] **Mock react-chartjs-2 in vitest** — canvas isn't available in jsdom. Use: `vi.mock('react-chartjs-2', () => ({ Line: (props: any) => <canvas data-testid="chart" /> }))`
+- [ ] Always run `npx tsc --noEmit` from inside the `frontend/` directory. Running it from the project root installs the wrong tsc package.
 - [ ] **dnd-kit: `{...listeners}` on handle cell only, `{...attributes}` + `ref={setNodeRef}` on `<tr>`** — spreading both on the row breaks keyboard accessibility. The drag handle `<td>` gets `{...listeners}`, the `<tr>` gets `{...attributes}` and the ref.
 - [ ] **dnd-kit: `CSS.Transform.toString(transform)`** — never build the transform string manually. Always import `CSS` from `@dnd-kit/utilities`.
 - [ ] **Omnibox dropdowns need `z-50`** — table cells have `overflow: visible` but stacking context can still clip dropdowns. `z-50` on the dropdown div is mandatory.
@@ -32,23 +59,32 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **When mocking `useFluorophores`, always include `useToggleFluorophoreFavorite` and `useRecentFluorophores`** — `FluorophoreBrowser` calls both unconditionally; missing them crashes any test that renders the fluorophore browser.
 - [ ] **Fluorophore/detector names in `PanelTargetRow` come from props, not `as any` casts** — pass `fluorophoreName: string | null` (looked up via `fluorophoreNameById`) and `detectorLabel: string | null` (from `detectorLabelMap`) from PanelDesigner. Never access `assignment.fluorophore_name` or `assignment.detector_name` — those fields don't exist on `PanelAssignment`.
 - [ ] **`useRemoveTarget`, `useUpdateTarget`, `useReorderTargets` must all be mocked** in any test that renders PanelDesigner — PanelDesigner imports and calls all three.
-- [ ] **PlateMap.well_data and legend are JSON text columns** — always `json.loads()` on read, `json.dumps()` on write in the router. Pydantic handles dict ↔ JSON at the API boundary but SQLAlchemy stores raw strings.
 - [ ] **PlateMapEditor auto-save uses debounce + keepalive** — same pattern as InstrumentEditor. `userEdited` ref prevents saving on initial load.
 - [ ] **`html2canvas-pro` not `html2canvas`** — the standard package has canvas size limits. The `-pro` fork handles larger canvases (needed for 384-well plates at scale 3).
-- [ ] **PlateMap: no FK columns, no cascade rules needed** — well_data and legend are JSON text columns, no child records.
+
 ---
 
 ## Read First
-Always read `ARCHITECTURE.md` before starting any work. It is the single source of truth for data models, API endpoints, seed data, and technical details.
+
+Always read `ARCHITECTURE.md` before starting any work. It is the single source of truth for data models, API endpoints, block content schemas, volume calculation formulas, seed data, and technical details. Also read `FRONTEND-CONVENTIONS.md` for UI patterns.
 
 ## Project Overview
-Full-stack flow cytometry panel designer. Vite+React+TS frontend, FastAPI+SQLite backend. Supports both pre-conjugated and unconjugated antibodies. Each detector gets exactly one antibody and each antibody gets exactly one detector per panel.
+
+Full-stack lab tools platform. Vite+React+TS frontend, FastAPI+SQLite backend. Features:
+- **Flow cytometry panel designer** — pre-conjugated and unconjugated antibody support, spectral compatibility checks, spillover heatmaps
+- **IF/IHC panel designer** — direct/indirect staining, microscope filter matching
+- **Microscope manager** — lasers, filters, views
+- **Plate map designer** — 96/384-well plate layouts with cartographic color theory
+- **Experiment pages** — Notion-like block editor with embedded panel instances, volume calculations, cross-panel mastermix detection
+
+Existing flow and IF panels serve as **templates**: reusable blueprints that get stamped into experiment pages as independent snapshot copies.
 
 ## Directory Structure
 - `backend/` — FastAPI app (Python 3.11+)
 - `frontend/` — Vite + React + TypeScript app
 - `resources/` — seed data generation scripts (run locally, not in Claude Code)
-- `ARCHITECTURE.md` — full project specification
+- `ARCHITECTURE.md` — full project specification (models, endpoints, schemas, build plan)
+- `FRONTEND-CONVENTIONS.md` — UI patterns, component conventions, dark mode, dnd-kit
 
 ## Stack & Versions
 - Python: 3.11+, FastAPI, SQLAlchemy 2.x, Pydantic v2, httpx
@@ -84,6 +120,15 @@ app.include_router(instruments.router, prefix="/api/v1/instruments", tags=["inst
 app.include_router(fluorophores.router, prefix="/api/v1/fluorophores", tags=["fluorophores"])
 app.include_router(antibodies.router, prefix="/api/v1/antibodies", tags=["antibodies"])
 app.include_router(panels.router, prefix="/api/v1/panels", tags=["panels"])
+app.include_router(if_panels.router, prefix="/api/v1/if-panels", tags=["if_panels"])
+app.include_router(microscopes.router, prefix="/api/v1/microscopes", tags=["microscopes"])
+app.include_router(plate_maps.router, prefix="/api/v1/plate-maps", tags=["plate_maps"])
+app.include_router(secondaries.router, prefix="/api/v1/secondary-antibodies", tags=["secondary_antibodies"])
+app.include_router(tags.router, prefix="/api/v1/tags", tags=["tags"])
+app.include_router(list_entries.router, prefix="/api/v1/list-entries", tags=["list_entries"])
+app.include_router(conjugate_chemistries.router, prefix="/api/v1/conjugate-chemistries", tags=["conjugate_chemistries"])
+app.include_router(preferences.router, prefix="/api/v1/preferences", tags=["preferences"])
+app.include_router(experiments.router, prefix="/api/v1/experiments", tags=["experiments"])
 ```
 Do NOT double-prefix. Router endpoints use relative paths: `@router.get("/")`, `@router.get("/{id}")`.
 
@@ -96,18 +141,42 @@ In FastAPI lifespan, after `create_all()`: check if the **instruments** table is
 When loading `fluorophores.json`, map the `source` field: `"gaussian_approximation"` → `"seed"`. The model only accepts `"seed"|"fpbase"|"user"`.
 
 #### Foreign key cascade rules (COMPLETE — every FK must have ondelete)
-- Laser.instrument_id → Instrument: `ondelete="CASCADE"`
-- Detector.laser_id → Laser: `ondelete="CASCADE"`
-- Antibody.fluorophore_id → Fluorophore: `ondelete="SET NULL"` (clearing a fluorophore doesn't destroy antibody records)
-- Panel.instrument_id → Instrument: `ondelete="SET NULL"` (panels survive instrument deletion; UI shows "No instrument selected" state)
-- PanelAssignment.panel_id → Panel: `ondelete="CASCADE"`
-- PanelAssignment.antibody_id → Antibody: `ondelete="CASCADE"` (deleting an antibody removes its assignments)
-- PanelAssignment.fluorophore_id → Fluorophore: `ondelete="CASCADE"` (deleting a fluorophore removes assignments using it)
-- PanelAssignment.detector_id → Detector: `ondelete="CASCADE"` (deleting a detector removes assignments to it)
-- PanelTarget.panel_id → Panel: `ondelete="CASCADE"`
-- PanelTarget.antibody_id → Antibody: `ondelete="CASCADE"`
-- PanelTarget.secondary_antibody_id → SecondaryAntibody: `ondelete="SET NULL"` (secondary can be unlinked without destroying the target row)
-- SecondaryAntibody.fluorophore_id → Fluorophore: `ondelete="SET NULL"` (secondary is still valid inventory without its fluorophore)
+
+**Instrument / Flow Panel domain:**
+- Laser.instrument_id → Instrument: `CASCADE`
+- Detector.laser_id → Laser: `CASCADE`
+- Antibody.fluorophore_id → Fluorophore: `SET NULL`
+- Panel.instrument_id → Instrument: `SET NULL`
+- PanelAssignment.panel_id → Panel: `CASCADE`
+- PanelAssignment.antibody_id → Antibody: `CASCADE`
+- PanelAssignment.fluorophore_id → Fluorophore: `CASCADE`
+- PanelAssignment.detector_id → Detector: `CASCADE`
+- PanelTarget.panel_id → Panel: `CASCADE`
+- PanelTarget.antibody_id → Antibody: `CASCADE`
+- PanelTarget.secondary_antibody_id → SecondaryAntibody: `SET NULL`
+- SecondaryAntibody.fluorophore_id → Fluorophore: `SET NULL`
+
+**IF/IHC Panel domain:**
+- IFPanel.microscope_id → Microscope: `SET NULL`
+- IFPanelTarget.if_panel_id → IFPanel: `CASCADE`
+- IFPanelTarget.antibody_id → Antibody: `CASCADE`
+- IFPanelTarget.secondary_antibody_id → SecondaryAntibody: `SET NULL`
+- IFPanelAssignment.if_panel_id → IFPanel: `CASCADE`
+- IFPanelAssignment.antibody_id → Antibody: `CASCADE`
+- IFPanelAssignment.fluorophore_id → Fluorophore: `CASCADE`
+- IFPanelAssignment.filter_id → MicroscopeFilter: `CASCADE`
+
+**Microscope domain:**
+- MicroscopeLaser.microscope_id → Microscope: `CASCADE`
+- MicroscopeFilter.laser_id → MicroscopeLaser: `CASCADE`
+
+**Experiment domain:**
+- ExperimentBlock.experiment_id → Experiment: `CASCADE`
+- ExperimentBlock.parent_id → ExperimentBlock: `SET NULL` (orphaned children become top-level)
+
+**Tags / Metadata:**
+- AntibodyTagAssignment.antibody_id → Antibody: `CASCADE`
+- AntibodyTagAssignment.tag_id → AntibodyTag: `CASCADE`
 
 **Every FK column MUST specify `ondelete`.** With FK pragma enabled, a missing `ondelete` defaults to RESTRICT, which will cause unexpected IntegrityErrors on delete operations.
 
@@ -189,31 +258,15 @@ interface PaginatedResponse<T> {
 }
 ```
 
-Apply to: `/instruments`, `/fluorophores`, `/antibodies`, `/panels`. The `/fluorophores/{id}/spectra` endpoint returns a single object, not a list.
-
-TanStack Query hooks should accept optional `skip`/`limit` params and include them in query keys:
-```typescript
-queryKey: ['antibodies', { skip, limit }]
-```
+Apply to all list endpoints. TanStack Query hooks should accept optional `skip`/`limit` params and include them in query keys.
 
 #### Spectra Data Access Strategy
 The `GET /fluorophores` list endpoint excludes the `spectra` JSON field for performance (spectra arrays are large). Components that need spectra data use these strategies:
 
-1. **Single fluorophore spectra viewer** (Phase 4): Fetches via `GET /fluorophores/{id}/spectra` on demand when user clicks a row.
-
-2. **Panel designer compatibility checks** (Phase 7): Add a batch endpoint:
-   ```
-   POST /api/v1/fluorophores/batch-spectra
-   Body: {"ids": ["uuid1", "uuid2", ...]}
-   Response: {"fluorophore_id": {"excitation": [...], "emission": [...]}, ...}
-   ```
-   The panel designer calls this once on mount with all fluorophore IDs from the library, then caches client-side. The `FluorophorePicker` uses this cached data for `isCompatible()` checks. TanStack Query key: `['fluorophores', 'batch-spectra']` with a long `staleTime` (5 minutes).
-
-3. **Spillover calculation** (Phase 8): Uses the same batch-spectra cache. Only needs emission spectra for assigned fluorophores. The `computeSpilloverMatrix` function receives pre-fetched spectra — it never triggers its own fetch.
-
-4. **Spectra overlay in panel context** (Phase 8): Filters the batch-spectra cache to just assigned fluorophore IDs.
-
-This avoids N+1 fetches. One batch call on panel designer mount, cached for the session.
+1. **Single fluorophore spectra viewer**: Fetches via `GET /fluorophores/{id}/spectra` on demand when user clicks a row.
+2. **Panel designer compatibility checks**: Batch endpoint `POST /api/v1/fluorophores/batch-spectra` with `{"ids": [...]}`. Called once on mount, cached client-side. TanStack Query key: `['fluorophores', 'batch-spectra']` with long `staleTime` (5 minutes).
+3. **Spillover calculation**: Uses the same batch-spectra cache. Only needs emission spectra for assigned fluorophores.
+4. **Spectra overlay in panel context**: Filters the batch-spectra cache to just assigned fluorophore IDs.
 
 ### Frontend
 
@@ -235,11 +288,30 @@ The proxy key is `/api`, not `/api/v1`. API functions use relative paths: `fetch
 
 #### TanStack Query keys
 ```typescript
-queryKey: ['instruments']                          // list
-queryKey: ['instruments', { skip, limit }]         // paginated list
-queryKey: ['instruments', id]                      // detail
-queryKey: ['fluorophores', id, 'spectra']          // single spectra
-queryKey: ['fluorophores', 'batch-spectra']        // batch spectra cache
+// Instruments / Fluorophores / Antibodies
+queryKey: ['instruments']                              // list
+queryKey: ['instruments', { skip, limit }]             // paginated list
+queryKey: ['instruments', id]                          // detail
+queryKey: ['fluorophores', id, 'spectra']              // single spectra
+queryKey: ['fluorophores', 'batch-spectra']            // batch spectra cache
+
+// Panels (flow + IF)
+queryKey: ['panels']                                   // flow panel list
+queryKey: ['panels', id]                               // flow panel detail
+queryKey: ['if-panels']                                // IF panel list
+queryKey: ['if-panels', id]                            // IF panel detail
+
+// Microscopes / Plate Maps
+queryKey: ['microscopes']                              // list
+queryKey: ['microscopes', id]                          // detail
+queryKey: ['plate-maps']                               // list
+queryKey: ['plate-maps', id]                           // detail
+
+// Experiments
+queryKey: ['experiments']                              // list
+queryKey: ['experiments', { skip, limit }]             // paginated list
+queryKey: ['experiments', id]                          // detail with all blocks
+queryKey: ['experiments', id, 'blocks']                // blocks only
 ```
 Mutations invalidate the list key on success.
 

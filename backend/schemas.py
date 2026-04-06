@@ -105,6 +105,8 @@ class MicroscopeFilterRead(MicroscopeFilterBase):
 class MicroscopeLaserBase(BaseModel):
     wavelength_nm: int
     name: str
+    excitation_type: str = "laser"  # "laser" | "arc"
+    ex_filter_width: int | None = None
 
 
 class MicroscopeLaserCreate(MicroscopeLaserBase):

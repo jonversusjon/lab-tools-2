@@ -32,6 +32,7 @@ const sidebarEntries: SidebarEntry[] = [
         { to: '/resources/primaries', label: 'Primaries', icon: '🧬' },
         { to: '/resources/secondaries', label: 'Secondaries', icon: '🔗' },
         { to: '/resources/fluorophores', label: 'Fluorophores', icon: '🌈' },
+        { to: '/qpcr/primers', label: 'Primers', icon: '🧪' },
       ],
     },
   },
@@ -66,7 +67,6 @@ const sidebarEntries: SidebarEntry[] = [
       label: 'qPCR',
       icon: '🧬',
       children: [
-        { to: '/qpcr/primers', label: 'Primers', icon: '🧪' },
         { to: '/qpcr/plates', label: 'Plates', icon: '📋' },
       ],
     },

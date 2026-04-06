@@ -91,6 +91,8 @@ def create_microscope(
             microscope_id=microscope.id,
             wavelength_nm=laser_data.wavelength_nm,
             name=laser_data.name,
+            excitation_type=laser_data.excitation_type,
+            ex_filter_width=laser_data.ex_filter_width,
         )
         db.add(laser)
         db.flush()
@@ -219,6 +221,8 @@ def update_microscope(
             microscope_id=microscope.id,
             wavelength_nm=laser_data.wavelength_nm,
             name=laser_data.name,
+            excitation_type=laser_data.excitation_type,
+            ex_filter_width=laser_data.ex_filter_width,
         )
         db.add(laser)
         db.flush()
@@ -322,16 +326,34 @@ def get_microscope_fluorophore_compatibility(
 
     for laser in microscope.lasers:
         laser_wl = laser.wavelength_nm
+        is_arc = getattr(laser, "excitation_type", "laser") == "arc"
+        ex_filter_width = getattr(laser, "ex_filter_width", None)
+
         for fl in fluorophores:
             ex_spectra = fl_spectra[fl.id].get("EX") or fl_spectra[fl.id].get("AB") or []
             ex_eff = 0.0
-            if ex_spectra:
-                ex_eff = interpolate_at(ex_spectra, float(laser_wl))
-                peak = max(p[1] for p in ex_spectra)
-                ex_eff = (ex_eff / peak) if peak > 0 else 0.0
+            if is_arc and ex_filter_width and ex_filter_width > 0:
+                # Arc lamp / LED: integrate excitation spectrum over the bandpass filter
+                if ex_spectra:
+                    low = laser_wl - ex_filter_width / 2
+                    high = laser_wl + ex_filter_width / 2
+                    peak = max(p[1] for p in ex_spectra)
+                    if peak > 0:
+                        ex_passband = integrate_bandpass(ex_spectra, low, high)
+                        full_range = integrate_bandpass(ex_spectra, ex_spectra[0][0], ex_spectra[-1][0])
+                        ex_eff = (ex_passband / full_range) if full_range > 0 else 0.0
+                else:
+                    if fl.ex_max_nm is not None and abs(fl.ex_max_nm - laser_wl) <= ex_filter_width / 2:
+                        ex_eff = 1.0
             else:
-                if fl.ex_max_nm is not None and abs(fl.ex_max_nm - laser_wl) <= 40:
-                    ex_eff = 1.0
+                # Laser: single wavelength
+                if ex_spectra:
+                    ex_eff = interpolate_at(ex_spectra, float(laser_wl))
+                    peak = max(p[1] for p in ex_spectra)
+                    ex_eff = (ex_eff / peak) if peak > 0 else 0.0
+                else:
+                    if fl.ex_max_nm is not None and abs(fl.ex_max_nm - laser_wl) <= 40:
+                        ex_eff = 1.0
 
             if ex_eff < (min_excitation_pct / 100.0):
                 continue
@@ -386,6 +408,8 @@ def import_microscope(
             microscope_id=microscope.id,
             wavelength_nm=laser_data.wavelength_nm,
             name=laser_data.name,
+            excitation_type=laser_data.excitation_type,
+            ex_filter_width=laser_data.ex_filter_width,
         )
         db.add(laser)
         db.flush()

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getPreferences, updatePreference } from '@/api/preferences'
+import { downloadExport, uploadImport, type ExportResource } from '@/api/exportImport'
 import {
   useConjugateChemistries,
   useCreateConjugateChemistry,
@@ -110,6 +111,52 @@ export default function Settings() {
         setTimeout(() => setChemMessage(''), 3000)
       },
     })
+  }
+
+  // Export / Import state
+  const [exportStatus, setExportStatus] = useState<Record<string, string>>({})
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+
+  const RESOURCES: { key: ExportResource; label: string; note?: string }[] = [
+    { key: 'antibodies', label: 'Antibodies' },
+    { key: 'secondaries', label: 'Secondary Antibodies' },
+    { key: 'instruments', label: 'Instruments' },
+    { key: 'microscopes', label: 'Microscopes' },
+    { key: 'list-entries', label: 'List Entries' },
+    { key: 'conjugate-chemistries', label: 'Conjugate Chemistries' },
+    { key: 'flow-panels', label: 'Flow Panels', note: 'Import after Antibodies + Instruments' },
+    { key: 'if-panels', label: 'IF/IHC Panels', note: 'Import after Antibodies + Microscopes' },
+  ]
+
+  const handleExport = async (resource: ExportResource) => {
+    setExportStatus((s) => ({ ...s, [resource]: 'exporting' }))
+    try {
+      await downloadExport(resource)
+      setExportStatus((s) => ({ ...s, [resource]: 'ok' }))
+      setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 2000)
+    } catch (err) {
+      setExportStatus((s) => ({
+        ...s,
+        [resource]: err instanceof Error ? err.message : 'Export failed',
+      }))
+    }
+  }
+
+  const handleImport = async (resource: ExportResource, file: File) => {
+    setExportStatus((s) => ({ ...s, [resource]: 'importing' }))
+    try {
+      const result = await uploadImport(resource, file)
+      setExportStatus((s) => ({ ...s, [resource]: 'Imported ' + result.imported + ' records' }))
+      setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 4000)
+    } catch (err) {
+      setExportStatus((s) => ({
+        ...s,
+        [resource]: err instanceof Error ? err.message : 'Import failed',
+      }))
+    }
+    // Reset file input
+    const input = fileInputRefs.current[resource]
+    if (input) input.value = ''
   }
 
   if (loading) {
@@ -342,6 +389,88 @@ export default function Settings() {
             {chemMessage}
           </p>
         )}
+      </div>
+
+      {/* Export / Import */}
+      <div className="mt-6 space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Export / Import Data</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Export any resource as JSON to back up your data. Re-import the file after deleting the
+            database to restore. For panels, import their dependencies first.
+          </p>
+        </div>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <th className="py-2">Resource</th>
+              <th className="py-2 w-24 text-center">Export</th>
+              <th className="py-2 w-24 text-center">Import</th>
+              <th className="py-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {RESOURCES.map(({ key, label, note }) => {
+              const status = exportStatus[key] ?? ''
+              const isBusy = status === 'exporting' || status === 'importing'
+              const isError =
+                status !== '' &&
+                status !== 'ok' &&
+                status !== 'exporting' &&
+                status !== 'importing' &&
+                !status.startsWith('Imported')
+              return (
+                <tr key={key} className="border-b border-gray-50 dark:border-gray-700">
+                  <td className="py-2 text-gray-800 dark:text-gray-200">
+                    {label}
+                    {note && (
+                      <span className="ml-1.5 text-xs text-gray-400 dark:text-gray-500">({note})</span>
+                    )}
+                  </td>
+                  <td className="py-2 text-center">
+                    <button
+                      onClick={() => handleExport(key)}
+                      disabled={isBusy}
+                      className="rounded bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
+                    >
+                      {status === 'exporting' ? '...' : 'Download'}
+                    </button>
+                  </td>
+                  <td className="py-2 text-center">
+                    <input
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      ref={(el) => { fileInputRefs.current[key] = el }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleImport(key, file)
+                      }}
+                    />
+                    <button
+                      onClick={() => fileInputRefs.current[key]?.click()}
+                      disabled={isBusy}
+                      className="rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                    >
+                      {status === 'importing' ? '...' : 'Upload'}
+                    </button>
+                  </td>
+                  <td className="py-2 text-xs">
+                    {status === 'ok' && (
+                      <span className="text-green-600 dark:text-green-400">Downloaded</span>
+                    )}
+                    {status.startsWith('Imported') && (
+                      <span className="text-green-600 dark:text-green-400">{status}</span>
+                    )}
+                    {isError && (
+                      <span className="text-red-600 dark:text-red-400">{status}</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   )

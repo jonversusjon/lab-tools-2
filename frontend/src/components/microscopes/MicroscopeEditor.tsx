@@ -34,6 +34,8 @@ function buildPayload(form: MicroscopeFormState) {
     lasers: form.lasers.map((l) => ({
       wavelength_nm: l.wavelength_nm,
       name: l.name,
+      excitation_type: l.excitation_type,
+      ex_filter_width: l.ex_filter_width ?? null,
       filters: l.filters.map((f) => ({
         filter_midpoint: f.filter_midpoint,
         filter_width: f.filter_width,
@@ -91,6 +93,8 @@ export default function MicroscopeEditor() {
         lasers: existing.lasers.map((l) => ({
           wavelength_nm: l.wavelength_nm,
           name: l.name,
+          excitation_type: (l.excitation_type as 'laser' | 'arc') ?? 'laser',
+          ex_filter_width: l.ex_filter_width ?? null,
           filters: l.filters.map((f) => ({
             filter_midpoint: f.filter_midpoint,
             filter_width: f.filter_width,
@@ -199,7 +203,7 @@ export default function MicroscopeEditor() {
       ...form,
       lasers: [
         ...form.lasers,
-        { wavelength_nm: 0, name: '', filters: [] },
+        { wavelength_nm: 0, name: '', excitation_type: 'laser', ex_filter_width: null, filters: [] },
       ],
     })
   }
@@ -299,7 +303,7 @@ export default function MicroscopeEditor() {
       </div>
 
       <div className="mb-4">
-        <h2 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">Lasers</h2>
+        <h2 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">Excitation Sources</h2>
         <div className="space-y-3">
           {form.lasers.map((laser, i) => (
             <MicroscopeLaserSection
@@ -314,7 +318,7 @@ export default function MicroscopeEditor() {
           onClick={addLaser}
           className="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
         >
-          + Add Laser
+          + Add Excitation Source
         </button>
       </div>
 

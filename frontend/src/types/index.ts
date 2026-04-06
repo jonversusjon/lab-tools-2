@@ -496,6 +496,8 @@ export interface MicroscopeLaser {
   microscope_id: string
   wavelength_nm: number
   name: string
+  excitation_type: 'laser' | 'arc'
+  ex_filter_width: number | null
   filters: MicroscopeFilter[]
 }
 
@@ -516,6 +518,8 @@ export interface MicroscopeCreate {
 export interface MicroscopeLaserCreate {
   wavelength_nm: number
   name: string
+  excitation_type?: string
+  ex_filter_width?: number | null
   filters?: MicroscopeFilterCreate[]
 }
 
