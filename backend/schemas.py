@@ -676,12 +676,14 @@ class IFPanelTargetCreate(BaseModel):
     antibody_id: str | None = None
     staining_mode: str = "direct"
     secondary_antibody_id: str | None = None
+    dilution_override: str | None = None
 
 
 class IFPanelTargetUpdate(BaseModel):
     antibody_id: str | None = None
     staining_mode: str | None = None
     secondary_antibody_id: str | None = None
+    dilution_override: str | None = None
 
 
 class IFPanelTargetReorder(BaseModel):
@@ -700,6 +702,8 @@ class IFPanelTargetRead(BaseModel):
     secondary_antibody_name: str | None = None
     secondary_fluorophore_id: str | None = None
     secondary_fluorophore_name: str | None = None
+    dilution_override: str | None = None
+    antibody_icc_if_dilution: str | None = None
 
     model_config = {"from_attributes": True}
 

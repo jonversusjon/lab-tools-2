@@ -50,6 +50,8 @@ function makeTarget(overrides: Partial<IFPanelTarget> = {}): IFPanelTarget {
     secondary_antibody_name: null,
     secondary_fluorophore_id: null,
     secondary_fluorophore_name: null,
+    dilution_override: null,
+    antibody_icc_if_dilution: null,
     ...overrides,
   }
 }
@@ -514,5 +516,31 @@ describe('mergedCellCase — biotin-conjugated antibody', () => {
 
   it('still shows secondary when overridden (conjugate strategy)', () => {
     expect(mergedCellCase(ab, 'direct', true)).toBe('secondary')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Dilution display value logic
+// ---------------------------------------------------------------------------
+
+describe('dilution display value', () => {
+  // Mirrors the dilutionMap initialization: dilution_override ?? antibody_icc_if_dilution ?? ''
+  function dilutionDisplayValue(t: { dilution_override: string | null; antibody_icc_if_dilution: string | null }): string {
+    return t.dilution_override ?? t.antibody_icc_if_dilution ?? ''
+  }
+
+  it('shows dilution_override when set', () => {
+    const t = { dilution_override: '1:500', antibody_icc_if_dilution: '1:200' }
+    expect(dilutionDisplayValue(t)).toBe('1:500')
+  })
+
+  it('falls back to antibody_icc_if_dilution when no override', () => {
+    const t = { dilution_override: null, antibody_icc_if_dilution: '1:200' }
+    expect(dilutionDisplayValue(t)).toBe('1:200')
+  })
+
+  it('returns empty string when both are null', () => {
+    const t = { dilution_override: null, antibody_icc_if_dilution: null }
+    expect(dilutionDisplayValue(t)).toBe('')
   })
 })

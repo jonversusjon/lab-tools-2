@@ -551,6 +551,8 @@ export interface IFPanelTarget {
   secondary_antibody_name: string | null
   secondary_fluorophore_id: string | null
   secondary_fluorophore_name: string | null
+  dilution_override: string | null
+  antibody_icc_if_dilution: string | null
 }
 
 export interface IFPanelTargetCreate {
@@ -563,6 +565,7 @@ export interface IFPanelTargetUpdate {
   antibody_id?: string | null
   staining_mode?: "direct" | "indirect"
   secondary_antibody_id?: string | null
+  dilution_override?: string | null
 }
 
 export interface IFPanelAssignment {

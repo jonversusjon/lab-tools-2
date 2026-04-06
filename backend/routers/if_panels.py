@@ -51,6 +51,8 @@ def _target_to_read(t: IFPanelTarget) -> dict:
         "secondary_fluorophore_name": (
             sa.fluorophore.name if sa and sa.fluorophore else None
         ),
+        "dilution_override": t.dilution_override,
+        "antibody_icc_if_dilution": ab.icc_if_dilution if ab else None,
     }
 
 
@@ -266,6 +268,7 @@ def add_target(
         staining_mode=data.staining_mode,
         secondary_antibody_id=data.secondary_antibody_id,
         sort_order=max_order + 1,
+        dilution_override=data.dilution_override,
     )
     db.add(target)
     try:
@@ -384,6 +387,12 @@ def update_target(
             target.secondary_antibody_id = data.secondary_antibody_id
     else:
         target.secondary_antibody_id = None
+
+    # Handle dilution_override
+    if data.dilution_override is not None:
+        target.dilution_override = data.dilution_override
+    elif "dilution_override" in (data.model_fields_set or set()):
+        target.dilution_override = None
 
     db.commit()
     db.refresh(target)

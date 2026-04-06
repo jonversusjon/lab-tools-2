@@ -356,3 +356,61 @@ def test_remove_assignment(client):
     # Gone from panel
     get_resp = client.get("/api/v1/if-panels/%s" % panel["id"])
     assert get_resp.json()["assignments"] == []
+
+
+# ---------------------------------------------------------------------------
+# Dilution override
+# ---------------------------------------------------------------------------
+
+
+def test_target_includes_antibody_icc_if_dilution(client):
+    """_target_to_read includes antibody_icc_if_dilution from the antibody record."""
+    # Create antibody with icc_if_dilution
+    resp = client.post(
+        "/api/v1/antibodies/",
+        json={"target": "GFAP", "name": "GFAP Ab", "icc_if_dilution": "1:200"},
+    )
+    assert resp.status_code == 201
+    ab = resp.json()
+
+    panel = _create_panel(client)
+    target = _add_target(client, panel["id"], ab["id"])
+
+    assert target["antibody_icc_if_dilution"] == "1:200"
+    assert target["dilution_override"] is None
+
+
+def test_update_target_dilution_override(client):
+    """Setting dilution_override persists and is returned."""
+    panel = _create_panel(client)
+    ab = _create_antibody(client)
+    target = _add_target(client, panel["id"], ab["id"])
+
+    resp = client.put(
+        "/api/v1/if-panels/%s/targets/%s" % (panel["id"], target["id"]),
+        json={"dilution_override": "1:500"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["dilution_override"] == "1:500"
+
+
+def test_update_target_clear_dilution_override(client):
+    """Explicitly sending dilution_override: null resets the override."""
+    panel = _create_panel(client)
+    ab = _create_antibody(client)
+    target = _add_target(client, panel["id"], ab["id"])
+
+    # First set an override
+    client.put(
+        "/api/v1/if-panels/%s/targets/%s" % (panel["id"], target["id"]),
+        json={"dilution_override": "1:500"},
+    )
+
+    # Then clear it
+    resp = client.put(
+        "/api/v1/if-panels/%s/targets/%s" % (panel["id"], target["id"]),
+        json={"dilution_override": None},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["dilution_override"] is None

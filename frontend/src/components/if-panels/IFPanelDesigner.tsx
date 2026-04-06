@@ -382,6 +382,24 @@ export default function IFPanelDesigner() {
     }
   }
 
+  // --- Dilution override (keyed by target id) ---
+  // Initialized from targets on load; updated locally on edit, persisted on blur/Enter
+  const [dilutionMap, setDilutionMap] = useState<Map<string, string>>(new Map())
+
+  useEffect(() => {
+    if (!state.targets.length) return
+    setDilutionMap((prev) => {
+      const next = new Map(prev)
+      for (const t of state.targets) {
+        // Only initialize if not already set locally (preserve in-progress edits)
+        if (!next.has(t.id)) {
+          next.set(t.id, t.dilution_override ?? t.antibody_icc_if_dilution ?? '')
+        }
+      }
+      return next
+    })
+  }, [state.targets])
+
   // --- Local notes state (keyed by antibody_id) ---
   const [notesMap, setNotesMap] = useState<Map<string, string>>(new Map())
 
@@ -889,8 +907,50 @@ export default function IFPanelDesigner() {
                             })()}
 
                             {/* IF Dilution (read-only) */}
-                            <td className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400" style={{ width: 90 }}>
-                              {ab?.icc_if_dilution ?? '\u2014'}
+                            {/* IF Dilution (editable, persisted as dilution_override) */}
+                            <td className="px-3 py-2" style={{ width: 100 }}>
+                              {t.antibody_id ? (
+                                <input
+                                  type="text"
+                                  value={dilutionMap.get(t.id) ?? ''}
+                                  placeholder={t.antibody_icc_if_dilution ?? undefined}
+                                  onChange={(e) => {
+                                    const val = e.target.value
+                                    setDilutionMap((prev) => {
+                                      const next = new Map(prev)
+                                      next.set(t.id, val)
+                                      return next
+                                    })
+                                  }}
+                                  onBlur={() => {
+                                    if (!id) return
+                                    const val = dilutionMap.get(t.id) ?? ''
+                                    const newOverride = val.trim() || null
+                                    if (newOverride === t.dilution_override) return
+                                    updateTargetMutation.mutate({
+                                      panelId: id,
+                                      targetId: t.id,
+                                      data: { dilution_override: newOverride },
+                                    }, {
+                                      onSuccess: (updated) => {
+                                        dispatch({ type: 'UPDATE_TARGET', target: updated })
+                                      },
+                                    })
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                                  }}
+                                  className={
+                                    'w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-xs ' +
+                                    (t.dilution_override
+                                      ? 'text-gray-700 dark:text-gray-300'
+                                      : 'text-gray-400 dark:text-gray-500 italic') +
+                                    ' placeholder-gray-300 dark:placeholder-gray-600 focus:border-gray-300 dark:focus:border-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:text-gray-700 dark:focus:text-gray-300 focus:not-italic'
+                                  }
+                                />
+                              ) : (
+                                <span className="text-xs italic text-gray-300 dark:text-gray-600">—</span>
+                              )}
                             </td>
 
                             {/* Notes (local state) */}

@@ -446,6 +446,7 @@ class IFPanelTarget(Base):
         nullable=True,
     )
     sort_order = Column(Integer, nullable=False, default=0)
+    dilution_override = Column(String, nullable=True)
 
     panel = relationship("IFPanel", back_populates="targets")
     antibody = relationship("Antibody")
