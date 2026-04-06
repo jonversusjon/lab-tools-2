@@ -679,3 +679,178 @@ export interface PlateMapUpdate {
   well_data?: WellDataMap | null
   legend?: PlateMapLegend | null
 }
+
+// --- Experiment ---
+
+export interface ExperimentBlock {
+  id: string
+  experiment_id: string
+  block_type: string
+  content: Record<string, unknown>
+  sort_order: number
+  parent_id: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface Experiment {
+  id: string
+  name: string
+  description: string | null
+  created_at: string | null
+  updated_at: string | null
+  blocks: ExperimentBlock[]
+}
+
+export interface ExperimentListItem {
+  id: string
+  name: string
+  description: string | null
+  created_at: string | null
+  updated_at: string | null
+  block_count: number
+}
+
+export interface ExperimentCreate {
+  name: string
+  description?: string | null
+}
+
+export interface ExperimentUpdate {
+  name?: string | null
+  description?: string | null
+}
+
+export interface ExperimentBlockCreate {
+  block_type: string
+  content: Record<string, unknown>
+  sort_order: number
+  parent_id?: string | null
+}
+
+export interface ExperimentBlockUpdate {
+  block_type?: string | null
+  content?: Record<string, unknown> | null
+  sort_order?: number | null
+  parent_id?: string | null
+}
+
+export interface ExperimentBlockReorderItem {
+  id: string
+  sort_order: number
+  parent_id: string | null
+}
+
+export interface SnapshotPanelRequest {
+  source_panel_id: string
+  panel_type: 'flow' | 'if'
+}
+
+/** Content shape for paragraph, heading_1-4, bulleted_list_item, numbered_list_item */
+export interface TextBlockContent {
+  text: string
+  is_toggleable?: boolean
+}
+
+/** Content shape for callout blocks */
+export interface CalloutBlockContent {
+  text: string
+  icon: string
+  color: string
+}
+
+/** Content shape for table blocks */
+export interface TableBlockContent {
+  table_width: number
+  has_column_header: boolean
+  has_row_header: boolean
+  rows: string[][]
+}
+
+/** Content shape for column_list blocks */
+export interface ColumnListBlockContent {
+  column_count: number
+}
+
+/** Content shape for column blocks */
+export interface ColumnBlockContent {
+  column_index: number
+}
+
+/** Content shape for flow_panel blocks */
+export interface FlowPanelBlockContent {
+  source_panel_id: string
+  name: string
+  instrument: { id: string; name: string } | null
+  targets: FlowPanelInstanceTarget[]
+  assignments: FlowPanelInstanceAssignment[]
+  volume_params: VolumeParams
+}
+
+export interface FlowPanelInstanceTarget {
+  id: string
+  antibody_id: string | null
+  antibody_name: string | null
+  antibody_target: string | null
+  antibody_host: string | null
+  antibody_clone: string | null
+  staining_mode: string
+  secondary_antibody_id: string | null
+  secondary_antibody_name: string | null
+  sort_order: number
+  flow_dilution_factor: number | null
+  icc_if_dilution_factor: number | null
+}
+
+export interface FlowPanelInstanceAssignment {
+  id: string
+  antibody_id: string
+  fluorophore_id: string
+  fluorophore_name: string | null
+  detector_id: string
+  detector_name: string | null
+}
+
+/** Content shape for if_panel blocks */
+export interface IFPanelBlockContent {
+  source_panel_id: string
+  name: string
+  panel_type: string
+  microscope: { id: string; name: string } | null
+  view_mode: string
+  targets: IFPanelInstanceTarget[]
+  assignments: IFPanelInstanceAssignment[]
+  volume_params: VolumeParams
+}
+
+export interface IFPanelInstanceTarget {
+  id: string
+  antibody_id: string | null
+  antibody_name: string | null
+  antibody_target: string | null
+  antibody_host: string | null
+  staining_mode: string
+  secondary_antibody_id: string | null
+  secondary_antibody_name: string | null
+  secondary_fluorophore_id: string | null
+  secondary_fluorophore_name: string | null
+  sort_order: number
+  dilution_override: string | null
+  icc_if_dilution_factor: number | null
+}
+
+export interface IFPanelInstanceAssignment {
+  id: string
+  antibody_id: string
+  fluorophore_id: string
+  fluorophore_name: string | null
+  filter_id: string | null
+  filter_name: string | null
+}
+
+export interface VolumeParams {
+  num_samples: number
+  volume_per_sample_ul: number
+  pipet_error_factor: number
+  dilution_source: 'flow' | 'icc_if'
+}
