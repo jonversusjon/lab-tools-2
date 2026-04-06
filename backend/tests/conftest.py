@@ -22,6 +22,8 @@ from models import Antibody
 from models import AntibodyTag
 from models import AntibodyTagAssignment
 from models import Detector
+from models import Experiment  # noqa: F401
+from models import ExperimentBlock  # noqa: F401
 from models import Fluorophore
 from models import FluorophoreSpectrum
 from models import Instrument
