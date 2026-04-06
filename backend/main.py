@@ -17,11 +17,14 @@ from models import Antibody
 from models import AntibodyTag
 from models import Fluorophore
 from models import Instrument
+from models import Experiment  # noqa: F401 — ensures table is created by create_all()
+from models import ExperimentBlock  # noqa: F401 — ensures table is created by create_all()
 from models import IFPanel  # noqa: F401 — ensures table is created by create_all()
 from models import Microscope  # noqa: F401 — ensures table is created by create_all()
 from models import PlateMap  # noqa: F401 — ensures table is created by create_all()
 from routers import antibodies
 from routers import conjugate_chemistries
+from routers import experiments
 from routers import export_import
 from routers import fluorophores
 from routers import instruments
@@ -429,4 +432,5 @@ app.include_router(conjugate_chemistries.router, prefix="/api/v1/conjugate-chemi
 app.include_router(plate_maps.router, prefix="/api/v1/plate-maps", tags=["plate-maps"])
 app.include_router(microscopes.router, prefix="/api/v1/microscopes", tags=["microscopes"])
 app.include_router(if_panels.router, prefix="/api/v1/if-panels", tags=["if-panels"])
+app.include_router(experiments.router, prefix="/api/v1/experiments", tags=["experiments"])
 app.include_router(export_import.router, prefix="/api/v1", tags=["export-import"])
