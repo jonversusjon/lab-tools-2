@@ -847,6 +847,21 @@ export default function IFPanelDesigner() {
                                         dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
                                         const message = err instanceof Error ? err.message : 'Failed to assign channel'
                                         setAssignError(message)
+                                        // Restore old assignment — the remove already succeeded so we must re-add it
+                                        try {
+                                          const restored = await addAssignmentMutation.mutateAsync({
+                                            panelId: id,
+                                            data: {
+                                              antibody_id: t.antibody_id!,
+                                              fluorophore_id: oldAssignment.fluorophore_id,
+                                              filter_id: oldAssignment.filter_id,
+                                              notes: oldAssignment.notes ?? undefined,
+                                            },
+                                          })
+                                          dispatch({ type: 'ADD_ASSIGNMENT', assignment: restored })
+                                        } catch {
+                                          // Restoration failed — assignment is gone from DB, nothing more to do
+                                        }
                                       }
                                     }}
                                     className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-0.5 text-xs dark:text-gray-100 focus:border-blue-500 focus:outline-none"
