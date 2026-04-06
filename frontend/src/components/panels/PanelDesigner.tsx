@@ -613,6 +613,37 @@ export default function PanelDesigner() {
     return map
   }, [antibodies])
 
+  // Host species cross-reactivity conflicts
+  // host (lowercased) → target names where at least one uses indirect staining
+  const hostSpeciesConflicts = useMemo(() => {
+    const hostMap = new Map<string, { names: string[]; hasIndirect: boolean }>()
+    for (const t of state.targets) {
+      const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
+      if (!ab?.host) continue
+      const key = ab.host.toLowerCase()
+      const strategy = getDetectionStrategy(ab, conjugateSet, bindingPartners)
+      const isIndirect = t.staining_mode === 'indirect' || strategy.type !== 'direct'
+      if (!hostMap.has(key)) hostMap.set(key, { names: [], hasIndirect: false })
+      const entry = hostMap.get(key)!
+      entry.names.push(t.antibody_target ?? ab.target)
+      if (isIndirect) entry.hasIndirect = true
+    }
+    const conflicts = new Map<string, string[]>()
+    for (const [host, { names, hasIndirect }] of hostMap) {
+      if (names.length > 1 && hasIndirect) conflicts.set(host, names)
+    }
+    return conflicts
+  }, [state.targets, antibodyMap, conjugateSet, bindingPartners])
+
+  const conflictTargetIds = useMemo(() => {
+    const set = new Set<string>()
+    for (const t of state.targets) {
+      const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
+      if (ab?.host && hostSpeciesConflicts.has(ab.host.toLowerCase())) set.add(t.id)
+    }
+    return set
+  }, [state.targets, antibodyMap, hostSpeciesConflicts])
+
   // Build detector column structure from instrument
   const laserGroups = useMemo(() => {
     if (!state.instrument) return []
@@ -1286,9 +1317,17 @@ export default function PanelDesigner() {
                               )}
                           </td>
                           <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
-                        {ab?.host || ab?.isotype
-                          ? (ab?.host ?? '') + (ab?.host && ab?.isotype ? ' ' : '') + (ab?.isotype ?? '')
-                          : '\u2014'}
+                        <span className="inline-flex items-center gap-1">
+                          {conflictTargetIds.has(t.id) && (
+                            <span
+                              className="inline-block h-2 w-2 rounded-full bg-amber-400 flex-shrink-0"
+                              title="Host species cross-reactivity risk"
+                            />
+                          )}
+                          {ab?.host || ab?.isotype
+                            ? (ab?.host ?? '') + (ab?.host && ab?.isotype ? ' ' : '') + (ab?.isotype ?? '')
+                            : '\u2014'}
+                        </span>
                       </td>
                       {ab?.fluorophore_id && !isOverridden ? (
                         <td className="px-3 py-2 group relative">

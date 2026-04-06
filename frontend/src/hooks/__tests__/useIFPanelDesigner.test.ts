@@ -405,6 +405,106 @@ describe('mergedCellCase — unconjugated antibody with host', () => {
   })
 })
 
+// ---------------------------------------------------------------------------
+// Host species cross-reactivity conflict computation
+// ---------------------------------------------------------------------------
+
+// Mirrors the hostSpeciesConflicts useMemo logic in IFPanelDesigner
+function computeHostConflicts(
+  targets: Array<{ id: string; antibody_id: string | null; staining_mode: 'direct' | 'indirect'; antibody_target?: string | null }>,
+  abMap: Map<string, { host: string | null; fluorophore_id: string | null; conjugate: string | null; target: string }>,
+): Map<string, string[]> {
+  const hostMap = new Map<string, { names: string[]; hasIndirect: boolean }>()
+  for (const t of targets) {
+    const ab = t.antibody_id ? abMap.get(t.antibody_id) : undefined
+    if (!ab?.host) continue
+    const key = ab.host.toLowerCase()
+    const strategy = getDetectionStrategy(ab)
+    const isIndirect = t.staining_mode === 'indirect' || strategy.type !== 'direct'
+    if (!hostMap.has(key)) hostMap.set(key, { names: [], hasIndirect: false })
+    const entry = hostMap.get(key)!
+    entry.names.push(t.antibody_target ?? ab.target)
+    if (isIndirect) entry.hasIndirect = true
+  }
+  const conflicts = new Map<string, string[]>()
+  for (const [host, { names, hasIndirect }] of hostMap) {
+    if (names.length > 1 && hasIndirect) conflicts.set(host, names)
+  }
+  return conflicts
+}
+
+describe('computeHostConflicts', () => {
+  it('warns when two indirect antibodies share a host', () => {
+    const targets = [
+      { id: 't1', antibody_id: 'ab1', staining_mode: 'indirect' as const, antibody_target: 'GFAP' },
+      { id: 't2', antibody_id: 'ab2', staining_mode: 'indirect' as const, antibody_target: 'NeuN' },
+    ]
+    const abMap = new Map([
+      ['ab1', { host: 'Mouse', fluorophore_id: null, conjugate: null, target: 'GFAP' }],
+      ['ab2', { host: 'Mouse', fluorophore_id: null, conjugate: null, target: 'NeuN' }],
+    ])
+    const conflicts = computeHostConflicts(targets, abMap)
+    expect(conflicts.size).toBe(1)
+    expect(conflicts.get('mouse')).toEqual(['GFAP', 'NeuN'])
+  })
+
+  it('does not warn when only one antibody per host', () => {
+    const targets = [
+      { id: 't1', antibody_id: 'ab1', staining_mode: 'indirect' as const, antibody_target: 'GFAP' },
+      { id: 't2', antibody_id: 'ab2', staining_mode: 'indirect' as const, antibody_target: 'NeuN' },
+    ]
+    const abMap = new Map([
+      ['ab1', { host: 'Mouse', fluorophore_id: null, conjugate: null, target: 'GFAP' }],
+      ['ab2', { host: 'Rabbit', fluorophore_id: null, conjugate: null, target: 'NeuN' }],
+    ])
+    const conflicts = computeHostConflicts(targets, abMap)
+    expect(conflicts.size).toBe(0)
+  })
+
+  it('does not warn for pre-conjugated antibodies sharing a host (no indirect needed)', () => {
+    const targets = [
+      { id: 't1', antibody_id: 'ab1', staining_mode: 'direct' as const, antibody_target: 'CD4' },
+      { id: 't2', antibody_id: 'ab2', staining_mode: 'direct' as const, antibody_target: 'CD8' },
+    ]
+    const abMap = new Map([
+      ['ab1', { host: 'Mouse', fluorophore_id: 'fl-fitc', conjugate: null, target: 'CD4' }],
+      ['ab2', { host: 'Mouse', fluorophore_id: 'fl-pe', conjugate: null, target: 'CD8' }],
+    ])
+    const conflicts = computeHostConflicts(targets, abMap)
+    // Both are direct (have fluorophore_id) → strategy.type === 'direct' → no indirect → no warning
+    expect(conflicts.size).toBe(0)
+  })
+
+  it('warns when one pre-conjugated and one indirect share a host', () => {
+    // pre-conjugated: strategy.type === 'direct' → isIndirect = false
+    // indirect: strategy.type !== 'direct' → isIndirect = true
+    // Group has 2 names and hasIndirect = true → should warn
+    const targets = [
+      { id: 't1', antibody_id: 'ab1', staining_mode: 'direct' as const, antibody_target: 'CD4' },
+      { id: 't2', antibody_id: 'ab2', staining_mode: 'indirect' as const, antibody_target: 'CD8' },
+    ]
+    const abMap = new Map([
+      ['ab1', { host: 'Mouse', fluorophore_id: 'fl-fitc', conjugate: null, target: 'CD4' }],
+      ['ab2', { host: 'Mouse', fluorophore_id: null, conjugate: null, target: 'CD8' }],
+    ])
+    const conflicts = computeHostConflicts(targets, abMap)
+    expect(conflicts.size).toBe(1)
+  })
+
+  it('ignores antibodies with null host', () => {
+    const targets = [
+      { id: 't1', antibody_id: 'ab1', staining_mode: 'indirect' as const, antibody_target: 'GFAP' },
+      { id: 't2', antibody_id: 'ab2', staining_mode: 'indirect' as const, antibody_target: 'NeuN' },
+    ]
+    const abMap = new Map([
+      ['ab1', { host: null, fluorophore_id: null, conjugate: null, target: 'GFAP' }],
+      ['ab2', { host: null, fluorophore_id: null, conjugate: null, target: 'NeuN' }],
+    ])
+    const conflicts = computeHostConflicts(targets, abMap)
+    expect(conflicts.size).toBe(0)
+  })
+})
+
 describe('mergedCellCase — biotin-conjugated antibody', () => {
   const ab = { fluorophore_id: null, conjugate: 'biotin', host: null }
 

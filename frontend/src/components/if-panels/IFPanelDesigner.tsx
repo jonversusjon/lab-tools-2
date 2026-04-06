@@ -412,6 +412,37 @@ export default function IFPanelDesigner() {
     return map
   }, [fluorophores])
 
+  // --- Host species cross-reactivity conflicts ---
+  // host (lowercased) → target names where at least one uses indirect staining
+  const hostSpeciesConflicts = useMemo(() => {
+    const hostMap = new Map<string, { names: string[]; hasIndirect: boolean }>()
+    for (const t of state.targets) {
+      const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
+      if (!ab?.host) continue
+      const key = ab.host.toLowerCase()
+      const strategy = getDetectionStrategy(ab, conjugateSet, bindingPartners)
+      const isIndirect = t.staining_mode === 'indirect' || strategy.type !== 'direct'
+      if (!hostMap.has(key)) hostMap.set(key, { names: [], hasIndirect: false })
+      const entry = hostMap.get(key)!
+      entry.names.push(t.antibody_target ?? ab.target)
+      if (isIndirect) entry.hasIndirect = true
+    }
+    const conflicts = new Map<string, string[]>()
+    for (const [host, { names, hasIndirect }] of hostMap) {
+      if (names.length > 1 && hasIndirect) conflicts.set(host, names)
+    }
+    return conflicts
+  }, [state.targets, antibodyMap, conjugateSet, bindingPartners])
+
+  const conflictTargetIds = useMemo(() => {
+    const set = new Set<string>()
+    for (const t of state.targets) {
+      const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
+      if (ab?.host && hostSpeciesConflicts.has(ab.host.toLowerCase())) set.add(t.id)
+    }
+    return set
+  }, [state.targets, antibodyMap, hostSpeciesConflicts])
+
   // --- DnD ---
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -560,6 +591,17 @@ export default function IFPanelDesigner() {
         </div>
       )}
 
+      {/* Host species cross-reactivity warning */}
+      {hostSpeciesConflicts.size > 0 && (
+        <div className="rounded border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 space-y-1">
+          {Array.from(hostSpeciesConflicts.entries()).map(([host, names]) => (
+            <p key={host} className="text-sm text-amber-700 dark:text-amber-400">
+              &#9888; Multiple antibodies raised in <strong>{host}</strong>: {names.join(', ')}. A single anti-{host} secondary will cross-react with all of them.
+            </p>
+          ))}
+        </div>
+      )}
+
       {/* Table */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
@@ -651,7 +693,15 @@ export default function IFPanelDesigner() {
                                   autoFocus
                                 />
                               ) : (
-                                <span>{t.antibody_target ?? ab?.target ?? '\u2014'}</span>
+                                <span className="inline-flex items-center gap-1">
+                                  {conflictTargetIds.has(t.id) && (
+                                    <span
+                                      className="inline-block h-2 w-2 rounded-full bg-amber-400 flex-shrink-0"
+                                      title="Host species cross-reactivity risk"
+                                    />
+                                  )}
+                                  {t.antibody_target ?? ab?.target ?? '\u2014'}
+                                </span>
                               )}
                             </td>
 
