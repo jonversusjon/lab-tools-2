@@ -27,10 +27,14 @@ import ColumnLayout from './ColumnLayout'
 import BlockCommandMenu from './BlockCommandMenu'
 import BlockContextMenu from './BlockContextMenu'
 import PanelTemplatePicker from './PanelTemplatePicker'
+import FlowPanelBlock from './FlowPanelBlock'
+import type { PanelLibraryData } from './FlowPanelBlock'
+import IFPanelBlock from './IFPanelBlock'
 
 interface BlockRendererProps {
   experimentId: string
   blocks: ExperimentBlock[]
+  libraryData: PanelLibraryData | null
 }
 
 /** Build a map of parent_id → sorted children */
@@ -153,6 +157,7 @@ function SortableBlockWrapper({
 export default function BlockRenderer({
   experimentId,
   blocks,
+  libraryData,
 }: BlockRendererProps) {
   const qc = useQueryClient()
   const pendingFocusRef = useRef<string | null>(null)
@@ -665,184 +670,69 @@ export default function BlockRenderer({
     }
 
     if (block.block_type === 'flow_panel') {
+      if (libraryData) {
+        return (
+          <FlowPanelBlock
+            experimentId={experimentId}
+            block={block}
+            libraryData={libraryData}
+          />
+        )
+      }
+      // Fallback summary card while library data is loading
       const c = block.content as unknown as FlowPanelBlockContent
       return (
         <div
           data-block-id={block.id}
           className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
         >
-          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-lg" aria-hidden="true">📋</span>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">
-                {c.name || 'Untitled Panel'}
-              </span>
-              <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
-                Flow
-              </span>
-            </div>
-            {c.instrument && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {c.instrument.name}
-              </span>
-            )}
+          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex items-center gap-2">
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {c.name || 'Untitled Panel'}
+            </span>
+            <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+              Flow
+            </span>
           </div>
-          <div className="px-4 py-3">
-            {c.targets.length === 0 ? (
-              <p className="text-sm text-gray-400 dark:text-gray-500 italic">No targets</p>
-            ) : (
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
-                    <th className="py-1.5 font-medium">Target</th>
-                    <th className="py-1.5 font-medium">Clone</th>
-                    <th className="py-1.5 font-medium">Mode</th>
-                    <th className="py-1.5 font-medium">Fluorophore</th>
-                    <th className="py-1.5 font-medium">Detector</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {c.targets.map((t) => {
-                    const assignment = c.assignments.find(
-                      (a) => a.antibody_id === t.antibody_id
-                    )
-                    return (
-                      <tr
-                        key={t.id}
-                        className="border-b border-gray-100 dark:border-gray-800"
-                      >
-                        <td className="py-1.5 text-gray-900 dark:text-gray-100">
-                          {t.antibody_target || '\u2014'}
-                        </td>
-                        <td className="py-1.5 text-gray-600 dark:text-gray-400">
-                          {t.antibody_clone || '\u2014'}
-                        </td>
-                        <td className="py-1.5">
-                          <span
-                            className={
-                              'inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ' +
-                              (t.staining_mode === 'indirect'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300')
-                            }
-                          >
-                            {t.staining_mode === 'indirect' ? 'Indirect' : 'Direct'}
-                          </span>
-                        </td>
-                        <td className="py-1.5 text-gray-600 dark:text-gray-400">
-                          {assignment?.fluorophore_name || (
-                            <span className="italic text-gray-400 dark:text-gray-500">
-                              Unassigned
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-1.5 text-gray-600 dark:text-gray-400">
-                          {assignment?.detector_name || '\u2014'}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            )}
+          <div className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 italic">
+            Loading panel designer...
           </div>
         </div>
       )
     }
 
     if (block.block_type === 'if_panel') {
+      if (libraryData) {
+        return (
+          <IFPanelBlock
+            experimentId={experimentId}
+            block={block}
+            libraryData={{
+              antibodies: libraryData.antibodies,
+              fluorophores: libraryData.allFluorophores,
+              secondaries: libraryData.secondaries,
+              conjugateChemistries: libraryData.conjugateChemistries,
+            }}
+          />
+        )
+      }
+      // Fallback summary card while library data is loading
       const c = block.content as unknown as IFPanelBlockContent
       return (
         <div
           data-block-id={block.id}
           className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
         >
-          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-lg" aria-hidden="true">🔬</span>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">
-                {c.name || 'Untitled Panel'}
-              </span>
-              <span
-                className={
-                  'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ' +
-                  (c.panel_type === 'IHC'
-                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300')
-                }
-              >
-                {c.panel_type}
-              </span>
-            </div>
-            {c.microscope && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {c.microscope.name}
-              </span>
-            )}
+          <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 flex items-center gap-2">
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {c.name || 'Untitled Panel'}
+            </span>
+            <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
+              {c.panel_type}
+            </span>
           </div>
-          <div className="px-4 py-3">
-            {c.targets.length === 0 ? (
-              <p className="text-sm text-gray-400 dark:text-gray-500 italic">No targets</p>
-            ) : (
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
-                    <th className="py-1.5 font-medium">Target</th>
-                    <th className="py-1.5 font-medium">Mode</th>
-                    <th className="py-1.5 font-medium">Fluorophore</th>
-                    <th className="py-1.5 font-medium">Dilution</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {c.targets.map((t) => {
-                    const assignment = c.assignments.find(
-                      (a) => a.antibody_id === t.antibody_id
-                    )
-                    const fluorName =
-                      t.secondary_fluorophore_name ||
-                      assignment?.fluorophore_name ||
-                      null
-                    const dilution = t.dilution_override
-                      ? t.dilution_override
-                      : t.icc_if_dilution_factor
-                        ? '1:' + String(t.icc_if_dilution_factor)
-                        : null
-                    return (
-                      <tr
-                        key={t.id}
-                        className="border-b border-gray-100 dark:border-gray-800"
-                      >
-                        <td className="py-1.5 text-gray-900 dark:text-gray-100">
-                          {t.antibody_target || '\u2014'}
-                        </td>
-                        <td className="py-1.5">
-                          <span
-                            className={
-                              'inline-flex items-center rounded-full px-1.5 py-0.5 text-xs font-medium ' +
-                              (t.staining_mode === 'indirect'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300')
-                            }
-                          >
-                            {t.staining_mode === 'indirect' ? 'Indirect' : 'Direct'}
-                          </span>
-                        </td>
-                        <td className="py-1.5 text-gray-600 dark:text-gray-400">
-                          {fluorName || (
-                            <span className="italic text-gray-400 dark:text-gray-500">
-                              Unassigned
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-1.5 text-gray-600 dark:text-gray-400">
-                          {dilution || '\u2014'}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            )}
+          <div className="px-4 py-3 text-sm text-gray-400 dark:text-gray-500 italic">
+            Loading panel designer...
           </div>
         </div>
       )

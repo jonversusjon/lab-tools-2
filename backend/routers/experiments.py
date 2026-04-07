@@ -12,11 +12,17 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 
 from database import get_db
+from models import Detector
 from models import Experiment
 from models import ExperimentBlock
 from models import IFPanel
+from models import Instrument
 from models import IFPanelAssignment
 from models import IFPanelTarget
+from models import Laser
+from models import Microscope
+from models import MicroscopeFilter
+from models import MicroscopeLaser
 from models import Panel
 from models import PanelAssignment
 from models import PanelTarget
@@ -33,6 +39,60 @@ from schemas import PaginatedResponse
 from schemas import SnapshotPanelRequest
 
 router = APIRouter()
+
+
+def _snapshot_instrument(instrument):
+    if instrument is None:
+        return None
+    return {
+        "id": instrument.id,
+        "name": instrument.name,
+        "lasers": [
+            {
+                "id": laser.id,
+                "wavelength_nm": laser.wavelength_nm,
+                "name": laser.name,
+                "detectors": [
+                    {
+                        "id": det.id,
+                        "filter_midpoint": det.filter_midpoint,
+                        "filter_width": det.filter_width,
+                        "name": det.name,
+                    }
+                    for det in laser.detectors
+                ],
+            }
+            for laser in sorted(instrument.lasers, key=lambda l: l.wavelength_nm)
+        ],
+    }
+
+
+def _snapshot_microscope(microscope):
+    if microscope is None:
+        return None
+    return {
+        "id": microscope.id,
+        "name": microscope.name,
+        "lasers": [
+            {
+                "id": laser.id,
+                "wavelength_nm": laser.wavelength_nm,
+                "name": laser.name,
+                "excitation_type": laser.excitation_type,
+                "ex_filter_width": laser.ex_filter_width,
+                "filters": [
+                    {
+                        "id": filt.id,
+                        "filter_midpoint": filt.filter_midpoint,
+                        "filter_width": filt.filter_width,
+                        "name": filt.name,
+                    }
+                    for filt in laser.filters
+                ],
+            }
+            for laser in sorted(microscope.lasers, key=lambda l: l.wavelength_nm)
+        ],
+    }
 
 
 def _block_to_read(block: ExperimentBlock) -> dict:
@@ -275,7 +335,9 @@ def snapshot_panel(
                 .selectinload(SecondaryAntibody.fluorophore),
                 selectinload(Panel.assignments).selectinload(PanelAssignment.fluorophore),
                 selectinload(Panel.assignments).selectinload(PanelAssignment.detector),
-                selectinload(Panel.instrument),
+                selectinload(Panel.instrument)
+                .selectinload(Instrument.lasers)
+                .selectinload(Laser.detectors),
             )
             .where(Panel.id == data.source_panel_id)
         )
@@ -286,10 +348,7 @@ def snapshot_panel(
         content = {
             "source_panel_id": panel.id,
             "name": panel.name,
-            "instrument": {
-                "id": panel.instrument.id,
-                "name": panel.instrument.name,
-            } if panel.instrument else None,
+            "instrument": _snapshot_instrument(panel.instrument),
             "targets": [
                 {
                     "id": str(uuid.uuid4()),
@@ -343,7 +402,9 @@ def snapshot_panel(
                 .selectinload(SecondaryAntibody.fluorophore),
                 selectinload(IFPanel.assignments).selectinload(IFPanelAssignment.fluorophore),
                 selectinload(IFPanel.assignments).selectinload(IFPanelAssignment.filter),
-                selectinload(IFPanel.microscope),
+                selectinload(IFPanel.microscope)
+                .selectinload(Microscope.lasers)
+                .selectinload(MicroscopeLaser.filters),
             )
             .where(IFPanel.id == data.source_panel_id)
         )
@@ -355,10 +416,7 @@ def snapshot_panel(
             "source_panel_id": if_panel.id,
             "name": if_panel.name,
             "panel_type": if_panel.panel_type,
-            "microscope": {
-                "id": if_panel.microscope.id,
-                "name": if_panel.microscope.name,
-            } if if_panel.microscope else None,
+            "microscope": _snapshot_microscope(if_panel.microscope),
             "view_mode": if_panel.view_mode,
             "targets": [
                 {

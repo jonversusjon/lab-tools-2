@@ -777,11 +777,54 @@ export interface ColumnBlockContent {
   column_index: number
 }
 
+/** Snapshot types for instrument/microscope embedded in panel blocks */
+export interface SnapshotDetector {
+  id: string
+  filter_midpoint: number
+  filter_width: number
+  name: string | null
+}
+
+export interface SnapshotLaser {
+  id: string
+  wavelength_nm: number
+  name: string
+  detectors: SnapshotDetector[]
+}
+
+export interface SnapshotInstrument {
+  id: string
+  name: string
+  lasers: SnapshotLaser[]
+}
+
+export interface SnapshotMicroscopeFilter {
+  id: string
+  filter_midpoint: number
+  filter_width: number
+  name: string | null
+}
+
+export interface SnapshotMicroscopeLaser {
+  id: string
+  wavelength_nm: number
+  name: string
+  excitation_type: string
+  ex_filter_width: number | null
+  filters: SnapshotMicroscopeFilter[]
+}
+
+export interface SnapshotMicroscope {
+  id: string
+  name: string
+  lasers: SnapshotMicroscopeLaser[]
+}
+
 /** Content shape for flow_panel blocks */
 export interface FlowPanelBlockContent {
   source_panel_id: string
   name: string
-  instrument: { id: string; name: string } | null
+  instrument: SnapshotInstrument | null
   targets: FlowPanelInstanceTarget[]
   assignments: FlowPanelInstanceAssignment[]
   volume_params: VolumeParams
@@ -816,7 +859,7 @@ export interface IFPanelBlockContent {
   source_panel_id: string
   name: string
   panel_type: string
-  microscope: { id: string; name: string } | null
+  microscope: SnapshotMicroscope | null
   view_mode: string
   targets: IFPanelInstanceTarget[]
   assignments: IFPanelInstanceAssignment[]

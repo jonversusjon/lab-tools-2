@@ -8,7 +8,9 @@ interface TextBlockEditorProps {
   block: ExperimentBlock
   onCreateBlockBelow: (blockId: string) => void
   onDeleteBlock: (blockId: string) => void
-  onSlashCommand?: (blockId: string) => void
+  onSlashFilter?: (blockId: string, filter: string | null) => void
+  isSlashMenuOpen?: boolean
+  listIndex?: number
   children?: React.ReactNode
 }
 
@@ -43,6 +45,7 @@ function flushBlockSave(
   blockId: string,
   text: string
 ) {
+  if (text.startsWith('/')) return  // don't persist slash command text
   fetch('/api/v1/experiments/' + experimentId + '/blocks/' + blockId, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -56,7 +59,9 @@ export default function TextBlockEditor({
   block,
   onCreateBlockBelow,
   onDeleteBlock,
-  onSlashCommand,
+  onSlashFilter,
+  isSlashMenuOpen,
+  listIndex,
   children,
 }: TextBlockEditorProps) {
   const parsed = parseContent(block)
@@ -92,9 +97,10 @@ export default function TextBlockEditor({
     }
   }, [value])
 
-  // Debounced auto-save
+  // Debounced auto-save — skip slash command text
   const saveBlock = useCallback(
     (text: string) => {
+      if (text.startsWith('/')) return
       fetch(
         '/api/v1/experiments/' + experimentId + '/blocks/' + block.id,
         {
@@ -135,29 +141,42 @@ export default function TextBlockEditor({
     dirtyRef.current = true
     setValue(newValue)
 
-    // Trigger slash command menu when user types "/" at the start of an empty paragraph
-    if (
-      block.block_type === 'paragraph' &&
-      newValue === '/' &&
-      onSlashCommand
-    ) {
-      onSlashCommand(block.id)
+    if (newValue.startsWith('/') && onSlashFilter) {
+      onSlashFilter(block.id, newValue.slice(1))
+    } else if (onSlashFilter) {
+      onSlashFilter(block.id, null)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && isSlashMenuOpen) {
+      e.preventDefault()
+      onSlashFilter?.(block.id, null)
+      return
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
-      // For headings (input), always create block below
-      // For textarea (paragraph/list), Enter without Shift creates block below
+      if (isSlashMenuOpen) {
+        // Prevent newline — BlockCommandMenu's document listener handles selection
+        e.preventDefault()
+        return
+      }
       const isHeading = block.block_type.startsWith('heading_')
       if (isHeading || !e.shiftKey) {
         e.preventDefault()
         onCreateBlockBelow(block.id)
       }
     }
+
     if (e.key === 'Backspace' && value === '') {
       e.preventDefault()
       onDeleteBlock(block.id)
+    }
+
+    // Block arrow keys from propagating when slash menu is open
+    // so BlockCommandMenu can handle Up/Down navigation
+    if (isSlashMenuOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault()
     }
   }
 
@@ -205,6 +224,13 @@ export default function TextBlockEditor({
       return (
         <span className="mt-0.5 mr-2 text-gray-400 dark:text-gray-500 select-none">
           &bull;
+        </span>
+      )
+    }
+    if (block.block_type === 'numbered_list_item') {
+      return (
+        <span className="mt-0.5 mr-2 text-gray-400 dark:text-gray-500 select-none min-w-[1.25rem] text-right tabular-nums">
+          {(listIndex ?? 0) + 1}.
         </span>
       )
     }

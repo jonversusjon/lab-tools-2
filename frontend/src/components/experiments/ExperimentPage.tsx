@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useExperiment, useDeleteExperiment } from '@/hooks/useExperiments'
+import { useAntibodies } from '@/hooks/useAntibodies'
+import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
+import { useSecondaries } from '@/hooks/useSecondaries'
+import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
+import type { FluorophoreWithSpectra } from '@/types'
+import type { PanelLibraryData } from './FlowPanelBlock'
 import BlockRenderer from './BlockRenderer'
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -17,6 +23,50 @@ export default function ExperimentPage() {
 
   const { data: experiment, isLoading, error } = useExperiment(id)
   const deleteMutation = useDeleteExperiment()
+
+  // Library data for panel instance blocks
+  const { data: antibodiesData } = useAntibodies({ skip: 0, limit: 2000 })
+  const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000, has_spectra: true })
+  const { data: allFluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
+  const { data: secondariesData } = useSecondaries()
+  const { data: conjugateChemistries = [] } = useConjugateChemistries()
+
+  const antibodies = antibodiesData?.items ?? []
+  const fluorophoreList = fluorophoreData?.items ?? []
+  const allFluorophores = allFluorophoreData?.items ?? []
+  const secondaries = secondariesData?.items ?? []
+
+  const fluorophoreIdsToFetch = useMemo(() => {
+    return fluorophoreList.map((f) => f.id)
+  }, [fluorophoreList])
+  const { data: spectraCache = null } = useBatchSpectra(fluorophoreIdsToFetch)
+
+  const fluorophoresWithSpectra: FluorophoreWithSpectra[] = useMemo(() => {
+    return fluorophoreList.map((fl) => ({
+      ...fl,
+      spectra: spectraCache?.[fl.id] ?? null,
+    }))
+  }, [fluorophoreList, spectraCache])
+
+  const allFluorophoresForScoring: FluorophoreWithSpectra[] = useMemo(() => {
+    return allFluorophores.map((fl) => ({
+      ...fl,
+      spectra: spectraCache?.[fl.id] ?? null,
+    }))
+  }, [allFluorophores, spectraCache])
+
+  const libraryData: PanelLibraryData | null = useMemo(() => {
+    if (!antibodiesData || !allFluorophoreData) return null
+    return {
+      antibodies,
+      allFluorophores,
+      secondaries,
+      conjugateChemistries,
+      spectraCache,
+      fluorophoresWithSpectra,
+      allFluorophoresForScoring,
+    }
+  }, [antibodiesData, allFluorophoreData, antibodies, allFluorophores, secondaries, conjugateChemistries, spectraCache, fluorophoresWithSpectra, allFluorophoresForScoring])
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -187,7 +237,7 @@ export default function ExperimentPage() {
       <div className="border-b border-gray-100 dark:border-gray-800 pb-6 mb-6 mt-4" />
 
       {/* Block editor */}
-      <BlockRenderer experimentId={id} blocks={experiment.blocks} />
+      <BlockRenderer experimentId={id} blocks={experiment.blocks} libraryData={libraryData} />
     </div>
   )
 }

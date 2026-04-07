@@ -297,6 +297,15 @@ def test_snapshot_flow_panel(client):
     assert content["name"] == "Flow Template"
     assert content["instrument"] is not None
     assert content["instrument"]["name"] == inst["name"]
+    assert "lasers" in content["instrument"]
+    assert len(content["instrument"]["lasers"]) > 0
+    first_laser = content["instrument"]["lasers"][0]
+    assert "wavelength_nm" in first_laser
+    assert "detectors" in first_laser
+    assert len(first_laser["detectors"]) > 0
+    first_det = first_laser["detectors"][0]
+    assert "filter_midpoint" in first_det
+    assert "filter_width" in first_det
     assert len(content["targets"]) == 1
     assert content["targets"][0]["antibody_id"] == ab["id"]
     assert len(content["assignments"]) == 1
@@ -379,6 +388,13 @@ def test_snapshot_if_panel(client, db_session):
     assert content["panel_type"] == "IF"
     assert content["microscope"] is not None
     assert content["microscope"]["name"] == "Test Confocal"
+    assert "lasers" in content["microscope"]
+    assert len(content["microscope"]["lasers"]) == 1
+    micro_laser = content["microscope"]["lasers"][0]
+    assert micro_laser["wavelength_nm"] == 488
+    assert "filters" in micro_laser
+    assert len(micro_laser["filters"]) == 1
+    assert micro_laser["filters"][0]["filter_midpoint"] == 525
     assert len(content["targets"]) == 1
     assert len(content["assignments"]) == 1
     assert content["volume_params"]["dilution_source"] == "icc_if"
