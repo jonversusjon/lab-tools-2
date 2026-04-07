@@ -49,8 +49,8 @@ const MENU_CATEGORIES: BlockMenuCategory[] = [
   {
     name: 'Panels',
     items: [
-      { icon: '🔬', label: 'Flow Panel', blockType: 'flow_panel', initialContent: {}, disabled: true },
-      { icon: '🔭', label: 'IF Panel', blockType: 'if_panel', initialContent: {}, disabled: true },
+      { icon: '🔬', label: 'Flow Panel', blockType: 'flow_panel', initialContent: {} },
+      { icon: '🔭', label: 'IF Panel', blockType: 'if_panel', initialContent: {} },
     ],
   },
 ]
@@ -59,12 +59,14 @@ interface BlockCommandMenuProps {
   onSelect: (blockType: string, initialContent: Record<string, unknown>) => void
   onClose: () => void
   filterText?: string
+  onOpenTemplatePicker?: (panelType: 'flow' | 'if') => void
 }
 
 export default function BlockCommandMenu({
   onSelect,
   onClose,
   filterText,
+  onOpenTemplatePicker,
 }: BlockCommandMenuProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -100,7 +102,14 @@ export default function BlockCommandMenu({
         e.preventDefault()
         const item = filteredItems[selectedIndex]
         if (item && !item.disabled) {
-          onSelect(item.blockType, item.initialContent)
+          if (
+            (item.blockType === 'flow_panel' || item.blockType === 'if_panel') &&
+            onOpenTemplatePicker
+          ) {
+            onOpenTemplatePicker(item.blockType === 'flow_panel' ? 'flow' : 'if')
+          } else {
+            onSelect(item.blockType, item.initialContent)
+          }
         }
       } else if (e.key === 'Escape') {
         e.preventDefault()
@@ -158,7 +167,14 @@ export default function BlockCommandMenu({
                   key={item.blockType + item.label}
                   onClick={() => {
                     if (!item.disabled) {
-                      onSelect(item.blockType, item.initialContent)
+                      if (
+                        (item.blockType === 'flow_panel' || item.blockType === 'if_panel') &&
+                        onOpenTemplatePicker
+                      ) {
+                        onOpenTemplatePicker(item.blockType === 'flow_panel' ? 'flow' : 'if')
+                      } else {
+                        onSelect(item.blockType, item.initialContent)
+                      }
                     }
                   }}
                   disabled={item.disabled}
@@ -176,11 +192,6 @@ export default function BlockCommandMenu({
                     {item.icon}
                   </span>
                   <span>{item.label}</span>
-                  {item.disabled && (
-                    <span className="ml-auto text-xs text-gray-400 dark:text-gray-600">
-                      Phase 4
-                    </span>
-                  )}
                 </button>
               )
             })}
