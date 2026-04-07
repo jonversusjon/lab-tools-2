@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Shell from '@/components/layout/Shell'
+import ExperimentList from '@/components/experiments/ExperimentList'
+import ExperimentPage from '@/components/experiments/ExperimentPage'
 import InstrumentList from '@/components/instruments/InstrumentList'
 import InstrumentEditor from '@/components/instruments/InstrumentEditor'
 import FluorophoreTable from '@/components/fluorophores/FluorophoreTable'
@@ -22,6 +24,10 @@ export default function App() {
     <Routes>
       <Route element={<Shell />}>
         <Route path="/" element={<Homepage />} />
+
+        {/* Experiments */}
+        <Route path="/experiments" element={<ExperimentList />} />
+        <Route path="/experiments/:id" element={<ExperimentPage />} />
 
         {/* Resources (shared across experiment types) */}
         <Route path="/resources/primaries" element={<AntibodyTable />} />

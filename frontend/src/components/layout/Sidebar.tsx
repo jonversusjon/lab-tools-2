@@ -22,6 +22,7 @@ type SidebarEntry =
 
 const sidebarEntries: SidebarEntry[] = [
   { type: 'link', item: { to: '/', label: 'Home', icon: '🏠' } },
+  { type: 'link', item: { to: '/experiments', label: 'Experiments', icon: '🧪' } },
   {
     type: 'group',
     group: {
