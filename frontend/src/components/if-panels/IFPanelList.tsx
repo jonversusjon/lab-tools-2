@@ -54,11 +54,11 @@ export default function IFPanelList() {
   }
 
   const handleDelete = (id: string, name: string) => {
-    if (!confirm('Delete panel "' + name + '"? This cannot be undone.')) return
+    if (!confirm('Delete panel template "' + name + '"? This cannot be undone.')) return
     deleteMutation.mutate(id)
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading panels...</p>
+  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading panel templates...</p>
   if (error) return <p className="text-red-600">Failed to load panels.</p>
 
   const inputClass =
@@ -67,18 +67,23 @@ export default function IFPanelList() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">IF/IHC Panels</h1>
+        <div>
+          <h1 className="text-2xl font-bold dark:text-gray-100">IF/IHC Panel Templates</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Design reusable panels here. Add them to experiments to use.
+          </p>
+        </div>
         <button
           onClick={() => setShowCreate(true)}
           className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
-          New Panel
+          New Template
         </button>
       </div>
 
       {items.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">
-          No IF/IHC panels yet. Create one to start designing.
+          No panel templates yet. Create one to get started.
         </p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
@@ -146,7 +151,7 @@ export default function IFPanelList() {
           setNewName('')
           setNewPanelType('IF')
         }}
-        title="New IF/IHC Panel"
+        title="New Panel Template"
       >
         <div className="space-y-4">
           <div>
@@ -222,7 +227,7 @@ export default function IFPanelList() {
           setEditingPanel(null)
           setRenameValue('')
         }}
-        title="Rename Panel"
+        title="Rename Panel Template"
       >
         <div className="space-y-4">
           <div>

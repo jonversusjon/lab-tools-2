@@ -45,7 +45,7 @@ const sidebarEntries: SidebarEntry[] = [
       icon: '🔬',
       children: [
         { to: '/flow/instruments', label: 'Instruments', icon: '🔧' },
-        { to: '/flow/panels', label: 'Panels', icon: '📋' },
+        { to: '/flow/panels', label: 'Panel Templates', icon: '📋' },
       ],
     },
   },
@@ -57,7 +57,7 @@ const sidebarEntries: SidebarEntry[] = [
       icon: '🔬',
       children: [
         { to: '/if-ihc/microscopes', label: 'Microscopes', icon: '🔧' },
-        { to: '/if-ihc/panels', label: 'Panels', icon: '📋' },
+        { to: '/if-ihc/panels', label: 'Panel Templates', icon: '📋' },
       ],
     },
   },
