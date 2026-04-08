@@ -888,3 +888,44 @@ class ExperimentListRead(BaseModel):
 class SnapshotPanelRequest(BaseModel):
     source_panel_id: str
     panel_type: str  # "flow" | "if"
+
+
+# --- DyeLabel ---
+
+class DyeLabelCreate(BaseModel):
+    name: str
+    label_target: str
+    category: str | None = None
+    fluorophore_id: str | None = None
+    vendor: str | None = None
+    catalog_number: str | None = None
+    lot_number: str | None = None
+    flow_dilution: str | None = None
+    icc_if_dilution: str | None = None
+    notes: str | None = None
+
+
+class DyeLabelUpdate(DyeLabelCreate):
+    pass
+
+
+class DyeLabelResponse(BaseModel):
+    id: str
+    name: str
+    label_target: str
+    category: str | None
+    fluorophore_id: str | None
+    fluorophore_name: str | None = None
+    vendor: str | None
+    catalog_number: str | None
+    lot_number: str | None
+    flow_dilution: str | None
+    icc_if_dilution: str | None
+    flow_dilution_factor: int | None
+    icc_if_dilution_factor: int | None
+    notes: str | None
+    is_favorite: bool
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
