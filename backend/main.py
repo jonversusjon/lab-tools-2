@@ -25,6 +25,7 @@ from models import Microscope  # noqa: F401 — ensures table is created by crea
 from models import PlateMap  # noqa: F401 — ensures table is created by create_all()
 from routers import antibodies
 from routers import conjugate_chemistries
+from routers import dye_labels
 from routers import experiments
 from routers import export_import
 from routers import fluorophores
@@ -426,6 +427,7 @@ app.include_router(fluorophores.router, prefix="/api/v1/fluorophores", tags=["fl
 app.include_router(antibodies.router, prefix="/api/v1/antibodies", tags=["antibodies"])
 app.include_router(panels.router, prefix="/api/v1/panels", tags=["panels"])
 app.include_router(secondaries.router, prefix="/api/v1/secondary-antibodies", tags=["secondary-antibodies"])
+app.include_router(dye_labels.router, prefix="/api/v1/dye-labels", tags=["dye-labels"])
 app.include_router(tags.router, prefix="/api/v1/tags", tags=["tags"])
 app.include_router(preferences.router, prefix="/api/v1/preferences", tags=["preferences"])
 app.include_router(list_entries.router, prefix="/api/v1/list-entries", tags=["list-entries"])
