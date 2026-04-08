@@ -12,6 +12,7 @@ from sqlalchemy.orm import selectinload
 from database import get_db
 from models import Antibody
 from models import Detector
+from models import DyeLabel
 from models import Fluorophore
 from models import Instrument
 from models import Laser
@@ -37,10 +38,18 @@ router = APIRouter()
 def _target_to_read(t: PanelTarget) -> dict:
     ab = t.antibody
     sa = t.secondary_antibody
+    dl = t.dye_label
     return {
         "id": t.id,
         "panel_id": t.panel_id,
         "antibody_id": t.antibody_id,
+        "dye_label_id": t.dye_label_id,
+        "dye_label_name": dl.name if dl else None,
+        "dye_label_target": dl.label_target if dl else None,
+        "dye_label_fluorophore_id": dl.fluorophore_id if dl else None,
+        "dye_label_fluorophore_name": (
+            dl.fluorophore.name if dl and dl.fluorophore else None
+        ),
         "staining_mode": t.staining_mode,
         "secondary_antibody_id": t.secondary_antibody_id,
         "sort_order": t.sort_order,
@@ -63,6 +72,9 @@ def _load_panel(db: Session, panel_id: str) -> Panel:
             selectinload(Panel.targets)
             .selectinload(PanelTarget.secondary_antibody)
             .selectinload(SecondaryAntibody.fluorophore),
+            selectinload(Panel.targets)
+            .selectinload(PanelTarget.dye_label)
+            .selectinload(DyeLabel.fluorophore),
             selectinload(Panel.assignments),
         )
         .where(Panel.id == panel_id)
@@ -86,6 +98,7 @@ def _panel_to_read(panel: Panel) -> dict:
                 "id": a.id,
                 "panel_id": a.panel_id,
                 "antibody_id": a.antibody_id,
+                "dye_label_id": a.dye_label_id,
                 "fluorophore_id": a.fluorophore_id,
                 "detector_id": a.detector_id,
                 "notes": a.notes,
@@ -195,15 +208,41 @@ def add_target(
     if panel is None:
         raise HTTPException(status_code=404, detail="Panel not found")
 
-    if data.staining_mode not in ("direct", "indirect"):
-        raise HTTPException(status_code=400, detail="staining_mode must be 'direct' or 'indirect'")
+    has_antibody = data.antibody_id is not None
+    has_dye_label = data.dye_label_id is not None
 
-    if data.antibody_id is not None:
+    if has_antibody and has_dye_label:
+        raise HTTPException(
+            status_code=400,
+            detail="Target must be either an antibody or a dye/label, not both",
+        )
+
+    if has_dye_label:
+        dl = db.get(DyeLabel, data.dye_label_id)
+        if dl is None:
+            raise HTTPException(status_code=404, detail="Dye/label not found")
+        # Dye/label targets are always direct staining
+        data.staining_mode = "direct"
+        data.secondary_antibody_id = None
+        # Check uniqueness
+        existing_dl = db.scalar(
+            select(PanelTarget.id).where(
+                PanelTarget.panel_id == id,
+                PanelTarget.dye_label_id == data.dye_label_id,
+            )
+        )
+        if existing_dl is not None:
+            raise HTTPException(
+                status_code=409, detail="Dye/label already a target in this panel"
+            )
+    elif has_antibody:
+        if data.staining_mode not in ("direct", "indirect"):
+            raise HTTPException(status_code=400, detail="staining_mode must be 'direct' or 'indirect'")
+
         antibody = db.get(Antibody, data.antibody_id)
         if antibody is None:
             raise HTTPException(status_code=404, detail="Antibody not found")
 
-        # Check uniqueness (only when antibody_id is not null)
         existing = db.scalar(
             select(PanelTarget.id).where(
                 PanelTarget.panel_id == id,
@@ -214,13 +253,18 @@ def add_target(
             raise HTTPException(
                 status_code=409, detail="Antibody already a target in this panel"
             )
+    else:
+        # Empty placeholder row
+        if data.staining_mode not in ("direct", "indirect"):
+            raise HTTPException(status_code=400, detail="staining_mode must be 'direct' or 'indirect'")
 
-    if data.staining_mode == "indirect" and data.secondary_antibody_id is not None:
-        sa = db.get(SecondaryAntibody, data.secondary_antibody_id)
-        if sa is None:
-            raise HTTPException(status_code=404, detail="Secondary antibody not found")
-    elif data.staining_mode == "direct":
-        data.secondary_antibody_id = None
+    if not has_dye_label:
+        if data.staining_mode == "indirect" and data.secondary_antibody_id is not None:
+            sa = db.get(SecondaryAntibody, data.secondary_antibody_id)
+            if sa is None:
+                raise HTTPException(status_code=404, detail="Secondary antibody not found")
+        elif data.staining_mode == "direct":
+            data.secondary_antibody_id = None
 
     # Auto-assign sort_order
     max_order = db.scalar(
@@ -232,6 +276,7 @@ def add_target(
     target = PanelTarget(
         panel_id=id,
         antibody_id=data.antibody_id,
+        dye_label_id=data.dye_label_id,
         staining_mode=data.staining_mode,
         secondary_antibody_id=data.secondary_antibody_id,
         sort_order=max_order + 1,
@@ -242,12 +287,16 @@ def add_target(
     except IntegrityError:
         db.rollback()
         raise HTTPException(
-            status_code=409, detail="Antibody already a target in this panel"
+            status_code=409, detail="Target already exists in this panel"
         )
     db.refresh(target)
     # Eager-load relationships for response
     if target.antibody_id:
         _ = target.antibody
+    if target.dye_label_id:
+        dl = target.dye_label
+        if dl and dl.fluorophore_id:
+            _ = dl.fluorophore
     if target.secondary_antibody_id:
         sa = target.secondary_antibody
         if sa and sa.fluorophore_id:
@@ -384,6 +433,14 @@ def remove_target(
                 PanelAssignment.antibody_id == target.antibody_id,
             )
         )
+    # Also delete any assignment for this dye_label in this panel
+    if target.dye_label_id is not None:
+        db.execute(
+            PanelAssignment.__table__.delete().where(
+                PanelAssignment.panel_id == id,
+                PanelAssignment.dye_label_id == target.dye_label_id,
+            )
+        )
     db.delete(target)
     db.commit()
 
@@ -401,10 +458,19 @@ def add_assignment(
             status_code=400, detail="Panel has no instrument selected"
         )
 
-    # Validate antibody exists
-    antibody = db.get(Antibody, data.antibody_id)
-    if antibody is None:
-        raise HTTPException(status_code=404, detail="Antibody not found")
+    has_antibody = data.antibody_id is not None
+    has_dye_label = data.dye_label_id is not None
+
+    if has_antibody and has_dye_label:
+        raise HTTPException(
+            status_code=400,
+            detail="Assignment must be for an antibody or a dye/label, not both",
+        )
+    if not has_antibody and not has_dye_label:
+        raise HTTPException(
+            status_code=400,
+            detail="Assignment requires either antibody_id or dye_label_id",
+        )
 
     # Validate fluorophore exists
     fluorophore = db.get(Fluorophore, data.fluorophore_id)
@@ -416,20 +482,7 @@ def add_assignment(
     if detector is None:
         raise HTTPException(status_code=404, detail="Detector not found")
 
-    # Validate antibody is a target in this panel
-    is_target = db.scalar(
-        select(PanelTarget.id).where(
-            PanelTarget.panel_id == id,
-            PanelTarget.antibody_id == data.antibody_id,
-        )
-    )
-    if is_target is None:
-        raise HTTPException(
-            status_code=400, detail="Antibody must be added as a target first"
-        )
-
     # Validate detector belongs to the panel's instrument
-    instrument = db.get(Instrument, panel.instrument_id)
     stmt = (
         select(Detector.id)
         .join(Laser, Detector.laser_id == Laser.id)
@@ -445,18 +498,64 @@ def add_assignment(
             detail="Detector does not belong to this panel's instrument",
         )
 
-    # App-level uniqueness checks for user-friendly messages
-    existing_ab = db.scalar(
-        select(PanelAssignment.id).where(
-            PanelAssignment.panel_id == id,
-            PanelAssignment.antibody_id == data.antibody_id,
-        )
-    )
-    if existing_ab is not None:
-        raise HTTPException(
-            status_code=409, detail="Antibody already assigned in this panel"
-        )
+    if has_antibody:
+        antibody = db.get(Antibody, data.antibody_id)
+        if antibody is None:
+            raise HTTPException(status_code=404, detail="Antibody not found")
 
+        # Validate antibody is a target in this panel
+        is_target = db.scalar(
+            select(PanelTarget.id).where(
+                PanelTarget.panel_id == id,
+                PanelTarget.antibody_id == data.antibody_id,
+            )
+        )
+        if is_target is None:
+            raise HTTPException(
+                status_code=400, detail="Antibody must be added as a target first"
+            )
+
+        # Uniqueness check for antibody
+        existing_ab = db.scalar(
+            select(PanelAssignment.id).where(
+                PanelAssignment.panel_id == id,
+                PanelAssignment.antibody_id == data.antibody_id,
+            )
+        )
+        if existing_ab is not None:
+            raise HTTPException(
+                status_code=409, detail="Antibody already assigned in this panel"
+            )
+    else:
+        dl = db.get(DyeLabel, data.dye_label_id)
+        if dl is None:
+            raise HTTPException(status_code=404, detail="Dye/label not found")
+
+        # Validate dye_label is a target in this panel
+        is_target = db.scalar(
+            select(PanelTarget.id).where(
+                PanelTarget.panel_id == id,
+                PanelTarget.dye_label_id == data.dye_label_id,
+            )
+        )
+        if is_target is None:
+            raise HTTPException(
+                status_code=400, detail="Dye/label must be added as a target first"
+            )
+
+        # Uniqueness check for dye_label
+        existing_dl = db.scalar(
+            select(PanelAssignment.id).where(
+                PanelAssignment.panel_id == id,
+                PanelAssignment.dye_label_id == data.dye_label_id,
+            )
+        )
+        if existing_dl is not None:
+            raise HTTPException(
+                status_code=409, detail="Dye/label already assigned in this panel"
+            )
+
+    # Detector uniqueness check
     existing_det = db.scalar(
         select(PanelAssignment.id).where(
             PanelAssignment.panel_id == id,
@@ -471,6 +570,7 @@ def add_assignment(
     assignment = PanelAssignment(
         panel_id=id,
         antibody_id=data.antibody_id,
+        dye_label_id=data.dye_label_id,
         fluorophore_id=data.fluorophore_id,
         detector_id=data.detector_id,
         notes=data.notes,
@@ -484,7 +584,15 @@ def add_assignment(
             status_code=409, detail="Assignment conflict (unique constraint violated)"
         )
     db.refresh(assignment)
-    return assignment
+    return {
+        "id": assignment.id,
+        "panel_id": assignment.panel_id,
+        "antibody_id": assignment.antibody_id,
+        "dye_label_id": assignment.dye_label_id,
+        "fluorophore_id": assignment.fluorophore_id,
+        "detector_id": assignment.detector_id,
+        "notes": assignment.notes,
+    }
 
 
 @router.delete("/{id}/assignments/{assignment_id}", status_code=204)
