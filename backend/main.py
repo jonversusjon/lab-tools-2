@@ -396,6 +396,59 @@ def migrate_microscope_excitation() -> None:
         session.close()
 
 
+DEFAULT_DYE_LABELS = [
+    {"name": "DAPI", "label_target": "Nuclei", "category": "nucleic acid"},
+    {"name": "Hoechst 33342", "label_target": "Nuclei", "category": "nucleic acid"},
+    {"name": "7-AAD", "label_target": "Viability (dead cells)", "category": "viability"},
+    {"name": "Propidium Iodide", "label_target": "Viability (dead cells)", "category": "viability"},
+    {"name": "LIVE/DEAD Fixable Violet", "label_target": "Viability", "category": "viability"},
+    {"name": "LIVE/DEAD Fixable Aqua", "label_target": "Viability", "category": "viability"},
+    {"name": "CellTrace Violet", "label_target": "Cell Proliferation", "category": "cell tracking"},
+    {"name": "CellTrace CFSE", "label_target": "Cell Proliferation", "category": "cell tracking"},
+    {"name": "MitoSOX Red", "label_target": "Mitochondrial Superoxide", "category": "organelle"},
+    {"name": "MitoSOX Green", "label_target": "Mitochondrial Superoxide", "category": "organelle"},
+    {"name": "MitoTracker Deep Red", "label_target": "Mitochondria", "category": "organelle"},
+    {"name": "MitoTracker Green", "label_target": "Mitochondria", "category": "organelle"},
+    {"name": "LysoTracker Red DND-99", "label_target": "Lysosomes", "category": "organelle"},
+    {"name": "Calcein AM", "label_target": "Viability (live cells)", "category": "viability"},
+    {"name": "Annexin V", "label_target": "Apoptosis", "category": "viability"},
+]
+
+
+def seed_dye_labels_if_needed() -> None:
+    """Seed common dyes and labels if the dye_labels table is empty."""
+    from models import DyeLabel as DyeLabelModel
+
+    session = SessionLocal()
+    try:
+        count = session.scalar(select(DyeLabelModel.id).limit(1))
+        if count is not None:
+            return
+
+        logger.info("Seeding default dyes & labels...")
+
+        # Build case-insensitive fluorophore name lookup
+        fl_lookup: dict[str, str] = {}
+        for fl in session.scalars(select(Fluorophore)):
+            fl_lookup[fl.name.lower()] = fl.id
+
+        for entry in DEFAULT_DYE_LABELS:
+            fl_id = fl_lookup.get(entry["name"].lower())
+            session.add(DyeLabelModel(
+                name=entry["name"],
+                label_target=entry["label_target"],
+                category=entry["category"],
+                fluorophore_id=fl_id,
+            ))
+        session.commit()
+        logger.info("Seeded %d dye/label entries.", len(DEFAULT_DYE_LABELS))
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to seed dye labels.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -409,6 +462,7 @@ async def lifespan(app: FastAPI):
     seed_list_entries_if_needed()
     seed_conjugate_chemistries_if_needed()
     migrate_dilution_factors()
+    seed_dye_labels_if_needed()
     yield
 
 
