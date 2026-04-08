@@ -210,6 +210,11 @@ class PanelTarget(Base):
         ForeignKey("antibodies.id", ondelete="CASCADE"),
         nullable=True,
     )
+    dye_label_id = Column(
+        String(36),
+        ForeignKey("dye_labels.id", ondelete="CASCADE"),
+        nullable=True,
+    )
     staining_mode = Column(String(10), nullable=False, default="direct")
     secondary_antibody_id = Column(
         String(36),
@@ -220,6 +225,7 @@ class PanelTarget(Base):
 
     panel = relationship("Panel", back_populates="targets")
     antibody = relationship("Antibody")
+    dye_label = relationship("DyeLabel", foreign_keys=[dye_label_id])
     secondary_antibody = relationship("SecondaryAntibody")
 
 
@@ -235,7 +241,12 @@ class PanelAssignment(Base):
     antibody_id = Column(
         String(36),
         ForeignKey("antibodies.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
+    )
+    dye_label_id = Column(
+        String(36),
+        ForeignKey("dye_labels.id", ondelete="CASCADE"),
+        nullable=True,
     )
     fluorophore_id = Column(
         String(100),
@@ -250,12 +261,12 @@ class PanelAssignment(Base):
     notes = Column(Text, nullable=True)
 
     __table_args__ = (
-        UniqueConstraint("panel_id", "antibody_id", name="uq_panel_antibody"),
         UniqueConstraint("panel_id", "detector_id", name="uq_panel_detector"),
     )
 
     panel = relationship("Panel", back_populates="assignments")
     antibody = relationship("Antibody")
+    dye_label = relationship("DyeLabel", foreign_keys=[dye_label_id])
     fluorophore = relationship("Fluorophore")
     detector = relationship("Detector")
 
@@ -441,6 +452,11 @@ class IFPanelTarget(Base):
         ForeignKey("antibodies.id", ondelete="CASCADE"),
         nullable=True,
     )
+    dye_label_id = Column(
+        String(36),
+        ForeignKey("dye_labels.id", ondelete="CASCADE"),
+        nullable=True,
+    )
     staining_mode = Column(String(10), nullable=False, default="direct")
     secondary_antibody_id = Column(
         String(36),
@@ -452,6 +468,7 @@ class IFPanelTarget(Base):
 
     panel = relationship("IFPanel", back_populates="targets")
     antibody = relationship("Antibody")
+    dye_label = relationship("DyeLabel", foreign_keys=[dye_label_id])
     secondary_antibody = relationship("SecondaryAntibody")
 
 
@@ -467,7 +484,12 @@ class IFPanelAssignment(Base):
     antibody_id = Column(
         String(36),
         ForeignKey("antibodies.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
+    )
+    dye_label_id = Column(
+        String(36),
+        ForeignKey("dye_labels.id", ondelete="CASCADE"),
+        nullable=True,
     )
     fluorophore_id = Column(
         String(100),
@@ -481,12 +503,9 @@ class IFPanelAssignment(Base):
     )
     notes = Column(Text, nullable=True)
 
-    __table_args__ = (
-        UniqueConstraint("panel_id", "antibody_id", name="uq_if_panel_antibody"),
-    )
-
     panel = relationship("IFPanel", back_populates="assignments")
     antibody = relationship("Antibody")
+    dye_label = relationship("DyeLabel", foreign_keys=[dye_label_id])
     fluorophore = relationship("Fluorophore")
     filter = relationship("MicroscopeFilter")
 

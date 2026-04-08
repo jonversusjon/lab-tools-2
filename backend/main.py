@@ -449,12 +449,38 @@ def seed_dye_labels_if_needed() -> None:
         session.close()
 
 
+def migrate_dye_label_targets() -> None:
+    """One-time migration: add dye_label_id to panel_targets, if_panel_targets, panel_assignments, if_panel_assignments."""
+    session = SessionLocal()
+    try:
+        conn = session.connection()
+        for table in ("panel_targets", "if_panel_targets", "panel_assignments", "if_panel_assignments"):
+            result = conn.execute(text("PRAGMA table_info(%s)" % table))
+            existing_cols = {row[1] for row in result.fetchall()}
+            if "dye_label_id" not in existing_cols:
+                conn.execute(
+                    text(
+                        "ALTER TABLE %s ADD COLUMN dye_label_id VARCHAR(36) "
+                        "REFERENCES dye_labels(id) ON DELETE CASCADE DEFAULT NULL"
+                        % table
+                    )
+                )
+                logger.info("Added dye_label_id column to %s.", table)
+        session.commit()
+    except Exception:
+        session.rollback()
+        logger.exception("Failed to migrate dye_label_id columns.")
+    finally:
+        session.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     migrate_instrument_fields()
     migrate_secondary_binding_mode()
     migrate_microscope_excitation()
+    migrate_dye_label_targets()
     load_seed_data()
     seed_fluorophores_if_needed()
     seed_non_fluorescent_conjugates()
