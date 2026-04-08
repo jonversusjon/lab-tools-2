@@ -587,12 +587,14 @@ class SecondaryAntibodyResponse(BaseModel):
 
 class PanelTargetCreate(BaseModel):
     antibody_id: str | None = None
+    dye_label_id: str | None = None
     staining_mode: str = "direct"
     secondary_antibody_id: str | None = None
 
 
 class PanelTargetUpdate(BaseModel):
     antibody_id: str | None = None
+    dye_label_id: str | None = None
     staining_mode: str | None = None
     secondary_antibody_id: str | None = None
 
@@ -605,6 +607,11 @@ class PanelTargetRead(BaseModel):
     id: str
     panel_id: str
     antibody_id: str | None
+    dye_label_id: str | None = None
+    dye_label_name: str | None = None
+    dye_label_target: str | None = None
+    dye_label_fluorophore_id: str | None = None
+    dye_label_fluorophore_name: str | None = None
     staining_mode: str
     secondary_antibody_id: str | None
     sort_order: int
@@ -620,7 +627,8 @@ class PanelTargetRead(BaseModel):
 # --- PanelAssignment ---
 
 class PanelAssignmentCreate(BaseModel):
-    antibody_id: str
+    antibody_id: str | None = None
+    dye_label_id: str | None = None
     fluorophore_id: str
     detector_id: str
     notes: str | None = None
@@ -629,7 +637,8 @@ class PanelAssignmentCreate(BaseModel):
 class PanelAssignmentRead(BaseModel):
     id: str
     panel_id: str
-    antibody_id: str
+    antibody_id: str | None = None
+    dye_label_id: str | None = None
     fluorophore_id: str
     detector_id: str
     notes: str | None = None
@@ -676,6 +685,7 @@ class PanelRead(PanelBase):
 
 class IFPanelTargetCreate(BaseModel):
     antibody_id: str | None = None
+    dye_label_id: str | None = None
     staining_mode: str = "direct"
     secondary_antibody_id: str | None = None
     dilution_override: str | None = None
@@ -683,6 +693,7 @@ class IFPanelTargetCreate(BaseModel):
 
 class IFPanelTargetUpdate(BaseModel):
     antibody_id: str | None = None
+    dye_label_id: str | None = None
     staining_mode: str | None = None
     secondary_antibody_id: str | None = None
     dilution_override: str | None = None
@@ -696,6 +707,11 @@ class IFPanelTargetRead(BaseModel):
     id: str
     panel_id: str
     antibody_id: str | None
+    dye_label_id: str | None = None
+    dye_label_name: str | None = None
+    dye_label_target: str | None = None
+    dye_label_fluorophore_id: str | None = None
+    dye_label_fluorophore_name: str | None = None
     staining_mode: str
     secondary_antibody_id: str | None
     sort_order: int
@@ -713,7 +729,8 @@ class IFPanelTargetRead(BaseModel):
 # --- IFPanelAssignment ---
 
 class IFPanelAssignmentCreate(BaseModel):
-    antibody_id: str
+    antibody_id: str | None = None
+    dye_label_id: str | None = None
     fluorophore_id: str
     filter_id: str | None = None
     notes: str | None = None
@@ -722,7 +739,8 @@ class IFPanelAssignmentCreate(BaseModel):
 class IFPanelAssignmentRead(BaseModel):
     id: str
     panel_id: str
-    antibody_id: str
+    antibody_id: str | None = None
+    dye_label_id: str | None = None
     fluorophore_id: str
     filter_id: str | None = None
     notes: str | None = None
