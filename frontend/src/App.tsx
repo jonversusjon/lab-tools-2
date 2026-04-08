@@ -9,6 +9,7 @@ import AntibodyTable from '@/components/antibodies/AntibodyTable'
 import PanelList from '@/components/panels/PanelList'
 import PanelDesigner from '@/components/panels/PanelDesigner'
 import SecondaryList from '@/components/secondaries/SecondaryList'
+import DyeLabelList from '@/components/dye-labels/DyeLabelList'
 import Settings from '@/components/settings/Settings'
 import Homepage from '@/components/home/Homepage'
 import PlaceholderPage from '@/components/placeholder/PlaceholderPage'
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/resources/primaries" element={<AntibodyTable />} />
         <Route path="/resources/secondaries" element={<SecondaryList />} />
         <Route path="/resources/fluorophores" element={<FluorophoreTable />} />
+        <Route path="/resources/dyes-labels" element={<DyeLabelList />} />
 
         {/* Flow Cytometry */}
         <Route path="/flow/instruments" element={<InstrumentList />} />

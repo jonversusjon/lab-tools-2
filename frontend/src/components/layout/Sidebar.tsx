@@ -33,6 +33,7 @@ const sidebarEntries: SidebarEntry[] = [
         { to: '/resources/primaries', label: 'Primaries', icon: '🧬' },
         { to: '/resources/secondaries', label: 'Secondaries', icon: '🔗' },
         { to: '/resources/fluorophores', label: 'Fluorophores', icon: '🌈' },
+        { to: '/resources/dyes-labels', label: 'Dyes & Labels', icon: '🏷️' },
         { to: '/qpcr/primers', label: 'Primers', icon: '🧪' },
       ],
     },
