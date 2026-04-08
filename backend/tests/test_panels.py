@@ -496,3 +496,110 @@ def test_update_target_changes_antibody_deletes_old_assignment(client):
 
     panel_data = client.get("/api/v1/panels/%s" % pid).json()
     assert len(panel_data["assignments"]) == 0
+
+
+# --- Phase B: Polymorphic Targets ---
+
+
+def test_add_dye_label_target(client):
+    """POST a dye_label target — response includes dye_label_name and dye_label_target."""
+    panel = client.post("/api/v1/panels", json={"name": "P1"}).json()
+    pid = panel["id"]
+
+    resp = client.post(
+        "/api/v1/panels/%s/targets" % pid,
+        json={"dye_label_id": "test-dye-label-with-fluor"},
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["dye_label_id"] == "test-dye-label-with-fluor"
+    assert data["dye_label_name"] == "MitoSOX Red"
+    assert data["dye_label_target"] == "Mitochondrial Superoxide"
+    assert data["dye_label_fluorophore_id"] == "test-mcherry"
+    assert data["antibody_id"] is None
+    assert data["staining_mode"] == "direct"
+
+
+def test_add_dye_label_target_forces_direct(client):
+    """POST a dye_label target with staining_mode 'indirect' — forced to 'direct'."""
+    panel = client.post("/api/v1/panels", json={"name": "P1"}).json()
+    pid = panel["id"]
+
+    resp = client.post(
+        "/api/v1/panels/%s/targets" % pid,
+        json={"dye_label_id": "test-dye-label-with-fluor", "staining_mode": "indirect"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["staining_mode"] == "direct"
+
+
+def test_dye_label_target_duplicate_409(client):
+    """Adding the same dye_label twice returns 409."""
+    panel = client.post("/api/v1/panels", json={"name": "P1"}).json()
+    pid = panel["id"]
+
+    client.post("/api/v1/panels/%s/targets" % pid, json={"dye_label_id": "test-dye-label-with-fluor"})
+    resp = client.post("/api/v1/panels/%s/targets" % pid, json={"dye_label_id": "test-dye-label-with-fluor"})
+    assert resp.status_code == 409
+
+
+def test_both_antibody_and_dye_label_400(client):
+    """POST with both antibody_id and dye_label_id returns 400."""
+    ab = _get_seed_antibody(client)
+    panel = client.post("/api/v1/panels", json={"name": "P1"}).json()
+    pid = panel["id"]
+
+    resp = client.post(
+        "/api/v1/panels/%s/targets" % pid,
+        json={"antibody_id": ab["id"], "dye_label_id": "test-dye-label-with-fluor"},
+    )
+    assert resp.status_code == 400
+
+
+def test_assign_dye_label_fluorophore(client):
+    """Create dye_label target, then create assignment with dye_label_id."""
+    inst = _get_seed_instrument(client)
+    fl = _get_seed_fluorophore(client)
+    det_id = _get_detector_id(inst)
+
+    panel = client.post("/api/v1/panels", json={"name": "P1", "instrument_id": inst["id"]}).json()
+    pid = panel["id"]
+
+    client.post("/api/v1/panels/%s/targets" % pid, json={"dye_label_id": "test-dye-label-with-fluor"})
+
+    resp = client.post(
+        "/api/v1/panels/%s/assignments" % pid,
+        json={"dye_label_id": "test-dye-label-with-fluor", "fluorophore_id": fl["id"], "detector_id": det_id},
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["dye_label_id"] == "test-dye-label-with-fluor"
+    assert data["antibody_id"] is None
+
+
+def test_remove_dye_label_target_cascades_assignment(client):
+    """Removing a dye_label target also removes its assignment."""
+    inst = _get_seed_instrument(client)
+    fl = _get_seed_fluorophore(client)
+    det_id = _get_detector_id(inst)
+
+    panel = client.post("/api/v1/panels", json={"name": "P1", "instrument_id": inst["id"]}).json()
+    pid = panel["id"]
+
+    target_resp = client.post(
+        "/api/v1/panels/%s/targets" % pid,
+        json={"dye_label_id": "test-dye-label-with-fluor"},
+    )
+    target_id = target_resp.json()["id"]
+
+    client.post(
+        "/api/v1/panels/%s/assignments" % pid,
+        json={"dye_label_id": "test-dye-label-with-fluor", "fluorophore_id": fl["id"], "detector_id": det_id},
+    )
+
+    resp = client.delete("/api/v1/panels/%s/targets/%s" % (pid, target_id))
+    assert resp.status_code == 204
+
+    panel_data = client.get("/api/v1/panels/%s" % pid).json()
+    assert len(panel_data["targets"]) == 0
+    assert len(panel_data["assignments"]) == 0

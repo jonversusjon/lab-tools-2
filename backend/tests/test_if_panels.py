@@ -414,3 +414,95 @@ def test_update_target_clear_dilution_override(client):
     )
     assert resp.status_code == 200
     assert resp.json()["dilution_override"] is None
+
+
+# --- Phase B: Polymorphic Targets ---
+
+
+def test_add_dye_label_target_if(client):
+    """POST a dye_label target to IF panel — response includes dye_label_name."""
+    panel = _create_panel(client)
+
+    resp = client.post(
+        "/api/v1/if-panels/%s/targets" % panel["id"],
+        json={"dye_label_id": "test-dye-label-with-fluor"},
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["dye_label_id"] == "test-dye-label-with-fluor"
+    assert data["dye_label_name"] == "MitoSOX Red"
+    assert data["dye_label_target"] == "Mitochondrial Superoxide"
+    assert data["antibody_id"] is None
+    assert data["staining_mode"] == "direct"
+
+
+def test_add_dye_label_target_if_forces_direct(client):
+    """Indirect mode is forced to direct for dye_label targets in IF panel."""
+    panel = _create_panel(client)
+
+    resp = client.post(
+        "/api/v1/if-panels/%s/targets" % panel["id"],
+        json={"dye_label_id": "test-dye-label-with-fluor", "staining_mode": "indirect"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["staining_mode"] == "direct"
+
+
+def test_dye_label_target_if_duplicate_409(client):
+    """Adding same dye_label twice to IF panel returns 409."""
+    panel = _create_panel(client)
+
+    client.post("/api/v1/if-panels/%s/targets" % panel["id"], json={"dye_label_id": "test-dye-label-with-fluor"})
+    resp = client.post("/api/v1/if-panels/%s/targets" % panel["id"], json={"dye_label_id": "test-dye-label-with-fluor"})
+    assert resp.status_code == 409
+
+
+def test_both_antibody_and_dye_label_400_if(client):
+    """POST with both antibody_id and dye_label_id to IF panel returns 400."""
+    panel = _create_panel(client)
+    ab = _create_antibody(client)
+
+    resp = client.post(
+        "/api/v1/if-panels/%s/targets" % panel["id"],
+        json={"antibody_id": ab["id"], "dye_label_id": "test-dye-label-with-fluor"},
+    )
+    assert resp.status_code == 400
+
+
+def test_assign_dye_label_fluorophore_if(client):
+    """Create dye_label target in IF panel, then create assignment."""
+    panel = _create_panel(client)
+
+    client.post("/api/v1/if-panels/%s/targets" % panel["id"], json={"dye_label_id": "test-dye-label-with-fluor"})
+
+    resp = client.post(
+        "/api/v1/if-panels/%s/assignments" % panel["id"],
+        json={"dye_label_id": "test-dye-label-with-fluor", "fluorophore_id": "test-egfp"},
+    )
+    assert resp.status_code == 201
+    data = resp.json()
+    assert data["dye_label_id"] == "test-dye-label-with-fluor"
+    assert data["antibody_id"] is None
+
+
+def test_remove_dye_label_target_cascades_assignment_if(client):
+    """Removing dye_label target from IF panel also removes its assignment."""
+    panel = _create_panel(client)
+
+    target_resp = client.post(
+        "/api/v1/if-panels/%s/targets" % panel["id"],
+        json={"dye_label_id": "test-dye-label-with-fluor"},
+    )
+    target_id = target_resp.json()["id"]
+
+    client.post(
+        "/api/v1/if-panels/%s/assignments" % panel["id"],
+        json={"dye_label_id": "test-dye-label-with-fluor", "fluorophore_id": "test-egfp"},
+    )
+
+    resp = client.delete("/api/v1/if-panels/%s/targets/%s" % (panel["id"], target_id))
+    assert resp.status_code == 204
+
+    panel_data = client.get("/api/v1/if-panels/%s" % panel["id"]).json()
+    assert len(panel_data["targets"]) == 0
+    assert len(panel_data["assignments"]) == 0

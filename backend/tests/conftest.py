@@ -22,6 +22,7 @@ from models import Antibody
 from models import AntibodyTag
 from models import AntibodyTagAssignment
 from models import Detector
+from models import DyeLabel
 from models import Experiment  # noqa: F401
 from models import ExperimentBlock  # noqa: F401
 from models import Fluorophore
@@ -221,6 +222,24 @@ def _load_seed(session):
     )
     session.add(sa1)
     session.add(sa2)
+
+    # Seed test dye labels
+    dl1 = DyeLabel(
+        id="test-dye-label-with-fluor",
+        name="MitoSOX Red",
+        label_target="Mitochondrial Superoxide",
+        category="organelle",
+        fluorophore_id="test-mcherry",
+    )
+    dl2 = DyeLabel(
+        id="test-dye-label-no-fluor",
+        name="DAPI",
+        label_target="Nuclei",
+        category="nucleic acid",
+        fluorophore_id=None,
+    )
+    session.add(dl1)
+    session.add(dl2)
 
     session.commit()
 
