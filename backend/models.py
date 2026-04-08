@@ -503,6 +503,33 @@ class Experiment(Base):
     blocks = relationship("ExperimentBlock", back_populates="experiment", cascade="all, delete-orphan")
 
 
+class DyeLabel(Base):
+    __tablename__ = "dye_labels"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String, nullable=False, unique=True)
+    label_target = Column(String, nullable=False)
+    category = Column(String, nullable=True)
+    fluorophore_id = Column(
+        String(100),
+        ForeignKey("fluorophores.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    vendor = Column(String, nullable=True)
+    catalog_number = Column(String, nullable=True)
+    lot_number = Column(String, nullable=True)
+    flow_dilution = Column(String, nullable=True)
+    icc_if_dilution = Column(String, nullable=True)
+    flow_dilution_factor = Column(Integer, nullable=True)
+    icc_if_dilution_factor = Column(Integer, nullable=True)
+    notes = Column(Text, nullable=True)
+    is_favorite = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    fluorophore = relationship("Fluorophore")
+
+
 class ExperimentBlock(Base):
     __tablename__ = "experiment_blocks"
 

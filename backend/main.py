@@ -17,6 +17,7 @@ from models import Antibody
 from models import AntibodyTag
 from models import Fluorophore
 from models import Instrument
+from models import DyeLabel  # noqa: F401 — ensures table is created by create_all()
 from models import Experiment  # noqa: F401 — ensures table is created by create_all()
 from models import ExperimentBlock  # noqa: F401 — ensures table is created by create_all()
 from models import IFPanel  # noqa: F401 — ensures table is created by create_all()
