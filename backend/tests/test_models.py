@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from models import Antibody
 from models import Detector
+from models import DyeLabel
 from models import Fluorophore
 from models import Instrument
 from models import Laser
@@ -155,3 +156,36 @@ def test_panel_null_instrument(db_session):
     loaded = db_session.get(Panel, panel.id)
     assert loaded is not None
     assert loaded.instrument_id is None
+
+
+def test_dye_label_model_create(db_session):
+    """Basic DyeLabel create + flush verifies PK is a string."""
+    dl = DyeLabel(name="DAPI", label_target="Nuclei", category="nucleic acid")
+    db_session.add(dl)
+    db_session.flush()
+
+    loaded = db_session.get(DyeLabel, dl.id)
+    assert loaded is not None
+    assert isinstance(loaded.id, str)
+    assert loaded.name == "DAPI"
+    assert loaded.label_target == "Nuclei"
+    assert loaded.is_favorite is False
+
+
+def test_dye_label_fluorophore_set_null(db_session):
+    """Deleting a fluorophore sets DyeLabel.fluorophore_id to NULL (SET NULL cascade)."""
+    fl = Fluorophore(id="test-set-null-fl", name="TestSetNullFl", source="user")
+    db_session.add(fl)
+    db_session.flush()
+
+    dl = DyeLabel(name="SetNullDye", label_target="Test", fluorophore_id=fl.id)
+    db_session.add(dl)
+    db_session.flush()
+
+    assert dl.fluorophore_id == "test-set-null-fl"
+
+    db_session.delete(fl)
+    db_session.flush()
+
+    db_session.expire(dl)
+    assert dl.fluorophore_id is None
