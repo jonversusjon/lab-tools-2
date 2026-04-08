@@ -897,3 +897,38 @@ export interface VolumeParams {
   pipet_error_factor: number
   dilution_source: 'flow' | 'icc_if'
 }
+
+// --- Dye / Label ---
+
+export interface DyeLabel {
+  id: string
+  name: string
+  label_target: string
+  category: string | null
+  fluorophore_id: string | null
+  fluorophore_name: string | null
+  vendor: string | null
+  catalog_number: string | null
+  lot_number: string | null
+  flow_dilution: string | null
+  icc_if_dilution: string | null
+  flow_dilution_factor: number | null
+  icc_if_dilution_factor: number | null
+  notes: string | null
+  is_favorite: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface DyeLabelCreate {
+  name: string
+  label_target: string
+  category?: string | null
+  fluorophore_id?: string | null
+  vendor?: string | null
+  catalog_number?: string | null
+  lot_number?: string | null
+  flow_dilution?: string | null
+  icc_if_dilution?: string | null
+  notes?: string | null
+}
