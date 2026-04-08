@@ -4,6 +4,7 @@ import type { DragEndEvent } from '@dnd-kit/core'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import PanelDesignerView from '@/components/panels/PanelDesignerView'
 import type { PanelDesignerViewHandlers, PanelDesignerViewConfig } from '@/components/panels/PanelDesignerView'
+import type { TargetSelection } from '@/components/panels/TargetOmnibox'
 import type {
   ExperimentBlock,
   FlowPanelBlockContent,
@@ -48,6 +49,11 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       id: t.id,
       panel_id: block.id,
       antibody_id: t.antibody_id,
+      dye_label_id: null,
+      dye_label_name: null,
+      dye_label_target: null,
+      dye_label_fluorophore_id: null,
+      dye_label_fluorophore_name: null,
       staining_mode: t.staining_mode as 'direct' | 'indirect',
       secondary_antibody_id: t.secondary_antibody_id,
       sort_order: t.sort_order,
@@ -61,6 +67,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       id: a.id,
       panel_id: block.id,
       antibody_id: a.antibody_id,
+      dye_label_id: null,
       fluorophore_id: a.fluorophore_id,
       detector_id: a.detector_id,
       notes: null,
@@ -184,24 +191,49 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
   }, [])
 
   const handlers: PanelDesignerViewHandlers = useMemo(() => ({
-    onAddTarget: async (antibody: Antibody) => {
-      const target: PanelTarget = {
-        id: crypto.randomUUID(),
-        panel_id: block.id,
-        antibody_id: antibody.id,
-        staining_mode: 'direct',
-        secondary_antibody_id: null,
-        sort_order: stateRef.current.targets.length,
-        antibody_name: antibody.name,
-        antibody_target: antibody.target,
-        secondary_antibody_name: null,
-        secondary_fluorophore_id: null,
-        secondary_fluorophore_name: null,
-      }
+    onAddTarget: async (selection: TargetSelection) => {
+      const target: PanelTarget = selection.type === 'antibody'
+        ? {
+            id: crypto.randomUUID(),
+            panel_id: block.id,
+            antibody_id: selection.antibody.id,
+            dye_label_id: null,
+            dye_label_name: null,
+            dye_label_target: null,
+            dye_label_fluorophore_id: null,
+            dye_label_fluorophore_name: null,
+            staining_mode: 'direct',
+            secondary_antibody_id: null,
+            sort_order: stateRef.current.targets.length,
+            antibody_name: selection.antibody.name,
+            antibody_target: selection.antibody.target,
+            secondary_antibody_name: null,
+            secondary_fluorophore_id: null,
+            secondary_fluorophore_name: null,
+          }
+        : {
+            id: crypto.randomUUID(),
+            panel_id: block.id,
+            antibody_id: null,
+            dye_label_id: selection.dyeLabel.id,
+            dye_label_name: selection.dyeLabel.name,
+            dye_label_target: selection.dyeLabel.label_target,
+            dye_label_fluorophore_id: selection.dyeLabel.fluorophore_id,
+            dye_label_fluorophore_name: selection.dyeLabel.fluorophore_name ?? null,
+            staining_mode: 'direct',
+            secondary_antibody_id: null,
+            sort_order: stateRef.current.targets.length,
+            antibody_name: null,
+            antibody_target: null,
+            secondary_antibody_name: null,
+            secondary_fluorophore_id: null,
+            secondary_fluorophore_name: null,
+          }
       dispatch({ type: 'ADD_TARGET', target })
       markDirty()
+      return null
     },
-    onRemoveTarget: async (targetId: string, antibodyId: string) => {
+    onRemoveTarget: async (targetId: string, antibodyId: string | null) => {
       dispatch({ type: 'REMOVE_TARGET', targetId, antibodyId })
       markDirty()
     },
@@ -279,15 +311,18 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       dispatch({ type: 'UPDATE_TARGET', target: updated })
       markDirty()
     },
-    onDirectAssign: async (antibodyId: string, fluorophoreId: string, detectorId: string) => {
-      const existing = stateRef.current.assignments.find((a) => a.antibody_id === antibodyId)
+    onDirectAssign: async (rowId: string, fluorophoreId: string, detectorId: string, isDyeLabel?: boolean) => {
+      const existing = stateRef.current.assignments.find((a) =>
+        isDyeLabel ? a.dye_label_id === rowId : a.antibody_id === rowId
+      )
       if (existing) {
         dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
       }
       const assignment: PanelAssignment = {
         id: crypto.randomUUID(),
         panel_id: block.id,
-        antibody_id: antibodyId,
+        antibody_id: isDyeLabel ? null : rowId,
+        dye_label_id: isDyeLabel ? rowId : null,
         fluorophore_id: fluorophoreId,
         detector_id: detectorId,
         notes: null,
@@ -295,7 +330,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       dispatch({ type: 'ADD_ASSIGNMENT', assignment })
       markDirty()
     },
-    onUnassign: async (_antibodyId: string, assignmentId: string, _fluorophoreId: string) => {
+    onUnassign: async (_rowId: string, assignmentId: string, _fluorophoreId: string) => {
       dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId })
       markDirty()
     },
@@ -345,6 +380,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
         handlers={handlers}
         config={viewConfig}
         antibodies={libraryData.antibodies}
+        dyeLabels={[]}
         allFluorophores={libraryData.allFluorophores}
         secondaries={libraryData.secondaries}
         conjugateChemistries={libraryData.conjugateChemistries}

@@ -208,7 +208,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   // --- Assignment lookup ---
   const assignmentByAntibody = useMemo(() => {
     const map = new Map<string, IFPanelAssignment>()
-    for (const a of state.assignments) if (a) map.set(a.antibody_id, a)
+    for (const a of state.assignments) if (a?.antibody_id) map.set(a.antibody_id, a)
     return map
   }, [state.assignments])
 
@@ -293,7 +293,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     setNotesMap((prev) => {
       const next = new Map(prev)
       for (const a of state.assignments) {
-        if (a && a.notes && !next.has(a.antibody_id)) {
+        if (a && a.notes && a.antibody_id && !next.has(a.antibody_id)) {
           next.set(a.antibody_id, a.notes)
         }
       }

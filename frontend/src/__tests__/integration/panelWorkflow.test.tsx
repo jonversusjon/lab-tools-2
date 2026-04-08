@@ -170,13 +170,13 @@ describe('Panel Workflow Integration', () => {
     currentPanel = {
       ...currentPanel,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
-        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', sort_order: 1, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
-        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', sort_order: 2, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', dye_label_id: null, dye_label_name: null, dye_label_target: null, dye_label_fluorophore_id: null, dye_label_fluorophore_name: null, sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't2', panel_id: 'p1', antibody_id: 'ab2', dye_label_id: null, dye_label_name: null, dye_label_target: null, dye_label_fluorophore_id: null, dye_label_fluorophore_name: null, sort_order: 1, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't3', panel_id: 'p1', antibody_id: 'ab3', dye_label_id: null, dye_label_name: null, dye_label_target: null, dye_label_fluorophore_id: null, dye_label_fluorophore_name: null, sort_order: 2, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [
-        { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-1', detector_id: 'd1', notes: null },
-        { id: 'a2', panel_id: 'p1', antibody_id: 'ab2', fluorophore_id: 'fl-2', detector_id: 'd2', notes: null },
+        { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', dye_label_id: null, fluorophore_id: 'fl-1', detector_id: 'd1', notes: null },
+        { id: 'a2', panel_id: 'p1', antibody_id: 'ab2', dye_label_id: null, fluorophore_id: 'fl-2', detector_id: 'd2', notes: null },
       ],
     }
 
@@ -203,10 +203,10 @@ describe('Panel Workflow Integration', () => {
     currentPanel = {
       ...currentPanel,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', dye_label_id: null, dye_label_name: null, dye_label_target: null, dye_label_fluorophore_id: null, dye_label_fluorophore_name: null, sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
       assignments: [
-        { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', fluorophore_id: 'fl-1', detector_id: 'd1', notes: null },
+        { id: 'a1', panel_id: 'p1', antibody_id: 'ab1', dye_label_id: null, fluorophore_id: 'fl-1', detector_id: 'd1', notes: null },
       ],
     }
 
@@ -234,7 +234,7 @@ describe('Panel Workflow Integration', () => {
     currentPanel = {
       ...currentPanel,
       targets: [
-        { id: 't4', panel_id: 'p1', antibody_id: 'ab4', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't4', panel_id: 'p1', antibody_id: 'ab4', dye_label_id: null, dye_label_name: null, dye_label_target: null, dye_label_fluorophore_id: null, dye_label_fluorophore_name: null, sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
     }
 
@@ -251,14 +251,14 @@ describe('Panel Workflow Integration', () => {
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
 
-    expect(screen.getByPlaceholderText('Search target, clone, host, vendor...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search antibody, dye, or label...')).toBeInTheDocument()
   })
 
   it('removing a target calls the backend', async () => {
     currentPanel = {
       ...currentPanel,
       targets: [
-        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
+        { id: 't1', panel_id: 'p1', antibody_id: 'ab1', dye_label_id: null, dye_label_name: null, dye_label_target: null, dye_label_fluorophore_id: null, dye_label_fluorophore_name: null, sort_order: 0, staining_mode: "direct" as const, secondary_antibody_id: null, antibody_name: null, antibody_target: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null },
       ],
     }
     mockRemoveTargetMutateAsync.mockResolvedValue(undefined)

@@ -63,7 +63,7 @@ export default function IFPanelDesigner() {
     async (antibodyId: string, fluorophoreId: string) => {
       if (!id) return
       const assignmentByAntibody = new Map<string, IFPanelAssignment>()
-      for (const a of state.assignments) if (a) assignmentByAntibody.set(a.antibody_id, a)
+      for (const a of state.assignments) if (a?.antibody_id) assignmentByAntibody.set(a.antibody_id, a)
       const existing = assignmentByAntibody.get(antibodyId)
 
       if (existing && existing.fluorophore_id === fluorophoreId) return
@@ -73,6 +73,7 @@ export default function IFPanelDesigner() {
         id: optimisticId,
         panel_id: id,
         antibody_id: antibodyId,
+        dye_label_id: null,
         fluorophore_id: fluorophoreId,
         filter_id: null,
         notes: notesMap.get(antibodyId) ?? null,

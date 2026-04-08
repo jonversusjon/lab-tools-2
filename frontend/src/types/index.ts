@@ -865,7 +865,7 @@ export interface FlowPanelInstanceTarget {
 
 export interface FlowPanelInstanceAssignment {
   id: string
-  antibody_id: string
+  antibody_id: string | null
   fluorophore_id: string
   fluorophore_name: string | null
   detector_id: string
@@ -902,7 +902,7 @@ export interface IFPanelInstanceTarget {
 
 export interface IFPanelInstanceAssignment {
   id: string
-  antibody_id: string
+  antibody_id: string | null
   fluorophore_id: string
   fluorophore_name: string | null
   filter_id: string | null

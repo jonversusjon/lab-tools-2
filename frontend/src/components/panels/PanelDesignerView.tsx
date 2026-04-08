@@ -22,7 +22,8 @@ import type { DetectionStrategy } from '@/utils/conjugates'
 import { rankChannels } from '@/utils/spectra'
 import type { ChannelRanking } from '@/utils/spectra'
 import type { SpilloverInput } from '@/utils/spillover'
-import AntibodyOmnibox from './AntibodyOmnibox'
+import TargetOmnibox from './TargetOmnibox'
+import type { TargetSelection } from './TargetOmnibox'
 import SecondaryOmnibox from './SecondaryOmnibox'
 import CellAssignmentPicker from './CellAssignmentPicker'
 import SpilloverHeatmap from './SpilloverHeatmap'
@@ -32,6 +33,7 @@ import type { PanelDesignerState } from '@/hooks/usePanelDesigner'
 import type { PanelDesignerAction } from '@/hooks/usePanelDesigner'
 import type {
   Antibody,
+  DyeLabel,
   Fluorophore,
   PanelAssignment,
   SecondaryAntibody,
@@ -53,15 +55,15 @@ export interface PanelDesignerViewConfig {
 }
 
 export interface PanelDesignerViewHandlers {
-  onAddTarget: (antibody: Antibody) => Promise<void>
-  onRemoveTarget: (targetId: string, antibodyId: string) => Promise<void>
+  onAddTarget: (selection: TargetSelection) => Promise<unknown>
+  onRemoveTarget: (targetId: string, antibodyId: string | null) => Promise<void>
   onReplaceTargetAntibody: (targetId: string, newAntibody: Antibody) => Promise<void>
   onReorderTargets: (event: DragEndEvent) => void
   onSetSecondary: (targetId: string, secondaryId: string) => Promise<void>
   onClearSecondary: (targetId: string) => Promise<void>
 
-  onDirectAssign: (antibodyId: string, fluorophoreId: string, detectorId: string) => Promise<void>
-  onUnassign: (antibodyId: string, assignmentId: string, fluorophoreId: string) => Promise<void>
+  onDirectAssign: (rowId: string, fluorophoreId: string, detectorId: string, isDyeLabel?: boolean) => Promise<void>
+  onUnassign: (rowId: string, assignmentId: string, fluorophoreId: string) => Promise<void>
   onPickerSelectFluorophore: (fluorophoreId: string) => Promise<void>
   onPickerSelectSecondary: (secondaryId: string) => Promise<void>
   onPickerClear: () => Promise<void>
@@ -90,6 +92,7 @@ export interface PanelDesignerViewProps {
   handlers: PanelDesignerViewHandlers
   config: PanelDesignerViewConfig
   antibodies: Antibody[]
+  dyeLabels: DyeLabel[]
   allFluorophores: Fluorophore[]
   secondaries: SecondaryAntibody[]
   conjugateChemistries: ConjugateChemistry[]
@@ -142,6 +145,7 @@ export default function PanelDesignerView({
   handlers,
   config,
   antibodies,
+  dyeLabels,
   allFluorophores,
   secondaries,
   conjugateChemistries,
@@ -168,8 +172,9 @@ export default function PanelDesignerView({
   const nameInputRef = useRef<HTMLInputElement>(null)
   const [pendingRows, setPendingRows] = useState<string[]>([])
   const [pendingAutoAssign, setPendingAutoAssign] = useState<{
-    antibodyId: string
+    rowId: string
     fluorophoreId: string
+    isDyeLabel?: boolean
   } | null>(null)
   const [overriddenRows, setOverriddenRows] = useState<Set<string>>(new Set())
   const [rawFluorophoreOverrides, setRawFluorophoreOverrides] = useState<Map<string, string>>(new Map())
@@ -248,7 +253,15 @@ export default function PanelDesignerView({
   const assignmentByAntibody = useMemo(() => {
     const map = new Map<string, PanelAssignment>()
     for (const a of state.assignments) {
-      if (a) map.set(a.antibody_id, a)
+      if (a?.antibody_id) map.set(a.antibody_id, a)
+    }
+    return map
+  }, [state.assignments])
+
+  const assignmentByDyeLabel = useMemo(() => {
+    const map = new Map<string, PanelAssignment>()
+    for (const a of state.assignments) {
+      if (a?.dye_label_id) map.set(a.dye_label_id, a)
     }
     return map
   }, [state.assignments])
@@ -267,6 +280,11 @@ export default function PanelDesignerView({
 
   const targetAntibodyIds = useMemo(
     () => new Set(state.targets.map((t) => t.antibody_id).filter((id): id is string => id !== null)),
+    [state.targets]
+  )
+
+  const targetDyeLabelIds = useMemo(
+    () => new Set(state.targets.map((t) => t.dye_label_id).filter((id): id is string => id !== null)),
     [state.targets]
   )
 
@@ -289,6 +307,15 @@ export default function PanelDesignerView({
   const rowFluorophoreMap = useMemo(() => {
     const map = new Map<string, string>()
     for (const t of state.targets) {
+      if (t.dye_label_id) {
+        const existing = assignmentByDyeLabel.get(t.dye_label_id)
+        if (existing) {
+          map.set(t.dye_label_id, existing.fluorophore_id)
+        } else if (t.dye_label_fluorophore_id) {
+          map.set(t.dye_label_id, t.dye_label_fluorophore_id)
+        }
+        continue
+      }
       if (!t.antibody_id) continue
       const ab = antibodyMap.get(t.antibody_id)
       if (!ab) continue
@@ -307,7 +334,7 @@ export default function PanelDesignerView({
       }
     }
     return map
-  }, [state.targets, antibodyMap, assignmentByAntibody, secondaries, rawFluorophoreOverrides])
+  }, [state.targets, antibodyMap, assignmentByAntibody, assignmentByDyeLabel, secondaries, rawFluorophoreOverrides])
 
   const rowChannelScores = useMemo(() => {
     if (!state.instrument) return new Map<string, ChannelRanking[]>()
@@ -397,6 +424,14 @@ export default function PanelDesignerView({
   const activeTargets = useMemo(() => {
     const list: { id: string, fluorophore_id: string, detector_id: string | null }[] = []
     for (const t of state.targets) {
+      if (t.dye_label_id) {
+        const flId = rowFluorophoreMap.get(t.dye_label_id)
+        if (flId) {
+          const assignment = assignmentByDyeLabel.get(t.dye_label_id)
+          list.push({ id: t.dye_label_id, fluorophore_id: flId, detector_id: assignment?.detector_id ?? null })
+        }
+        continue
+      }
       if (!t.antibody_id) continue
       const flId = rowFluorophoreMap.get(t.antibody_id)
       if (flId) {
@@ -409,7 +444,7 @@ export default function PanelDesignerView({
       }
     }
     return list
-  }, [state.targets, rowFluorophoreMap, assignmentByAntibody])
+  }, [state.targets, rowFluorophoreMap, assignmentByAntibody, assignmentByDyeLabel])
 
   const activeDetectors = useMemo(() => {
     const assignedIds = new Set(Array.from(assignmentByDetector.keys()))
@@ -459,10 +494,18 @@ export default function PanelDesignerView({
     setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
   }
 
-  const handlePendingRowSelect = async (pendingId: string, antibody: Antibody) => {
+  const handlePendingRowSelect = async (pendingId: string, selection: TargetSelection) => {
     try {
-      await handlers.onAddTarget(antibody)
+      await handlers.onAddTarget(selection)
       setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
+      if (selection.type === 'dye_label') {
+        const dl = selection.dyeLabel
+        if (dl.fluorophore_id) {
+          setPendingAutoAssign({ rowId: dl.id, fluorophoreId: dl.fluorophore_id, isDyeLabel: true })
+        }
+        return
+      }
+      const antibody = selection.antibody
       const resolvedFlId = antibody.fluorophore_id
         ?? (antibody.conjugate ? conjugateToFluorophoreId.get(antibody.conjugate.toLowerCase()) ?? null : null)
       if (resolvedFlId) {
@@ -473,7 +516,7 @@ export default function PanelDesignerView({
             return next
           })
         }
-        setPendingAutoAssign({ antibodyId: antibody.id, fluorophoreId: resolvedFlId })
+        setPendingAutoAssign({ rowId: antibody.id, fluorophoreId: resolvedFlId })
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add target'
@@ -487,7 +530,7 @@ export default function PanelDesignerView({
       const target = state.targets.find((t) => t.id === targetId)
       const sec = secondaries.find((s) => s.id === secondaryId)
       if (sec?.fluorophore_id && target?.antibody_id) {
-        setPendingAutoAssign({ antibodyId: target.antibody_id, fluorophoreId: sec.fluorophore_id })
+        setPendingAutoAssign({ rowId: target.antibody_id, fluorophoreId: sec.fluorophore_id })
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to set secondary'
@@ -534,7 +577,7 @@ export default function PanelDesignerView({
             return next
           })
         }
-        setPendingAutoAssign({ antibodyId: newAntibody.id, fluorophoreId: resolvedFlId })
+        setPendingAutoAssign({ rowId: newAntibody.id, fluorophoreId: resolvedFlId })
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to replace target'
@@ -545,7 +588,7 @@ export default function PanelDesignerView({
   }
 
   // Auto-assign channel logic
-  const autoAssignChannel = useCallback(async (antibodyId: string, fluorophoreId: string) => {
+  const autoAssignChannel = useCallback(async (rowId: string, fluorophoreId: string, isDyeLabel?: boolean) => {
     if (!handlers.autoAssign || !state.instrument) return
     const fl = allFluorophoresForScoring.find((f) => f.id === fluorophoreId)
     if (!fl) return
@@ -553,12 +596,13 @@ export default function PanelDesignerView({
     const rankings = rankChannels(fl, state.instrument)
     const occupiedByOthers = new Set<string>()
     for (const a of state.assignments) {
-      if (a.antibody_id !== antibodyId) occupiedByOthers.add(a.detector_id)
+      const aRowId = isDyeLabel ? a.dye_label_id : a.antibody_id
+      if (aRowId !== rowId) occupiedByOthers.add(a.detector_id)
     }
     const candidates = rankings.filter((r) => r.score >= handlers.minThreshold && !occupiedByOthers.has(r.detectorId))
     if (candidates.length === 0) return
 
-    await handlers.onDirectAssign(antibodyId, fluorophoreId, candidates[0].detectorId)
+    await handlers.onDirectAssign(rowId, fluorophoreId, candidates[0].detectorId, isDyeLabel)
   }, [handlers, state.instrument, state.assignments, allFluorophoresForScoring])
 
   // Deferred auto-assign
@@ -569,43 +613,48 @@ export default function PanelDesignerView({
       (f) => f.id === pendingAutoAssign.fluorophoreId
     )
     if (!fl) return
-    const { antibodyId, fluorophoreId } = pendingAutoAssign
+    const { rowId, fluorophoreId, isDyeLabel } = pendingAutoAssign
     setPendingAutoAssign(null)
-    autoAssignChannel(antibodyId, fluorophoreId)
+    autoAssignChannel(rowId, fluorophoreId, isDyeLabel)
   }, [pendingAutoAssign, allFluorophoresForScoring, autoAssignChannel])
 
   const handleCellClick = useCallback(
     (
       e: React.MouseEvent<HTMLTableCellElement>,
       targetId: string,
-      antibodyId: string,
+      rowId: string,
       detectorId: string,
       laserWavelength: number,
       filterMidpoint: number,
-      filterWidth: number
+      filterWidth: number,
+      isDyeLabel?: boolean
     ) => {
       const detAssignment = assignmentByDetector.get(detectorId)
-      if (detAssignment && detAssignment.antibody_id !== antibodyId) return
+      const detRowId = isDyeLabel ? detAssignment?.dye_label_id : detAssignment?.antibody_id
+      if (detAssignment && detRowId !== rowId) return
 
       setAssignError('')
 
-      const abAssignment = assignmentByAntibody.get(antibodyId)
-      if (abAssignment && abAssignment.detector_id === detectorId) {
-        handlers.onUnassign(antibodyId, abAssignment.id, abAssignment.fluorophore_id)
+      const rowAssignment = isDyeLabel ? assignmentByDyeLabel.get(rowId) : assignmentByAntibody.get(rowId)
+      if (rowAssignment && rowAssignment.detector_id === detectorId) {
+        handlers.onUnassign(rowId, rowAssignment.id, rowAssignment.fluorophore_id)
         return
       }
 
-      if (abAssignment && abAssignment.detector_id !== detectorId) return
+      if (rowAssignment && rowAssignment.detector_id !== detectorId) return
 
-      const knownFlId = rowFluorophoreMap.get(antibodyId)
+      const knownFlId = rowFluorophoreMap.get(rowId)
       if (knownFlId) {
-        handlers.onDirectAssign(antibodyId, knownFlId, detectorId)
+        handlers.onDirectAssign(rowId, knownFlId, detectorId, isDyeLabel)
         return
       }
 
-      setPickerCell({ targetId, antibodyId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
+      // Only open picker for antibody rows (dye_labels always have a known fluorophore)
+      if (!isDyeLabel) {
+        setPickerCell({ targetId, antibodyId: rowId, detectorId, laserWavelength, filterMidpoint, filterWidth, anchorEl: e.currentTarget })
+      }
     },
-    [assignmentByDetector, assignmentByAntibody, rowFluorophoreMap, handlers]
+    [assignmentByDetector, assignmentByAntibody, assignmentByDyeLabel, rowFluorophoreMap, handlers]
   )
 
   const handleCellPickerSelectSecondary = async (secondaryId: string) => {
@@ -634,7 +683,7 @@ export default function PanelDesignerView({
 
     setPickerCell(null)
     await handlers.onPickerSelectFluorophore(fluorophoreId)
-    await handlers.onDirectAssign(antibodyId, fluorophoreId, detectorId)
+    await handlers.onDirectAssign(antibodyId, fluorophoreId, detectorId, false)
   }
 
   const handleCellPickerClear = async () => {
@@ -865,7 +914,11 @@ export default function PanelDesignerView({
               ) : (
                 state.targets.map((t) => {
                   const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
-                  const rowAssignment = t.antibody_id ? assignmentByAntibody.get(t.antibody_id) : undefined
+                  const isDyeLabelRow = !!t.dye_label_id
+                  const rowId = t.dye_label_id ?? t.antibody_id ?? ''
+                  const rowAssignment = isDyeLabelRow
+                    ? (t.dye_label_id ? assignmentByDyeLabel.get(t.dye_label_id) : undefined)
+                    : (t.antibody_id ? assignmentByAntibody.get(t.antibody_id) : undefined)
                   const hasAssignment = !!rowAssignment
                   const isOverridden = overriddenRows.has(t.id)
                   const strategy = ab ? getDetectionStrategy(ab, conjugateSet, bindingPartners) : null
@@ -897,14 +950,24 @@ export default function PanelDesignerView({
                             }}
                             title="Click to replace antibody"
                           >
-                              {editingTargetId === t.id ? (
-                                <AntibodyOmnibox
+                              {editingTargetId === t.id && !t.dye_label_id ? (
+                                <TargetOmnibox
                                   antibodies={antibodies}
-                                  excludeIds={targetAntibodyIds}
-                                  onSelect={(newAb) => handleReplaceTargetAntibody(t.id, newAb)}
+                                  dyeLabels={dyeLabels}
+                                  excludeAntibodyIds={targetAntibodyIds}
+                                  excludeDyeLabelIds={targetDyeLabelIds}
+                                  onSelect={(sel) => {
+                                    if (sel.type === 'antibody') handleReplaceTargetAntibody(t.id, sel.antibody)
+                                    else setEditingTargetId(null)
+                                  }}
                                   onCancel={() => setEditingTargetId(null)}
                                   autoFocus
                                 />
+                              ) : t.dye_label_id ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span>{t.dye_label_target ?? t.dye_label_name ?? '\u2014'}</span>
+                                  <span className="text-[10px] font-medium px-1 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 uppercase tracking-wide">DYE</span>
+                                </span>
                               ) : (
                                 ab?.target ?? '\u2014'
                               )}
@@ -922,7 +985,18 @@ export default function PanelDesignerView({
                             : '\u2014'}
                         </span>
                       </td>
-                      {ab?.fluorophore_id && !isOverridden ? (
+                      {isDyeLabelRow ? (
+                        <td className="px-3 py-2">
+                          {t.dye_label_fluorophore_name ? (
+                            <span className="inline-flex items-center gap-1 text-teal-700/60 dark:text-teal-400/60">
+                              <span className="inline-block h-2 w-2 rounded-full bg-teal-500/50" />
+                              {t.dye_label_fluorophore_name}
+                            </span>
+                          ) : (
+                            <span className="italic text-gray-400 dark:text-gray-500">No fluorophore</span>
+                          )}
+                        </td>
+                      ) : ab?.fluorophore_id && !isOverridden ? (
                         <td className="px-3 py-2 group relative">
                           <span className="inline-flex items-center gap-1 text-teal-700/60 dark:text-teal-400/60">
                             <span className="inline-block h-2 w-2 rounded-full bg-teal-500/50" />
@@ -972,7 +1046,7 @@ export default function PanelDesignerView({
                                   next.set(abId, flId)
                                   return next
                                 })
-                                setPendingAutoAssign({ antibodyId: abId, fluorophoreId: flId })
+                                setPendingAutoAssign({ rowId: abId, fluorophoreId: flId })
                               }}
                               onClear={() => handleClearSecondary(t.id)}
                             />
@@ -1003,7 +1077,7 @@ export default function PanelDesignerView({
                                   next.set(abId, flId)
                                   return next
                                 })
-                                setPendingAutoAssign({ antibodyId: abId, fluorophoreId: flId })
+                                setPendingAutoAssign({ rowId: abId, fluorophoreId: flId })
                               }}
                               onClear={() => handleClearSecondary(t.id)}
                             />
@@ -1018,8 +1092,11 @@ export default function PanelDesignerView({
                         g.detectors.map((det) => {
                           const detAssignment = assignmentByDetector.get(det.id)
                           const isThisCell = rowAssignment?.detector_id === det.id
-                          const isOccupiedByOther = detAssignment && detAssignment.antibody_id !== t.antibody_id
-                          const thisAntibodyAssignedElsewhere = rowAssignment && rowAssignment.detector_id !== det.id
+                          const detOccupiedRowId = detAssignment
+                            ? (detAssignment.dye_label_id ?? detAssignment.antibody_id)
+                            : null
+                          const isOccupiedByOther = detAssignment && detOccupiedRowId !== rowId
+                          const thisRowAssignedElsewhere = rowAssignment && rowAssignment.detector_id !== det.id
 
                           if (isThisCell && rowAssignment) {
                             const flName = fluorophoreMap.get(rowAssignment.fluorophore_id) ?? '?'
@@ -1028,10 +1105,10 @@ export default function PanelDesignerView({
                                 key={det.id}
                                 className="relative cursor-pointer px-2 py-2 text-center text-xs font-medium"
                                 style={{ backgroundColor: g.color + '25' }}
-                                data-testid={'cell-' + t.antibody_id + '-' + det.id}
+                                data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="assigned"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.id, rowId, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width, isDyeLabelRow)
                                 }
                               >
                                 {flName}
@@ -1043,13 +1120,15 @@ export default function PanelDesignerView({
                           }
 
                           if (isOccupiedByOther) {
-                            const otherAb = antibodyMap.get(detAssignment.antibody_id)
+                            const otherLabel = detAssignment.antibody_id
+                              ? (antibodyMap.get(detAssignment.antibody_id)?.target ?? 'another target')
+                              : 'another target'
                             return (
                               <td
                                 key={det.id}
                                 className="cursor-not-allowed bg-gray-100 dark:bg-gray-700 px-2 py-2 text-center text-xs text-gray-400 dark:text-gray-500"
-                                title={'Detector assigned to ' + (otherAb?.target ?? 'another target')}
-                                data-testid={'cell-' + t.antibody_id + '-' + det.id}
+                                title={'Detector assigned to ' + otherLabel}
+                                data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="occupied"
                               >
                                 &times;
@@ -1057,12 +1136,12 @@ export default function PanelDesignerView({
                             )
                           }
 
-                          if (thisAntibodyAssignedElsewhere) {
+                          if (thisRowAssignedElsewhere) {
                             return (
                               <td
                                 key={det.id}
                                 className="cursor-not-allowed bg-gray-50 dark:bg-gray-800 px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600"
-                                data-testid={'cell-' + t.antibody_id + '-' + det.id}
+                                data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="row-assigned"
                               >
                                 &mdash;
@@ -1070,16 +1149,16 @@ export default function PanelDesignerView({
                             )
                           }
 
-                          const knownFlId = t.antibody_id ? rowFluorophoreMap.get(t.antibody_id) : undefined
+                          const knownFlId = rowFluorophoreMap.get(rowId)
                           if (!knownFlId) {
                             return (
                               <td
                                 key={det.id}
                                 className="cursor-pointer px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                data-testid={'cell-' + t.antibody_id + '-' + det.id}
+                                data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="awaiting"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.id, rowId, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width, isDyeLabelRow)
                                 }
                               >
                                 &middot;
@@ -1087,7 +1166,7 @@ export default function PanelDesignerView({
                             )
                           }
 
-                          const rankings = t.antibody_id ? rowChannelScores.get(t.antibody_id) : undefined
+                          const rankings = rowChannelScores.get(rowId)
                           const ranking = rankings?.find((r) => r.detectorId === det.id)
                           const score = ranking?.score ?? 0
 
@@ -1096,10 +1175,10 @@ export default function PanelDesignerView({
                               <td
                                 key={det.id}
                                 className="cursor-pointer px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                data-testid={'cell-' + t.antibody_id + '-' + det.id}
+                                data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="incompatible"
                                 onClick={(e) =>
-                                  handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                  handleCellClick(e, t.id, rowId, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width, isDyeLabelRow)
                                 }
                               >
                                 &mdash;
@@ -1113,11 +1192,11 @@ export default function PanelDesignerView({
                               key={det.id}
                               className="cursor-pointer px-2 py-2 text-center text-xs font-medium hover:brightness-90"
                               style={{ backgroundColor: g.color + alphaHex }}
-                              data-testid={'cell-' + t.antibody_id + '-' + det.id}
+                              data-testid={'cell-' + rowId + '-' + det.id}
                               data-state="compatible"
                               title={'Score: ' + Math.round(score * 100) + '% (Ex: ' + Math.round((ranking?.excitationEff ?? 0) * 100) + '%, Det: ' + Math.round((ranking?.detectionEff ?? 0) * 100) + '%)'}
                               onClick={(e) =>
-                                handleCellClick(e, t.id, t.antibody_id!, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width)
+                                handleCellClick(e, t.id, rowId, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width, isDyeLabelRow)
                               }
                             >
                               {Math.round(score * 100)}%
@@ -1147,10 +1226,12 @@ export default function PanelDesignerView({
                 >
                   <td className="w-6 px-1 py-2" />
                   <td className="sticky left-0 z-10 px-3 py-2" style={{ minWidth: '200px' }}>
-                    <AntibodyOmnibox
+                    <TargetOmnibox
                       antibodies={antibodies}
-                      excludeIds={targetAntibodyIds}
-                      onSelect={(ab) => handlePendingRowSelect(pendingId, ab)}
+                      dyeLabels={dyeLabels}
+                      excludeAntibodyIds={targetAntibodyIds}
+                      excludeDyeLabelIds={targetDyeLabelIds}
+                      onSelect={(sel) => handlePendingRowSelect(pendingId, sel)}
                       onCancel={() => handleRemovePendingRow(pendingId)}
                       autoFocus
                     />

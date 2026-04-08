@@ -19,9 +19,11 @@ import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
 import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
+import { useDyeLabels } from '@/hooks/useDyeLabels'
 import { getPreferences, updatePreference } from '@/api/preferences'
 import PanelDesignerView from './PanelDesignerView'
 import type { PanelDesignerViewHandlers, PanelDesignerViewConfig } from './PanelDesignerView'
+import type { TargetSelection } from './TargetOmnibox'
 import type { Antibody, FluorophoreWithSpectra, PanelAssignment } from '@/types'
 
 export default function PanelDesigner() {
@@ -34,6 +36,7 @@ export default function PanelDesigner() {
   const { data: allFluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const { data: secondariesData } = useSecondaries()
   const { data: conjugateChemistries = [] } = useConjugateChemistries()
+  const { data: dyeLabelsData } = useDyeLabels({ limit: 2000 })
 
   const updateMutation = useUpdatePanel()
   const createPanelMutation = useCreatePanel()
@@ -57,6 +60,7 @@ export default function PanelDesigner() {
   const fluorophoreList = fluorophoreData?.items ?? []
   const allFluorophores = allFluorophoreData?.items ?? []
   const secondaries = secondariesData?.items ?? []
+  const dyeLabels = dyeLabelsData?.items ?? []
 
   // Batch-fetch spectra
   const fluorophoreIdsToFetch = useMemo(() => {
@@ -102,7 +106,15 @@ export default function PanelDesigner() {
   const assignmentByAntibody = useMemo(() => {
     const map = new Map<string, PanelAssignment>()
     for (const a of state.assignments) {
-      if (a) map.set(a.antibody_id, a)
+      if (a?.antibody_id) map.set(a.antibody_id, a)
+    }
+    return map
+  }, [state.assignments])
+
+  const assignmentByDyeLabel = useMemo(() => {
+    const map = new Map<string, PanelAssignment>()
+    for (const a of state.assignments) {
+      if (a?.dye_label_id) map.set(a.dye_label_id, a)
     }
     return map
   }, [state.assignments])
@@ -147,7 +159,8 @@ export default function PanelDesigner() {
           const real = await addAssignmentMutation.mutateAsync({
             panelId: id,
             data: {
-              antibody_id: a.antibody_id,
+              antibody_id: a.antibody_id ?? undefined,
+              dye_label_id: a.dye_label_id ?? undefined,
               fluorophore_id: a.fluorophore_id,
               detector_id: a.detector_id,
             },
@@ -178,10 +191,12 @@ export default function PanelDesigner() {
         instrument_id: newInstrumentId,
       })
       for (const target of state.targets) {
-        await addTargetMutation.mutateAsync({
-          panelId: newPanel.id,
-          antibodyId: target.antibody_id ?? undefined,
-        })
+        const data = target.antibody_id
+          ? { antibody_id: target.antibody_id }
+          : target.dye_label_id
+            ? { dye_label_id: target.dye_label_id }
+            : {}
+        await addTargetMutation.mutateAsync({ panelId: newPanel.id, data })
       }
       setCopyInProgress(false)
       navigate('/flow/panels/' + newPanel.id)
@@ -207,15 +222,20 @@ export default function PanelDesigner() {
 
   // Construct handlers
   const handlers: PanelDesignerViewHandlers = useMemo(() => ({
-    onAddTarget: async (antibody: Antibody) => {
+    onAddTarget: async (selection: TargetSelection) => {
       if (!id) return
-      const target = await addTargetMutation.mutateAsync({
-        panelId: id,
-        antibodyId: antibody.id,
-      })
+      const data = selection.type === 'antibody'
+        ? { antibody_id: selection.antibody.id }
+        : { dye_label_id: selection.dyeLabel.id }
+      const target = await addTargetMutation.mutateAsync({ panelId: id, data })
       addTarget(target)
+      // Auto-assign dye_label fluorophore immediately
+      if (selection.type === 'dye_label' && selection.dyeLabel.fluorophore_id) {
+        return { dyeLabelId: selection.dyeLabel.id, fluorophoreId: selection.dyeLabel.fluorophore_id, targetId: target.id }
+      }
+      return null
     },
-    onRemoveTarget: async (targetId: string, antibodyId: string) => {
+    onRemoveTarget: async (targetId: string, antibodyId: string | null) => {
       if (!id) return
       removeTarget(targetId, antibodyId)
       await removeTargetMutation.mutateAsync({ panelId: id, targetId })
@@ -320,19 +340,20 @@ export default function PanelDesigner() {
       })
       dispatch({ type: 'UPDATE_TARGET', target: updated })
     },
-    onDirectAssign: async (antibodyId: string, fluorophoreId: string, detectorId: string) => {
+    onDirectAssign: async (rowId: string, fluorophoreId: string, detectorId: string, isDyeLabel?: boolean) => {
       if (!id) return
       const optimisticId = 'optimistic-' + Date.now()
-      const optimistic = {
+      const optimistic: PanelAssignment = {
         id: optimisticId,
         panel_id: id,
-        antibody_id: antibodyId,
+        antibody_id: isDyeLabel ? null : rowId,
+        dye_label_id: isDyeLabel ? rowId : null,
         fluorophore_id: fluorophoreId,
         detector_id: detectorId,
         notes: null,
       }
 
-      const existing = assignmentByAntibody.get(antibodyId)
+      const existing = isDyeLabel ? assignmentByDyeLabel.get(rowId) : assignmentByAntibody.get(rowId)
       if (existing) {
         dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
         try {
@@ -348,7 +369,12 @@ export default function PanelDesigner() {
       try {
         const real = await addAssignmentMutation.mutateAsync({
           panelId: id,
-          data: { antibody_id: antibodyId, fluorophore_id: fluorophoreId, detector_id: detectorId },
+          data: {
+            antibody_id: isDyeLabel ? undefined : rowId,
+            dye_label_id: isDyeLabel ? rowId : undefined,
+            fluorophore_id: fluorophoreId,
+            detector_id: detectorId,
+          },
         })
         dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
         dispatch({ type: 'ADD_ASSIGNMENT', assignment: real })
@@ -356,7 +382,7 @@ export default function PanelDesigner() {
         dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
       }
     },
-    onUnassign: async (_antibodyId: string, assignmentId: string, _fluorophoreId: string) => {
+    onUnassign: async (_rowId: string, assignmentId: string, _fluorophoreId: string) => {
       if (!id) return
       dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId })
       try {
@@ -413,7 +439,7 @@ export default function PanelDesigner() {
     addTargetMutation, removeTargetMutation, updateTargetMutation,
     addAssignmentMutation, removeAssignmentMutation, reorderTargetsMutation,
     addTarget, removeTarget, reorderTargets, clearAssignments,
-    dispatch, assignmentByAntibody, antibodyMap, secondaries,
+    dispatch, assignmentByAntibody, assignmentByDyeLabel, antibodyMap, secondaries,
     handleUndo, handleRedo, canUndo, canRedo,
     autoAssign, minThreshold, handleInstrumentChange,
     handleInstrumentChangeCopy, copyInProgress,
@@ -440,6 +466,7 @@ export default function PanelDesigner() {
       handlers={handlers}
       config={config}
       antibodies={antibodies}
+      dyeLabels={dyeLabels}
       allFluorophores={allFluorophores}
       secondaries={secondaries}
       conjugateChemistries={conjugateChemistries}
