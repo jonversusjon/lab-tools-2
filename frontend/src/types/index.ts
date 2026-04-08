@@ -192,6 +192,11 @@ export interface PanelTarget {
   id: string
   panel_id: string
   antibody_id: string | null
+  dye_label_id: string | null
+  dye_label_name: string | null
+  dye_label_target: string | null
+  dye_label_fluorophore_id: string | null
+  dye_label_fluorophore_name: string | null
   staining_mode: "direct" | "indirect"
   secondary_antibody_id: string | null
   sort_order: number
@@ -204,12 +209,14 @@ export interface PanelTarget {
 
 export interface PanelTargetCreate {
   antibody_id?: string | null
+  dye_label_id?: string | null
   staining_mode?: "direct" | "indirect"
   secondary_antibody_id?: string | null
 }
 
 export interface PanelTargetUpdate {
   antibody_id?: string | null
+  dye_label_id?: string | null
   staining_mode?: "direct" | "indirect"
   secondary_antibody_id?: string | null
 }
@@ -217,7 +224,8 @@ export interface PanelTargetUpdate {
 export interface PanelAssignment {
   id: string
   panel_id: string
-  antibody_id: string
+  antibody_id: string | null
+  dye_label_id: string | null
   fluorophore_id: string
   detector_id: string
   notes: string | null
@@ -381,7 +389,8 @@ export interface PanelCreate {
 }
 
 export interface PanelAssignmentCreate {
-  antibody_id: string
+  antibody_id?: string | null
+  dye_label_id?: string | null
   fluorophore_id: string
   detector_id: string
   notes?: string | null
@@ -547,6 +556,11 @@ export interface IFPanelTarget {
   id: string
   panel_id: string
   antibody_id: string | null
+  dye_label_id: string | null
+  dye_label_name: string | null
+  dye_label_target: string | null
+  dye_label_fluorophore_id: string | null
+  dye_label_fluorophore_name: string | null
   staining_mode: "direct" | "indirect"
   secondary_antibody_id: string | null
   sort_order: number
@@ -561,12 +575,14 @@ export interface IFPanelTarget {
 
 export interface IFPanelTargetCreate {
   antibody_id?: string | null
+  dye_label_id?: string | null
   staining_mode?: "direct" | "indirect"
   secondary_antibody_id?: string | null
 }
 
 export interface IFPanelTargetUpdate {
   antibody_id?: string | null
+  dye_label_id?: string | null
   staining_mode?: "direct" | "indirect"
   secondary_antibody_id?: string | null
   dilution_override?: string | null
@@ -575,14 +591,16 @@ export interface IFPanelTargetUpdate {
 export interface IFPanelAssignment {
   id: string
   panel_id: string
-  antibody_id: string
+  antibody_id: string | null
+  dye_label_id: string | null
   fluorophore_id: string
   filter_id: string | null
   notes: string | null
 }
 
 export interface IFPanelAssignmentCreate {
-  antibody_id: string
+  antibody_id?: string | null
+  dye_label_id?: string | null
   fluorophore_id: string
   filter_id?: string | null
   notes?: string | null
