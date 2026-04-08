@@ -180,14 +180,14 @@ describe('PanelDesigner', () => {
     renderDesigner()
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
-    expect(screen.getByPlaceholderText('Search target, clone, host, vendor...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search antibody, dye, or label...')).toBeInTheDocument()
   })
 
   it('pending row can be removed with × button', () => {
     renderDesigner()
     const addBtn = screen.getByText('Add Target')
     fireEvent.click(addBtn)
-    expect(screen.getByPlaceholderText('Search target, clone, host, vendor...')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search antibody, dye, or label...')).toBeInTheDocument()
 
     const removeBtn = screen.getByLabelText('Remove pending row')
     fireEvent.click(removeBtn)

@@ -18,12 +18,15 @@ import { CSS } from '@dnd-kit/utilities'
 import type { IFPanelDesignerState, IFPanelDesignerAction } from '@/hooks/useIFPanelDesigner'
 import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
 import { getLaserColor } from '@/utils/colors'
+import TargetOmnibox from '@/components/panels/TargetOmnibox'
 import AntibodyOmnibox from '@/components/panels/AntibodyOmnibox'
 import SecondaryOmnibox from '@/components/panels/SecondaryOmnibox'
 import Modal from '@/components/layout/Modal'
 import IFFluorophorePicker from './IFFluorophorePicker'
+import type { TargetSelection } from '@/components/panels/TargetOmnibox'
 import type {
   Antibody,
+  DyeLabel,
   Fluorophore,
   SecondaryAntibody,
   ConjugateChemistry,
@@ -33,7 +36,7 @@ import type {
 } from '@/types'
 
 export interface IFPanelDesignerViewHandlers {
-  onAddTarget: (antibody: Antibody) => Promise<void>
+  onAddTarget: (selection: TargetSelection) => Promise<unknown>
   onRemoveTarget: (targetId: string, antibodyId: string | null) => Promise<void>
   onReplaceTargetAntibody: (targetId: string, newAntibody: Antibody) => Promise<void>
   onToggleStaining: (targetId: string, currentMode: 'direct' | 'indirect') => Promise<void>
@@ -43,7 +46,7 @@ export interface IFPanelDesignerViewHandlers {
   onSelectSecondary: (targetId: string, secondaryId: string) => Promise<void>
   onSelectFluorophoreFromSecondary: (targetId: string, fluorophoreId: string) => Promise<void>
   onClearSecondary: (targetId: string) => Promise<void>
-  onUpdateChannel: (antibodyId: string, oldAssignment: IFPanelAssignment, newFilterId: string | null) => Promise<void>
+  onUpdateChannel: (rowId: string, isDyeLabel: boolean, oldAssignment: IFPanelAssignment, newFilterId: string | null) => Promise<void>
   onSaveDilution: (targetId: string, dilutionOverride: string | null) => void
   onSaveName: (name: string) => void
   onViewModeToggle?: (mode: 'simple' | 'spectral') => void
@@ -64,6 +67,7 @@ export interface IFPanelDesignerViewProps {
   handlers: IFPanelDesignerViewHandlers
   config: IFPanelDesignerViewConfig
   antibodies: Antibody[]
+  dyeLabels: DyeLabel[]
   fluorophores: Fluorophore[]
   secondaries: SecondaryAntibody[]
   conjugateChemistries: ConjugateChemistry[]
@@ -103,6 +107,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     handlers,
     config,
     antibodies,
+    dyeLabels,
     fluorophores,
     secondaries,
     conjugateChemistries,
@@ -155,9 +160,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
   }
 
-  const handlePendingRowSelect = async (pendingId: string, antibody: Antibody) => {
+  const handlePendingRowSelect = async (pendingId: string, selection: TargetSelection) => {
     try {
-      await handlers.onAddTarget(antibody)
+      await handlers.onAddTarget(selection)
       setPendingRows((prev) => prev.filter((rid) => rid !== pendingId))
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add target'
@@ -209,6 +214,12 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   const assignmentByAntibody = useMemo(() => {
     const map = new Map<string, IFPanelAssignment>()
     for (const a of state.assignments) if (a?.antibody_id) map.set(a.antibody_id, a)
+    return map
+  }, [state.assignments])
+
+  const assignmentByDyeLabel = useMemo(() => {
+    const map = new Map<string, IFPanelAssignment>()
+    for (const a of state.assignments) if (a?.dye_label_id) map.set(a.dye_label_id, a)
     return map
   }, [state.assignments])
 
@@ -355,6 +366,17 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     () => new Set(state.targets.map((t) => t.antibody_id).filter((abId): abId is string => abId !== null)),
     [state.targets]
   )
+
+  const targetDyeLabelIds = useMemo(
+    () => new Set(state.targets.map((t) => t.dye_label_id).filter((id): id is string => id !== null)),
+    [state.targets]
+  )
+
+  const dyeLabelMap = useMemo(() => {
+    const map = new Map<string, DyeLabel>()
+    for (const dl of dyeLabels) map.set(dl.id, dl)
+    return map
+  }, [dyeLabels])
 
   const showSpectral = state.viewMode === 'spectral' && state.microscope != null
   const totalCols = 8 + (showSpectral ? 3 : 0)
@@ -532,16 +554,22 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   </tr>
                 ) : (
                   state.targets.map((t) => {
+                    const isDyeLabelRow = !!t.dye_label_id
                     const ab = t.antibody_id ? antibodyMap.get(t.antibody_id) : undefined
-                    const assignment = t.antibody_id ? assignmentByAntibody.get(t.antibody_id) : undefined
+                    const dl = t.dye_label_id ? dyeLabelMap.get(t.dye_label_id) : undefined
+                    const assignment = isDyeLabelRow
+                      ? (t.dye_label_id ? assignmentByDyeLabel.get(t.dye_label_id) : undefined)
+                      : (t.antibody_id ? assignmentByAntibody.get(t.antibody_id) : undefined)
                     const hasAssignment = !!assignment
                     const strategy = ab
                       ? getDetectionStrategy(ab, conjugateSet, bindingPartners)
                       : { type: 'direct' as const }
-                    const currentFluorophoreId = assignment?.fluorophore_id ?? null
-                    const currentFluorophoreName = currentFluorophoreId
-                      ? (fluorophoreMap.get(currentFluorophoreId) ?? null)
-                      : null
+                    const currentFluorophoreId = isDyeLabelRow
+                      ? (t.dye_label_fluorophore_id ?? null)
+                      : (assignment?.fluorophore_id ?? null)
+                    const currentFluorophoreName = isDyeLabelRow
+                      ? (t.dye_label_fluorophore_name ?? null)
+                      : (currentFluorophoreId ? (fluorophoreMap.get(currentFluorophoreId) ?? null) : null)
 
                     return (
                       <SortableRow
@@ -567,16 +595,16 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               </svg>
                             </td>
 
-                            {/* Target (antibody_target) */}
+                            {/* Target (antibody_target or dye_label_target) */}
                             <td
-                              className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
+                              className={'px-3 py-2 font-medium text-gray-900 dark:text-gray-100' + (isDyeLabelRow ? '' : ' cursor-pointer')}
                               style={{ minWidth: 160 }}
                               onClick={() => {
-                                if (editingTargetId !== t.id) setEditingTargetId(t.id)
+                                if (!isDyeLabelRow && editingTargetId !== t.id) setEditingTargetId(t.id)
                               }}
-                              title="Click to replace antibody"
+                              title={isDyeLabelRow ? undefined : 'Click to replace antibody'}
                             >
-                              {editingTargetId === t.id ? (
+                              {!isDyeLabelRow && editingTargetId === t.id ? (
                                 <AntibodyOmnibox
                                   antibodies={antibodies}
                                   excludeIds={targetAntibodyIds}
@@ -584,6 +612,13 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                   onCancel={() => setEditingTargetId(null)}
                                   autoFocus
                                 />
+                              ) : isDyeLabelRow ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="rounded bg-violet-100 dark:bg-violet-900/40 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                                    DYE
+                                  </span>
+                                  {t.dye_label_target ?? dl?.label_target ?? '\u2014'}
+                                </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1">
                                   {conflictTargetIds.has(t.id) && (
@@ -599,28 +634,48 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
                             {/* Staining mode toggle */}
                             <td className="px-3 py-2" style={{ width: 100 }}>
-                              <button
-                                onClick={() => handleToggleStaining(t.id, t.staining_mode)}
-                                className={
-                                  'rounded px-2 py-0.5 text-xs font-medium border transition-colors ' +
-                                  (t.staining_mode === 'indirect'
-                                    ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-600 hover:bg-amber-200 dark:hover:bg-amber-900/60'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600')
-                                }
-                              >
-                                {t.staining_mode === 'indirect' ? 'Indirect' : 'Direct'}
-                              </button>
+                              {isDyeLabelRow ? (
+                                <span className="rounded px-2 py-0.5 text-xs font-medium border bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-default">
+                                  Direct
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleToggleStaining(t.id, t.staining_mode)}
+                                  className={
+                                    'rounded px-2 py-0.5 text-xs font-medium border transition-colors ' +
+                                    (t.staining_mode === 'indirect'
+                                      ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-600 hover:bg-amber-200 dark:hover:bg-amber-900/60'
+                                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600')
+                                  }
+                                >
+                                  {t.staining_mode === 'indirect' ? 'Indirect' : 'Direct'}
+                                </button>
+                              )}
                             </td>
 
-                            {/* Primary Ab name */}
+                            {/* Primary Ab name (or dye label name) */}
                             <td className="px-3 py-2 text-gray-600 dark:text-gray-300" style={{ minWidth: 180 }}>
                               <span className="text-sm">
-                                {t.antibody_name ?? ab?.name ?? '\u2014'}
+                                {isDyeLabelRow
+                                  ? (t.dye_label_name ?? dl?.name ?? '\u2014')
+                                  : (t.antibody_name ?? ab?.name ?? '\u2014')}
                               </span>
                             </td>
 
                             {/* Secondary / Fluorophore (merged column) */}
                             {(() => {
+                              // Case DYE: dye_label row — show locked fluorophore
+                              if (isDyeLabelRow) {
+                                return (
+                                  <td className="px-3 py-2" style={{ minWidth: 180 }}>
+                                    <span className="inline-flex items-center gap-1 text-violet-700/70 dark:text-violet-400/70">
+                                      <span className="inline-block h-2 w-2 rounded-full bg-violet-500/50" />
+                                      {currentFluorophoreName ?? '\u2014'}
+                                      <span className="text-[10px]" title="Dye label fluorophore">&#128274;</span>
+                                    </span>
+                                  </td>
+                                )
+                              }
                               const isOverridden = overriddenRows.has(t.id)
                               // Case A: pre-conjugated and not overridden
                               if (ab?.fluorophore_id && !isOverridden) {
@@ -686,7 +741,8 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                     value={assignment.filter_id ?? ''}
                                     onChange={(e) => {
                                       const newFilterId = e.target.value || null
-                                      handlers.onUpdateChannel(t.antibody_id!, assignment, newFilterId)
+                                      const rowId = isDyeLabelRow ? t.dye_label_id! : t.antibody_id!
+                                      handlers.onUpdateChannel(rowId, isDyeLabelRow, assignment, newFilterId)
                                     }}
                                     className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-0.5 text-xs dark:text-gray-100 focus:border-blue-500 focus:outline-none"
                                   >
@@ -747,7 +803,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
                             {/* IF Dilution (editable, persisted as dilution_override) */}
                             <td className="px-3 py-2" style={{ width: 100 }}>
-                              {t.antibody_id ? (
+                              {!isDyeLabelRow && t.antibody_id ? (
                                 <input
                                   type="text"
                                   value={dilutionMap.get(t.id) ?? ''}
@@ -784,25 +840,27 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
                             {/* Notes (local state) */}
                             <td className="px-3 py-2" style={{ minWidth: 120 }}>
-                              {t.antibody_id ? (
-                                <input
-                                  type="text"
-                                  value={notesMap.get(t.antibody_id) ?? ''}
-                                  onChange={(e) => {
-                                    const val = e.target.value
-                                    setNotesMap((prev) => {
-                                      const next = new Map(prev)
-                                      if (val) next.set(t.antibody_id!, val)
-                                      else next.delete(t.antibody_id!)
-                                      return next
-                                    })
-                                  }}
-                                  placeholder="Add note..."
-                                  className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 placeholder-gray-300 dark:placeholder-gray-600 focus:border-gray-300 dark:focus:border-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-700"
-                                />
-                              ) : (
-                                <span className="text-xs italic text-gray-300 dark:text-gray-600">&mdash;</span>
-                              )}
+                              {(() => {
+                                const noteKey = isDyeLabelRow ? t.dye_label_id : t.antibody_id
+                                if (!noteKey) return <span className="text-xs italic text-gray-300 dark:text-gray-600">&mdash;</span>
+                                return (
+                                  <input
+                                    type="text"
+                                    value={notesMap.get(noteKey) ?? ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      setNotesMap((prev) => {
+                                        const next = new Map(prev)
+                                        if (val) next.set(noteKey, val)
+                                        else next.delete(noteKey)
+                                        return next
+                                      })
+                                    }}
+                                    placeholder="Add note..."
+                                    className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 placeholder-gray-300 dark:placeholder-gray-600 focus:border-gray-300 dark:focus:border-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-700"
+                                  />
+                                )
+                              })()}
                             </td>
 
                             {/* Remove */}
@@ -830,10 +888,12 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   >
                     <td className="w-7 px-1 py-2" />
                     <td className="px-3 py-2" style={{ minWidth: 160 }}>
-                      <AntibodyOmnibox
+                      <TargetOmnibox
                         antibodies={antibodies}
-                        excludeIds={targetAntibodyIds}
-                        onSelect={(ab) => handlePendingRowSelect(pendingId, ab)}
+                        dyeLabels={dyeLabels}
+                        excludeAntibodyIds={targetAntibodyIds}
+                        excludeDyeLabelIds={targetDyeLabelIds}
+                        onSelect={(sel) => handlePendingRowSelect(pendingId, sel)}
                         onCancel={() => handleRemovePendingRow(pendingId)}
                         autoFocus
                       />

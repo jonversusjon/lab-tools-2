@@ -4,6 +4,7 @@ import type { DragEndEvent } from '@dnd-kit/core'
 import { useIFPanelDesigner } from '@/hooks/useIFPanelDesigner'
 import IFPanelDesignerView from '@/components/if-panels/IFPanelDesignerView'
 import type { IFPanelDesignerViewHandlers, IFPanelDesignerViewConfig } from '@/components/if-panels/IFPanelDesignerView'
+import type { TargetSelection } from '@/components/panels/TargetOmnibox'
 import type {
   ExperimentBlock,
   IFPanelBlockContent,
@@ -196,11 +197,11 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
   }, [])
 
   const handlers: IFPanelDesignerViewHandlers = useMemo(() => ({
-    onAddTarget: async (antibody: Antibody) => {
-      const target: IFPanelTarget = {
+    onAddTarget: async (selection: TargetSelection) => {
+      const target: IFPanelTarget = selection.type === 'antibody' ? {
         id: crypto.randomUUID(),
         panel_id: block.id,
-        antibody_id: antibody.id,
+        antibody_id: selection.antibody.id,
         dye_label_id: null,
         dye_label_name: null,
         dye_label_target: null,
@@ -209,23 +210,42 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
         staining_mode: 'direct',
         secondary_antibody_id: null,
         sort_order: stateRef.current.targets.length,
-        antibody_name: antibody.name,
-        antibody_target: antibody.target,
+        antibody_name: selection.antibody.name,
+        antibody_target: selection.antibody.target,
         secondary_antibody_name: null,
         secondary_fluorophore_id: null,
         secondary_fluorophore_name: null,
         dilution_override: null,
-        antibody_icc_if_dilution: antibody.icc_if_dilution_factor != null ? String(antibody.icc_if_dilution_factor) : null,
+        antibody_icc_if_dilution: selection.antibody.icc_if_dilution_factor != null ? String(selection.antibody.icc_if_dilution_factor) : null,
+      } : {
+        id: crypto.randomUUID(),
+        panel_id: block.id,
+        antibody_id: null,
+        dye_label_id: selection.dyeLabel.id,
+        dye_label_name: selection.dyeLabel.name,
+        dye_label_target: selection.dyeLabel.label_target,
+        dye_label_fluorophore_id: selection.dyeLabel.fluorophore_id,
+        dye_label_fluorophore_name: selection.dyeLabel.fluorophore_name,
+        staining_mode: 'direct',
+        secondary_antibody_id: null,
+        sort_order: stateRef.current.targets.length,
+        antibody_name: null,
+        antibody_target: null,
+        secondary_antibody_name: null,
+        secondary_fluorophore_id: null,
+        secondary_fluorophore_name: null,
+        dilution_override: null,
+        antibody_icc_if_dilution: null,
       }
       dispatch({ type: 'ADD_TARGET', target })
       // Auto-assign pre-conjugated fluorophore
-      if (antibody.fluorophore_id) {
+      if (selection.type === 'antibody' && selection.antibody.fluorophore_id) {
         const assignment: IFPanelAssignment = {
           id: crypto.randomUUID(),
           panel_id: block.id,
-          antibody_id: antibody.id,
+          antibody_id: selection.antibody.id,
           dye_label_id: null,
-          fluorophore_id: antibody.fluorophore_id,
+          fluorophore_id: selection.antibody.fluorophore_id,
           filter_id: null,
           notes: null,
         }
@@ -392,7 +412,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
       dispatch({ type: 'UPDATE_TARGET', target: updated })
       markDirty()
     },
-    onUpdateChannel: async (_antibodyId: string, oldAssignment: IFPanelAssignment, newFilterId: string | null) => {
+    onUpdateChannel: async (_rowId: string, _isDyeLabel: boolean, oldAssignment: IFPanelAssignment, newFilterId: string | null) => {
       dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: oldAssignment.id })
       const updated: IFPanelAssignment = {
         ...oldAssignment,
@@ -437,6 +457,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
         handlers={handlers}
         config={viewConfig}
         antibodies={libraryData.antibodies}
+        dyeLabels={[]}
         fluorophores={libraryData.fluorophores}
         secondaries={libraryData.secondaries}
         conjugateChemistries={libraryData.conjugateChemistries}

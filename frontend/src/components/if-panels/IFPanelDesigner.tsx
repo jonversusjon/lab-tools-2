@@ -18,9 +18,11 @@ import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
+import { useDyeLabels } from '@/hooks/useDyeLabels'
 import { useIFPanelDesigner } from '@/hooks/useIFPanelDesigner'
 import IFPanelDesignerView from './IFPanelDesignerView'
 import type { IFPanelDesignerViewHandlers, IFPanelDesignerViewConfig } from './IFPanelDesignerView'
+import type { TargetSelection } from '@/components/panels/TargetOmnibox'
 import type { Antibody, IFPanelAssignment, IFPanelTarget } from '@/types'
 
 export default function IFPanelDesigner() {
@@ -54,6 +56,8 @@ export default function IFPanelDesigner() {
   const antibodies = antibodiesData?.items ?? []
   const fluorophores = fluorophoreData?.items ?? []
   const secondaries = secondariesData?.items ?? []
+  const { data: dyeLabelsData } = useDyeLabels({ limit: 2000 })
+  const dyeLabels = dyeLabelsData?.items ?? []
 
   // Notes local state for optimistic assignment creation
   const [notesMap] = useState<Map<string, string>>(new Map())
@@ -110,23 +114,22 @@ export default function IFPanelDesigner() {
   )
 
   const handlers: IFPanelDesignerViewHandlers = useMemo(() => ({
-    onAddTarget: async (antibody: Antibody) => {
+    onAddTarget: async (selection: TargetSelection) => {
       if (!id) return
-      const target = await addTargetMutation.mutateAsync({
-        panelId: id,
-        antibodyId: antibody.id,
-      })
+      const data = selection.type === 'antibody'
+        ? { antibody_id: selection.antibody.id }
+        : { dye_label_id: selection.dyeLabel.id }
+      const target = await addTargetMutation.mutateAsync({ panelId: id, data })
       addTarget(target)
-      // Auto-assign pre-conjugated fluorophore
-      if (antibody.fluorophore_id) {
-        await handleAssignFluorophore(antibody.id, antibody.fluorophore_id)
+      // Auto-assign pre-conjugated fluorophore for antibody targets
+      if (selection.type === 'antibody' && selection.antibody.fluorophore_id) {
+        await handleAssignFluorophore(selection.antibody.id, selection.antibody.fluorophore_id)
       }
     },
-    onRemoveTarget: async (targetId: string, _antibodyId: string | null) => {
+    onRemoveTarget: async (targetId: string, antibodyId: string | null) => {
       if (!id) return
       await removeTargetMutation.mutateAsync({ panelId: id, targetId })
-      const target = state.targets.find((t) => t.id === targetId)
-      removeTarget(targetId, target?.antibody_id ?? '')
+      removeTarget(targetId, antibodyId)
     },
     onReplaceTargetAntibody: async (targetId: string, newAntibody: Antibody) => {
       if (!id) return
@@ -207,7 +210,7 @@ export default function IFPanelDesigner() {
       })
       dispatch({ type: 'UPDATE_TARGET', target: updated })
     },
-    onUpdateChannel: async (antibodyId: string, oldAssignment: IFPanelAssignment, newFilterId: string | null) => {
+    onUpdateChannel: async (rowId: string, isDyeLabel: boolean, oldAssignment: IFPanelAssignment, newFilterId: string | null) => {
       if (!id) return
       dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: oldAssignment.id })
       try {
@@ -223,11 +226,12 @@ export default function IFPanelDesigner() {
         filter_id: newFilterId,
       }
       dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
+      const targetId = isDyeLabel ? { dye_label_id: rowId } : { antibody_id: rowId }
       try {
         const real = await addAssignmentMutation.mutateAsync({
           panelId: id,
           data: {
-            antibody_id: antibodyId,
+            ...targetId,
             fluorophore_id: oldAssignment.fluorophore_id,
             filter_id: newFilterId,
             notes: oldAssignment.notes ?? undefined,
@@ -241,7 +245,7 @@ export default function IFPanelDesigner() {
           const restored = await addAssignmentMutation.mutateAsync({
             panelId: id,
             data: {
-              antibody_id: antibodyId,
+              ...targetId,
               fluorophore_id: oldAssignment.fluorophore_id,
               filter_id: oldAssignment.filter_id,
               notes: oldAssignment.notes ?? undefined,
@@ -320,6 +324,7 @@ export default function IFPanelDesigner() {
       handlers={handlers}
       config={viewConfig}
       antibodies={antibodies}
+      dyeLabels={dyeLabels}
       fluorophores={fluorophores}
       secondaries={secondaries}
       conjugateChemistries={conjugateChemistries}
