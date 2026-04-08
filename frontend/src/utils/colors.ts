@@ -57,10 +57,10 @@ function sampleGradient(stops: {t: number, c: RGB}[], value: number): string {
 
 const LIGHT_STOPS: {t: number, c: RGB}[] = [
   { t: 0.00, c: [255, 255, 255] }, // white
-  { t: 0.25, c: [219, 234, 254] }, // blue-100
-  { t: 0.50, c: [192, 132, 252] }, // fuchsia-400
-  { t: 0.75, c: [244, 114, 182] }, // pink-400
-  { t: 1.00, c: [251, 113, 133] }  // rose-400
+  { t: 0.15, c: [255, 220,  50] }, // yellow
+  { t: 0.40, c: [255, 100,   0] }, // orange
+  { t: 0.70, c: [200,   0,   0] }, // red
+  { t: 1.00, c: [160,   0,   0] }, // deep red
 ]
 
 const DARK_STOPS: {t: number, c: RGB}[] = [
@@ -76,11 +76,8 @@ const DARK_STOPS: {t: number, c: RGB}[] = [
  */
 export function heatmapColor(value: number): string {
   if (value <= 0) return '#ffffff'
-  if (value >= 1) return '#fb7185' // rose-400
-  
-  // Non-linear scaling: quiet the low values, accentuate the peaks (exponent 1.5)
-  const nonLinearValue = Math.pow(value, 1.5)
-  return sampleGradient(LIGHT_STOPS, nonLinearValue)
+  if (value >= 1) return '#b40000'
+  return sampleGradient(LIGHT_STOPS, value)
 }
 
 /**

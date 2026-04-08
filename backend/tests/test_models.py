@@ -160,14 +160,14 @@ def test_panel_null_instrument(db_session):
 
 def test_dye_label_model_create(db_session):
     """Basic DyeLabel create + flush verifies PK is a string."""
-    dl = DyeLabel(name="DAPI", label_target="Nuclei", category="nucleic acid")
+    dl = DyeLabel(name="Hoechst 33342", label_target="Nuclei", category="nucleic acid")
     db_session.add(dl)
     db_session.flush()
 
     loaded = db_session.get(DyeLabel, dl.id)
     assert loaded is not None
     assert isinstance(loaded.id, str)
-    assert loaded.name == "DAPI"
+    assert loaded.name == "Hoechst 33342"
     assert loaded.label_target == "Nuclei"
     assert loaded.is_favorite is False
 

@@ -5,14 +5,14 @@ def test_create_dye_label(client):
     resp = client.post(
         "/api/v1/dye-labels",
         json={
-            "name": "DAPI",
+            "name": "Hoechst 33342",
             "label_target": "Nuclei",
             "category": "nucleic acid",
         },
     )
     assert resp.status_code == 201
     data = resp.json()
-    assert data["name"] == "DAPI"
+    assert data["name"] == "Hoechst 33342"
     assert data["label_target"] == "Nuclei"
     assert data["category"] == "nucleic acid"
     assert data["fluorophore_name"] is None
@@ -24,8 +24,8 @@ def test_create_dye_label_with_fluorophore(client):
     resp = client.post(
         "/api/v1/dye-labels",
         json={
-            "name": "MitoSOX Red",
-            "label_target": "Mitochondrial Superoxide",
+            "name": "CellROX Orange",
+            "label_target": "Reactive Oxygen Species",
             "category": "organelle",
             "fluorophore_id": "test-mcherry",
         },
@@ -49,23 +49,23 @@ def test_create_duplicate_name_409(client):
 
 
 def test_list_dye_labels(client):
-    client.post("/api/v1/dye-labels", json={"name": "DAPI", "label_target": "Nuclei"})
+    # Seed already contains 2 dye labels (DAPI, MitoSOX Red); add 3 unique ones
     client.post("/api/v1/dye-labels", json={"name": "Hoechst 33342", "label_target": "Nuclei"})
     client.post("/api/v1/dye-labels", json={"name": "7-AAD", "label_target": "Viability"})
+    client.post("/api/v1/dye-labels", json={"name": "Propidium Iodide", "label_target": "Viability"})
 
     resp = client.get("/api/v1/dye-labels")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["total"] == 3
-    assert len(data["items"]) == 3
+    assert data["total"] == 5  # 2 from seed + 3 added
+    assert len(data["items"]) == 5
     assert "skip" in data
     assert "limit" in data
 
 
 def test_list_dye_labels_search(client):
-    client.post("/api/v1/dye-labels", json={"name": "DAPI", "label_target": "Nuclei", "category": "nucleic acid"})
-    client.post("/api/v1/dye-labels", json={"name": "MitoSOX Red", "label_target": "Mitochondrial Superoxide", "category": "organelle"})
-
+    # Seed already has DAPI (Nuclei, nucleic acid) and MitoSOX Red (organelle)
+    # Search for "nuclei" should match DAPI from seed
     resp = client.get("/api/v1/dye-labels?search=nuclei")
     assert resp.status_code == 200
     data = resp.json()

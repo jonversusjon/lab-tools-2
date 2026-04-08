@@ -69,9 +69,9 @@ describe('AntibodyTable', () => {
     expect(screen.queryByText('CD8')).not.toBeInTheDocument()
   })
 
-  it('"New Antibody" button opens modal', () => {
+  it('"New Primary" button opens modal', () => {
     render(<AntibodyTable />, { wrapper })
-    fireEvent.click(screen.getByText('New Antibody'))
+    fireEvent.click(screen.getByText('New Primary'))
     expect(screen.getByText('New Antibody', { selector: 'h2' })).toBeInTheDocument()
   })
 
