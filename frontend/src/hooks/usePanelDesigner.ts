@@ -19,7 +19,7 @@ export type PanelDesignerAction =
   | { type: 'SET_INSTRUMENT'; instrument: Instrument | null }
   | { type: 'ADD_TARGET'; target: PanelTarget }
   | { type: 'UPDATE_TARGET'; target: PanelTarget }
-  | { type: 'REMOVE_TARGET'; targetId: string; antibodyId: string }
+  | { type: 'REMOVE_TARGET'; targetId: string; antibodyId: string | null }
   | { type: 'ADD_ASSIGNMENT'; assignment: PanelAssignment }
   | { type: 'REMOVE_ASSIGNMENT'; assignmentId: string }
   | { type: 'CLEAR_ASSIGNMENTS' }
@@ -79,15 +79,20 @@ export function panelDesignerReducer(
         ),
         isDirty: true,
       }
-    case 'REMOVE_TARGET':
+    case 'REMOVE_TARGET': {
+      const removedTarget = state.targets.find((t) => t.id === action.targetId)
+      const filterAssignment = (a: PanelAssignment) => {
+        if (action.antibodyId) return a.antibody_id !== action.antibodyId
+        if (removedTarget?.dye_label_id) return a.dye_label_id !== removedTarget.dye_label_id
+        return true
+      }
       return {
         ...state,
         targets: state.targets.filter((t) => t.id !== action.targetId),
-        assignments: state.assignments.filter(
-          (a) => a.antibody_id !== action.antibodyId
-        ),
+        assignments: state.assignments.filter(filterAssignment),
         isDirty: true,
       }
+    }
     case 'ADD_ASSIGNMENT': {
       const undo = pushUndo(state)
       return {
@@ -201,7 +206,7 @@ export function usePanelDesigner(panel: Panel | null, instrument: Instrument | n
     dispatch({ type: 'ADD_TARGET', target })
   }, [])
 
-  const removeTarget = useCallback((targetId: string, antibodyId: string) => {
+  const removeTarget = useCallback((targetId: string, antibodyId: string | null) => {
     dispatch({ type: 'REMOVE_TARGET', targetId, antibodyId })
   }, [])
 

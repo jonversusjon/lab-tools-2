@@ -20,7 +20,7 @@ export type IFPanelDesignerAction =
   | { type: 'SET_VIEW_MODE'; viewMode: 'simple' | 'spectral' }
   | { type: 'ADD_TARGET'; target: IFPanelTarget }
   | { type: 'UPDATE_TARGET'; target: IFPanelTarget }
-  | { type: 'REMOVE_TARGET'; targetId: string; antibodyId: string }
+  | { type: 'REMOVE_TARGET'; targetId: string; antibodyId: string | null }
   | { type: 'ADD_ASSIGNMENT'; assignment: IFPanelAssignment }
   | { type: 'REMOVE_ASSIGNMENT'; assignmentId: string }
   | { type: 'CLEAR_ASSIGNMENTS' }
@@ -87,15 +87,20 @@ export function ifPanelDesignerReducer(
         ),
         isDirty: true,
       }
-    case 'REMOVE_TARGET':
+    case 'REMOVE_TARGET': {
+      const removedTarget = state.targets.find((t) => t.id === action.targetId)
+      const filterAssignment = (a: IFPanelAssignment) => {
+        if (action.antibodyId) return a.antibody_id !== action.antibodyId
+        if (removedTarget?.dye_label_id) return a.dye_label_id !== removedTarget.dye_label_id
+        return true
+      }
       return {
         ...state,
         targets: state.targets.filter((t) => t.id !== action.targetId),
-        assignments: state.assignments.filter(
-          (a) => a.antibody_id !== action.antibodyId
-        ),
+        assignments: state.assignments.filter(filterAssignment),
         isDirty: true,
       }
+    }
     case 'ADD_ASSIGNMENT': {
       const undo = pushUndo(state)
       return {
@@ -207,7 +212,7 @@ export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope
     dispatch({ type: 'ADD_TARGET', target })
   }, [])
 
-  const removeTarget = useCallback((targetId: string, antibodyId: string) => {
+  const removeTarget = useCallback((targetId: string, antibodyId: string | null) => {
     dispatch({ type: 'REMOVE_TARGET', targetId, antibodyId })
   }, [])
 
