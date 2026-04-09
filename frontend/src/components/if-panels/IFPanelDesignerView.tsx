@@ -19,7 +19,6 @@ import type { IFPanelDesignerState, IFPanelDesignerAction } from '@/hooks/useIFP
 import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
 import { getLaserColor } from '@/utils/colors'
 import TargetOmnibox from '@/components/panels/TargetOmnibox'
-import AntibodyOmnibox from '@/components/panels/AntibodyOmnibox'
 import SecondaryOmnibox from '@/components/panels/SecondaryOmnibox'
 import Modal from '@/components/layout/Modal'
 import IFFluorophorePicker from './IFFluorophorePicker'
@@ -597,18 +596,35 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
                             {/* Target (antibody_target or dye_label_target) */}
                             <td
-                              className={'px-3 py-2 font-medium text-gray-900 dark:text-gray-100' + (isDyeLabelRow ? '' : ' cursor-pointer')}
+                              className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
                               style={{ minWidth: 160 }}
                               onClick={() => {
-                                if (!isDyeLabelRow && editingTargetId !== t.id) setEditingTargetId(t.id)
+                                if (editingTargetId !== t.id) setEditingTargetId(t.id)
                               }}
-                              title={isDyeLabelRow ? undefined : 'Click to replace antibody'}
+                              title="Click to replace target"
                             >
-                              {!isDyeLabelRow && editingTargetId === t.id ? (
-                                <AntibodyOmnibox
+                              {editingTargetId === t.id ? (
+                                <TargetOmnibox
                                   antibodies={antibodies}
-                                  excludeIds={targetAntibodyIds}
-                                  onSelect={(newAb) => handleReplaceTargetAntibody(t.id, newAb)}
+                                  dyeLabels={dyeLabels}
+                                  excludeAntibodyIds={targetAntibodyIds}
+                                  excludeDyeLabelIds={targetDyeLabelIds}
+                                  onSelect={async (sel) => {
+                                    if (!isDyeLabelRow) {
+                                      // Antibody row: replace antibody in-place
+                                      if (sel.type === 'antibody') handleReplaceTargetAntibody(t.id, sel.antibody)
+                                      else setEditingTargetId(null)
+                                    } else {
+                                      // Dye label row: remove old, add new
+                                      setEditingTargetId(null)
+                                      try {
+                                        await handlers.onRemoveTarget(t.id, null)
+                                        await handlers.onAddTarget(sel)
+                                      } catch {
+                                        // Swap failed
+                                      }
+                                    }
+                                  }}
                                   onCancel={() => setEditingTargetId(null)}
                                   autoFocus
                                 />

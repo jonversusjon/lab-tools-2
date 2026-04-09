@@ -26,6 +26,12 @@ export function usePanel(id: string) {
     queryKey: ['panels', id],
     queryFn: () => getPanel(id),
     enabled: !!id,
+    // Prevent background refetches from resetting the local designer state
+    // (SET_PANEL fires on every panel prop change and wipes optimistic assignments).
+    // The designer manages its own state via dispatches; explicit refetchPanel() calls
+    // handle intentional reloads (name save, instrument change).
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -42,7 +48,13 @@ export function useUpdatePanel() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: PanelCreate }) =>
       updatePanel(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['panels'] }),
+    // Only invalidate list queries, not the detail query being actively edited.
+    // Detail is refreshed via explicit refetchPanel() calls from the designer.
+    // Invalidating the detail triggers SET_PANEL which wipes optimistic state.
+    onSuccess: () => qc.invalidateQueries({
+      queryKey: ['panels'],
+      predicate: (query) => typeof query.queryKey[1] !== 'string',
+    }),
   })
 }
 

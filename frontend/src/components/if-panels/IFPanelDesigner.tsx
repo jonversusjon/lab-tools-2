@@ -113,6 +113,54 @@ export default function IFPanelDesigner() {
     [id, state.assignments, dispatch, addAssignmentMutation, removeAssignmentMutation, notesMap]
   )
 
+  const handleAssignDyeLabelFluorophore = useCallback(
+    async (dyeLabelId: string, fluorophoreId: string) => {
+      if (!id) return
+      const assignmentByDyeLabel = new Map<string, IFPanelAssignment>()
+      for (const a of state.assignments) if (a?.dye_label_id) assignmentByDyeLabel.set(a.dye_label_id, a)
+      const existing = assignmentByDyeLabel.get(dyeLabelId)
+
+      if (existing && existing.fluorophore_id === fluorophoreId) return
+
+      const optimisticId = 'optimistic-' + Date.now()
+      const optimistic: IFPanelAssignment = {
+        id: optimisticId,
+        panel_id: id,
+        antibody_id: null,
+        dye_label_id: dyeLabelId,
+        fluorophore_id: fluorophoreId,
+        filter_id: null,
+        notes: null,
+      }
+
+      if (existing) {
+        dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+        try {
+          await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: existing.id })
+        } catch {
+          dispatch({ type: 'ADD_ASSIGNMENT', assignment: existing })
+          return
+        }
+      }
+
+      dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
+      try {
+        const real = await addAssignmentMutation.mutateAsync({
+          panelId: id,
+          data: {
+            dye_label_id: dyeLabelId,
+            fluorophore_id: fluorophoreId,
+            filter_id: null,
+          },
+        })
+        dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: optimisticId, newId: real.id })
+      } catch {
+        dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
+      }
+    },
+    [id, state.assignments, dispatch, addAssignmentMutation, removeAssignmentMutation]
+  )
+
   const handlers: IFPanelDesignerViewHandlers = useMemo(() => ({
     onAddTarget: async (selection: TargetSelection) => {
       if (!id) return
@@ -124,6 +172,10 @@ export default function IFPanelDesigner() {
       // Auto-assign pre-conjugated fluorophore for antibody targets
       if (selection.type === 'antibody' && selection.antibody.fluorophore_id) {
         await handleAssignFluorophore(selection.antibody.id, selection.antibody.fluorophore_id)
+      }
+      // Auto-assign dye label fluorophore so channel dropdown appears in spectral view
+      if (selection.type === 'dye_label' && selection.dyeLabel.fluorophore_id) {
+        await handleAssignDyeLabelFluorophore(selection.dyeLabel.id, selection.dyeLabel.fluorophore_id)
       }
     },
     onRemoveTarget: async (targetId: string, antibodyId: string | null) => {
@@ -301,6 +353,7 @@ export default function IFPanelDesigner() {
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [id, panel, state.targets, state.assignments, dispatch, handleAssignFluorophore,
+       handleAssignDyeLabelFluorophore,
        addTargetMutation, removeTargetMutation, updateTargetMutation, addAssignmentMutation,
        removeAssignmentMutation, reorderTargetsMutation, updateMutation, deleteMutation,
        addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode,

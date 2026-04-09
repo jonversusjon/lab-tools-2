@@ -32,6 +32,10 @@ export function useIFPanel(id: string) {
     queryKey: ['if-panels', id],
     queryFn: () => getIFPanel(id),
     enabled: !!id,
+    // Prevent background refetches from resetting the local designer state
+    // (SET_PANEL fires on every panel prop change and wipes optimistic assignments).
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -48,7 +52,12 @@ export function useUpdateIFPanel() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: IFPanelUpdate }) =>
       updateIFPanel(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['if-panels'] }),
+    // Only invalidate list queries, not the detail query being actively edited.
+    // Detail is refreshed via explicit refetchPanel() calls from the designer.
+    onSuccess: () => qc.invalidateQueries({
+      queryKey: ['if-panels'],
+      predicate: (query) => typeof query.queryKey[1] !== 'string',
+    }),
   })
 }
 

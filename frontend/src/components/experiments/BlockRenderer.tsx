@@ -174,6 +174,7 @@ export default function BlockRenderer({
   type PickerState =
     | { mode: 'insert'; insertionIndex: number; panelType: 'flow' | 'if' }
     | { mode: 'slash'; slashBlockId: string; panelType: 'flow' | 'if' }
+    | { mode: 'column'; columnId: string; panelType: 'flow' | 'if' }
   const [pickerState, setPickerState] = useState<PickerState | null>(null)
 
   // Multi-select state
@@ -266,11 +267,17 @@ export default function BlockRenderer({
 
   const handleCreateBlockBelow = useCallback(
     async (afterBlockId: string) => {
-      const idx = topLevel.findIndex((b) => b.id === afterBlockId)
+      const block = blocks.find((b) => b.id === afterBlockId)
+      if (!block) return
+
+      const siblings = block.parent_id
+        ? (childrenByParentId[block.parent_id] ?? [])
+        : topLevel
+      const idx = siblings.findIndex((b) => b.id === afterBlockId)
       if (idx === -1) return
 
-      const current = topLevel[idx]
-      const next = topLevel[idx + 1]
+      const current = siblings[idx]
+      const next = siblings[idx + 1]
       const newSortOrder = next
         ? (current.sort_order + next.sort_order) / 2
         : current.sort_order + 1.0
@@ -280,7 +287,7 @@ export default function BlockRenderer({
           block_type: 'paragraph',
           content: { text: '' },
           sort_order: newSortOrder,
-          parent_id: null,
+          parent_id: block.parent_id,
         })
         pendingFocusRef.current = created.id
         invalidate()
@@ -288,15 +295,24 @@ export default function BlockRenderer({
         // Silently fail
       }
     },
-    [experimentId, topLevel, invalidate]
+    [experimentId, blocks, topLevel, childrenByParentId, invalidate]
   )
 
   const handleDeleteBlock = useCallback(
     async (blockId: string) => {
-      const idx = topLevel.findIndex((b) => b.id === blockId)
-      if (topLevel.length <= 1) return
+      const block = blocks.find((b) => b.id === blockId)
+      if (!block) return
 
-      const prevBlock = idx > 0 ? topLevel[idx - 1] : topLevel[1]
+      const siblings = block.parent_id
+        ? (childrenByParentId[block.parent_id] ?? [])
+        : topLevel
+
+      // Don't delete the last top-level block; column children can all be deleted
+      if (siblings.length <= 1 && !block.parent_id) return
+
+      const idx = siblings.findIndex((b) => b.id === blockId)
+      const prevBlock =
+        idx > 0 ? siblings[idx - 1] : !block.parent_id ? siblings[1] : null
       if (prevBlock) {
         pendingFocusRef.current = prevBlock.id
       }
@@ -308,7 +324,7 @@ export default function BlockRenderer({
         // Silently fail
       }
     },
-    [experimentId, topLevel, invalidate]
+    [experimentId, blocks, topLevel, childrenByParentId, invalidate]
   )
 
   /** Insert a new block (from the + button between blocks) */
@@ -362,6 +378,47 @@ export default function BlockRenderer({
       }
     },
     [experimentId, topLevel, invalidate]
+  )
+
+  /** Add a block inside a column */
+  const handleAddBlockToColumn = useCallback(
+    async (
+      columnId: string,
+      blockType: string,
+      initialContent: Record<string, unknown>
+    ) => {
+      // Panel types open the template picker
+      if (blockType === 'flow_panel' || blockType === 'if_panel') {
+        setPickerState({
+          mode: 'column',
+          columnId,
+          panelType: blockType === 'flow_panel' ? 'flow' : 'if',
+        })
+        return
+      }
+
+      const columnChildren = childrenByParentId[columnId] ?? []
+      const sortOrder =
+        columnChildren.length > 0
+          ? columnChildren[columnChildren.length - 1].sort_order + 1.0
+          : 1.0
+
+      try {
+        const created = await createBlock(experimentId, {
+          block_type: blockType,
+          content: TEXT_BLOCK_TYPES.has(blockType)
+            ? { text: '' }
+            : initialContent,
+          sort_order: sortOrder,
+          parent_id: columnId,
+        })
+        pendingFocusRef.current = created.id
+        invalidate()
+      } catch {
+        // Silently fail
+      }
+    },
+    [experimentId, childrenByParentId, invalidate]
   )
 
   /** Convert the block that triggered the slash command */
@@ -480,7 +537,7 @@ export default function BlockRenderer({
         } catch {
           // Silently fail
         }
-      } else {
+      } else if (pickerState.mode === 'slash') {
         // slash mode
         const { slashBlockId } = pickerState
         const slashBlock = topLevel.find((b) => b.id === slashBlockId)
@@ -502,11 +559,40 @@ export default function BlockRenderer({
         } catch {
           // Silently fail
         }
+      } else if (pickerState.mode === 'column') {
+        // column mode — add panel block inside a column
+        const { columnId } = pickerState
+        const columnChildren = childrenByParentId[columnId] ?? []
+        const sortOrder =
+          columnChildren.length > 0
+            ? columnChildren[columnChildren.length - 1].sort_order + 1.0
+            : 1.0
+        try {
+          if (panelId === 'blank') {
+            await createBlock(experimentId, {
+              block_type: blockType,
+              content: blankContent,
+              sort_order: sortOrder,
+              parent_id: columnId,
+            })
+          } else {
+            const created = await snapshotPanel(experimentId, {
+              source_panel_id: panelId,
+              panel_type: panelType,
+            })
+            await updateBlock(experimentId, created.id, {
+              sort_order: sortOrder,
+              parent_id: columnId,
+            })
+          }
+        } catch {
+          // Silently fail
+        }
       }
 
       invalidate()
     },
-    [pickerState, topLevel, experimentId, invalidate]
+    [pickerState, topLevel, childrenByParentId, experimentId, invalidate]
   )
 
   const handleDuplicateBlock = useCallback(
@@ -665,6 +751,10 @@ export default function BlockRenderer({
           block={block}
           childrenByParentId={childrenByParentId}
           renderBlock={renderBlock}
+          onAddBlockToColumn={handleAddBlockToColumn}
+          onOpenTemplatePicker={(columnId, panelType) => {
+            setPickerState({ mode: 'column', columnId, panelType })
+          }}
         />
       )
     }

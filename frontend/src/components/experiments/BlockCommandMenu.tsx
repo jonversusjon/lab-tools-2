@@ -60,6 +60,7 @@ interface BlockCommandMenuProps {
   onClose: () => void
   filterText?: string
   onOpenTemplatePicker?: (panelType: 'flow' | 'if') => void
+  excludeLayout?: boolean
 }
 
 export default function BlockCommandMenu({
@@ -67,13 +68,17 @@ export default function BlockCommandMenu({
   onClose,
   filterText,
   onOpenTemplatePicker,
+  excludeLayout,
 }: BlockCommandMenuProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Build flat list of visible items
+  const categories = excludeLayout
+    ? MENU_CATEGORIES.filter((cat) => cat.name !== 'Layout')
+    : MENU_CATEGORIES
   const allItems: BlockMenuItem[] = []
-  for (const cat of MENU_CATEGORIES) {
+  for (const cat of categories) {
     for (const item of cat.items) {
       allItems.push(item)
     }
@@ -149,7 +154,7 @@ export default function BlockCommandMenu({
       ref={menuRef}
       className="z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-80 overflow-y-auto w-64"
     >
-      {MENU_CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const catItems = cat.items.filter(
           (item) => !filter || item.label.toLowerCase().includes(filter)
         )

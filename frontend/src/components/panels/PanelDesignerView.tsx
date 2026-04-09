@@ -950,15 +950,27 @@ export default function PanelDesignerView({
                             }}
                             title="Click to replace antibody"
                           >
-                              {editingTargetId === t.id && !t.dye_label_id ? (
+                              {editingTargetId === t.id ? (
                                 <TargetOmnibox
                                   antibodies={antibodies}
                                   dyeLabels={dyeLabels}
                                   excludeAntibodyIds={targetAntibodyIds}
                                   excludeDyeLabelIds={targetDyeLabelIds}
-                                  onSelect={(sel) => {
-                                    if (sel.type === 'antibody') handleReplaceTargetAntibody(t.id, sel.antibody)
-                                    else setEditingTargetId(null)
+                                  onSelect={async (sel) => {
+                                    if (!t.dye_label_id) {
+                                      // Antibody row: replace antibody in-place
+                                      if (sel.type === 'antibody') handleReplaceTargetAntibody(t.id, sel.antibody)
+                                      else setEditingTargetId(null)
+                                    } else {
+                                      // Dye label row: remove old, add new
+                                      setEditingTargetId(null)
+                                      try {
+                                        await handlers.onRemoveTarget(t.id, null)
+                                        await handlers.onAddTarget(sel)
+                                      } catch {
+                                        // Swap failed
+                                      }
+                                    }
                                   }}
                                   onCancel={() => setEditingTargetId(null)}
                                   autoFocus
