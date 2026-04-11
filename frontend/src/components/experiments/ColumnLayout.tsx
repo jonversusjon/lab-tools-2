@@ -12,6 +12,7 @@ interface ColumnLayoutProps {
     blockType: string,
     initialContent: Record<string, unknown>
   ) => void
+  onDeleteColumnBlock?: (blockId: string) => void
   onOpenTemplatePicker?: (columnId: string, panelType: 'flow' | 'if') => void
 }
 
@@ -27,6 +28,7 @@ export default function ColumnLayout({
   childrenByParentId,
   renderBlock,
   onAddBlockToColumn,
+  onDeleteColumnBlock,
   onOpenTemplatePicker,
 }: ColumnLayoutProps) {
   const [menuColumnId, setMenuColumnId] = useState<string | null>(null)
@@ -118,7 +120,18 @@ export default function ColumnLayout({
             ) : (
               <div className="space-y-1">
                 {columnChildren.map((child) => (
-                  <div key={child.id}>{renderBlock(child)}</div>
+                  <div key={child.id} className="group/col-block relative">
+                    {onDeleteColumnBlock && (
+                      <button
+                        onClick={() => onDeleteColumnBlock(child.id)}
+                        className="absolute -right-1 top-0.5 z-10 opacity-0 group-hover/col-block:opacity-100 transition-opacity text-gray-400 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400 text-sm leading-none select-none"
+                        title="Delete block"
+                      >
+                        ×
+                      </button>
+                    )}
+                    {renderBlock(child)}
+                  </div>
                 ))}
                 {renderAddButton(col.id, false)}
               </div>

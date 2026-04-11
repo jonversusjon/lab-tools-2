@@ -75,7 +75,6 @@ export default function TextBlockEditor({
   valueRef.current = value
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const inputRef = useRef<HTMLInputElement | null>(null)
 
   // Sync from props when block changes externally (not during user edit)
   useEffect(() => {
@@ -189,21 +188,9 @@ export default function TextBlockEditor({
   const isToggleable = parsed.is_toggleable && isHeading
 
   const renderInput = () => {
-    if (isHeading) {
-      return (
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => handleChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholders[block.block_type] ?? ''}
-          className={baseInputClass + ' ' + (headingStyles[block.block_type] ?? '')}
-          data-block-input="true"
-        />
-      )
-    }
-
+    const extraClass = isHeading
+      ? (headingStyles[block.block_type] ?? '')
+      : 'text-base'
     return (
       <textarea
         ref={textareaRef}
@@ -212,7 +199,7 @@ export default function TextBlockEditor({
         onKeyDown={handleKeyDown}
         placeholder={placeholders[block.block_type] ?? ''}
         rows={1}
-        className={baseInputClass + ' text-base overflow-y-hidden'}
+        className={baseInputClass + ' ' + extraClass + ' overflow-y-hidden'}
         style={{ minHeight: '1.5rem' }}
         data-block-input="true"
       />

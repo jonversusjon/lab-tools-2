@@ -752,6 +752,7 @@ export default function BlockRenderer({
           childrenByParentId={childrenByParentId}
           renderBlock={renderBlock}
           onAddBlockToColumn={handleAddBlockToColumn}
+          onDeleteColumnBlock={handleDeleteBlock}
           onOpenTemplatePicker={(columnId, panelType) => {
             setPickerState({ mode: 'column', columnId, panelType })
           }}

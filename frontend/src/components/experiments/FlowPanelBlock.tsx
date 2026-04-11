@@ -374,20 +374,22 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       data-block-id={block.id}
       className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
     >
-      <PanelDesignerView
-        state={state}
-        dispatch={dispatch}
-        handlers={handlers}
-        config={viewConfig}
-        antibodies={libraryData.antibodies}
-        dyeLabels={[]}
-        allFluorophores={libraryData.allFluorophores}
-        secondaries={libraryData.secondaries}
-        conjugateChemistries={libraryData.conjugateChemistries}
-        spectraCache={libraryData.spectraCache}
-        fluorophoresWithSpectra={libraryData.fluorophoresWithSpectra}
-        allFluorophoresForScoring={libraryData.allFluorophoresForScoring}
-      />
+      <div className="p-5">
+        <PanelDesignerView
+          state={state}
+          dispatch={dispatch}
+          handlers={handlers}
+          config={viewConfig}
+          antibodies={libraryData.antibodies}
+          dyeLabels={[]}
+          allFluorophores={libraryData.allFluorophores}
+          secondaries={libraryData.secondaries}
+          conjugateChemistries={libraryData.conjugateChemistries}
+          spectraCache={libraryData.spectraCache}
+          fluorophoresWithSpectra={libraryData.fluorophoresWithSpectra}
+          allFluorophoresForScoring={libraryData.allFluorophoresForScoring}
+        />
+      </div>
     </div>
   )
 }

@@ -72,6 +72,9 @@ export default function ExperimentPage() {
   const [description, setDescription] = useState('')
   const [initialized, setInitialized] = useState(false)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [isFullWidth, setIsFullWidth] = useState(() => {
+    try { return localStorage.getItem('experiment-page-full-width') === 'true' } catch { return false }
+  })
 
   const userEdited = useRef(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -183,8 +186,14 @@ export default function ExperimentPage() {
   if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading experiment...</p>
   if (error || !experiment) return <p className="text-red-600">Failed to load experiment.</p>
 
+  const handleToggleFullWidth = () => {
+    const next = !isFullWidth
+    setIsFullWidth(next)
+    try { localStorage.setItem('experiment-page-full-width', String(next)) } catch { /* ignore */ }
+  }
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className={(isFullWidth ? 'max-w-7xl' : 'max-w-4xl') + ' mx-auto'}>
       {/* Title + save status row */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
@@ -210,6 +219,18 @@ export default function ExperimentPage() {
           {saveStatus === 'error' && (
             <span className="text-xs text-red-500">Save failed</span>
           )}
+          <button
+            onClick={handleToggleFullWidth}
+            title={isFullWidth ? 'Collapse to normal width' : 'Expand to full width'}
+            className={
+              'rounded border px-3 py-1.5 text-xs font-medium transition-colors ' +
+              (isFullWidth
+                ? 'border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800')
+            }
+          >
+            {isFullWidth ? '⟵ Collapse' : '⟷ Full width'}
+          </button>
           <button
             onClick={handleDelete}
             className="rounded border border-red-300 dark:border-red-700 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"

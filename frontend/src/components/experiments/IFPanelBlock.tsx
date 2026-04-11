@@ -451,17 +451,19 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
       data-block-id={block.id}
       className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
     >
-      <IFPanelDesignerView
-        state={state}
-        dispatch={dispatch}
-        handlers={handlers}
-        config={viewConfig}
-        antibodies={libraryData.antibodies}
-        dyeLabels={[]}
-        fluorophores={libraryData.fluorophores}
-        secondaries={libraryData.secondaries}
-        conjugateChemistries={libraryData.conjugateChemistries}
-      />
+      <div className="p-5">
+        <IFPanelDesignerView
+          state={state}
+          dispatch={dispatch}
+          handlers={handlers}
+          config={viewConfig}
+          antibodies={libraryData.antibodies}
+          dyeLabels={[]}
+          fluorophores={libraryData.fluorophores}
+          secondaries={libraryData.secondaries}
+          conjugateChemistries={libraryData.conjugateChemistries}
+        />
+      </div>
     </div>
   )
 }
