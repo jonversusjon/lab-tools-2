@@ -13,6 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from database import get_db
 from models import Detector
+from models import DyeLabel
 from models import Experiment
 from models import ExperimentBlock
 from models import IFPanel
@@ -400,6 +401,9 @@ def snapshot_panel(
                 selectinload(IFPanel.targets)
                 .selectinload(IFPanelTarget.secondary_antibody)
                 .selectinload(SecondaryAntibody.fluorophore),
+                selectinload(IFPanel.targets)
+                .selectinload(IFPanelTarget.dye_label)
+                .selectinload(DyeLabel.fluorophore),
                 selectinload(IFPanel.assignments).selectinload(IFPanelAssignment.fluorophore),
                 selectinload(IFPanel.assignments).selectinload(IFPanelAssignment.filter),
                 selectinload(IFPanel.microscope)
@@ -425,6 +429,16 @@ def snapshot_panel(
                     "antibody_name": t.antibody.name if t.antibody else None,
                     "antibody_target": t.antibody.target if t.antibody else None,
                     "antibody_host": t.antibody.host if t.antibody else None,
+                    "dye_label_id": t.dye_label_id,
+                    "dye_label_name": t.dye_label.name if t.dye_label else None,
+                    "dye_label_target": t.dye_label.label_target if t.dye_label else None,
+                    "dye_label_fluorophore_id": (
+                        t.dye_label.fluorophore_id if t.dye_label else None
+                    ),
+                    "dye_label_fluorophore_name": (
+                        t.dye_label.fluorophore.name
+                        if t.dye_label and t.dye_label.fluorophore else None
+                    ),
                     "staining_mode": t.staining_mode,
                     "secondary_antibody_id": t.secondary_antibody_id,
                     "secondary_antibody_name": (
@@ -450,6 +464,7 @@ def snapshot_panel(
                 {
                     "id": str(uuid.uuid4()),
                     "antibody_id": a.antibody_id,
+                    "dye_label_id": a.dye_label_id,
                     "fluorophore_id": a.fluorophore_id,
                     "fluorophore_name": a.fluorophore.name if a.fluorophore else None,
                     "filter_id": a.filter_id,

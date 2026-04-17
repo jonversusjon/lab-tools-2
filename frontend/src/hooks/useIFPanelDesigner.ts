@@ -67,6 +67,9 @@ export function ifPanelDesignerReducer(
       return {
         ...state,
         microscope: action.microscope,
+        panel: state.panel
+          ? { ...state.panel, microscope_id: action.microscope?.id ?? null }
+          : null,
       }
     case 'SET_VIEW_MODE':
       return {

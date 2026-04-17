@@ -84,6 +84,19 @@ export interface InstrumentCompatibilityResponse {
   instrument_compatibilities: InstrumentCompatibility[]
 }
 
+export interface MicroscopeCompatibility {
+  microscope_id: string
+  microscope_name: string
+  is_favorite: boolean
+  laser_lines: LaserCompatibility[]
+  filters: DetectorCompatibility[]
+}
+
+export interface MicroscopeCompatibilityResponse {
+  fluorophore_id: string
+  microscope_compatibilities: MicroscopeCompatibility[]
+}
+
 export interface FluorophoreCompatibilityDetail {
   fluorophore_id: string
   name: string
@@ -890,6 +903,11 @@ export interface IFPanelInstanceTarget {
   antibody_name: string | null
   antibody_target: string | null
   antibody_host: string | null
+  dye_label_id: string | null
+  dye_label_name: string | null
+  dye_label_target: string | null
+  dye_label_fluorophore_id: string | null
+  dye_label_fluorophore_name: string | null
   staining_mode: string
   secondary_antibody_id: string | null
   secondary_antibody_name: string | null
@@ -903,6 +921,7 @@ export interface IFPanelInstanceTarget {
 export interface IFPanelInstanceAssignment {
   id: string
   antibody_id: string | null
+  dye_label_id: string | null
   fluorophore_id: string
   fluorophore_name: string | null
   filter_id: string | null

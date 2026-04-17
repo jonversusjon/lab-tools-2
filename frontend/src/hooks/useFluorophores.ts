@@ -4,6 +4,7 @@ import {
   createFluorophore,
   getFluorophoreSpectra,
   getInstrumentCompatibility,
+  getMicroscopeCompatibility,
   batchSpectra,
   fetchFpbase,
   fetchFpbaseCatalog,
@@ -36,6 +37,14 @@ export function useInstrumentCompatibility(id: string) {
   return useQuery({
     queryKey: ['fluorophores', id, 'instrument-compatibility'],
     queryFn: () => getInstrumentCompatibility(id),
+    enabled: !!id,
+  })
+}
+
+export function useMicroscopeCompatibility(id: string) {
+  return useQuery({
+    queryKey: ['fluorophores', id, 'microscope-compatibility'],
+    queryFn: () => getMicroscopeCompatibility(id),
     enabled: !!id,
   })
 }

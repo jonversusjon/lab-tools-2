@@ -38,7 +38,6 @@ export interface IFPanelDesignerViewHandlers {
   onAddTarget: (selection: TargetSelection) => Promise<unknown>
   onRemoveTarget: (targetId: string, antibodyId: string | null) => Promise<void>
   onReplaceTargetAntibody: (targetId: string, newAntibody: Antibody) => Promise<void>
-  onToggleStaining: (targetId: string, currentMode: 'direct' | 'indirect') => Promise<void>
   onReorderTargets: (event: DragEndEvent) => void
   onAssignFluorophore: (antibodyId: string, fluorophoreId: string) => Promise<void>
   onClearFluorophore: (antibodyId: string) => Promise<void>
@@ -200,15 +199,6 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     }
   }
 
-  const handleToggleStaining = async (targetId: string, currentMode: 'direct' | 'indirect') => {
-    try {
-      await handlers.onToggleStaining(targetId, currentMode)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update staining mode'
-      setAssignError(message)
-    }
-  }
-
   // --- Assignment lookup ---
   const assignmentByAntibody = useMemo(() => {
     const map = new Map<string, IFPanelAssignment>()
@@ -333,7 +323,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
       if (!ab?.host) continue
       const key = ab.host.toLowerCase()
       const strategy = getDetectionStrategy(ab, conjugateSet, bindingPartners)
-      const isIndirect = t.staining_mode === 'indirect' || strategy.type !== 'direct'
+      const isIndirect = strategy.type !== 'direct'
       if (!hostMap.has(key)) hostMap.set(key, { names: [], hasIndirect: false })
       const entry = hostMap.get(key)!
       entry.names.push(t.antibody_target ?? ab.target)
@@ -377,8 +367,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     return map
   }, [dyeLabels])
 
-  const showSpectral = state.viewMode === 'spectral' && state.microscope != null
-  const totalCols = 8 + (showSpectral ? 3 : 0)
+  const showSpectral = state.viewMode === 'spectral'
+  const showCompatCols = showSpectral && state.microscope != null
+  const totalCols = 7 + (showSpectral ? 1 : 0) + (showCompatCols ? 2 : 0)
 
   if (!state.panel) {
     return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
@@ -440,14 +431,12 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   Simple
                 </button>
                 <button
-                  onClick={() => state.microscope && handlers.onViewModeToggle?.('spectral')}
-                  disabled={!state.microscope}
-                  title={!state.microscope ? 'Select a microscope first' : undefined}
+                  onClick={() => handlers.onViewModeToggle?.('spectral')}
                   className={
                     'px-3 py-1.5 border-l border-gray-200 dark:border-gray-700 ' +
                     (state.viewMode === 'spectral'
                       ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 font-medium'
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed')
+                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700')
                   }
                 >
                   Spectral
@@ -489,6 +478,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
             </select>
           </div>
         )}
+
       </div>
 
       {/* Error banner */}
@@ -524,16 +514,15 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                 <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
                   <th className="w-7 px-1 py-2" />
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Target</th>
-                  <th className="px-3 py-2 font-medium" style={{ width: 100 }}>Staining</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Primary Ab</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Secondary / Fluorophore</th>
                   {showSpectral && (
                     <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Channel</th>
                   )}
-                  {showSpectral && (
+                  {showCompatCols && (
                     <th className="px-3 py-2 font-medium text-center" style={{ width: 60 }}>Ex %</th>
                   )}
-                  {showSpectral && (
+                  {showCompatCols && (
                     <th className="px-3 py-2 font-medium text-center" style={{ width: 60 }}>Det %</th>
                   )}
                   <th className="px-3 py-2 font-medium" style={{ width: 90 }}>IF Dilution</th>
@@ -648,27 +637,6 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               )}
                             </td>
 
-                            {/* Staining mode toggle */}
-                            <td className="px-3 py-2" style={{ width: 100 }}>
-                              {isDyeLabelRow ? (
-                                <span className="rounded px-2 py-0.5 text-xs font-medium border bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-default">
-                                  Direct
-                                </span>
-                              ) : (
-                                <button
-                                  onClick={() => handleToggleStaining(t.id, t.staining_mode)}
-                                  className={
-                                    'rounded px-2 py-0.5 text-xs font-medium border transition-colors ' +
-                                    (t.staining_mode === 'indirect'
-                                      ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-600 hover:bg-amber-200 dark:hover:bg-amber-900/60'
-                                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600')
-                                  }
-                                >
-                                  {t.staining_mode === 'indirect' ? 'Indirect' : 'Direct'}
-                                </button>
-                              )}
-                            </td>
-
                             {/* Primary Ab name (or dye label name) */}
                             <td className="px-3 py-2 text-gray-600 dark:text-gray-300" style={{ minWidth: 180 }}>
                               <span className="text-sm">
@@ -712,8 +680,8 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                   </td>
                                 )
                               }
-                              // Case B: needs secondary (indirect or species/conjugate strategy)
-                              if (ab && (t.staining_mode === 'indirect' || strategy.type !== 'direct' || (isOverridden && strategy.type !== 'direct'))) {
+                              // Case B: needs secondary (species/conjugate strategy requires it)
+                              if (ab && strategy.type !== 'direct') {
                                 return (
                                   <td className="px-3 py-2" style={{ minWidth: 180 }}>
                                     <SecondaryOmnibox
@@ -783,8 +751,8 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               </td>
                             )}
 
-                            {/* Ex % (spectral mode only) */}
-                            {showSpectral && (() => {
+                            {/* Ex % (spectral mode with microscope only) */}
+                            {showCompatCols && (() => {
                               const filterId = assignment?.filter_id ?? null
                               const fluorId = assignment?.fluorophore_id ?? null
                               let exPct: string = '\u2014'
@@ -800,8 +768,8 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               )
                             })()}
 
-                            {/* Det % (spectral mode only) */}
-                            {showSpectral && (() => {
+                            {/* Det % (spectral mode with microscope only) */}
+                            {showCompatCols && (() => {
                               const filterId = assignment?.filter_id ?? null
                               const fluorId = assignment?.fluorophore_id ?? null
                               let detPct: string = '\u2014'
@@ -918,10 +886,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
-                    <td className="px-3 py-2" />
                     {showSpectral && <td className="px-3 py-2" />}
-                    {showSpectral && <td className="px-3 py-2" />}
-                    {showSpectral && <td className="px-3 py-2" />}
+                    {showCompatCols && <td className="px-3 py-2" />}
+                    {showCompatCols && <td className="px-3 py-2" />}
                     <td className="w-7 px-1 py-2 text-center">
                       <button
                         onClick={() => handleRemovePendingRow(pendingId)}

@@ -8,6 +8,7 @@ import type {
   FluorophoreSpectra,
   FpbaseCatalogItem,
   InstrumentCompatibilityResponse,
+  MicroscopeCompatibilityResponse,
   PaginatedResponse,
   SpectraData,
 } from '@/types'
@@ -60,6 +61,14 @@ export async function getInstrumentCompatibility(
 ): Promise<InstrumentCompatibilityResponse> {
   const res = await fetch(`/api/v1/fluorophores/${id}/instrument-compatibility`)
   if (!res.ok) throw new Error('Failed to fetch instrument compatibility')
+  return res.json()
+}
+
+export async function getMicroscopeCompatibility(
+  id: string
+): Promise<MicroscopeCompatibilityResponse> {
+  const res = await fetch(`/api/v1/fluorophores/${id}/microscope-compatibility`)
+  if (!res.ok) throw new Error('Failed to fetch microscope compatibility')
   return res.json()
 }
 

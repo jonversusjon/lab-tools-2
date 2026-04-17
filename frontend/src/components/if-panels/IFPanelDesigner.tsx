@@ -196,19 +196,6 @@ export default function IFPanelDesigner() {
         await handleAssignFluorophore(newAntibody.id, newAntibody.fluorophore_id)
       }
     },
-    onToggleStaining: async (targetId: string, currentMode: 'direct' | 'indirect') => {
-      if (!id) return
-      const newMode = currentMode === 'direct' ? 'indirect' : 'direct'
-      const updated = await updateTargetMutation.mutateAsync({
-        panelId: id,
-        targetId,
-        data: {
-          staining_mode: newMode,
-          ...(newMode === 'direct' ? { secondary_antibody_id: null } : {}),
-        },
-      })
-      dispatch({ type: 'UPDATE_TARGET', target: updated })
-    },
     onReorderTargets: (event: DragEndEvent) => {
       const { active, over } = event
       if (!over || active.id === over.id || !id) return

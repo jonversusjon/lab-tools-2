@@ -6,6 +6,9 @@ import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
+import { useInstruments } from '@/hooks/useInstruments'
+import { useMicroscopes } from '@/hooks/useMicroscopes'
+import { useDyeLabels } from '@/hooks/useDyeLabels'
 import type { FluorophoreWithSpectra } from '@/types'
 import type { PanelLibraryData } from './FlowPanelBlock'
 import BlockRenderer from './BlockRenderer'
@@ -30,11 +33,17 @@ export default function ExperimentPage() {
   const { data: allFluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const { data: secondariesData } = useSecondaries()
   const { data: conjugateChemistries = [] } = useConjugateChemistries()
+  const { data: instrumentsData } = useInstruments(0, 500)
+  const { data: microscopesData } = useMicroscopes(0, 500)
+  const { data: dyeLabelsData } = useDyeLabels({ limit: 2000 })
 
   const antibodies = antibodiesData?.items ?? []
   const fluorophoreList = fluorophoreData?.items ?? []
   const allFluorophores = allFluorophoreData?.items ?? []
   const secondaries = secondariesData?.items ?? []
+  const instruments = instrumentsData?.items ?? []
+  const microscopes = microscopesData?.items ?? []
+  const dyeLabels = dyeLabelsData?.items ?? []
 
   const fluorophoreIdsToFetch = useMemo(() => {
     return fluorophoreList.map((f) => f.id)
@@ -65,8 +74,11 @@ export default function ExperimentPage() {
       spectraCache,
       fluorophoresWithSpectra,
       allFluorophoresForScoring,
+      instruments,
+      microscopes,
+      dyeLabels,
     }
-  }, [antibodiesData, allFluorophoreData, antibodies, allFluorophores, secondaries, conjugateChemistries, spectraCache, fluorophoresWithSpectra, allFluorophoresForScoring])
+  }, [antibodiesData, allFluorophoreData, antibodies, allFluorophores, secondaries, conjugateChemistries, spectraCache, fluorophoresWithSpectra, allFluorophoresForScoring, instruments, microscopes, dyeLabels])
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')

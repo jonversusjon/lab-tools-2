@@ -12,7 +12,9 @@ import type {
   PanelTarget,
   PanelAssignment,
   Instrument,
+  Microscope,
   Antibody,
+  DyeLabel,
   Fluorophore,
   SecondaryAntibody,
   ConjugateChemistry,
@@ -27,6 +29,9 @@ export interface PanelLibraryData {
   spectraCache: Record<string, FluorophoreWithSpectra['spectra']> | null
   fluorophoresWithSpectra: FluorophoreWithSpectra[]
   allFluorophoresForScoring: FluorophoreWithSpectra[]
+  instruments: Instrument[]
+  microscopes: Microscope[]
+  dyeLabels: DyeLabel[]
 }
 
 interface FlowPanelBlockProps {
@@ -120,10 +125,27 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
     const flMap = new Map<string, string>()
     for (const fl of libraryData.allFluorophores) flMap.set(fl.id, fl.name)
 
-    // Build detector name map from snapshot instrument
+    // Build instrument snapshot from current state (not stale content)
+    const inst = currentState.instrument
+    let instrumentSnapshot: FlowPanelBlockContent['instrument'] = null
     const detNameMap = new Map<string, string>()
-    if (content.instrument) {
-      for (const laser of content.instrument.lasers) {
+    if (inst) {
+      instrumentSnapshot = {
+        id: inst.id,
+        name: inst.name,
+        lasers: inst.lasers.map((l) => ({
+          id: l.id,
+          wavelength_nm: l.wavelength_nm,
+          name: l.name,
+          detectors: l.detectors.map((d) => ({
+            id: d.id,
+            filter_midpoint: d.filter_midpoint,
+            filter_width: d.filter_width,
+            name: d.name,
+          })),
+        })),
+      }
+      for (const laser of inst.lasers) {
         for (const det of laser.detectors) {
           detNameMap.set(det.id, det.name ?? (det.filter_midpoint + '/' + det.filter_width))
         }
@@ -133,7 +155,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
     const updatedContent: FlowPanelBlockContent = {
       source_panel_id: content.source_panel_id,
       name: currentState.panel?.name ?? content.name,
-      instrument: content.instrument,
+      instrument: instrumentSnapshot,
       targets: currentState.targets.map((t) => {
         const ab = t.antibody_id ? abMap.get(t.antibody_id) : undefined
         return {
@@ -168,7 +190,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       body: JSON.stringify({ content: updatedContent }),
       keepalive: true,
     })
-  }, [experimentId, block.id, content, libraryData.antibodies, libraryData.allFluorophores])
+  }, [experimentId, block.id, content.source_panel_id, content.volume_params, libraryData.antibodies, libraryData.allFluorophores])
 
   function markDirty() {
     dirtyRef.current = true
@@ -345,9 +367,39 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
     },
     onSaveName: (name: string) => {
       if (stateRef.current.panel) {
-        dispatch({ type: 'SET_PANEL', panel: { ...stateRef.current.panel, name } })
+        dispatch({
+          type: 'SET_PANEL',
+          panel: {
+            ...stateRef.current.panel,
+            name,
+            targets: stateRef.current.targets,
+            assignments: stateRef.current.assignments,
+          },
+        })
         markDirty()
       }
+    },
+    onInstrumentChange: (instrumentId: string) => {
+      const newId = instrumentId || null
+      const newInstrument = newId
+        ? libraryData.instruments.find((i) => i.id === newId) ?? null
+        : null
+      // Capture live targets before dispatching (SET_PANEL reads from panel object)
+      const currentTargets = stateRef.current.targets
+      dispatch({ type: 'CLEAR_ASSIGNMENTS' })
+      dispatch({ type: 'SET_INSTRUMENT', instrument: newInstrument })
+      if (stateRef.current.panel) {
+        dispatch({
+          type: 'SET_PANEL',
+          panel: {
+            ...stateRef.current.panel,
+            instrument_id: newId,
+            targets: currentTargets,
+            assignments: [],
+          },
+        })
+      }
+      markDirty()
     },
     onUndo: () => { undo(); markDirty() },
     onRedo: () => { redo(); markDirty() },
@@ -360,11 +412,12 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       setMinThreshold(Number(e.target.value) / 100)
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [block.id, dispatch, undo, redo, canUndo, canRedo, autoAssign, minThreshold, reorderTargets, libraryData.secondaries])
+  }), [block.id, dispatch, undo, redo, canUndo, canRedo, autoAssign, minThreshold, reorderTargets, libraryData.secondaries, libraryData.instruments])
 
   const viewConfig: PanelDesignerViewConfig = {
     showBackButton: false,
-    showInstrumentSelector: false,
+    showInstrumentSelector: true,
+    instruments: libraryData.instruments,
     showAutoAssign: true,
     showDelete: false,
   }
@@ -381,7 +434,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
           handlers={handlers}
           config={viewConfig}
           antibodies={libraryData.antibodies}
-          dyeLabels={[]}
+          dyeLabels={libraryData.dyeLabels}
           allFluorophores={libraryData.allFluorophores}
           secondaries={libraryData.secondaries}
           conjugateChemistries={libraryData.conjugateChemistries}

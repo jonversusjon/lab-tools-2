@@ -23,6 +23,7 @@ vi.mock('@/hooks/useFluorophores', () => ({
   }),
   useFluorophoreSpectra: () => ({ data: null, isLoading: false }),
   useInstrumentCompatibility: () => ({ data: null, isLoading: false }),
+  useMicroscopeCompatibility: () => ({ data: null, isLoading: false }),
   useBatchSpectra: () => ({ data: null }),
   useFetchFromFpbase: () => ({
     mutateAsync: vi.fn(),

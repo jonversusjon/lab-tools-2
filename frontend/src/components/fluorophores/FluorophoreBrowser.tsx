@@ -4,16 +4,18 @@ import {
   useFluorophores,
   useFluorophoreSpectra,
   useInstrumentCompatibility,
+  useMicroscopeCompatibility,
   useBatchSpectra,
   useToggleFluorophoreFavorite,
 } from '@/hooks/useFluorophores'
 import { useRecentInstruments, useRecordInstrumentView } from '@/hooks/useInstruments'
+import { useRecentMicroscopes, useRecordMicroscopeView } from '@/hooks/useMicroscopes'
 import { tokenSearch } from '@/utils/search'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
 import FpbaseFetchModal from './FpbaseFetchModal'
 import FluorophoreImportWizard from './FluorophoreImportWizard'
 import FavoriteButton from '@/components/antibodies/FavoriteButton'
-import type { Fluorophore, InstrumentCompatibility, SpectraData } from '@/types'
+import type { Fluorophore, InstrumentCompatibility, MicroscopeCompatibility, SpectraData } from '@/types'
 
 const PAGE_SIZE = 50
 
@@ -476,11 +478,188 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
   )
 }
 
+function MicroscopeCompatibilityCard({ compat }: { compat: MicroscopeCompatibility }) {
+  const exByWl = new Map(
+    compat.laser_lines.map((l) => [l.wavelength_nm, l.excitation_efficiency])
+  )
+  let bestFilter: typeof compat.filters[0] | null = null
+  let bestExEff = 0
+  let bestScore = -1
+  for (const f of compat.filters) {
+    const exEff = exByWl.get(f.laser_wavelength_nm) ?? 0
+    const score = exEff * f.collection_efficiency
+    if (score > bestScore) {
+      bestScore = score
+      bestFilter = f
+      bestExEff = exEff
+    }
+  }
+  return (
+    <tr className="border-b border-gray-100 dark:border-gray-700">
+      <td className="py-1 pr-4 text-gray-700 dark:text-gray-300">
+        {compat.microscope_name}
+      </td>
+      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+        {bestFilter ? bestFilter.laser_wavelength_nm + ' nm' : '—'}
+      </td>
+      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+        {bestFilter ? (bestExEff * 100).toFixed(1) + '%' : '—'}
+      </td>
+      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+        {bestFilter ? (bestFilter.name ?? bestFilter.center_nm + '/' + bestFilter.bandwidth_nm) : '—'}
+      </td>
+      <td className="py-1 text-gray-600 dark:text-gray-400">
+        {bestFilter ? (bestFilter.collection_efficiency * 100).toFixed(1) + '%' : '—'}
+      </td>
+    </tr>
+  )
+}
+
+function getBestMicroscopeScore(compat: MicroscopeCompatibility) {
+  const exByWl = new Map(
+    compat.laser_lines.map((l) => [l.wavelength_nm, l.excitation_efficiency])
+  )
+  let bestScore = -1
+  for (const f of compat.filters) {
+    const exEff = exByWl.get(f.laser_wavelength_nm) ?? 0
+    const score = exEff * f.collection_efficiency
+    if (score > bestScore) bestScore = score
+  }
+  return bestScore
+}
+
+function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibilities: MicroscopeCompatibility[] }) {
+  const { data: recentIds = [] } = useRecentMicroscopes()
+  const recordView = useRecordMicroscopeView()
+  const [showAll, setShowAll] = useState(false)
+
+  const recentIdSet = useMemo(() => new Set(recentIds), [recentIds])
+
+  const { favorites, recents, others } = useMemo(() => {
+    const favs: MicroscopeCompatibility[] = []
+    const recs: MicroscopeCompatibility[] = []
+    const rest: MicroscopeCompatibility[] = []
+    for (const compat of compatibilities) {
+      if (compat.is_favorite) favs.push(compat)
+      else if (recentIdSet.has(compat.microscope_id)) recs.push(compat)
+      else rest.push(compat)
+    }
+    const sortByScoreDesc = (a: MicroscopeCompatibility, b: MicroscopeCompatibility) =>
+      getBestMicroscopeScore(b) - getBestMicroscopeScore(a)
+    favs.sort(sortByScoreDesc)
+    recs.sort(sortByScoreDesc)
+    rest.sort(sortByScoreDesc)
+    return { favorites: favs, recents: recs, others: rest }
+  }, [compatibilities, recentIdSet])
+
+  const tableHeader = (
+    <thead>
+      <tr className="border-b border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+        <th className="py-1 text-left font-medium pr-4">Microscope</th>
+        <th className="py-1 text-left font-medium pr-4">Best Laser</th>
+        <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
+        <th className="py-1 text-left font-medium pr-4">Best Filter</th>
+        <th className="py-1 text-left font-medium">Coll. Eff.</th>
+      </tr>
+    </thead>
+  )
+
+  const noTiers = favorites.length === 0 && recents.length === 0
+
+  if (noTiers) {
+    return (
+      <div className="overflow-x-auto">
+        <table className="text-xs w-full border-collapse">
+          {tableHeader}
+          <tbody>
+            {others.map((c) => (
+              <MicroscopeCompatibilityCard key={c.microscope_id} compat={c} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      {favorites.length > 0 && (
+        <>
+          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Favorites
+          </div>
+          <table className="text-xs w-full border-collapse">
+            {tableHeader}
+            <tbody>
+              {favorites.map((c) => (
+                <MicroscopeCompatibilityCard key={c.microscope_id} compat={c} />
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {favorites.length > 0 && recents.length > 0 && (
+        <hr className="my-3 border-gray-200 dark:border-gray-700" />
+      )}
+
+      {recents.length > 0 && (
+        <>
+          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            Recent
+          </div>
+          <table className="text-xs w-full border-collapse">
+            {tableHeader}
+            <tbody>
+              {recents.map((c) => (
+                <MicroscopeCompatibilityCard key={c.microscope_id} compat={c} />
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {others.length > 0 && (
+        <>
+          <hr className="my-3 border-gray-200 dark:border-gray-700" />
+          <button
+            onClick={() => {
+              setShowAll(!showAll)
+              if (!showAll) {
+                others.forEach((c) => recordView.mutate(c.microscope_id))
+              }
+            }}
+            className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+          >
+            <span>{showAll ? '▼' : '▶'}</span>
+            {showAll ? 'Hide' : 'Show'} all microscopes ({others.length})
+          </button>
+          {showAll && (
+            <div className="mt-2">
+              <table className="text-xs w-full border-collapse">
+                {tableHeader}
+                <tbody>
+                  {others.map((c) => (
+                    <MicroscopeCompatibilityCard key={c.microscope_id} compat={c} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
   const { data: spectraData, isLoading: spectraLoading } = useFluorophoreSpectra(
     fluorophore.has_spectra ? fluorophore.id : ''
   )
   const { data: compatData, isLoading: compatLoading } = useInstrumentCompatibility(
+    fluorophore.id
+  )
+  const { data: microscopeCompatData, isLoading: microscopeCompatLoading } = useMicroscopeCompatibility(
     fluorophore.id
   )
 
@@ -540,19 +719,44 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
       </div>
 
       {/* Instrument compatibility */}
-      <div className="mt-4">
-        <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+      <div className="mt-6">
+        <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
           Instrument Compatibility
-        </h4>
-        {compatLoading ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500">Loading compatibility...</p>
-        ) : compatData && compatData.instrument_compatibilities.length === 0 ? (
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            No instruments in database. Add an instrument to see compatibility.
-          </p>
-        ) : compatData ? (
-          <TieredCompatibilityTable compatibilities={compatData.instrument_compatibilities} />
-        ) : null}
+        </h3>
+
+        {/* Cytometers */}
+        <div className="mb-6">
+          <h4 className="mb-2 text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+            Flow Cytometers
+          </h4>
+          {compatLoading ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+          ) : compatData && compatData.instrument_compatibilities.length === 0 ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              No cytometers in database.
+            </p>
+          ) : compatData ? (
+            <TieredCompatibilityTable compatibilities={compatData.instrument_compatibilities} />
+          ) : null}
+        </div>
+
+        <hr className="border-gray-200 dark:border-gray-700 mb-6" />
+
+        {/* Microscopes */}
+        <div>
+          <h4 className="mb-2 text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+            Microscopes
+          </h4>
+          {microscopeCompatLoading ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+          ) : microscopeCompatData && microscopeCompatData.microscope_compatibilities.length === 0 ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              No microscopes in database.
+            </p>
+          ) : microscopeCompatData ? (
+            <TieredMicroscopeCompatibilityTable compatibilities={microscopeCompatData.microscope_compatibilities} />
+          ) : null}
+        </div>
       </div>
     </div>
   )

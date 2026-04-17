@@ -803,6 +803,7 @@ export default function BlockRenderer({
               fluorophores: libraryData.allFluorophores,
               secondaries: libraryData.secondaries,
               conjugateChemistries: libraryData.conjugateChemistries,
+              microscopes: libraryData.microscopes,
             }}
           />
         )

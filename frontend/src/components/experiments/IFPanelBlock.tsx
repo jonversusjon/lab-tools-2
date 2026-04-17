@@ -5,6 +5,7 @@ import { useIFPanelDesigner } from '@/hooks/useIFPanelDesigner'
 import IFPanelDesignerView from '@/components/if-panels/IFPanelDesignerView'
 import type { IFPanelDesignerViewHandlers, IFPanelDesignerViewConfig } from '@/components/if-panels/IFPanelDesignerView'
 import type { TargetSelection } from '@/components/panels/TargetOmnibox'
+import { getMicroscope } from '@/api/microscopes'
 import type {
   ExperimentBlock,
   IFPanelBlockContent,
@@ -14,6 +15,7 @@ import type {
   Microscope,
   MicroscopeLaser,
   MicroscopeFilter,
+  SnapshotMicroscope,
   Antibody,
   Fluorophore,
   SecondaryAntibody,
@@ -25,6 +27,7 @@ export interface IFPanelLibraryData {
   fluorophores: Fluorophore[]
   secondaries: SecondaryAntibody[]
   conjugateChemistries: ConjugateChemistry[]
+  microscopes: Microscope[]
 }
 
 interface IFPanelBlockProps {
@@ -49,11 +52,11 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
       id: t.id,
       panel_id: block.id,
       antibody_id: t.antibody_id,
-      dye_label_id: null,
-      dye_label_name: null,
-      dye_label_target: null,
-      dye_label_fluorophore_id: null,
-      dye_label_fluorophore_name: null,
+      dye_label_id: t.dye_label_id ?? null,
+      dye_label_name: t.dye_label_name ?? null,
+      dye_label_target: t.dye_label_target ?? null,
+      dye_label_fluorophore_id: t.dye_label_fluorophore_id ?? null,
+      dye_label_fluorophore_name: t.dye_label_fluorophore_name ?? null,
       staining_mode: t.staining_mode as 'direct' | 'indirect',
       secondary_antibody_id: t.secondary_antibody_id,
       sort_order: t.sort_order,
@@ -69,7 +72,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
       id: a.id,
       panel_id: block.id,
       antibody_id: a.antibody_id,
-      dye_label_id: null,
+      dye_label_id: a.dye_label_id ?? null,
       fluorophore_id: a.fluorophore_id,
       filter_id: a.filter_id,
       notes: null,
@@ -123,21 +126,40 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
     const flMap = new Map<string, string>()
     for (const fl of libraryData.fluorophores) flMap.set(fl.id, fl.name)
 
-    // Build filter name map from snapshot microscope
+    // Build filter name map from live microscope state
     const filterNameMap = new Map<string, string>()
-    if (content.microscope) {
-      for (const laser of content.microscope.lasers) {
+    if (currentState.microscope) {
+      for (const laser of currentState.microscope.lasers) {
         for (const filt of laser.filters) {
           filterNameMap.set(filt.id, filt.name ?? (filt.filter_midpoint + '/' + filt.filter_width))
         }
       }
     }
 
+    // Serialize live microscope state to snapshot shape
+    const microscopeSnapshot: SnapshotMicroscope | null = currentState.microscope ? {
+      id: currentState.microscope.id,
+      name: currentState.microscope.name,
+      lasers: currentState.microscope.lasers.map((l) => ({
+        id: l.id,
+        wavelength_nm: l.wavelength_nm,
+        name: l.name,
+        excitation_type: l.excitation_type,
+        ex_filter_width: l.ex_filter_width,
+        filters: l.filters.map((f) => ({
+          id: f.id,
+          filter_midpoint: f.filter_midpoint,
+          filter_width: f.filter_width,
+          name: f.name,
+        })),
+      })),
+    } : null
+
     const updatedContent: IFPanelBlockContent = {
       source_panel_id: content.source_panel_id,
       name: currentState.panel?.name ?? content.name,
       panel_type: content.panel_type,
-      microscope: content.microscope,
+      microscope: microscopeSnapshot,
       view_mode: currentState.viewMode,
       targets: currentState.targets.map((t) => {
         const ab = t.antibody_id ? abMap.get(t.antibody_id) : undefined
@@ -147,6 +169,11 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
           antibody_name: ab?.name ?? t.antibody_name,
           antibody_target: ab?.target ?? t.antibody_target,
           antibody_host: ab?.host ?? null,
+          dye_label_id: t.dye_label_id,
+          dye_label_name: t.dye_label_name,
+          dye_label_target: t.dye_label_target,
+          dye_label_fluorophore_id: t.dye_label_fluorophore_id,
+          dye_label_fluorophore_name: t.dye_label_fluorophore_name,
           staining_mode: t.staining_mode,
           secondary_antibody_id: t.secondary_antibody_id,
           secondary_antibody_name: t.secondary_antibody_name,
@@ -160,6 +187,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
       assignments: currentState.assignments.filter(Boolean).map((a) => ({
         id: a.id,
         antibody_id: a.antibody_id,
+        dye_label_id: a.dye_label_id,
         fluorophore_id: a.fluorophore_id,
         fluorophore_name: flMap.get(a.fluorophore_id) ?? null,
         filter_id: a.filter_id,
@@ -238,7 +266,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
         antibody_icc_if_dilution: null,
       }
       dispatch({ type: 'ADD_TARGET', target })
-      // Auto-assign pre-conjugated fluorophore
+      // Auto-assign pre-conjugated fluorophore for antibody targets
       if (selection.type === 'antibody' && selection.antibody.fluorophore_id) {
         const assignment: IFPanelAssignment = {
           id: crypto.randomUUID(),
@@ -246,6 +274,19 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
           antibody_id: selection.antibody.id,
           dye_label_id: null,
           fluorophore_id: selection.antibody.fluorophore_id,
+          filter_id: null,
+          notes: null,
+        }
+        dispatch({ type: 'ADD_ASSIGNMENT', assignment })
+      }
+      // Auto-assign dye label fluorophore so channel dropdown appears in spectral view
+      if (selection.type === 'dye_label' && selection.dyeLabel.fluorophore_id) {
+        const assignment: IFPanelAssignment = {
+          id: crypto.randomUUID(),
+          panel_id: block.id,
+          antibody_id: null,
+          dye_label_id: selection.dyeLabel.id,
+          fluorophore_id: selection.dyeLabel.fluorophore_id,
           filter_id: null,
           notes: null,
         }
@@ -292,18 +333,6 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
           dispatch({ type: 'ADD_ASSIGNMENT', assignment })
         }
       }
-      markDirty()
-    },
-    onToggleStaining: async (targetId: string, currentMode: 'direct' | 'indirect') => {
-      const target = stateRef.current.targets.find((t) => t.id === targetId)
-      if (!target) return
-      const newMode = currentMode === 'direct' ? 'indirect' : 'direct'
-      const updated: IFPanelTarget = {
-        ...target,
-        staining_mode: newMode,
-        ...(newMode === 'direct' ? { secondary_antibody_id: null, secondary_antibody_name: null, secondary_fluorophore_id: null, secondary_fluorophore_name: null } : {}),
-      }
-      dispatch({ type: 'UPDATE_TARGET', target: updated })
       markDirty()
     },
     onReorderTargets: (event: DragEndEvent) => {
@@ -432,18 +461,63 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
     },
     onSaveName: (name: string) => {
       if (stateRef.current.panel) {
-        dispatch({ type: 'SET_PANEL', panel: { ...stateRef.current.panel, name } })
+        dispatch({
+          type: 'SET_PANEL',
+          panel: {
+            ...stateRef.current.panel,
+            name,
+            targets: stateRef.current.targets,
+            assignments: stateRef.current.assignments,
+          },
+        })
         markDirty()
       }
+    },
+    onViewModeToggle: (mode: 'simple' | 'spectral') => {
+      dispatch({ type: 'SET_VIEW_MODE', viewMode: mode })
+      markDirty()
+    },
+    onMicroscopeChange: async (microscopeId: string) => {
+      const newId = microscopeId || null
+      if (newId === stateRef.current.panel?.microscope_id) return
+      // Capture all live state before the async fetch
+      const currentTargets = stateRef.current.targets
+      const currentPanel = stateRef.current.panel
+      const currentViewMode = stateRef.current.viewMode
+      // Clear filter_id on existing assignments but keep fluorophore assignments
+      // so the channel select stays visible (assignment present) with "None" selected
+      const clearedAssignments = stateRef.current.assignments.map((a) => ({ ...a, filter_id: null }))
+      let newMicroscope: Microscope | null = null
+      if (newId) {
+        try {
+          newMicroscope = await getMicroscope(newId)
+        } catch {
+          return
+        }
+      }
+      dispatch({ type: 'SET_MICROSCOPE', microscope: newMicroscope })
+      if (currentPanel) {
+        dispatch({
+          type: 'SET_PANEL',
+          panel: {
+            ...currentPanel,
+            microscope_id: newId,
+            view_mode: currentViewMode,
+            targets: currentTargets,
+            assignments: clearedAssignments,
+          },
+        })
+      }
+      markDirty()
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [block.id, dispatch, reorderTargets, libraryData.secondaries])
 
   const viewConfig: IFPanelDesignerViewConfig = {
     showBackButton: false,
-    showMicroscopeSelector: false,
+    showMicroscopeSelector: true,
     showDelete: false,
-    showViewModeToggle: false,
+    showViewModeToggle: true,
   }
 
   return (
@@ -462,6 +536,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
           fluorophores={libraryData.fluorophores}
           secondaries={libraryData.secondaries}
           conjugateChemistries={libraryData.conjugateChemistries}
+          microscopes={libraryData.microscopes}
         />
       </div>
     </div>

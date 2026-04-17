@@ -218,6 +218,19 @@ class InstrumentCompatibilityResponse(BaseModel):
     instrument_compatibilities: list[InstrumentCompatibility]
 
 
+class MicroscopeCompatibility(BaseModel):
+    microscope_id: str
+    microscope_name: str
+    is_favorite: bool = False
+    laser_lines: list[LaserCompatibility]
+    filters: list[DetectorCompatibility]
+
+
+class MicroscopeCompatibilityResponse(BaseModel):
+    fluorophore_id: str
+    microscope_compatibilities: list[MicroscopeCompatibility]
+
+
 class ListEntryCreate(BaseModel):
     value: str
 

@@ -17,6 +17,9 @@ from models import Fluorophore
 from models import FluorophoreSpectrum
 from models import Instrument
 from models import Laser
+from models import Microscope
+from models import MicroscopeFilter
+from models import MicroscopeLaser
 from models import PanelAssignment
 from fastapi import File as FastAPIFile
 from fastapi import UploadFile
@@ -35,6 +38,8 @@ from schemas import FpbaseCatalogItem
 from schemas import InstrumentCompatibility
 from schemas import InstrumentCompatibilityResponse
 from schemas import LaserCompatibility
+from schemas import MicroscopeCompatibility
+from schemas import MicroscopeCompatibilityResponse
 from schemas import PaginatedResponse
 from services.fluorophore_import import confirm_import as do_confirm_import
 from services.fluorophore_import import parse_csv
@@ -525,4 +530,87 @@ def get_instrument_compatibility(
     return InstrumentCompatibilityResponse(
         fluorophore_id=id,
         instrument_compatibilities=compatibilities,
+    )
+
+
+@router.get("/{id}/microscope-compatibility", response_model=MicroscopeCompatibilityResponse)
+def get_microscope_compatibility(
+    id: str,
+    db: Session = Depends(get_db),
+):
+    fluorophore = db.get(Fluorophore, id)
+    if fluorophore is None:
+        raise HTTPException(status_code=404, detail="Fluorophore not found")
+
+    spectra_map = load_spectra_for(id, ["EX", "EM", "AB"], db)
+    ex_spectra = spectra_map.get("EX") or spectra_map.get("AB") or []
+    em_spectra = spectra_map.get("EM") or []
+
+    em_total = 0.0
+    if em_spectra:
+        low = em_spectra[0][0]
+        high = em_spectra[-1][0]
+        em_total = integrate_bandpass(em_spectra, low, high)
+
+    microscopes = list(
+        db.scalars(select(Microscope).order_by(Microscope.name))
+    )
+
+    compatibilities: list[MicroscopeCompatibility] = []
+    for mic in microscopes:
+        lasers = list(
+            db.scalars(
+                select(MicroscopeLaser)
+                .where(MicroscopeLaser.microscope_id == mic.id)
+                .order_by(MicroscopeLaser.wavelength_nm)
+            )
+        )
+
+        laser_lines: list[LaserCompatibility] = []
+        for laser in lasers:
+            ex_eff = interpolate_at(ex_spectra, float(laser.wavelength_nm))
+            laser_lines.append(
+                LaserCompatibility(
+                    wavelength_nm=laser.wavelength_nm,
+                    excitation_efficiency=round(ex_eff, 4),
+                )
+            )
+
+        filter_rows: list[DetectorCompatibility] = []
+        for laser in lasers:
+            filters = list(
+                db.scalars(
+                    select(MicroscopeFilter)
+                    .where(MicroscopeFilter.laser_id == laser.id)
+                    .order_by(MicroscopeFilter.filter_midpoint)
+                )
+            )
+            for filt in filters:
+                low = filt.filter_midpoint - filt.filter_width / 2
+                high = filt.filter_midpoint + filt.filter_width / 2
+                bandpass_integral = integrate_bandpass(em_spectra, low, high)
+                coll_eff = (bandpass_integral / em_total) if em_total > 0 else 0.0
+                filter_rows.append(
+                    DetectorCompatibility(
+                        name=filt.name,
+                        center_nm=filt.filter_midpoint,
+                        bandwidth_nm=filt.filter_width,
+                        collection_efficiency=round(coll_eff, 4),
+                        laser_wavelength_nm=laser.wavelength_nm,
+                    )
+                )
+
+        compatibilities.append(
+            MicroscopeCompatibility(
+                microscope_id=mic.id,
+                microscope_name=mic.name,
+                is_favorite=mic.is_favorite,
+                laser_lines=laser_lines,
+                filters=filter_rows,
+            )
+        )
+
+    return MicroscopeCompatibilityResponse(
+        fluorophore_id=id,
+        microscope_compatibilities=compatibilities,
     )
