@@ -278,13 +278,14 @@ def update_block(
     if block is None or block.experiment_id != id:
         raise HTTPException(status_code=404, detail="Block not found in this experiment")
 
-    if data.block_type is not None:
+    fields_set = data.model_fields_set
+    if "block_type" in fields_set and data.block_type is not None:
         block.block_type = data.block_type
-    if data.content is not None:
+    if "content" in fields_set and data.content is not None:
         block.content = json.dumps(data.content)
-    if data.sort_order is not None:
+    if "sort_order" in fields_set and data.sort_order is not None:
         block.sort_order = data.sort_order
-    if data.parent_id is not None:
+    if "parent_id" in fields_set:
         block.parent_id = data.parent_id
 
     db.commit()
@@ -334,6 +335,9 @@ def snapshot_panel(
                 selectinload(Panel.targets)
                 .selectinload(PanelTarget.secondary_antibody)
                 .selectinload(SecondaryAntibody.fluorophore),
+                selectinload(Panel.targets)
+                .selectinload(PanelTarget.dye_label)
+                .selectinload(DyeLabel.fluorophore),
                 selectinload(Panel.assignments).selectinload(PanelAssignment.fluorophore),
                 selectinload(Panel.assignments).selectinload(PanelAssignment.detector),
                 selectinload(Panel.instrument)
@@ -358,6 +362,16 @@ def snapshot_panel(
                     "antibody_target": t.antibody.target if t.antibody else None,
                     "antibody_host": t.antibody.host if t.antibody else None,
                     "antibody_clone": t.antibody.clone if t.antibody else None,
+                    "dye_label_id": t.dye_label_id,
+                    "dye_label_name": t.dye_label.name if t.dye_label else None,
+                    "dye_label_target": t.dye_label.label_target if t.dye_label else None,
+                    "dye_label_fluorophore_id": (
+                        t.dye_label.fluorophore_id if t.dye_label else None
+                    ),
+                    "dye_label_fluorophore_name": (
+                        t.dye_label.fluorophore.name
+                        if t.dye_label and t.dye_label.fluorophore else None
+                    ),
                     "staining_mode": t.staining_mode,
                     "secondary_antibody_id": t.secondary_antibody_id,
                     "secondary_antibody_name": (
@@ -377,6 +391,7 @@ def snapshot_panel(
                 {
                     "id": str(uuid.uuid4()),
                     "antibody_id": a.antibody_id,
+                    "dye_label_id": a.dye_label_id,
                     "fluorophore_id": a.fluorophore_id,
                     "fluorophore_name": a.fluorophore.name if a.fluorophore else None,
                     "detector_id": a.detector_id,

@@ -459,3 +459,22 @@ def test_content_json_roundtrip(client):
     # Re-fetch via experiment detail
     exp_data = client.get("/api/v1/experiments/%s" % exp["id"]).json()
     assert exp_data["blocks"][0]["content"] == content
+
+
+def test_update_block_can_clear_parent_id(client):
+    """BUG-002: PUT with parent_id=null must detach block from parent."""
+    exp = _create_experiment(client)
+    col = _create_block(client, exp["id"], "column_list", {"column_count": 2}, 0.0).json()
+    child = _create_block(client, exp["id"], "paragraph", {"text": "Inside column"}, 0.0, parent_id=col["id"]).json()
+    assert child["parent_id"] == col["id"]
+
+    resp = client.put(
+        "/api/v1/experiments/%s/blocks/%s" % (exp["id"], child["id"]),
+        json={"parent_id": None},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["parent_id"] is None
+
+    exp_data = client.get("/api/v1/experiments/%s" % exp["id"]).json()
+    updated_child = next(b for b in exp_data["blocks"] if b["id"] == child["id"])
+    assert updated_child["parent_id"] is None
