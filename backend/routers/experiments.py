@@ -249,9 +249,18 @@ def reorder_blocks(
     if experiment is None:
         raise HTTPException(status_code=404, detail="Experiment not found")
 
+    # Batch-fetch all blocks in one query
+    block_ids = [item.id for item in data.blocks]
+    blocks = list(
+        db.scalars(
+            select(ExperimentBlock).where(ExperimentBlock.id.in_(block_ids))
+        )
+    )
+    block_map = {b.id: b for b in blocks}
+
     # Validate all provided block IDs belong to this experiment
     for item in data.blocks:
-        block = db.get(ExperimentBlock, item.id)
+        block = block_map.get(item.id)
         if block is None or block.experiment_id != id:
             raise HTTPException(
                 status_code=400,
@@ -260,9 +269,10 @@ def reorder_blocks(
 
     # Apply reorder updates
     for item in data.blocks:
-        block = db.get(ExperimentBlock, item.id)
+        block = block_map[item.id]
         block.sort_order = item.sort_order
-        block.parent_id = item.parent_id
+        if "parent_id" in item.model_fields_set:
+            block.parent_id = item.parent_id
 
     db.commit()
     return _experiment_to_read(_load_experiment(db, id))
