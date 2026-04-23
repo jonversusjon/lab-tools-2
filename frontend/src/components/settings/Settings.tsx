@@ -10,6 +10,18 @@ import {
   type ImportPreviewResponse,
 } from '@/api/exportImport'
 import AntibodyImportDiffModal from '@/components/antibodies/AntibodyImportDiffModal'
+import GenericImportDiffModal from '@/components/shared/GenericImportDiffModal'
+import NestedImportDiffModal, {
+  type NestedPreviewExtra,
+} from '@/components/shared/NestedImportDiffModal'
+import {
+  SECONDARIES_SCHEMA,
+  LIST_ENTRIES_SCHEMA,
+  CHEMISTRIES_SCHEMA,
+  labelSecondary,
+  labelListEntry,
+  labelChemistry,
+} from '@/components/shared/importSchemas'
 import {
   useConjugateChemistries,
   useCreateConjugateChemistry,
@@ -157,6 +169,85 @@ export default function Settings() {
   const [abPreview, setAbPreview] = useState<ImportPreviewResponse | null>(null)
   const [abTagsPayload, setAbTagsPayload] = useState<unknown[]>([])
 
+  // Generic diff-flow state (for flat resources)
+  type GenericDiffConfig = {
+    resource: ExportResource
+    title: string
+    schema: typeof SECONDARIES_SCHEMA
+    labelFor: typeof labelSecondary
+    invalidateKeys: string[][]
+  }
+  const GENERIC_CONFIGS: Record<string, GenericDiffConfig> = {
+    secondaries: {
+      resource: 'secondaries',
+      title: 'Import Secondary Antibodies — Review Changes',
+      schema: SECONDARIES_SCHEMA,
+      labelFor: labelSecondary,
+      invalidateKeys: [['secondary-antibodies']],
+    },
+    'list-entries': {
+      resource: 'list-entries',
+      title: 'Import List Entries — Review Changes',
+      schema: LIST_ENTRIES_SCHEMA,
+      labelFor: labelListEntry,
+      invalidateKeys: [['list-entries']],
+    },
+    'conjugate-chemistries': {
+      resource: 'conjugate-chemistries',
+      title: 'Import Conjugate Chemistries — Review Changes',
+      schema: CHEMISTRIES_SCHEMA,
+      labelFor: labelChemistry,
+      invalidateKeys: [['conjugate-chemistries']],
+    },
+  }
+  const [genericPreview, setGenericPreview] = useState<{
+    preview: ImportPreviewResponse
+    config: GenericDiffConfig
+  } | null>(null)
+
+  // Nested diff-flow state (for instruments, microscopes, flow-panels, if-panels)
+  type NestedDiffConfig = {
+    resource: ExportResource
+    title: string
+    childKeys: string[]
+    labelFor: (r: Record<string, unknown>) => string
+    invalidateKeys: string[][]
+  }
+  const NESTED_CONFIGS: Record<string, NestedDiffConfig> = {
+    instruments: {
+      resource: 'instruments',
+      title: 'Import Instruments — Review Changes',
+      childKeys: ['lasers'],
+      labelFor: (r) => String(r.name ?? r.id ?? 'Unknown'),
+      invalidateKeys: [['instruments']],
+    },
+    microscopes: {
+      resource: 'microscopes',
+      title: 'Import Microscopes — Review Changes',
+      childKeys: ['lasers'],
+      labelFor: (r) => String(r.name ?? r.id ?? 'Unknown'),
+      invalidateKeys: [['microscopes']],
+    },
+    'flow-panels': {
+      resource: 'flow-panels',
+      title: 'Import Flow Panels — Review Changes',
+      childKeys: ['targets', 'assignments'],
+      labelFor: (r) => String(r.name ?? r.id ?? 'Unknown'),
+      invalidateKeys: [['panels']],
+    },
+    'if-panels': {
+      resource: 'if-panels',
+      title: 'Import IF/IHC Panels — Review Changes',
+      childKeys: ['targets', 'assignments'],
+      labelFor: (r) => String(r.name ?? r.id ?? 'Unknown'),
+      invalidateKeys: [['if-panels']],
+    },
+  }
+  const [nestedPreview, setNestedPreview] = useState<{
+    preview: ImportPreviewResponse & NestedPreviewExtra
+    config: NestedDiffConfig
+  } | null>(null)
+
   const handleImport = async (resource: ExportResource, file: File) => {
     setExportStatus((s) => ({ ...s, [resource]: 'importing' }))
     const input = fileInputRefs.current[resource]
@@ -173,6 +264,28 @@ export default function Settings() {
         } else {
           setAbTagsPayload((payload.tags as unknown[]) ?? [])
           setAbPreview(preview)
+          setExportStatus((s) => ({ ...s, [resource]: '' }))
+        }
+      } else if (GENERIC_CONFIGS[resource]) {
+        const cfg = GENERIC_CONFIGS[resource]
+        const payload = await readImportFile(file)
+        const preview = await previewImport(cfg.resource, payload)
+        if (preview.conflicts.length === 0 && preview.new_items.length === 0) {
+          setExportStatus((s) => ({ ...s, [resource]: 'Nothing to import' }))
+          setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 4000)
+        } else {
+          setGenericPreview({ preview, config: cfg })
+          setExportStatus((s) => ({ ...s, [resource]: '' }))
+        }
+      } else if (NESTED_CONFIGS[resource]) {
+        const cfg = NESTED_CONFIGS[resource]
+        const payload = await readImportFile(file)
+        const preview = await previewImport(cfg.resource, payload) as ImportPreviewResponse & NestedPreviewExtra
+        if (preview.conflicts.length === 0 && preview.new_items.length === 0) {
+          setExportStatus((s) => ({ ...s, [resource]: 'Nothing to import' }))
+          setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 4000)
+        } else {
+          setNestedPreview({ preview, config: cfg })
           setExportStatus((s) => ({ ...s, [resource]: '' }))
         }
       } else {
@@ -530,6 +643,60 @@ export default function Settings() {
           queryClient.invalidateQueries({ queryKey: ['antibodyTags'] })
         }}
       />
+
+      {nestedPreview && (
+        <NestedImportDiffModal
+          isOpen={true}
+          preview={nestedPreview.preview}
+          resource={nestedPreview.config.resource}
+          title={nestedPreview.config.title}
+          childKeys={nestedPreview.config.childKeys}
+          labelFor={nestedPreview.config.labelFor}
+          onClose={() => setNestedPreview(null)}
+          onCompleted={({ imported }) => {
+            const cfg = nestedPreview.config
+            setNestedPreview(null)
+            setExportStatus((s) => ({
+              ...s,
+              [cfg.resource]: 'Imported ' + imported + ' records',
+            }))
+            setTimeout(
+              () => setExportStatus((s) => ({ ...s, [cfg.resource]: '' })),
+              4000,
+            )
+            for (const key of cfg.invalidateKeys) {
+              queryClient.invalidateQueries({ queryKey: key })
+            }
+          }}
+        />
+      )}
+
+      {genericPreview && (
+        <GenericImportDiffModal
+          isOpen={true}
+          preview={genericPreview.preview}
+          resource={genericPreview.config.resource}
+          title={genericPreview.config.title}
+          schema={genericPreview.config.schema}
+          labelFor={genericPreview.config.labelFor}
+          onClose={() => setGenericPreview(null)}
+          onCompleted={({ imported }) => {
+            const cfg = genericPreview.config
+            setGenericPreview(null)
+            setExportStatus((s) => ({
+              ...s,
+              [cfg.resource]: 'Imported ' + imported + ' records',
+            }))
+            setTimeout(
+              () => setExportStatus((s) => ({ ...s, [cfg.resource]: '' })),
+              4000,
+            )
+            for (const key of cfg.invalidateKeys) {
+              queryClient.invalidateQueries({ queryKey: key })
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
