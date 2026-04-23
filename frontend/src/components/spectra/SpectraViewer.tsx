@@ -79,6 +79,7 @@ export default function SpectraViewer({
     backgroundColor: string
     borderDash?: number[]
     fill: boolean
+    pointRadius: number
   }> = []
 
   if (mode === 'single' && fluorophores.length > 0) {
@@ -102,6 +103,7 @@ export default function SpectraViewer({
         backgroundColor: 'transparent',
         borderDash: [6, 3],
         fill: false,
+        pointRadius: 0,
       })
     }
     if (emData.length > 0) {
@@ -111,6 +113,7 @@ export default function SpectraViewer({
         borderColor: color,
         backgroundColor: color + '30',
         fill: true,
+        pointRadius: 0,
       })
     }
   } else if (mode === 'overlay') {
@@ -130,6 +133,7 @@ export default function SpectraViewer({
             backgroundColor: 'transparent',
             borderDash: [6, 3],
             fill: false,
+            pointRadius: 0,
           })
         }
       }
@@ -143,6 +147,7 @@ export default function SpectraViewer({
             borderColor: color,
             backgroundColor: color + '20',
             fill: false,
+            pointRadius: 0,
           })
         }
       }
