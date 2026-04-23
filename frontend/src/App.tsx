@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Shell from '@/components/layout/Shell'
+import ErrorBoundary from '@/components/layout/ErrorBoundary'
 import ExperimentList from '@/components/experiments/ExperimentList'
 import ExperimentPage from '@/components/experiments/ExperimentPage'
 import InstrumentList from '@/components/instruments/InstrumentList'
@@ -23,7 +24,11 @@ import MicroscopeEditor from '@/components/microscopes/MicroscopeEditor'
 export default function App() {
   return (
     <Routes>
-      <Route element={<Shell />}>
+      <Route element={
+        <ErrorBoundary>
+          <Shell />
+        </ErrorBoundary>
+      }>
         <Route path="/" element={<Homepage />} />
 
         {/* Experiments */}
