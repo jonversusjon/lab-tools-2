@@ -478,3 +478,16 @@ def test_update_block_can_clear_parent_id(client):
     exp_data = client.get("/api/v1/experiments/%s" % exp["id"]).json()
     updated_child = next(b for b in exp_data["blocks"] if b["id"] == child["id"])
     assert updated_child["parent_id"] is None
+
+
+def test_update_experiment_can_clear_description(client):
+    """BUG-007: PUT with description=null must clear description."""
+    exp = _create_experiment(client, "Named", description="Has description")
+    resp = client.put(
+        "/api/v1/experiments/%s" % exp["id"],
+        json={"name": "Renamed", "description": None},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["name"] == "Renamed"
+    assert data["description"] is None

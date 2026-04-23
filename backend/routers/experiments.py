@@ -186,9 +186,10 @@ def update_experiment(
     db: Session = Depends(get_db),
 ):
     experiment = _load_experiment(db, id)
-    if data.name is not None:
+    fields_set = data.model_fields_set
+    if "name" in fields_set and data.name is not None:
         experiment.name = data.name
-    if data.description is not None:
+    if "description" in fields_set:
         experiment.description = data.description
     db.commit()
     return _experiment_to_read(_load_experiment(db, id))
