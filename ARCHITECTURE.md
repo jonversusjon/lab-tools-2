@@ -78,6 +78,7 @@ Every FK column MUST specify `ondelete`. With FK pragma enabled, missing `ondele
 | PanelAssignment.antibody_id | Antibody | CASCADE | Remove assignment if antibody deleted |
 | PanelAssignment.fluorophore_id | Fluorophore | CASCADE | Remove assignment if fluorophore deleted |
 | PanelAssignment.detector_id | Detector | CASCADE | Remove assignment if detector deleted |
+| IFPanelAssignment.filter_id | MicroscopeFilter | SET NULL | Preserves fluorophore assignment when filter is deleted during microscope reconfiguration |
 
 ---
 

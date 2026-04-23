@@ -164,7 +164,7 @@ When loading `fluorophores.json`, map the `source` field: `"gaussian_approximati
 - IFPanelAssignment.if_panel_id → IFPanel: `CASCADE`
 - IFPanelAssignment.antibody_id → Antibody: `CASCADE`
 - IFPanelAssignment.fluorophore_id → Fluorophore: `CASCADE`
-- IFPanelAssignment.filter_id → MicroscopeFilter: `CASCADE`
+- IFPanelAssignment.filter_id → MicroscopeFilter: `SET NULL` (preserves fluorophore assignment when filter is deleted during microscope reconfiguration)
 
 **Microscope domain:**
 - MicroscopeLaser.microscope_id → Microscope: `CASCADE`
