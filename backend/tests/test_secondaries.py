@@ -115,3 +115,45 @@ def test_search_secondary(client):
     data = resp.json()
     assert data["total"] == 1
     assert "Rabbit" in data["items"][0]["name"]
+
+
+def test_import_confirm_savepoint_isolates_row_failures(client):
+    """Row 2 failure must not roll back rows 1 and 3 (BUG-001)."""
+    resp = client.post(
+        "/api/v1/secondary-antibodies/import-confirm",
+        json={
+            "items": [
+                {
+                    "name": "Import Row One",
+                    "host": "Goat",
+                    "target_species": "Mouse",
+                    "row_number": 2,
+                },
+                {
+                    # Bad FK triggers IntegrityError on flush
+                    "name": "Import Row Two",
+                    "host": "Goat",
+                    "target_species": "Rabbit",
+                    "fluorophore_id": "does-not-exist",
+                    "row_number": 3,
+                },
+                {
+                    "name": "Import Row Three",
+                    "host": "Donkey",
+                    "target_species": "Rat",
+                    "row_number": 4,
+                },
+            ],
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["created"] == 2
+    assert len(data["errors"]) == 1
+    assert "Row 3" in data["errors"][0]
+
+    listing = client.get("/api/v1/secondary-antibodies?search=Import").json()
+    names = {item["name"] for item in listing["items"]}
+    assert "Import Row One" in names
+    assert "Import Row Three" in names
+    assert "Import Row Two" not in names

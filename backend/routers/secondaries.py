@@ -253,27 +253,25 @@ def import_confirm(
             continue
 
         try:
-            sa = SecondaryAntibody(
-                name=item.name,
-                host=item.host,
-                target_species=item.target_species,
-                target_isotype=item.target_isotype,
-                binding_mode=item.binding_mode or "species",
-                target_conjugate=item.target_conjugate.strip().lower() if item.target_conjugate else None,
-                fluorophore_id=item.fluorophore_id,
-                vendor=item.vendor,
-                catalog_number=item.catalog_number,
-                lot_number=item.lot_number,
-            )
-            db.add(sa)
-            db.flush()
+            with db.begin_nested():
+                sa = SecondaryAntibody(
+                    name=item.name,
+                    host=item.host,
+                    target_species=item.target_species,
+                    target_isotype=item.target_isotype,
+                    binding_mode=item.binding_mode or "species",
+                    target_conjugate=item.target_conjugate.strip().lower() if item.target_conjugate else None,
+                    fluorophore_id=item.fluorophore_id,
+                    vendor=item.vendor,
+                    catalog_number=item.catalog_number,
+                    lot_number=item.lot_number,
+                )
+                db.add(sa)
             created += 1
         except Exception as exc:
             errors.append("Row %d (%s): %s" % (item.row_number, item.name, str(exc)))
-            db.rollback()
 
-    if created > 0:
-        db.commit()
+    db.commit()
 
     return {"created": created, "skipped": skipped, "errors": errors}
 
