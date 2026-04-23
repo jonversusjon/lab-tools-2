@@ -51,7 +51,7 @@ function flushBlockSave(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content: { text } }),
     keepalive: true,
-  })
+  }).catch((err) => console.error('Auto-save failed:', err))
 }
 
 export default function TextBlockEditor({
@@ -107,7 +107,7 @@ export default function TextBlockEditor({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: { text } }),
         }
-      )
+      ).catch((err) => console.error('Auto-save failed:', err))
       dirtyRef.current = false
     },
     [experimentId, block.id]

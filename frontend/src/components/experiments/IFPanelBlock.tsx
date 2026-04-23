@@ -201,7 +201,7 @@ export default function IFPanelBlock({ experimentId, block, libraryData }: IFPan
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: updatedContent }),
       keepalive: true,
-    })
+    }).catch((err) => console.error('Auto-save failed:', err))
   }, [experimentId, block.id, content, libraryData.antibodies, libraryData.fluorophores])
 
   function markDirty() {

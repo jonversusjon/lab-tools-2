@@ -45,7 +45,7 @@ function flushTableSave(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
     keepalive: true,
-  })
+  }).catch((err) => console.error('Auto-save failed:', err))
 }
 
 interface SortableRowProps {
@@ -187,7 +187,7 @@ export default function TableBlock({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content }),
         }
-      )
+      ).catch((err) => console.error('Auto-save failed:', err))
       dirtyRef.current = false
     },
     [experimentId, block.id]

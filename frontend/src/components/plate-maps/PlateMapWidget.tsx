@@ -293,7 +293,7 @@ function PlateMapWidgetInner({ plateId, maxWidth, readOnly = false, onDirtyChang
             legend: state.legend,
           }),
           keepalive: true,
-        }).catch(() => undefined)
+        }).catch((err) => console.error('Auto-save failed:', err))
       }
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

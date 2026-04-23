@@ -49,7 +49,7 @@ function flushCalloutSave(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
     keepalive: true,
-  })
+  }).catch((err) => console.error('Auto-save failed:', err))
 }
 
 export default function CalloutBlock({
@@ -103,7 +103,7 @@ export default function CalloutBlock({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content: { text: t, icon: i, color: c } }),
         }
-      )
+      ).catch((err) => console.error('Auto-save failed:', err))
       dirtyRef.current = false
     },
     [experimentId, block.id]

@@ -198,7 +198,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: updatedContent }),
       keepalive: true,
-    })
+    }).catch((err) => console.error('Auto-save failed:', err))
   }, [experimentId, block.id, content.source_panel_id, content.volume_params, libraryData.antibodies, libraryData.dyeLabels, libraryData.allFluorophores])
 
   function markDirty() {

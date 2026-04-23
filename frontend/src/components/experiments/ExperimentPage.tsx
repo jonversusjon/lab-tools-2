@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { useExperiment, useDeleteExperiment } from '@/hooks/useExperiments'
+import { updateExperiment } from '@/api/experiments'
 import { useAntibodies } from '@/hooks/useAntibodies'
 import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
@@ -118,15 +119,10 @@ export default function ExperimentPage() {
   const doSave = useCallback(async () => {
     setSaveStatus('saving')
     try {
-      const res = await fetch('/api/v1/experiments/' + id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: titleRef.current.trim() || 'Untitled',
-          description: descriptionRef.current.trim() || null,
-        }),
+      await updateExperiment(id, {
+        name: titleRef.current.trim() || 'Untitled',
+        description: descriptionRef.current.trim() || null,
       })
-      if (!res.ok) throw new Error('Save failed')
       setSaveStatus('saved')
       dirtyRef.current = false
       // Delay list invalidation to avoid triggering mid-typing
@@ -163,7 +159,7 @@ export default function ExperimentPage() {
             description: descriptionRef.current.trim() || null,
           }),
           keepalive: true,
-        })
+        }).catch((err) => console.error('Auto-save failed:', err))
       }
     }
   }, [])

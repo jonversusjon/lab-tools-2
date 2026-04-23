@@ -52,7 +52,7 @@ function flushSave(instrumentId: string, form: InstrumentFormState) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     keepalive: true,
-  })
+  }).catch((err) => console.error('Auto-save failed:', err))
 }
 
 export default function InstrumentEditor() {
