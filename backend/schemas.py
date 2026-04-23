@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Generic
 from typing import TypeVar
 
 from pydantic import BaseModel
+from pydantic import field_validator
+
+
+def _parse_json_dict(v):
+    if isinstance(v, str):
+        return json.loads(v) if v else {}
+    return v
 
 T = TypeVar("T")
 
@@ -831,6 +839,11 @@ class PlateMapRead(BaseModel):
 
     model_config = {"from_attributes": True}
 
+    @field_validator("well_data", "legend", mode="before")
+    @classmethod
+    def _parse_json(cls, v):
+        return _parse_json_dict(v)
+
 
 class PlateMapListRead(BaseModel):
     id: str
@@ -870,6 +883,11 @@ class ExperimentBlockRead(BaseModel):
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def _parse_json(cls, v):
+        return _parse_json_dict(v)
 
 
 class ExperimentBlockReorderItem(BaseModel):
