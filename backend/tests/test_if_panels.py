@@ -138,11 +138,11 @@ def test_delete_nonexistent_panel(client):
 
 
 # ---------------------------------------------------------------------------
-# Microscope change clears filter-linked assignments only
+# Microscope change clears ALL assignments (BUG-006)
 # ---------------------------------------------------------------------------
 
 
-def test_update_microscope_clears_filter_linked_assignments(client):
+def test_update_microscope_clears_all_assignments(client):
     scope_a = _create_microscope(client, name="Scope A")
     scope_b = _create_microscope(client, name="Scope B")
     filter_id = scope_a["lasers"][0]["filters"][0]["id"]
@@ -158,7 +158,8 @@ def test_update_microscope_clears_filter_linked_assignments(client):
 
     # Assignment WITH filter_id (from scope A)
     _add_assignment(client, panel_id, ab1["id"], filter_id=filter_id)
-    # Assignment WITHOUT filter_id
+    # Assignment WITHOUT filter_id — still references a fluorophore that
+    # may be incompatible with scope B's lasers
     _add_assignment(client, panel_id, ab2["id"], fluorophore_id="test-mcherry")
 
     # Change microscope to scope B
@@ -169,11 +170,28 @@ def test_update_microscope_clears_filter_linked_assignments(client):
     assert resp.status_code == 200
     data = resp.json()
 
-    assignment_ab_ids = {a["antibody_id"] for a in data["assignments"]}
-    # Filter-linked assignment should be gone
-    assert ab1["id"] not in assignment_ab_ids
-    # Filter-null assignment should survive
-    assert ab2["id"] in assignment_ab_ids
+    # Both assignments cleared regardless of filter_id
+    assert data["assignments"] == []
+
+
+def test_clear_microscope_clears_all_assignments(client):
+    scope_a = _create_microscope(client, name="Scope A")
+    ab = _create_antibody(client, target="MAP2", name="MAP2 Ab")
+
+    panel = _create_panel(client, microscope_id=scope_a["id"])
+    panel_id = panel["id"]
+
+    _add_target(client, panel_id, ab["id"])
+    _add_assignment(client, panel_id, ab["id"], fluorophore_id="test-mcherry")
+
+    resp = client.put(
+        "/api/v1/if-panels/%s" % panel_id,
+        json={"microscope_id": None},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["microscope_id"] is None
+    assert data["assignments"] == []
 
 
 # ---------------------------------------------------------------------------

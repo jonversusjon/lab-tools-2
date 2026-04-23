@@ -186,7 +186,9 @@ def update_if_panel(
         if microscope is None:
             raise HTTPException(status_code=404, detail="Microscope not found")
 
-    # If microscope_id changes, clear filter-linked assignments only
+    # If microscope_id changes, clear ALL assignments (matches flow panel behavior).
+    # Assignments with null filter_id still reference fluorophores that may be
+    # incompatible with the new microscope's lasers.
     microscope_changed = (
         data.microscope_id is not None
         and panel.microscope_id != data.microscope_id
@@ -195,7 +197,6 @@ def update_if_panel(
         db.execute(
             IFPanelAssignment.__table__.delete().where(
                 IFPanelAssignment.panel_id == panel.id,
-                IFPanelAssignment.filter_id.is_not(None),
             )
         )
 
@@ -207,11 +208,10 @@ def update_if_panel(
     if data.microscope_id is not None:
         panel.microscope_id = data.microscope_id
     elif "microscope_id" in (data.model_fields_set or set()):
-        # Explicitly unsetting microscope — clear filter-linked assignments
+        # Explicitly unsetting microscope — clear ALL assignments
         db.execute(
             IFPanelAssignment.__table__.delete().where(
                 IFPanelAssignment.panel_id == panel.id,
-                IFPanelAssignment.filter_id.is_not(None),
             )
         )
         panel.microscope_id = None
