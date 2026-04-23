@@ -21,6 +21,7 @@ import { usePanelDesigner } from '@/hooks/usePanelDesigner'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import { useDyeLabels } from '@/hooks/useDyeLabels'
 import { getPreferences, updatePreference } from '@/api/preferences'
+import { useToast } from '@/components/layout/Toast'
 import PanelDesignerView from './PanelDesignerView'
 import type { PanelDesignerViewHandlers, PanelDesignerViewConfig } from './PanelDesignerView'
 import type { TargetSelection } from './TargetOmnibox'
@@ -50,7 +51,7 @@ export default function PanelDesigner() {
   const instrumentId = panel?.instrument_id ?? null
   const { data: instrument } = useInstrument(instrumentId ?? '')
 
-  const { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo, reorderTargets } = usePanelDesigner(
+  const { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo, reorderTargets, forceRefresh } = usePanelDesigner(
     panel ?? null,
     instrument ?? null
   )
@@ -127,6 +128,15 @@ export default function PanelDesigner() {
   }, [antibodies])
 
   // Backend-syncing undo/redo
+  const { toast } = useToast()
+
+  const reconcileFromServer = useCallback(async () => {
+    const fresh = await refetchPanel()
+    if (fresh.data) {
+      forceRefresh(fresh.data)
+    }
+  }, [refetchPanel, forceRefresh])
+
   const syncUndoRedo = useCallback(
     async (direction: 'undo' | 'redo') => {
       if (!id) return
@@ -146,16 +156,12 @@ export default function PanelDesigner() {
       if (direction === 'undo') undo()
       else redo()
 
-      for (const a of removed) {
-        try {
+      try {
+        for (const a of removed) {
           await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: a.id })
-        } catch {
-          // Undo sync failed
         }
-      }
 
-      for (const a of added) {
-        try {
+        for (const a of added) {
           const real = await addAssignmentMutation.mutateAsync({
             panelId: id,
             data: {
@@ -168,12 +174,13 @@ export default function PanelDesigner() {
           if (real.id !== a.id) {
             dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: a.id, newId: real.id })
           }
-        } catch {
-          // Undo sync failed
         }
+      } catch {
+        toast('Undo sync failed — reloading panel state from server', 'error')
+        await reconcileFromServer()
       }
     },
-    [id, state.assignments, state.past, state.future, undo, redo, dispatch, addAssignmentMutation, removeAssignmentMutation]
+    [id, state.assignments, state.past, state.future, undo, redo, dispatch, addAssignmentMutation, removeAssignmentMutation, reconcileFromServer, toast]
   )
 
   const handleUndo = useCallback(() => syncUndoRedo('undo'), [syncUndoRedo])
