@@ -84,6 +84,10 @@ export function panelDesignerReducer(
       const filterAssignment = (a: PanelAssignment) => {
         if (action.antibodyId) return a.antibody_id !== action.antibodyId
         if (removedTarget?.dye_label_id) return a.dye_label_id !== removedTarget.dye_label_id
+        // Broken snapshot fallback: target has no identifier, drop orphaned assignments (both keys null)
+        if (!removedTarget?.antibody_id && !removedTarget?.dye_label_id) {
+          return !(a.antibody_id === null && a.dye_label_id === null)
+        }
         return true
       }
       return {

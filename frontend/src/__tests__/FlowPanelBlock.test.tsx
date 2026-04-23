@@ -51,19 +51,23 @@ function makeContent(overrides: Partial<FlowPanelBlockContent> = {}): FlowPanelB
       {
         id: 't1', antibody_id: AB1_ID, antibody_name: 'anti-CD3',
         antibody_target: 'CD3', antibody_host: 'Mouse', antibody_clone: 'OKT3',
+        dye_label_id: null, dye_label_name: null, dye_label_target: null,
+        dye_label_fluorophore_id: null, dye_label_fluorophore_name: null,
         staining_mode: 'direct', secondary_antibody_id: null, secondary_antibody_name: null,
         sort_order: 0, flow_dilution_factor: 100, icc_if_dilution_factor: null,
       },
       {
         id: 't2', antibody_id: AB2_ID, antibody_name: 'anti-CD45',
         antibody_target: 'CD45', antibody_host: 'Mouse', antibody_clone: 'HI30',
+        dye_label_id: null, dye_label_name: null, dye_label_target: null,
+        dye_label_fluorophore_id: null, dye_label_fluorophore_name: null,
         staining_mode: 'direct', secondary_antibody_id: null, secondary_antibody_name: null,
         sort_order: 1, flow_dilution_factor: 200, icc_if_dilution_factor: null,
       },
     ],
     assignments: [
       {
-        id: 'a1', antibody_id: AB1_ID, fluorophore_id: FL1_ID,
+        id: 'a1', antibody_id: AB1_ID, dye_label_id: null, fluorophore_id: FL1_ID,
         fluorophore_name: 'FITC', detector_id: DET_D1, detector_name: '530/30',
       },
     ],

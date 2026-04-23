@@ -868,6 +868,11 @@ export interface FlowPanelInstanceTarget {
   antibody_target: string | null
   antibody_host: string | null
   antibody_clone: string | null
+  dye_label_id: string | null
+  dye_label_name: string | null
+  dye_label_target: string | null
+  dye_label_fluorophore_id: string | null
+  dye_label_fluorophore_name: string | null
   staining_mode: string
   secondary_antibody_id: string | null
   secondary_antibody_name: string | null
@@ -879,6 +884,7 @@ export interface FlowPanelInstanceTarget {
 export interface FlowPanelInstanceAssignment {
   id: string
   antibody_id: string | null
+  dye_label_id: string | null
   fluorophore_id: string
   fluorophore_name: string | null
   detector_id: string

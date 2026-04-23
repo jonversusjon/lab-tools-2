@@ -54,11 +54,11 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       id: t.id,
       panel_id: block.id,
       antibody_id: t.antibody_id,
-      dye_label_id: null,
-      dye_label_name: null,
-      dye_label_target: null,
-      dye_label_fluorophore_id: null,
-      dye_label_fluorophore_name: null,
+      dye_label_id: t.dye_label_id ?? null,
+      dye_label_name: t.dye_label_name ?? null,
+      dye_label_target: t.dye_label_target ?? null,
+      dye_label_fluorophore_id: t.dye_label_fluorophore_id ?? null,
+      dye_label_fluorophore_name: t.dye_label_fluorophore_name ?? null,
       staining_mode: t.staining_mode as 'direct' | 'indirect',
       secondary_antibody_id: t.secondary_antibody_id,
       sort_order: t.sort_order,
@@ -72,7 +72,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       id: a.id,
       panel_id: block.id,
       antibody_id: a.antibody_id,
-      dye_label_id: null,
+      dye_label_id: a.dye_label_id ?? null,
       fluorophore_id: a.fluorophore_id,
       detector_id: a.detector_id,
       notes: null,
@@ -122,6 +122,8 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
   const saveContent = useCallback((currentState: typeof state) => {
     const abMap = new Map<string, Antibody>()
     for (const ab of libraryData.antibodies) abMap.set(ab.id, ab)
+    const dlMap = new Map<string, DyeLabel>()
+    for (const dl of libraryData.dyeLabels) dlMap.set(dl.id, dl)
     const flMap = new Map<string, string>()
     for (const fl of libraryData.allFluorophores) flMap.set(fl.id, fl.name)
 
@@ -158,6 +160,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       instrument: instrumentSnapshot,
       targets: currentState.targets.map((t) => {
         const ab = t.antibody_id ? abMap.get(t.antibody_id) : undefined
+        const dl = t.dye_label_id ? dlMap.get(t.dye_label_id) : undefined
         return {
           id: t.id,
           antibody_id: t.antibody_id,
@@ -165,17 +168,23 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
           antibody_target: ab?.target ?? t.antibody_target,
           antibody_host: ab?.host ?? null,
           antibody_clone: ab?.clone ?? null,
+          dye_label_id: t.dye_label_id,
+          dye_label_name: dl?.name ?? t.dye_label_name,
+          dye_label_target: dl?.label_target ?? t.dye_label_target,
+          dye_label_fluorophore_id: dl?.fluorophore_id ?? t.dye_label_fluorophore_id,
+          dye_label_fluorophore_name: dl?.fluorophore_name ?? t.dye_label_fluorophore_name,
           staining_mode: t.staining_mode,
           secondary_antibody_id: t.secondary_antibody_id,
           secondary_antibody_name: t.secondary_antibody_name,
           sort_order: t.sort_order,
-          flow_dilution_factor: ab?.flow_dilution_factor ?? null,
-          icc_if_dilution_factor: ab?.icc_if_dilution_factor ?? null,
+          flow_dilution_factor: ab?.flow_dilution_factor ?? dl?.flow_dilution_factor ?? null,
+          icc_if_dilution_factor: ab?.icc_if_dilution_factor ?? dl?.icc_if_dilution_factor ?? null,
         }
       }),
       assignments: currentState.assignments.filter(Boolean).map((a) => ({
         id: a.id,
         antibody_id: a.antibody_id,
+        dye_label_id: a.dye_label_id,
         fluorophore_id: a.fluorophore_id,
         fluorophore_name: flMap.get(a.fluorophore_id) ?? null,
         detector_id: a.detector_id,
@@ -190,7 +199,7 @@ export default function FlowPanelBlock({ experimentId, block, libraryData }: Flo
       body: JSON.stringify({ content: updatedContent }),
       keepalive: true,
     })
-  }, [experimentId, block.id, content.source_panel_id, content.volume_params, libraryData.antibodies, libraryData.allFluorophores])
+  }, [experimentId, block.id, content.source_panel_id, content.volume_params, libraryData.antibodies, libraryData.dyeLabels, libraryData.allFluorophores])
 
   function markDirty() {
     dirtyRef.current = true
