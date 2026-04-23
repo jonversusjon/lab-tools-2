@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useCallback } from 'react'
+import { useReducer, useEffect, useCallback, useRef } from 'react'
 import type { Panel, PanelTarget, PanelAssignment, Instrument } from '@/types'
 
 const UNDO_CAP = 50
@@ -16,6 +16,7 @@ export interface PanelDesignerState {
 
 export type PanelDesignerAction =
   | { type: 'SET_PANEL'; panel: Panel }
+  | { type: 'FORCE_REFRESH'; panel: Panel }
   | { type: 'SET_INSTRUMENT'; instrument: Instrument | null }
   | { type: 'ADD_TARGET'; target: PanelTarget }
   | { type: 'UPDATE_TARGET'; target: PanelTarget }
@@ -51,6 +52,7 @@ export function panelDesignerReducer(
 ): PanelDesignerState {
   switch (action.type) {
     case 'SET_PANEL':
+    case 'FORCE_REFRESH':
       return {
         ...state,
         panel: action.panel,
@@ -195,16 +197,18 @@ export function panelDesignerReducer(
 
 export function usePanelDesigner(panel: Panel | null, instrument: Instrument | null) {
   const [state, dispatch] = useReducer(panelDesignerReducer, initialState)
+  const lastPanelIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (panel) {
+    if (panel && panel.id !== lastPanelIdRef.current) {
+      lastPanelIdRef.current = panel.id
       dispatch({ type: 'SET_PANEL', panel })
     }
   }, [panel])
 
   useEffect(() => {
     dispatch({ type: 'SET_INSTRUMENT', instrument })
-  }, [instrument])
+  }, [instrument?.id])
 
   const addTarget = useCallback((target: PanelTarget) => {
     dispatch({ type: 'ADD_TARGET', target })
@@ -230,8 +234,13 @@ export function usePanelDesigner(panel: Panel | null, instrument: Instrument | n
     dispatch({ type: 'REDO' })
   }, [])
 
+  const forceRefresh = useCallback((fresh: Panel) => {
+    lastPanelIdRef.current = fresh.id
+    dispatch({ type: 'FORCE_REFRESH', panel: fresh })
+  }, [])
+
   const canUndo = state.past.length > 0
   const canRedo = state.future.length > 0
 
-  return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, undo, redo, canUndo, canRedo }
+  return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, undo, redo, forceRefresh, canUndo, canRedo }
 }

@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useCallback } from 'react'
+import { useReducer, useEffect, useCallback, useRef } from 'react'
 import type { IFPanel, IFPanelTarget, IFPanelAssignment, Microscope } from '@/types'
 
 const UNDO_CAP = 50
@@ -16,6 +16,7 @@ export interface IFPanelDesignerState {
 
 export type IFPanelDesignerAction =
   | { type: 'SET_PANEL'; panel: IFPanel }
+  | { type: 'FORCE_REFRESH'; panel: IFPanel }
   | { type: 'SET_MICROSCOPE'; microscope: Microscope | null }
   | { type: 'SET_VIEW_MODE'; viewMode: 'simple' | 'spectral' }
   | { type: 'ADD_TARGET'; target: IFPanelTarget }
@@ -53,6 +54,7 @@ export function ifPanelDesignerReducer(
 ): IFPanelDesignerState {
   switch (action.type) {
     case 'SET_PANEL':
+    case 'FORCE_REFRESH':
       return {
         ...state,
         panel: action.panel,
@@ -202,14 +204,18 @@ export function ifPanelDesignerReducer(
 
 export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope | null) {
   const [state, dispatch] = useReducer(ifPanelDesignerReducer, initialState)
+  const lastPanelIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (panel) dispatch({ type: 'SET_PANEL', panel })
+    if (panel && panel.id !== lastPanelIdRef.current) {
+      lastPanelIdRef.current = panel.id
+      dispatch({ type: 'SET_PANEL', panel })
+    }
   }, [panel])
 
   useEffect(() => {
     dispatch({ type: 'SET_MICROSCOPE', microscope })
-  }, [microscope])
+  }, [microscope?.id])
 
   const addTarget = useCallback((target: IFPanelTarget) => {
     dispatch({ type: 'ADD_TARGET', target })
@@ -234,8 +240,13 @@ export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope
   const undo = useCallback(() => dispatch({ type: 'UNDO' }), [])
   const redo = useCallback(() => dispatch({ type: 'REDO' }), [])
 
+  const forceRefresh = useCallback((fresh: IFPanel) => {
+    lastPanelIdRef.current = fresh.id
+    dispatch({ type: 'FORCE_REFRESH', panel: fresh })
+  }, [])
+
   const canUndo = state.past.length > 0
   const canRedo = state.future.length > 0
 
-  return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode, undo, redo, canUndo, canRedo }
+  return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode, undo, redo, forceRefresh, canUndo, canRedo }
 }
