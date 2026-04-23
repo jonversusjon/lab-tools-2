@@ -19,6 +19,7 @@ from models import AntibodyTag
 from models import AntibodyTagAssignment
 from models import ConjugateChemistry
 from models import Detector
+from models import Fluorophore
 from models import IFPanel
 from models import IFPanelAssignment
 from models import IFPanelTarget
@@ -89,38 +90,175 @@ def export_antibodies(db: Session = Depends(get_db)):
     }, "antibodies-export.json")
 
 
+# Columns on Antibody that are compared + round-tripped through the import flow.
+# Timestamps are excluded (server-managed).
+_ANTIBODY_FIELDS = (
+    "id", "name", "target", "clone", "host", "isotype",
+    "fluorophore_id", "conjugate", "vendor", "catalog_number",
+    "confirmed_in_stock", "date_received",
+    "flow_dilution", "icc_if_dilution", "wb_dilution",
+    "flow_dilution_factor", "icc_if_dilution_factor", "wb_dilution_factor",
+    "reacts_with", "storage_temp", "validation_notes",
+    "notes", "website", "physical_location", "is_favorite",
+)
+
+
+def _antibody_to_dict(ab: Antibody) -> dict[str, Any]:
+    data = {f: getattr(ab, f) for f in _ANTIBODY_FIELDS}
+    data["tag_ids"] = sorted([t.id for t in ab.tags])
+    return data
+
+
+def _sanitize_imported_antibody(rec: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Strip unknown keys from an imported record, return (clean_record, dropped_keys)."""
+    allowed = set(_ANTIBODY_FIELDS) | {"tag_ids"}
+    dropped = sorted(k for k in rec.keys() if k not in allowed and k not in ("created_at", "updated_at"))
+    clean = {k: rec[k] for k in rec.keys() if k in allowed}
+    # Normalize tag_ids list so it round-trips through sorting
+    clean["tag_ids"] = sorted(clean.get("tag_ids") or [])
+    return clean, dropped
+
+
+def _diff_fields(existing: dict[str, Any], imported: dict[str, Any]) -> list[str]:
+    """Return sorted list of field names that differ between the two dicts (across union of keys)."""
+    keys = set(existing.keys()) | set(imported.keys())
+    diffs: list[str] = []
+    for k in keys:
+        a = existing.get(k)
+        b = imported.get(k)
+        if isinstance(a, list) and isinstance(b, list):
+            if sorted(a) != sorted(b):
+                diffs.append(k)
+        elif a != b:
+            diffs.append(k)
+    return sorted(diffs)
+
+
+@router.post("/import/antibodies/preview")
+def import_antibodies_preview(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    """Diff-only endpoint. Returns new items, conflicts, and property drift. No writes."""
+    tags_payload = payload.get("tags", []) or []
+    records = payload.get("records", []) or []
+
+    existing_rows = {
+        ab.id: ab
+        for ab in db.scalars(
+            select(Antibody).options(selectinload(Antibody.tags))
+        ).all()
+    }
+    existing_tags = {t.id: {"id": t.id, "name": t.name, "color": t.color}
+                     for t in db.scalars(select(AntibodyTag)).all()}
+
+    new_items: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
+    all_dropped_keys: set[str] = set()
+    all_present_keys: set[str] = set()
+
+    for raw in records:
+        clean, dropped = _sanitize_imported_antibody(dict(raw))
+        all_dropped_keys.update(dropped)
+        all_present_keys.update(k for k in raw.keys() if k not in ("created_at", "updated_at"))
+
+        rec_id = clean.get("id")
+        if rec_id and rec_id in existing_rows:
+            existing_dict = _antibody_to_dict(existing_rows[rec_id])
+            diff = _diff_fields(existing_dict, clean)
+            if diff:
+                conflicts.append({
+                    "id": rec_id,
+                    "existing": existing_dict,
+                    "imported": clean,
+                    "diff_fields": diff,
+                })
+            # If no diff → identical, silently skip.
+        else:
+            new_items.append(clean)
+
+    # db_only_props: fields the DB has that NO imported record carried
+    # (indicates the user is importing an old export into a newer schema)
+    db_only_props = sorted(f for f in _ANTIBODY_FIELDS if f not in all_present_keys and f != "id")
+    # import_only_props: extra keys in the import that don't map to our schema
+    import_only_props = sorted(all_dropped_keys)
+
+    # Tags: merge-only for Phase 1. Report which tags are new vs already-known.
+    new_tags = []
+    for t in tags_payload:
+        if t.get("id") and t["id"] not in existing_tags:
+            new_tags.append(t)
+
+    return {
+        "resource": "antibodies",
+        "new_items": new_items,
+        "conflicts": conflicts,
+        "db_only_props": db_only_props,
+        "import_only_props": import_only_props,
+        "tags": {
+            "new": new_tags,
+            "existing_count": len(existing_tags),
+        },
+    }
+
+
+@router.post("/import/antibodies/commit")
+def import_antibodies_commit(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    """Apply a resolved import. `records` is the final list to upsert; missing-FK refs are nulled."""
+    tags_payload = payload.get("tags", []) or []
+    records = payload.get("records", []) or []
+
+    for t in tags_payload:
+        if not t.get("id") or not t.get("name"):
+            continue
+        db.merge(AntibodyTag(id=t["id"], name=t["name"], color=t.get("color")))
+    db.flush()
+
+    existing_fluor_ids = set(db.scalars(select(Fluorophore.id)).all())
+    existing_tag_ids = set(db.scalars(select(AntibodyTag.id)).all())
+    nulled_fluorophores = 0
+    skipped_tag_refs = 0
+
+    for raw in records:
+        clean, _ = _sanitize_imported_antibody(dict(raw))
+        tag_ids = clean.pop("tag_ids", [])
+        if not clean.get("id"):
+            continue
+        if clean.get("fluorophore_id") and clean["fluorophore_id"] not in existing_fluor_ids:
+            clean["fluorophore_id"] = None
+            nulled_fluorophores += 1
+        db.merge(Antibody(**clean))
+        db.flush()
+        db.execute(
+            AntibodyTagAssignment.__table__.delete().where(
+                AntibodyTagAssignment.antibody_id == clean["id"]
+            )
+        )
+        for tag_id in tag_ids:
+            if tag_id not in existing_tag_ids:
+                skipped_tag_refs += 1
+                continue
+            db.merge(AntibodyTagAssignment(antibody_id=clean["id"], tag_id=tag_id))
+
+    db.commit()
+    return {
+        "imported": len(records),
+        "tags_imported": len(tags_payload),
+        "nulled_fluorophore_refs": nulled_fluorophores,
+        "skipped_tag_refs": skipped_tag_refs,
+    }
+
+
+# Legacy endpoint retained for non-diff callers (simple merge).
 @router.post("/import/antibodies")
 def import_antibodies(
     payload: dict[str, Any] = Body(...),
     db: Session = Depends(get_db),
 ):
-    tags = payload.get("tags", [])
-    records = payload.get("records", [])
-
-    for tag_data in tags:
-        db.merge(AntibodyTag(
-            id=tag_data["id"], name=tag_data["name"], color=tag_data.get("color")
-        ))
-    db.flush()
-
-    for rec in records:
-        tag_ids = rec.pop("tag_ids", [])
-        # Strip computed/timestamp fields
-        for f in ("created_at", "updated_at"):
-            rec.pop(f, None)
-        db.merge(Antibody(**rec))
-        db.flush()
-
-        db.execute(
-            AntibodyTagAssignment.__table__.delete().where(
-                AntibodyTagAssignment.antibody_id == rec["id"]
-            )
-        )
-        for tag_id in tag_ids:
-            db.merge(AntibodyTagAssignment(antibody_id=rec["id"], tag_id=tag_id))
-
-    db.commit()
-    return {"imported": len(records), "tags_imported": len(tags)}
+    return import_antibodies_commit(payload=payload, db=db)
 
 
 # ── SECONDARIES ───────────────────────────────────────────────────────────────
@@ -154,12 +292,20 @@ def import_secondaries(
     db: Session = Depends(get_db),
 ):
     records = payload.get("records", [])
+    existing_fluor_ids = set(db.scalars(select(Fluorophore.id)).all())
+    nulled_fluorophores = 0
     for rec in records:
         for f in ("created_at", "updated_at"):
             rec.pop(f, None)
+        if rec.get("fluorophore_id") and rec["fluorophore_id"] not in existing_fluor_ids:
+            rec["fluorophore_id"] = None
+            nulled_fluorophores += 1
         db.merge(SecondaryAntibody(**rec))
     db.commit()
-    return {"imported": len(records)}
+    return {
+        "imported": len(records),
+        "nulled_fluorophore_refs": nulled_fluorophores,
+    }
 
 
 # ── INSTRUMENTS ───────────────────────────────────────────────────────────────

@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { getPreferences, updatePreference } from '@/api/preferences'
-import { downloadExport, uploadImport, type ExportResource } from '@/api/exportImport'
+import {
+  downloadExport,
+  uploadImport,
+  previewImport,
+  readImportFile,
+  type ExportResource,
+  type ImportPreviewResponse,
+} from '@/api/exportImport'
+import AntibodyImportDiffModal from '@/components/antibodies/AntibodyImportDiffModal'
 import {
   useConjugateChemistries,
   useCreateConjugateChemistry,
@@ -142,20 +151,45 @@ export default function Settings() {
     }
   }
 
+  const queryClient = useQueryClient()
+
+  // Antibody diff-flow state
+  const [abPreview, setAbPreview] = useState<ImportPreviewResponse | null>(null)
+  const [abTagsPayload, setAbTagsPayload] = useState<unknown[]>([])
+
   const handleImport = async (resource: ExportResource, file: File) => {
     setExportStatus((s) => ({ ...s, [resource]: 'importing' }))
+    const input = fileInputRefs.current[resource]
+
     try {
-      const result = await uploadImport(resource, file)
-      setExportStatus((s) => ({ ...s, [resource]: 'Imported ' + result.imported + ' records' }))
-      setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 4000)
+      if (resource === 'antibodies') {
+        // Diff flow: read file, preview, open modal
+        const payload = await readImportFile(file)
+        const preview = await previewImport('antibodies', payload)
+
+        if (preview.conflicts.length === 0 && preview.new_items.length === 0) {
+          setExportStatus((s) => ({ ...s, [resource]: 'Nothing to import' }))
+          setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 4000)
+        } else {
+          setAbTagsPayload((payload.tags as unknown[]) ?? [])
+          setAbPreview(preview)
+          setExportStatus((s) => ({ ...s, [resource]: '' }))
+        }
+      } else {
+        const result = await uploadImport(resource, file)
+        setExportStatus((s) => ({
+          ...s,
+          [resource]: 'Imported ' + result.imported + ' records',
+        }))
+        setTimeout(() => setExportStatus((s) => ({ ...s, [resource]: '' })), 4000)
+      }
     } catch (err) {
       setExportStatus((s) => ({
         ...s,
         [resource]: err instanceof Error ? err.message : 'Import failed',
       }))
     }
-    // Reset file input
-    const input = fileInputRefs.current[resource]
+
     if (input) input.value = ''
   }
 
@@ -472,6 +506,30 @@ export default function Settings() {
           </tbody>
         </table>
       </div>
+
+      <AntibodyImportDiffModal
+        isOpen={abPreview !== null}
+        preview={abPreview}
+        tagsPayload={abTagsPayload}
+        onClose={() => {
+          setAbPreview(null)
+          setAbTagsPayload([])
+        }}
+        onCompleted={({ imported }) => {
+          setAbPreview(null)
+          setAbTagsPayload([])
+          setExportStatus((s) => ({
+            ...s,
+            antibodies: 'Imported ' + imported + ' records',
+          }))
+          setTimeout(
+            () => setExportStatus((s) => ({ ...s, antibodies: '' })),
+            4000,
+          )
+          queryClient.invalidateQueries({ queryKey: ['antibodies'] })
+          queryClient.invalidateQueries({ queryKey: ['antibodyTags'] })
+        }}
+      />
     </div>
   )
 }

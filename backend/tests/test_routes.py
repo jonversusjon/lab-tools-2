@@ -140,6 +140,8 @@ EXPECTED_ROUTES = [
     ("GET", "/api/v1/export/microscopes"),
     ("GET", "/api/v1/export/secondaries"),
     ("POST", "/api/v1/import/antibodies"),
+    ("POST", "/api/v1/import/antibodies/preview"),
+    ("POST", "/api/v1/import/antibodies/commit"),
     ("POST", "/api/v1/import/conjugate-chemistries"),
     ("POST", "/api/v1/import/flow-panels"),
     ("POST", "/api/v1/import/if-panels"),
