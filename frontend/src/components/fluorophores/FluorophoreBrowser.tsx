@@ -708,10 +708,17 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
           ) : spectraLoading ? (
             <p className="text-xs text-gray-400 dark:text-gray-500">Loading spectra...</p>
           ) : spectraData && Object.keys(spectraData.spectra).length > 0 ? (
-            <SpectraViewer
-              fluorophores={[{ name: spectraData.name, spectra: spectraData.spectra }]}
-              mode="single"
-            />
+            <>
+              {/* TODO: Add toggleable Ex / Em curve controls above this chart.
+                  Both curves should be shown by default, with small toggle buttons
+                  (similar to the TypeToggle in the overlay sidebar) letting the user
+                  turn the excitation curve and/or emission curve on or off
+                  independently. */}
+              <SpectraViewer
+                fluorophores={[{ name: spectraData.name, spectra: spectraData.spectra }]}
+                mode="single"
+              />
+            </>
           ) : (
             <p className="text-xs text-gray-400 dark:text-gray-500">Spectra unavailable.</p>
           )}

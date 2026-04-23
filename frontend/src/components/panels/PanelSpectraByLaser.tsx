@@ -207,6 +207,12 @@ function LaserSpectraChart({
     pointRadius: number
   }> = []
 
+  // TODO: LaserSpectraChart currently only renders emission (EM) curves — it
+  // needs excitation (Ex) curves added as well, and both should be individually
+  // toggleable (on/off) via controls on the chart header, consistent with the
+  // TypeToggle ('EX' | 'EM' | 'both') already used in the fluorophore overlay
+  // sidebar. Excitation curves should be dashed (as in SpectraViewer single
+  // mode) and scaled by excitation efficiency the same way the EM curve is.
   for (const { fl, target, excEff } of excitedFluorophores) {
     const em = fl.spectra?.EM
     if (!em || em.length === 0) continue

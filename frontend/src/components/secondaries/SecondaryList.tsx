@@ -387,6 +387,11 @@ export default function SecondaryList() {
                   <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Vendor
                   </label>
+                  {/* TODO: This vendor input needs to be a select/combobox with the same
+                      editable-but-limited-set-of-values behavior as Host, Isotype, and other
+                      similar fields (e.g. using ListEditor). Vendors should be reusable across
+                      antibodies, secondaries, and dye labels — stored in a shared list that
+                      users can add to but select from. */}
                   <input
                     type="text"
                     value={form.vendor}
@@ -431,6 +436,11 @@ export default function SecondaryList() {
                   <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Vendor
                   </label>
+                  {/* TODO: This vendor input needs to be a select/combobox with the same
+                      editable-but-limited-set-of-values behavior as Host, Isotype, and other
+                      similar fields (e.g. using ListEditor). Vendors should be reusable across
+                      antibodies, secondaries, and dye labels — stored in a shared list that
+                      users can add to but select from. */}
                   <input
                     type="text"
                     value={form.vendor}

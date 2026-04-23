@@ -82,6 +82,11 @@ export default function SpectraViewer({
   }> = []
 
   if (mode === 'single' && fluorophores.length > 0) {
+    // TODO: Single-mode spectra viewers need independent toggles to show/hide the
+    // excitation (Ex) and emission (Em) curves — the same way the overlay mode
+    // already has a TypeToggle ('EX' | 'EM' | 'both'). Both curves should be
+    // rendered by default, but users should be able to toggle each on or off
+    // independently (e.g. via two small toggle buttons above the chart).
     const fl = fluorophores[0]
     const color = fl.color ?? (isDark ? '#22D3EE' : '#0891b2')
     const exRaw = fl.spectra.EX ?? fl.spectra.AB ?? []
