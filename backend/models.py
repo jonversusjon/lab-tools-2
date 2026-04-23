@@ -228,6 +228,10 @@ class PanelTarget(Base):
     dye_label = relationship("DyeLabel", foreign_keys=[dye_label_id])
     secondary_antibody = relationship("SecondaryAntibody")
 
+    __table_args__ = (
+        UniqueConstraint("panel_id", "antibody_id", name="uq_panel_target"),
+    )
+
 
 class PanelAssignment(Base):
     __tablename__ = "panel_assignments"
@@ -470,6 +474,10 @@ class IFPanelTarget(Base):
     antibody = relationship("Antibody")
     dye_label = relationship("DyeLabel", foreign_keys=[dye_label_id])
     secondary_antibody = relationship("SecondaryAntibody")
+
+    __table_args__ = (
+        UniqueConstraint("panel_id", "antibody_id", name="uq_if_panel_target"),
+    )
 
 
 class IFPanelAssignment(Base):
