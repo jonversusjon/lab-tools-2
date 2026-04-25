@@ -27,7 +27,7 @@ export default function AntibodyTable() {
 
   const { data, isLoading, error } = useAntibodies({
     skip: 0,
-    limit: 500,
+    limit: 2000,
     search: search || undefined,
     favorites: showFavoritesOnly || undefined,
     tags: selectedTagIds.length > 0 ? selectedTagIds.join(',') : undefined,
@@ -36,7 +36,7 @@ export default function AntibodyTable() {
     in_stock: inStockFilter ?? undefined,
   })
   // Unfiltered fetch for dropdown options — TanStack Query dedupes when no filters are active
-  const { data: unfilteredData } = useAntibodies({ skip: 0, limit: 500 })
+  const { data: unfilteredData } = useAntibodies({ skip: 0, limit: 2000 })
   const allItemsForDropdowns = unfilteredData?.items ?? []
 
   const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })

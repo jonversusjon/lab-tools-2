@@ -65,10 +65,11 @@ def list_instruments(
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = (
         select(Instrument)
         .options(selectinload(Instrument.lasers).selectinload(Laser.detectors))
+        .order_by(func.lower(Instrument.name))
         .offset(skip)
         .limit(limit)
     )

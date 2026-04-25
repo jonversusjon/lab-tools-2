@@ -208,7 +208,7 @@ export default function GenericImportDiffModal({
   onCompleted,
 }: Props) {
   const hasFluorophoreField = schema.some((f) => f.type === 'fluorophore')
-  const { data: fluorophoresData } = useFluorophores({ limit: 500 })
+  const { data: fluorophoresData } = useFluorophores({ limit: 2000 })
   const fluorophores = useMemo(
     () => (hasFluorophoreField ? (fluorophoresData?.items ?? []).map((f) => ({ id: f.id, name: f.name })) : []),
     [fluorophoresData, hasFluorophoreField],

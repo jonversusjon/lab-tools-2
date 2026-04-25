@@ -114,13 +114,14 @@ def list_panels(
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = (
         select(Panel)
         .options(
             selectinload(Panel.targets),
             selectinload(Panel.assignments),
         )
+        .order_by(func.lower(Panel.name))
         .offset(skip)
         .limit(limit)
     )

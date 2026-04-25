@@ -53,7 +53,7 @@ def list_dye_labels(
     category: str | None = None,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = select(DyeLabel)
 
     if search:
@@ -72,7 +72,7 @@ def list_dye_labels(
         stmt = stmt.where(DyeLabel.category == category)
 
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
-    results = list(db.scalars(stmt.offset(skip).limit(limit)))
+    results = list(db.scalars(stmt.order_by(func.lower(DyeLabel.name)).offset(skip).limit(limit)))
     items = [_to_response(dl) for dl in results]
     return {"items": items, "total": total, "skip": skip, "limit": limit}
 

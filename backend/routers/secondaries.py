@@ -59,7 +59,7 @@ def list_secondary_antibodies(
     target_isotype: str | None = None,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = select(SecondaryAntibody)
 
     if search:
@@ -82,7 +82,7 @@ def list_secondary_antibodies(
         stmt = stmt.where(SecondaryAntibody.target_isotype == target_isotype)
 
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
-    results = list(db.scalars(stmt.offset(skip).limit(limit)))
+    results = list(db.scalars(stmt.order_by(func.lower(SecondaryAntibody.name)).offset(skip).limit(limit)))
     items = [_to_response(sa) for sa in results]
     return {"items": items, "total": total, "skip": skip, "limit": limit}
 

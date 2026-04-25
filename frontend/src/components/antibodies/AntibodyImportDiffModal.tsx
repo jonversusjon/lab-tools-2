@@ -96,7 +96,7 @@ export default function AntibodyImportDiffModal({
   onClose,
   onCompleted,
 }: Props) {
-  const { data: fluorophoresData } = useFluorophores({ limit: 500 })
+  const { data: fluorophoresData } = useFluorophores({ limit: 2000 })
   const fluorophores = useMemo(
     () => (fluorophoresData?.items ?? []).map((f) => ({ ...f, spectra: null })),
     [fluorophoresData],

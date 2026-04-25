@@ -118,13 +118,14 @@ def list_if_panels(
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = (
         select(IFPanel)
         .options(
             selectinload(IFPanel.targets),
             selectinload(IFPanel.assignments),
         )
+        .order_by(func.lower(IFPanel.name))
         .offset(skip)
         .limit(limit)
     )

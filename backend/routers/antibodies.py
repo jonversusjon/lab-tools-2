@@ -153,6 +153,7 @@ def list_antibodies(
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total = db.scalar(count_stmt)
 
+    stmt = stmt.order_by(func.lower(Antibody.target), func.lower(Antibody.name), Antibody.id)
     stmt = stmt.offset(skip).limit(limit)
     items = list(db.scalars(stmt).unique())
 

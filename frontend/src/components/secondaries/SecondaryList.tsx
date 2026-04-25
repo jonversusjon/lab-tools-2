@@ -68,7 +68,7 @@ function formToCreate(form: FormState): SecondaryAntibodyCreate {
 
 export default function SecondaryList() {
   const [search, setSearch] = useState('')
-  const { data, isLoading, error } = useSecondaries({ skip: 0, limit: 500 })
+  const { data, isLoading, error } = useSecondaries({ skip: 0, limit: 2000 })
   const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
   const createMutation = useCreateSecondary()
   const updateMutation = useUpdateSecondary()

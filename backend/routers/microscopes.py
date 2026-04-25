@@ -65,10 +65,11 @@ def list_microscopes(
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
-    limit = min(limit, 500)
+    limit = min(limit, 2000)
     stmt = (
         select(Microscope)
         .options(selectinload(Microscope.lasers).selectinload(MicroscopeLaser.filters))
+        .order_by(func.lower(Microscope.name))
         .offset(skip)
         .limit(limit)
     )
