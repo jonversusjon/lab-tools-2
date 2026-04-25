@@ -215,7 +215,15 @@ def create_antibody(
         physical_location=data.physical_location,
     )
     db.add(antibody)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        logger.warning("Antibody create IntegrityError: %s", exc)
+        raise HTTPException(
+            status_code=409,
+            detail="An antibody with the same name and catalog number already exists.",
+        )
     db.refresh(antibody)
 
     stmt = (

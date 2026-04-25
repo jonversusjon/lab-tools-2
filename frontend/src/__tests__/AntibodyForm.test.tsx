@@ -1,13 +1,21 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+// ---- module-level stubs -----------------------------------------------
+// useCreateAntibody / useUpdateAntibody are vi.fn() so individual tests can
+// override their return value with mockReturnValue without needing dynamic imports.
 
 const mockCreate = vi.fn()
 const mockUpdate = vi.fn()
 
+// Default hook returns: no error, not pending.
+const mockUseCreate = vi.fn(() => ({ mutate: mockCreate, error: null as Error | null, isPending: false }))
+const mockUseUpdate = vi.fn(() => ({ mutate: mockUpdate, error: null as Error | null, isPending: false }))
+
 vi.mock('@/hooks/useAntibodies', () => ({
-  useCreateAntibody: () => ({ mutate: mockCreate }),
-  useUpdateAntibody: () => ({ mutate: mockUpdate }),
+  useCreateAntibody: () => mockUseCreate(),
+  useUpdateAntibody: () => mockUseUpdate(),
 }))
 
 import AntibodyForm from '@/components/antibodies/AntibodyForm'
@@ -27,6 +35,9 @@ describe('AntibodyForm', () => {
   beforeEach(() => {
     mockCreate.mockClear()
     mockUpdate.mockClear()
+    // Reset hooks to default (no error, not pending)
+    mockUseCreate.mockReturnValue({ mutate: mockCreate, error: null, isPending: false })
+    mockUseUpdate.mockReturnValue({ mutate: mockUpdate, error: null, isPending: false })
   })
 
   it('renders empty form for new antibody', () => {
@@ -80,5 +91,38 @@ describe('AntibodyForm', () => {
     fireEvent.click(screen.getByText('Create'))
     expect(mockCreate).toHaveBeenCalledTimes(1)
     expect(mockCreate.mock.calls[0][0]).toMatchObject({ target: 'CD45' })
+  })
+
+  // ---------------------------------------------------------------------------
+  // Error-banner rendering
+  // ---------------------------------------------------------------------------
+
+  it('shows the error banner when useCreateAntibody returns an error', () => {
+    // Simulate a settled mutation with a server-side error (e.g. 409 duplicate)
+    mockUseCreate.mockReturnValue({
+      mutate: mockCreate,
+      error: new Error('An antibody with the same name and catalog number already exists.'),
+      isPending: false,
+    })
+    render(
+      <AntibodyForm antibody={null} fluorophores={fluorophores} onClose={vi.fn()} />,
+      { wrapper }
+    )
+    expect(
+      screen.getByText('An antibody with the same name and catalog number already exists.')
+    ).toBeInTheDocument()
+  })
+
+  // ---------------------------------------------------------------------------
+  // isPending disables the submit button
+  // ---------------------------------------------------------------------------
+
+  it('Create button is disabled while isPending is true', () => {
+    mockUseCreate.mockReturnValue({ mutate: mockCreate, error: null, isPending: true })
+    render(
+      <AntibodyForm antibody={null} fluorophores={fluorophores} onClose={vi.fn()} />,
+      { wrapper }
+    )
+    expect(screen.getByText('Create')).toBeDisabled()
   })
 })

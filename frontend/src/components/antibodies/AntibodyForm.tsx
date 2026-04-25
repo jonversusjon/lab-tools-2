@@ -48,6 +48,11 @@ export default function AntibodyForm({ antibody, fluorophores, onClose }: Antibo
 
   const createMutation = useCreateAntibody()
   const updateMutation = useUpdateAntibody()
+  const submitError =
+    (createMutation.error as Error | null)?.message ??
+    (updateMutation.error as Error | null)?.message ??
+    null
+  const isSubmitting = createMutation.isPending || updateMutation.isPending
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -96,6 +101,11 @@ export default function AntibodyForm({ antibody, fluorophores, onClose }: Antibo
           fluorophores={fluorophores}
           validationError={validationError}
         />
+        {submitError && (
+          <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+            {submitError}
+          </div>
+        )}
         <div className="flex justify-end gap-3 pt-2">
           <button
             type="button"
@@ -106,7 +116,8 @@ export default function AntibodyForm({ antibody, fluorophores, onClose }: Antibo
           </button>
           <button
             type="submit"
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            disabled={isSubmitting}
+            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
           >
             {isEdit ? 'Save' : 'Create'}
           </button>

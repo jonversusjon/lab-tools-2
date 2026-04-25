@@ -73,3 +73,91 @@ def test_delete_antibody_cascades_to_panel_target(client):
 
     panel = client.get("/api/v1/panels/%s" % panel_id).json()
     assert len(panel["targets"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# Duplicate / 409 guard
+# ---------------------------------------------------------------------------
+
+def test_create_duplicate_name_catalog_returns_409(client):
+    """POSTing the same (name, catalog_number) twice must yield 409 with a
+    message that mentions duplication so callers can surface a meaningful error."""
+    payload = {
+        "target": "CD20",
+        "name": "Anti-CD20 PE",
+        "catalog_number": "555622",
+        "vendor": "BD Biosciences",
+    }
+    r1 = client.post("/api/v1/antibodies", json=payload)
+    assert r1.status_code == 201, r1.text
+
+    r2 = client.post("/api/v1/antibodies", json=payload)
+    assert r2.status_code == 409, r2.text
+    detail = r2.json()["detail"].lower()
+    assert "already exists" in detail or "duplicate" in detail, (
+        f"Expected duplication language in detail, got: {r2.json()['detail']!r}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Full-shape round-trip (schema drift guard)
+# ---------------------------------------------------------------------------
+
+def test_create_full_shape_all_nullable_fields_explicit(client):
+    """POST with every field the AntibodyForm actually sends — including all
+    nullable fields set to None — to catch schema drift between frontend and
+    backend.  The response must echo every scalar field back."""
+    payload = {
+        # Required
+        "target": "CD45",
+        # Optional strings — sent explicitly as null by the form
+        "name": None,
+        "clone": None,
+        "host": None,
+        "isotype": None,
+        "fluorophore_id": None,
+        "conjugate": None,
+        "vendor": None,
+        "catalog_number": None,
+        "date_received": None,
+        # Dilution strings
+        "flow_dilution": None,
+        "icc_if_dilution": None,
+        "wb_dilution": None,
+        # Dilution factors (integers)
+        "flow_dilution_factor": None,
+        "icc_if_dilution_factor": None,
+        "wb_dilution_factor": None,
+        # Misc nullable
+        "storage_temp": None,
+        "validation_notes": None,
+        "notes": None,
+        "website": None,
+        "physical_location": None,
+        "reacts_with": None,
+        # Boolean with explicit value
+        "confirmed_in_stock": False,
+    }
+    resp = client.post("/api/v1/antibodies", json=payload)
+    assert resp.status_code == 201, resp.text
+
+    data = resp.json()
+    assert data["target"] == "CD45"
+    # Every nullable field that was sent as null should come back as null
+    for field in (
+        "name", "clone", "host", "isotype", "fluorophore_id", "conjugate",
+        "vendor", "catalog_number", "date_received",
+        "flow_dilution", "icc_if_dilution", "wb_dilution",
+        "flow_dilution_factor", "icc_if_dilution_factor", "wb_dilution_factor",
+        "storage_temp", "validation_notes", "notes", "website",
+        "physical_location", "reacts_with",
+    ):
+        assert data[field] is None, (
+            f"Expected {field!r} to be null in response, got {data[field]!r}"
+        )
+    assert data["confirmed_in_stock"] is False
+    # Sanity-check the response also has the read-only fields
+    assert "id" in data
+    assert "created_at" in data
+    assert "updated_at" in data
+    assert "tags" in data

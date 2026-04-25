@@ -47,15 +47,36 @@ export async function getAntibody(id: string): Promise<Antibody> {
   return res.json()
 }
 
+async function extractErrorDetail(res: Response, fallback: string): Promise<string> {
+  try {
+    const body = await res.json()
+    if (typeof body?.detail === 'string') return body.detail
+    if (Array.isArray(body?.detail)) {
+      return body.detail
+        .map((d: { loc?: unknown[]; msg?: string }) => {
+          const field = Array.isArray(d.loc) ? d.loc.slice(1).join('.') : ''
+          return field ? `${field}: ${d.msg ?? ''}` : (d.msg ?? '')
+        })
+        .filter(Boolean)
+        .join('; ')
+    }
+  } catch {
+    // fall through
+  }
+  return fallback
+}
+
 export async function createAntibody(
   data: AntibodyCreate
 ): Promise<Antibody> {
-  const res = await fetch('/api/v1/antibodies', {
+  const res = await fetch('/api/v1/antibodies/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to create antibody')
+  if (!res.ok) {
+    throw new Error(await extractErrorDetail(res, 'Failed to create antibody'))
+  }
   return res.json()
 }
 
@@ -68,7 +89,9 @@ export async function updateAntibody(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to update antibody')
+  if (!res.ok) {
+    throw new Error(await extractErrorDetail(res, 'Failed to update antibody'))
+  }
   return res.json()
 }
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime
 from datetime import timezone
 from typing import Any
@@ -9,11 +10,14 @@ from typing import Callable
 from fastapi import APIRouter
 from fastapi import Body
 from fastapi import Depends
+from fastapi import HTTPException
 from fastapi import Response
 from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
+
+logger = logging.getLogger(__name__)
 
 from database import get_db
 from models import Antibody
@@ -252,45 +256,72 @@ def import_antibodies_commit(
     tags_payload = payload.get("tags", []) or []
     records = payload.get("records", []) or []
 
-    for t in tags_payload:
-        if not t.get("id") or not t.get("name"):
-            continue
-        db.merge(AntibodyTag(id=t["id"], name=t["name"], color=t.get("color")))
-    db.flush()
+    try:
+        # Build a name→id map for existing tags so we can handle cross-DB imports
+        # where the same tag name exists with a different UUID. AntibodyTag.name is
+        # UNIQUE so inserting a second row with the same name raises IntegrityError.
+        existing_tags_by_name: dict[str, str] = {
+            t.name: t.id for t in db.scalars(select(AntibodyTag)).all()
+        }
+        # Maps imported_tag_id → canonical_tag_id (may differ when name collision)
+        tag_id_map: dict[str, str] = {}
 
-    existing_fluor_ids = set(db.scalars(select(Fluorophore.id)).all())
-    existing_tag_ids = set(db.scalars(select(AntibodyTag.id)).all())
-    nulled_fluorophores = 0
-    skipped_tag_refs = 0
-
-    for raw in records:
-        clean, _ = _sanitize_imported_antibody(dict(raw))
-        tag_ids = clean.pop("tag_ids", [])
-        if not clean.get("id"):
-            continue
-        if clean.get("fluorophore_id") and clean["fluorophore_id"] not in existing_fluor_ids:
-            clean["fluorophore_id"] = None
-            nulled_fluorophores += 1
-        db.merge(Antibody(**clean))
-        db.flush()
-        db.execute(
-            AntibodyTagAssignment.__table__.delete().where(
-                AntibodyTagAssignment.antibody_id == clean["id"]
-            )
-        )
-        for tag_id in tag_ids:
-            if tag_id not in existing_tag_ids:
-                skipped_tag_refs += 1
+        for t in tags_payload:
+            if not t.get("id") or not t.get("name"):
                 continue
-            db.merge(AntibodyTagAssignment(antibody_id=clean["id"], tag_id=tag_id))
+            imported_id: str = t["id"]
+            tag_name: str = t["name"]
+            if tag_name in existing_tags_by_name:
+                # Reuse the existing tag; just update its color if provided
+                canonical_id = existing_tags_by_name[tag_name]
+                tag_id_map[imported_id] = canonical_id
+                if t.get("color"):
+                    db.merge(AntibodyTag(id=canonical_id, name=tag_name, color=t["color"]))
+            else:
+                # New tag — insert with the imported UUID
+                db.merge(AntibodyTag(id=imported_id, name=tag_name, color=t.get("color")))
+                tag_id_map[imported_id] = imported_id
+                existing_tags_by_name[tag_name] = imported_id
+        db.flush()
 
-    db.commit()
-    return {
-        "imported": len(records),
-        "tags_imported": len(tags_payload),
-        "nulled_fluorophore_refs": nulled_fluorophores,
-        "skipped_tag_refs": skipped_tag_refs,
-    }
+        existing_fluor_ids = set(db.scalars(select(Fluorophore.id)).all())
+        existing_tag_ids = set(db.scalars(select(AntibodyTag.id)).all())
+        nulled_fluorophores = 0
+        skipped_tag_refs = 0
+
+        for raw in records:
+            clean, _ = _sanitize_imported_antibody(dict(raw))
+            tag_ids = clean.pop("tag_ids", [])
+            if not clean.get("id"):
+                continue
+            if clean.get("fluorophore_id") and clean["fluorophore_id"] not in existing_fluor_ids:
+                clean["fluorophore_id"] = None
+                nulled_fluorophores += 1
+            db.merge(Antibody(**clean))
+            db.flush()
+            db.execute(
+                AntibodyTagAssignment.__table__.delete().where(
+                    AntibodyTagAssignment.antibody_id == clean["id"]
+                )
+            )
+            for tag_id in tag_ids:
+                canonical_id = tag_id_map.get(tag_id, tag_id)
+                if canonical_id not in existing_tag_ids:
+                    skipped_tag_refs += 1
+                    continue
+                db.merge(AntibodyTagAssignment(antibody_id=clean["id"], tag_id=canonical_id))
+
+        db.commit()
+        return {
+            "imported": len(records),
+            "tags_imported": len(tags_payload),
+            "nulled_fluorophore_refs": nulled_fluorophores,
+            "skipped_tag_refs": skipped_tag_refs,
+        }
+    except Exception as e:
+        db.rollback()
+        logger.exception("antibodies import commit failed")
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
 
 # Legacy endpoint retained for non-diff callers (simple merge).
@@ -360,19 +391,33 @@ def import_secondaries_commit(
     existing_fluor_ids = set(db.scalars(select(Fluorophore.id)).all())
     nulled_fluorophores = 0
     allowed = set(_SECONDARY_FIELDS)
-    for raw in records:
-        clean, _ = _sanitize_generic(dict(raw), allowed)
-        if not clean.get("id"):
-            continue
-        if clean.get("fluorophore_id") and clean["fluorophore_id"] not in existing_fluor_ids:
-            clean["fluorophore_id"] = None
-            nulled_fluorophores += 1
-        db.merge(SecondaryAntibody(**clean))
-    db.commit()
-    return {
-        "imported": len(records),
-        "nulled_fluorophore_refs": nulled_fluorophores,
-    }
+    try:
+        for raw in records:
+            clean, _ = _sanitize_generic(dict(raw), allowed)
+            if not clean.get("id"):
+                continue
+            if clean.get("fluorophore_id") and clean["fluorophore_id"] not in existing_fluor_ids:
+                clean["fluorophore_id"] = None
+                nulled_fluorophores += 1
+            # Guard NOT NULL columns so null values from the diff modal don't crash
+            if not clean.get("binding_mode"):
+                clean["binding_mode"] = "species"
+            if clean.get("name") is None:
+                clean["name"] = ""
+            if clean.get("host") is None:
+                clean["host"] = ""
+            if clean.get("target_species") is None:
+                clean["target_species"] = ""
+            db.merge(SecondaryAntibody(**clean))
+        db.commit()
+        return {
+            "imported": len(records),
+            "nulled_fluorophore_refs": nulled_fluorophores,
+        }
+    except Exception as e:
+        db.rollback()
+        logger.exception("secondaries import commit failed")
+        raise HTTPException(status_code=422, detail=str(e)) from e
 
 
 # Legacy endpoint retained for non-diff callers.
