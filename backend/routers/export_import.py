@@ -25,6 +25,9 @@ from models import AntibodyTag
 from models import AntibodyTagAssignment
 from models import ConjugateChemistry
 from models import Detector
+from models import DyeLabel
+from models import Experiment
+from models import ExperimentBlock
 from models import Fluorophore
 from models import IFPanel
 from models import IFPanelAssignment
@@ -38,6 +41,7 @@ from models import MicroscopeLaser
 from models import Panel
 from models import PanelAssignment
 from models import PanelTarget
+from models import PlateMap
 from models import SecondaryAntibody
 
 router = APIRouter()
@@ -902,6 +906,7 @@ def export_flow_panels(db: Session = Depends(get_db)):
                 "targets": [
                     {
                         "id": t.id, "antibody_id": t.antibody_id,
+                        "dye_label_id": t.dye_label_id,
                         "staining_mode": t.staining_mode,
                         "secondary_antibody_id": t.secondary_antibody_id,
                         "sort_order": t.sort_order,
@@ -911,6 +916,7 @@ def export_flow_panels(db: Session = Depends(get_db)):
                 "assignments": [
                     {
                         "id": a.id, "antibody_id": a.antibody_id,
+                        "dye_label_id": a.dye_label_id,
                         "fluorophore_id": a.fluorophore_id,
                         "detector_id": a.detector_id, "notes": a.notes,
                     }
@@ -924,10 +930,10 @@ def export_flow_panels(db: Session = Depends(get_db)):
 
 _FLOW_PANEL_FIELDS = ("id", "name", "instrument_id")
 _FLOW_TARGET_FIELDS = (
-    "id", "antibody_id", "staining_mode", "secondary_antibody_id", "sort_order",
+    "id", "antibody_id", "dye_label_id", "staining_mode", "secondary_antibody_id", "sort_order",
 )
 _FLOW_ASSIGNMENT_FIELDS = (
-    "id", "antibody_id", "fluorophore_id", "detector_id", "notes",
+    "id", "antibody_id", "dye_label_id", "fluorophore_id", "detector_id", "notes",
 )
 
 
@@ -940,6 +946,7 @@ def _flow_panel_to_dict(p: Panel) -> dict[str, Any]:
             {
                 "id": t.id,
                 "antibody_id": t.antibody_id,
+                "dye_label_id": t.dye_label_id,
                 "staining_mode": t.staining_mode,
                 "secondary_antibody_id": t.secondary_antibody_id,
                 "sort_order": t.sort_order,
@@ -950,6 +957,7 @@ def _flow_panel_to_dict(p: Panel) -> dict[str, Any]:
             {
                 "id": a.id,
                 "antibody_id": a.antibody_id,
+                "dye_label_id": a.dye_label_id,
                 "fluorophore_id": a.fluorophore_id,
                 "detector_id": a.detector_id,
                 "notes": a.notes,
@@ -1006,11 +1014,13 @@ def import_flow_panels_commit(
     existing_fluors = set(db.scalars(select(Fluorophore.id)).all())
     existing_detectors = set(db.scalars(select(Detector.id)).all())
     existing_secondaries = set(db.scalars(select(SecondaryAntibody.id)).all())
+    existing_dye_labels = set(db.scalars(select(DyeLabel.id)).all())
 
     nulled_instruments = 0
     skipped_assignments = 0
     nulled_secondaries = 0
     nulled_target_antibodies = 0
+    nulled_dye_labels = 0
 
     for rec in records:
         rec = dict(rec)
@@ -1041,6 +1051,9 @@ def import_flow_panels_commit(
             if t_clean.get("secondary_antibody_id") and t_clean["secondary_antibody_id"] not in existing_secondaries:
                 t_clean["secondary_antibody_id"] = None
                 nulled_secondaries += 1
+            if t_clean.get("dye_label_id") and t_clean["dye_label_id"] not in existing_dye_labels:
+                t_clean["dye_label_id"] = None
+                nulled_dye_labels += 1
             t_clean["panel_id"] = parent_clean["id"]
             db.merge(PanelTarget(**t_clean))
 
@@ -1056,6 +1069,9 @@ def import_flow_panels_commit(
                 continue
             if a_clean.get("antibody_id") and a_clean["antibody_id"] not in existing_antibodies:
                 a_clean["antibody_id"] = None
+            if a_clean.get("dye_label_id") and a_clean["dye_label_id"] not in existing_dye_labels:
+                a_clean["dye_label_id"] = None
+                nulled_dye_labels += 1
             a_clean["panel_id"] = parent_clean["id"]
             db.merge(PanelAssignment(**a_clean))
     db.commit()
@@ -1065,6 +1081,7 @@ def import_flow_panels_commit(
         "skipped_assignments": skipped_assignments,
         "nulled_secondary_refs": nulled_secondaries,
         "nulled_target_antibody_refs": nulled_target_antibodies,
+        "nulled_dye_label_refs": nulled_dye_labels,
     }
 
 
@@ -1098,6 +1115,7 @@ def export_if_panels(db: Session = Depends(get_db)):
                 "targets": [
                     {
                         "id": t.id, "antibody_id": t.antibody_id,
+                        "dye_label_id": t.dye_label_id,
                         "staining_mode": t.staining_mode,
                         "secondary_antibody_id": t.secondary_antibody_id,
                         "sort_order": t.sort_order,
@@ -1108,6 +1126,7 @@ def export_if_panels(db: Session = Depends(get_db)):
                 "assignments": [
                     {
                         "id": a.id, "antibody_id": a.antibody_id,
+                        "dye_label_id": a.dye_label_id,
                         "fluorophore_id": a.fluorophore_id,
                         "filter_id": a.filter_id, "notes": a.notes,
                     }
@@ -1121,11 +1140,11 @@ def export_if_panels(db: Session = Depends(get_db)):
 
 _IF_PANEL_FIELDS = ("id", "name", "panel_type", "microscope_id", "view_mode")
 _IF_TARGET_FIELDS = (
-    "id", "antibody_id", "staining_mode", "secondary_antibody_id",
+    "id", "antibody_id", "dye_label_id", "staining_mode", "secondary_antibody_id",
     "sort_order", "dilution_override",
 )
 _IF_ASSIGNMENT_FIELDS = (
-    "id", "antibody_id", "fluorophore_id", "filter_id", "notes",
+    "id", "antibody_id", "dye_label_id", "fluorophore_id", "filter_id", "notes",
 )
 
 
@@ -1140,6 +1159,7 @@ def _if_panel_to_dict(p: IFPanel) -> dict[str, Any]:
             {
                 "id": t.id,
                 "antibody_id": t.antibody_id,
+                "dye_label_id": t.dye_label_id,
                 "staining_mode": t.staining_mode,
                 "secondary_antibody_id": t.secondary_antibody_id,
                 "sort_order": t.sort_order,
@@ -1151,6 +1171,7 @@ def _if_panel_to_dict(p: IFPanel) -> dict[str, Any]:
             {
                 "id": a.id,
                 "antibody_id": a.antibody_id,
+                "dye_label_id": a.dye_label_id,
                 "fluorophore_id": a.fluorophore_id,
                 "filter_id": a.filter_id,
                 "notes": a.notes,
@@ -1207,12 +1228,14 @@ def import_if_panels_commit(
     existing_fluors = set(db.scalars(select(Fluorophore.id)).all())
     existing_filters = set(db.scalars(select(MicroscopeFilter.id)).all())
     existing_secondaries = set(db.scalars(select(SecondaryAntibody.id)).all())
+    existing_dye_labels = set(db.scalars(select(DyeLabel.id)).all())
 
     nulled_microscopes = 0
     skipped_assignments = 0
     nulled_filters = 0
     nulled_secondaries = 0
     nulled_target_antibodies = 0
+    nulled_dye_labels = 0
 
     for rec in records:
         rec = dict(rec)
@@ -1242,6 +1265,9 @@ def import_if_panels_commit(
             if t_clean.get("secondary_antibody_id") and t_clean["secondary_antibody_id"] not in existing_secondaries:
                 t_clean["secondary_antibody_id"] = None
                 nulled_secondaries += 1
+            if t_clean.get("dye_label_id") and t_clean["dye_label_id"] not in existing_dye_labels:
+                t_clean["dye_label_id"] = None
+                nulled_dye_labels += 1
             t_clean["panel_id"] = parent_clean["id"]
             db.merge(IFPanelTarget(**t_clean))
 
@@ -1260,6 +1286,9 @@ def import_if_panels_commit(
                 nulled_filters += 1
             if a_clean.get("antibody_id") and a_clean["antibody_id"] not in existing_antibodies:
                 a_clean["antibody_id"] = None
+            if a_clean.get("dye_label_id") and a_clean["dye_label_id"] not in existing_dye_labels:
+                a_clean["dye_label_id"] = None
+                nulled_dye_labels += 1
             a_clean["panel_id"] = parent_clean["id"]
             db.merge(IFPanelAssignment(**a_clean))
     db.commit()
@@ -1270,6 +1299,7 @@ def import_if_panels_commit(
         "nulled_filter_refs": nulled_filters,
         "nulled_secondary_refs": nulled_secondaries,
         "nulled_target_antibody_refs": nulled_target_antibodies,
+        "nulled_dye_label_refs": nulled_dye_labels,
     }
 
 
@@ -1280,3 +1310,312 @@ def import_if_panels(
     db: Session = Depends(get_db),
 ):
     return import_if_panels_commit(payload=payload, db=db)
+
+
+# ── DYE LABELS ────────────────────────────────────────────────────────────────
+
+@router.get("/export/dye-labels")
+def export_dye_labels(db: Session = Depends(get_db)):
+    rows = list(db.scalars(select(DyeLabel)).all())
+    return _json_download({
+        "version": 1,
+        "resource": "dye-labels",
+        "exported_at": _now_iso(),
+        "records": [
+            {
+                "id": r.id, "name": r.name, "label_target": r.label_target,
+                "category": r.category, "fluorophore_id": r.fluorophore_id,
+                "vendor": r.vendor, "catalog_number": r.catalog_number,
+                "lot_number": r.lot_number,
+                "flow_dilution": r.flow_dilution, "icc_if_dilution": r.icc_if_dilution,
+                "flow_dilution_factor": r.flow_dilution_factor,
+                "icc_if_dilution_factor": r.icc_if_dilution_factor,
+                "notes": r.notes, "is_favorite": r.is_favorite,
+            }
+            for r in rows
+        ],
+    }, "dye-labels-export.json")
+
+
+_DYE_LABEL_FIELDS = (
+    "id", "name", "label_target", "category", "fluorophore_id",
+    "vendor", "catalog_number", "lot_number",
+    "flow_dilution", "icc_if_dilution",
+    "flow_dilution_factor", "icc_if_dilution_factor",
+    "notes", "is_favorite",
+)
+
+
+def _dye_label_to_dict(r: DyeLabel) -> dict[str, Any]:
+    return {f: getattr(r, f) for f in _DYE_LABEL_FIELDS}
+
+
+@router.post("/import/dye-labels/preview")
+def import_dye_labels_preview(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    records = payload.get("records", []) or []
+    existing_rows = {r.id: r for r in db.scalars(select(DyeLabel)).all()}
+    return {
+        "resource": "dye-labels",
+        **_preview_generic(records, existing_rows, _DYE_LABEL_FIELDS, _dye_label_to_dict),
+    }
+
+
+@router.post("/import/dye-labels/commit")
+def import_dye_labels_commit(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    records = payload.get("records", []) or []
+    existing_fluor_ids = set(db.scalars(select(Fluorophore.id)).all())
+    nulled_fluorophores = 0
+    allowed = set(_DYE_LABEL_FIELDS)
+    try:
+        for raw in records:
+            clean, _ = _sanitize_generic(dict(raw), allowed)
+            if not clean.get("id"):
+                continue
+            if clean.get("fluorophore_id") and clean["fluorophore_id"] not in existing_fluor_ids:
+                clean["fluorophore_id"] = None
+                nulled_fluorophores += 1
+            if clean.get("name") is None:
+                clean["name"] = ""
+            if clean.get("label_target") is None:
+                clean["label_target"] = ""
+            db.merge(DyeLabel(**clean))
+        db.commit()
+        return {
+            "imported": len(records),
+            "nulled_fluorophore_refs": nulled_fluorophores,
+        }
+    except Exception as e:
+        db.rollback()
+        logger.exception("dye-labels import commit failed")
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+
+# Legacy endpoint retained for non-diff callers.
+@router.post("/import/dye-labels")
+def import_dye_labels(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    return import_dye_labels_commit(payload=payload, db=db)
+
+
+# ── PLATE MAPS ────────────────────────────────────────────────────────────────
+
+@router.get("/export/plate-maps")
+def export_plate_maps(db: Session = Depends(get_db)):
+    rows = list(db.scalars(select(PlateMap)).all())
+    return _json_download({
+        "version": 1,
+        "resource": "plate-maps",
+        "exported_at": _now_iso(),
+        "records": [
+            {
+                "id": r.id, "name": r.name, "description": r.description,
+                "plate_type": r.plate_type, "well_data": r.well_data, "legend": r.legend,
+            }
+            for r in rows
+        ],
+    }, "plate-maps-export.json")
+
+
+_PLATE_MAP_FIELDS = ("id", "name", "description", "plate_type", "well_data", "legend")
+
+
+def _plate_map_to_dict(r: PlateMap) -> dict[str, Any]:
+    return {f: getattr(r, f) for f in _PLATE_MAP_FIELDS}
+
+
+@router.post("/import/plate-maps/preview")
+def import_plate_maps_preview(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    records = payload.get("records", []) or []
+    existing_rows = {r.id: r for r in db.scalars(select(PlateMap)).all()}
+    return {
+        "resource": "plate-maps",
+        **_preview_generic(records, existing_rows, _PLATE_MAP_FIELDS, _plate_map_to_dict),
+    }
+
+
+@router.post("/import/plate-maps/commit")
+def import_plate_maps_commit(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    records = payload.get("records", []) or []
+    allowed = set(_PLATE_MAP_FIELDS)
+    try:
+        for raw in records:
+            clean, _ = _sanitize_generic(dict(raw), allowed)
+            if not clean.get("id"):
+                continue
+            if clean.get("name") is None:
+                clean["name"] = ""
+            if clean.get("plate_type") is None:
+                clean["plate_type"] = "96-well"
+            if clean.get("well_data") is None:
+                clean["well_data"] = "{}"
+            if clean.get("legend") is None:
+                clean["legend"] = "{}"
+            db.merge(PlateMap(**clean))
+        db.commit()
+        return {"imported": len(records)}
+    except Exception as e:
+        db.rollback()
+        logger.exception("plate-maps import commit failed")
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+
+# Legacy endpoint retained for non-diff callers.
+@router.post("/import/plate-maps")
+def import_plate_maps(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    return import_plate_maps_commit(payload=payload, db=db)
+
+
+# ── EXPERIMENTS ───────────────────────────────────────────────────────────────
+
+@router.get("/export/experiments")
+def export_experiments(db: Session = Depends(get_db)):
+    experiments = list(db.scalars(
+        select(Experiment).options(selectinload(Experiment.blocks))
+    ).all())
+    return _json_download({
+        "version": 1,
+        "resource": "experiments",
+        "exported_at": _now_iso(),
+        "records": [
+            {
+                "id": e.id, "name": e.name, "description": e.description,
+                "blocks": [
+                    {
+                        "id": b.id, "block_type": b.block_type, "content": b.content,
+                        "sort_order": b.sort_order, "parent_id": b.parent_id,
+                    }
+                    for b in sorted(e.blocks, key=lambda x: x.sort_order)
+                ],
+            }
+            for e in experiments
+        ],
+    }, "experiments-export.json")
+
+
+_EXPERIMENT_FIELDS = ("id", "name", "description")
+_BLOCK_FIELDS = ("id", "block_type", "content", "sort_order", "parent_id")
+_EXPERIMENT_PREVIEW_FIELDS = _EXPERIMENT_FIELDS + ("blocks",)
+
+
+def _experiment_to_dict(e: Experiment) -> dict[str, Any]:
+    return {
+        "id": e.id,
+        "name": e.name,
+        "description": e.description,
+        "blocks": [
+            {
+                "id": b.id,
+                "block_type": b.block_type,
+                "content": b.content,
+                "sort_order": b.sort_order,
+                "parent_id": b.parent_id,
+            }
+            for b in sorted(e.blocks, key=lambda x: x.sort_order)
+        ],
+    }
+
+
+@router.post("/import/experiments/preview")
+def import_experiments_preview(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    records = payload.get("records", []) or []
+    existing_rows = {
+        e.id: e
+        for e in db.scalars(
+            select(Experiment).options(selectinload(Experiment.blocks))
+        ).all()
+    }
+    normalized = []
+    for raw in records:
+        rec = dict(raw)
+        rec["blocks"] = sorted(
+            [dict(b) for b in (rec.get("blocks") or [])],
+            key=lambda b: b.get("sort_order") or 0,
+        )
+        normalized.append(rec)
+    result = _preview_generic(
+        normalized, existing_rows, _EXPERIMENT_PREVIEW_FIELDS, _experiment_to_dict
+    )
+    return {"resource": "experiments", **result}
+
+
+@router.post("/import/experiments/commit")
+def import_experiments_commit(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    records = payload.get("records", []) or []
+    allowed_exp = set(_EXPERIMENT_FIELDS)
+    allowed_block = set(_BLOCK_FIELDS)
+
+    try:
+        for rec in records:
+            rec = dict(rec)
+            blocks = rec.pop("blocks", []) or []
+            rec.pop("created_at", None); rec.pop("updated_at", None)
+            exp_clean, _ = _sanitize_generic(rec, allowed_exp)
+            if not exp_clean.get("id"):
+                continue
+            if exp_clean.get("name") is None:
+                exp_clean["name"] = ""
+            db.merge(Experiment(**exp_clean))
+            db.flush()
+            db.execute(
+                ExperimentBlock.__table__.delete().where(
+                    ExperimentBlock.experiment_id == exp_clean["id"]
+                )
+            )
+            db.flush()
+
+            # Two-pass insert: top-level blocks first, then children.
+            # This satisfies the self-referential parent_id FK constraint.
+            top_level = [b for b in blocks if not b.get("parent_id")]
+            nested = [b for b in blocks if b.get("parent_id")]
+
+            for b in top_level + nested:
+                b = dict(b)
+                b.pop("created_at", None); b.pop("updated_at", None)
+                b_clean, _ = _sanitize_generic(b, allowed_block)
+                if not b_clean.get("id"):
+                    continue
+                if b_clean.get("sort_order") is None:
+                    b_clean["sort_order"] = 0.0
+                if b_clean.get("content") is None:
+                    b_clean["content"] = "{}"
+                b_clean["experiment_id"] = exp_clean["id"]
+                db.merge(ExperimentBlock(**b_clean))
+
+        db.commit()
+        return {"imported": len(records)}
+    except Exception as e:
+        db.rollback()
+        logger.exception("experiments import commit failed")
+        raise HTTPException(status_code=422, detail=str(e)) from e
+
+
+# Legacy endpoint retained for non-diff callers.
+@router.post("/import/experiments")
+def import_experiments(
+    payload: dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+):
+    return import_experiments_commit(payload=payload, db=db)

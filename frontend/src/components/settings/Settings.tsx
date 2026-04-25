@@ -18,9 +18,14 @@ import {
   SECONDARIES_SCHEMA,
   LIST_ENTRIES_SCHEMA,
   CHEMISTRIES_SCHEMA,
+  DYE_LABELS_SCHEMA,
+  PLATE_MAPS_SCHEMA,
   labelSecondary,
   labelListEntry,
   labelChemistry,
+  labelDyeLabel,
+  labelPlateMap,
+  labelExperiment,
 } from '@/components/shared/importSchemas'
 import {
   useConjugateChemistries,
@@ -141,12 +146,15 @@ export default function Settings() {
   const RESOURCES: { key: ExportResource; label: string; note?: string }[] = [
     { key: 'antibodies', label: 'Antibodies' },
     { key: 'secondaries', label: 'Secondary Antibodies' },
+    { key: 'dye-labels', label: 'Dye Labels' },
     { key: 'instruments', label: 'Instruments' },
     { key: 'microscopes', label: 'Microscopes' },
     { key: 'list-entries', label: 'List Entries' },
     { key: 'conjugate-chemistries', label: 'Conjugate Chemistries' },
-    { key: 'flow-panels', label: 'Flow Panels', note: 'Import after Antibodies + Instruments' },
-    { key: 'if-panels', label: 'IF/IHC Panels', note: 'Import after Antibodies + Microscopes' },
+    { key: 'flow-panels', label: 'Flow Panels', note: 'Import after Antibodies + Instruments + Dye Labels' },
+    { key: 'if-panels', label: 'IF/IHC Panels', note: 'Import after Antibodies + Microscopes + Dye Labels' },
+    { key: 'plate-maps', label: 'Plate Maps' },
+    { key: 'experiments', label: 'Experiments', note: 'Import after Panels' },
   ]
 
   const handleExport = async (resource: ExportResource) => {
@@ -199,6 +207,20 @@ export default function Settings() {
       labelFor: labelChemistry,
       invalidateKeys: [['conjugate-chemistries']],
     },
+    'dye-labels': {
+      resource: 'dye-labels',
+      title: 'Import Dye Labels — Review Changes',
+      schema: DYE_LABELS_SCHEMA,
+      labelFor: labelDyeLabel,
+      invalidateKeys: [['dye-labels']],
+    },
+    'plate-maps': {
+      resource: 'plate-maps',
+      title: 'Import Plate Maps — Review Changes',
+      schema: PLATE_MAPS_SCHEMA,
+      labelFor: labelPlateMap,
+      invalidateKeys: [['plate-maps']],
+    },
   }
   const [genericPreview, setGenericPreview] = useState<{
     preview: ImportPreviewResponse
@@ -241,6 +263,13 @@ export default function Settings() {
       childKeys: ['targets', 'assignments'],
       labelFor: (r) => String(r.name ?? r.id ?? 'Unknown'),
       invalidateKeys: [['if-panels']],
+    },
+    experiments: {
+      resource: 'experiments',
+      title: 'Import Experiments — Review Changes',
+      childKeys: ['blocks'],
+      labelFor: labelExperiment,
+      invalidateKeys: [['experiments']],
     },
   }
   const [nestedPreview, setNestedPreview] = useState<{

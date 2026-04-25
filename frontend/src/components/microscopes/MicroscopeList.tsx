@@ -153,7 +153,12 @@ export default function MicroscopeList() {
           }
 
           try {
-            const parsed = JSON.parse(ev.target?.result as string) as MicroscopeCreate
+            const raw = JSON.parse(ev.target?.result as string)
+            if (raw && typeof raw === 'object' && raw.resource === 'microscopes' && Array.isArray(raw.records)) {
+              finish(file.name + ': bulk export file — use Settings → Import to import this file with conflict detection')
+              return
+            }
+            const parsed = raw as MicroscopeCreate
             if (!parsed.name || !Array.isArray(parsed.lasers)) {
               finish(file.name + ': missing name or lasers array')
               return

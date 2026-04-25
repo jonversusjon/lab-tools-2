@@ -7,6 +7,9 @@ export type ExportResource =
   | 'conjugate-chemistries'
   | 'flow-panels'
   | 'if-panels'
+  | 'dye-labels'
+  | 'plate-maps'
+  | 'experiments'
 
 export async function downloadExport(resource: ExportResource): Promise<void> {
   const res = await fetch('/api/v1/export/' + resource)

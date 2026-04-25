@@ -52,3 +52,49 @@ export function labelChemistry(r: RawRecord): string {
   const label = (r.label as string | null) || ''
   return name && label ? name + ' (' + label + ')' : name || label || String(r.id ?? 'Unknown')
 }
+
+export const DYE_LABELS_SCHEMA: FieldDef[] = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'label_target', label: 'Label Target', type: 'text' },
+  { key: 'category', label: 'Category', type: 'text' },
+  { key: 'fluorophore_id', label: 'Fluorophore', type: 'fluorophore' },
+  { key: 'vendor', label: 'Vendor', type: 'text' },
+  { key: 'catalog_number', label: 'Catalog #', type: 'text' },
+  { key: 'lot_number', label: 'Lot #', type: 'text' },
+  { key: 'flow_dilution', label: 'Flow Dilution', type: 'text' },
+  { key: 'icc_if_dilution', label: 'ICC/IF Dilution', type: 'text' },
+  { key: 'flow_dilution_factor', label: 'Flow Dilution Factor', type: 'number' },
+  { key: 'icc_if_dilution_factor', label: 'ICC/IF Dilution Factor', type: 'number' },
+  { key: 'notes', label: 'Notes', type: 'textarea' },
+  { key: 'is_favorite', label: 'Favorite', type: 'checkbox' },
+]
+
+export const PLATE_MAPS_SCHEMA: FieldDef[] = [
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'description', label: 'Description', type: 'textarea' },
+  {
+    key: 'plate_type',
+    label: 'Plate Type',
+    type: 'select',
+    options: [
+      { value: '96-well', label: '96-well' },
+      { value: '384-well', label: '384-well' },
+    ],
+  },
+  { key: 'well_data', label: 'Well Data (JSON)', type: 'textarea', rows: 3 },
+  { key: 'legend', label: 'Legend (JSON)', type: 'textarea', rows: 3 },
+]
+
+export function labelDyeLabel(r: RawRecord): string {
+  const name = (r.name as string | null) || ''
+  const target = (r.label_target as string | null) || ''
+  return name || target || String(r.id ?? 'Unknown')
+}
+
+export function labelPlateMap(r: RawRecord): string {
+  return (r.name as string | null) || String(r.id ?? 'Unknown')
+}
+
+export function labelExperiment(r: RawRecord): string {
+  return (r.name as string | null) || String(r.id ?? 'Unknown')
+}
