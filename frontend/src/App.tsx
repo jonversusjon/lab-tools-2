@@ -20,6 +20,7 @@ import IFPanelList from '@/components/if-panels/IFPanelList'
 import IFPanelDesigner from '@/components/if-panels/IFPanelDesigner'
 import MicroscopeList from '@/components/microscopes/MicroscopeList'
 import MicroscopeEditor from '@/components/microscopes/MicroscopeEditor'
+import TiptapSandbox from '@/components/experiments/TiptapSandbox'
 
 export default function App() {
   return (
@@ -90,6 +91,9 @@ export default function App() {
         <Route path="/plate-maps/:id" element={<PlateMapEditor />} />
 
         <Route path="/settings" element={<Settings />} />
+
+        {/* Developer sandbox — not in Sidebar, removed in Phase 12 */}
+        <Route path="/tiptap-sandbox" element={<TiptapSandbox />} />
       </Route>
     </Routes>
   )

@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import CalloutView from '@/blocks-tiptap/views/CalloutView'
 
 export const Callout = Node.create({
   name: 'callout',
@@ -31,5 +33,9 @@ export const Callout = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     return ['div', mergeAttributes({ 'data-block-type': 'callout' }, HTMLAttributes)]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(CalloutView)
   },
 })
