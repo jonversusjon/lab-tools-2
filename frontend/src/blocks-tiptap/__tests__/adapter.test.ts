@@ -338,14 +338,14 @@ function fixture9_columns(): Fixture {
     makeRow({
       id: 'C0',
       block_type: 'column',
-      content: { column_index: 0 },
+      content: { width_pct: 50 },
       sort_order: 0,
       parent_id: 'CL',
     }),
     makeRow({
       id: 'C1',
       block_type: 'column',
-      content: { column_index: 1 },
+      content: { width_pct: 50 },
       sort_order: 1,
       parent_id: 'CL',
     }),
@@ -376,16 +376,84 @@ function fixture9_columns(): Fixture {
           content: [
             {
               type: 'column',
-              attrs: { column_index: 0 },
+              attrs: { width_pct: 50 },
               content: [
                 { type: 'paragraph', content: [{ type: 'text', text: 'left' }] },
               ],
             },
             {
               type: 'column',
-              attrs: { column_index: 1 },
+              attrs: { width_pct: 50 },
               content: [
                 { type: 'paragraph', content: [{ type: 'text', text: 'right' }] },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  }
+}
+
+function fixture17_nonEvenColumns(): Fixture {
+  const rows = [
+    makeRow({
+      id: 'CL17',
+      block_type: 'column_list',
+      content: { column_count: 2 },
+      sort_order: 0,
+    }),
+    makeRow({
+      id: 'C17A',
+      block_type: 'column',
+      content: { width_pct: 30 },
+      sort_order: 0,
+      parent_id: 'CL17',
+    }),
+    makeRow({
+      id: 'C17B',
+      block_type: 'column',
+      content: { width_pct: 70 },
+      sort_order: 1,
+      parent_id: 'CL17',
+    }),
+    makeRow({
+      id: 'P17A',
+      block_type: 'paragraph',
+      content: { text: 'narrow' },
+      sort_order: 0,
+      parent_id: 'C17A',
+    }),
+    makeRow({
+      id: 'P17B',
+      block_type: 'paragraph',
+      content: { text: 'wide' },
+      sort_order: 0,
+      parent_id: 'C17B',
+    }),
+  ]
+  return {
+    name: '17. non-even column widths (30/70)',
+    inputRows: rows,
+    expectedDoc: {
+      type: 'doc',
+      content: [
+        {
+          type: 'column_list',
+          attrs: { column_count: 2 },
+          content: [
+            {
+              type: 'column',
+              attrs: { width_pct: 30 },
+              content: [
+                { type: 'paragraph', content: [{ type: 'text', text: 'narrow' }] },
+              ],
+            },
+            {
+              type: 'column',
+              attrs: { width_pct: 70 },
+              content: [
+                { type: 'paragraph', content: [{ type: 'text', text: 'wide' }] },
               ],
             },
           ],
@@ -494,6 +562,7 @@ const happyPathFixtures: (() => Fixture)[] = [
   fixture8_nestedBullets,
   fixture9_columns,
   fixture10_atoms,
+  fixture17_nonEvenColumns,
 ]
 
 describe('rowsToTiptapDoc — happy paths', () => {

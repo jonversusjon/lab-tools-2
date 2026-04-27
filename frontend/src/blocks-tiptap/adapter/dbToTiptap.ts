@@ -161,9 +161,11 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
       }
     }
     if (blockType === 'column') {
+      const rawWidthPct = getContentField<unknown>(row, 'width_pct', null)
+      const widthPct = typeof rawWidthPct === 'number' ? rawWidthPct : null
       return {
         type: 'column',
-        attrs: { column_index: getContentField<number>(row, 'column_index', 0) },
+        attrs: { width_pct: widthPct },
         content: walkSiblings(row.id),
       }
     }

@@ -94,9 +94,11 @@ Table rows are stored inline in the table block's content as an ordered JSON arr
 // column_list content — column_count for rendering hints
 { "column_count": 2 }
 
-// column content — index within the column_list
-{ "column_index": 0 }
+// column content — width as percentage of parent column_list
+{ "width_pct": 50.0 }
 ```
+
+**`width_pct`** is a number 0–100 representing the column's percentage width within its parent column_list. Sibling columns' widths sum to approximately 100. Default on insertion is even distribution (`100 / column_count`). Resize via drag handles (introduced in a later phase) updates these values in place. Position within the parent's children array IS the column's index — there is no separate `column_index` field.
 
 Column children are stored as blocks with `parent_id` → the `column` block and their own `sort_order`.
 

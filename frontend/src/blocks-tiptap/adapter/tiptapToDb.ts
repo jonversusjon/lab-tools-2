@@ -166,12 +166,9 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
     }
     if (type === 'column') {
       const attrs = (node.attrs ?? {}) as Record<string, unknown>
-      const row = emitRow(
-        'column',
-        { column_index: typeof attrs['column_index'] === 'number' ? attrs['column_index'] : 0 },
-        parentId,
-        sortOrder
-      )
+      const widthPct = typeof attrs['width_pct'] === 'number' ? attrs['width_pct'] : null
+      const content: Record<string, unknown> = widthPct !== null ? { width_pct: widthPct } : {}
+      const row = emitRow('column', content, parentId, sortOrder)
       walkContent(node.content, row.id)
       return sortOrder + 1
     }
