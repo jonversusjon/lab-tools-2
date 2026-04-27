@@ -53,6 +53,34 @@ function listItemChildren(listItem: JSONContent): JSONContent[] {
   return out
 }
 
+function extractCellText(cellNode: JSONContent): string {
+  const paragraphs: string[] = []
+  for (const child of cellNode.content ?? []) {
+    if (child.type === 'paragraph') {
+      paragraphs.push(extractText(child))
+    }
+  }
+  return paragraphs.join('\n')
+}
+
+function extractTableContent(tableNode: JSONContent): Record<string, unknown> {
+  const tableRows = tableNode.content ?? []
+  const firstRow = tableRows[0]?.content ?? []
+  const tableWidth = firstRow.length
+  const hasColumnHeader = firstRow.length > 0 && firstRow.every((c) => c.type === 'tableHeader')
+  const col0Types = tableRows.map((r) => (r.content ?? [])[0]?.type ?? 'tableCell')
+  const hasRowHeader = col0Types.length > 0 && col0Types.every((t) => t === 'tableHeader')
+  const rows = tableRows.map((tableRow) => {
+    const cells = tableRow.content ?? []
+    const paddedCells: string[] = []
+    for (let i = 0; i < Math.max(tableWidth, cells.length); i++) {
+      paddedCells.push(i < cells.length ? extractCellText(cells[i]) : '')
+    }
+    return paddedCells
+  })
+  return { table_width: tableWidth, has_column_header: hasColumnHeader, has_row_header: hasRowHeader, rows }
+}
+
 export function tiptapDocToRows(doc: JSONContent, experimentId: string): ExperimentBlock[] {
   const rows: ExperimentBlock[] = []
 
@@ -167,6 +195,10 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
         }
       }
       return nextSort
+    }
+    if (type === 'table') {
+      emitRow('table', extractTableContent(node), parentId, sortOrder)
+      return sortOrder + 1
     }
     if (type === 'listItem') {
       // Defensive: should only be reached via bulletList/orderedList.

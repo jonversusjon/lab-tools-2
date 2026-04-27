@@ -23,6 +23,26 @@ const INITIAL_CONTENT = {
         { type: 'listItem', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Step two' }] }] },
       ],
     },
+    { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Table example' }] },
+    {
+      type: 'table',
+      content: [
+        {
+          type: 'tableRow',
+          content: [
+            { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Sample' }] }] },
+            { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Result' }] }] },
+          ],
+        },
+        {
+          type: 'tableRow',
+          content: [
+            { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'A1' }] }] },
+            { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: '0.42' }] }] },
+          ],
+        },
+      ],
+    },
     { type: 'paragraph', content: [{ type: 'text', text: 'End of seed content.' }] },
   ],
 }

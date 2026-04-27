@@ -80,6 +80,38 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
     return { type: 'listItem', content: [paragraph, ...children] }
   }
 
+  function buildTableCell(text: string, isHeader: boolean): JSONContent {
+    const cellContent: JSONContent = text === '' ? { type: 'paragraph' } : {
+      type: 'paragraph',
+      content: [{ type: 'text', text }],
+    }
+    return { type: isHeader ? 'tableHeader' : 'tableCell', content: [cellContent] }
+  }
+
+  function buildTableRow(
+    rowIndex: number,
+    rowData: string[],
+    hasColHeader: boolean,
+    hasRowHeader: boolean
+  ): JSONContent {
+    const cells = rowData.map((cellText, colIndex) => {
+      const isHeader =
+        (rowIndex === 0 && hasColHeader) || (colIndex === 0 && hasRowHeader)
+      return buildTableCell(cellText, isHeader)
+    })
+    return { type: 'tableRow', content: cells }
+  }
+
+  function buildTableNode(row: ExperimentBlock): JSONContent {
+    const hasColHeader = getContentField<boolean>(row, 'has_column_header', false)
+    const hasRowHeader = getContentField<boolean>(row, 'has_row_header', false)
+    const rows = getContentField<string[][]>(row, 'rows', [])
+    const tableRows = rows.map((rowData, rowIndex) =>
+      buildTableRow(rowIndex, rowData, hasColHeader, hasRowHeader)
+    )
+    return { type: 'table', content: tableRows }
+  }
+
   function buildSingleNode(row: ExperimentBlock): JSONContent {
     const blockType = row.block_type
     if (blockType === 'paragraph') {
@@ -148,7 +180,7 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
       }
     }
     if (blockType === 'table') {
-      throw new UnsupportedBlockTypeError(blockType, row.id)
+      return buildTableNode(row)
     }
     throw new UnsupportedBlockTypeError(blockType, row.id)
   }

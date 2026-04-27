@@ -1,4 +1,5 @@
 import StarterKit from '@tiptap/starter-kit'
+import { TableKit } from '@tiptap/extension-table'
 import { Callout } from '@/blocks-tiptap/nodes/callout'
 import { ColumnList } from '@/blocks-tiptap/nodes/columnList'
 import { Column } from '@/blocks-tiptap/nodes/column'
@@ -17,6 +18,7 @@ export const tiptapExtensions = [
     link: false,
     underline: false,
   }),
+  TableKit,
   Callout,
   ColumnList,
   Column,

@@ -571,33 +571,7 @@ describe('adversarial — heading_4 demotion', () => {
 })
 
 describe('adversarial — unsupported block types throw', () => {
-  it('12. table block throws UnsupportedBlockTypeError', () => {
-    const row = makeRow({
-      id: 'tbl-1',
-      block_type: 'table',
-      content: {
-        table_width: 2,
-        has_column_header: false,
-        has_row_header: false,
-        rows: [
-          ['a', 'b'],
-          ['c', 'd'],
-        ],
-      },
-      sort_order: 0,
-    })
-    let caught: unknown = null
-    try {
-      rowsToTiptapDoc([row])
-    } catch (err) {
-      caught = err
-    }
-    expect(caught).toBeInstanceOf(UnsupportedBlockTypeError)
-    expect((caught as UnsupportedBlockTypeError).blockType).toBe('table')
-    expect((caught as UnsupportedBlockTypeError).blockId).toBe('tbl-1')
-  })
-
-  it('13. unknown block_type throws UnsupportedBlockTypeError', () => {
+  it('12. unknown block_type throws UnsupportedBlockTypeError', () => {
     const row = makeRow({
       id: 'unk-1',
       block_type: 'not_a_real_block',
@@ -636,5 +610,110 @@ describe('regression — is_toggleable on headings is dropped', () => {
     const content = rebuilt[0].content as Record<string, unknown>
     const hasToggle = 'is_toggleable' in content && content['is_toggleable'] === true
     expect(hasToggle).toBe(false)
+  })
+})
+
+// -----------------------------------------------------------------------------
+// Table round-trip fixtures (15, 16)
+// -----------------------------------------------------------------------------
+
+describe('table — DB→Tiptap + round-trip', () => {
+  it('15. 2×2 table with column header — DB→Tiptap', () => {
+    const row = makeRow({
+      id: 'tbl-2x2',
+      block_type: 'table',
+      content: {
+        table_width: 2,
+        has_column_header: true,
+        has_row_header: false,
+        rows: [['Name', 'Age'], ['Alice', '30']],
+      },
+      sort_order: 0,
+    })
+    const doc = rowsToTiptapDoc([row])
+    expect(doc).toEqual({
+      type: 'doc',
+      content: [
+        {
+          type: 'table',
+          content: [
+            {
+              type: 'tableRow',
+              content: [
+                { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Name' }] }] },
+                { type: 'tableHeader', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Age' }] }] },
+              ],
+            },
+            {
+              type: 'tableRow',
+              content: [
+                { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Alice' }] }] },
+                { type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: '30' }] }] },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+  })
+
+  it('15. 2×2 table with column header — round-trip', () => {
+    const row = makeRow({
+      id: 'tbl-2x2',
+      block_type: 'table',
+      content: {
+        table_width: 2,
+        has_column_header: true,
+        has_row_header: false,
+        rows: [['Name', 'Age'], ['Alice', '30']],
+      },
+      sort_order: 0,
+    })
+    const doc = rowsToTiptapDoc([row])
+    const rebuilt = tiptapDocToRows(doc, EXPERIMENT_ID)
+    expect(normalizeForComparison(rebuilt)).toEqual(normalizeForComparison([row]))
+  })
+
+  it('16. 3×3 table with column AND row headers — DB→Tiptap', () => {
+    const row = makeRow({
+      id: 'tbl-3x3',
+      block_type: 'table',
+      content: {
+        table_width: 3,
+        has_column_header: true,
+        has_row_header: true,
+        rows: [['', 'Q1', 'Q2'], ['Sales', '100', '120'], ['Costs', '60', '80']],
+      },
+      sort_order: 0,
+    })
+    const doc = rowsToTiptapDoc([row])
+    const table = doc.content![0]
+    expect(table.type).toBe('table')
+    // Row 0: all three cells are tableHeader (col header + row header corner)
+    const row0 = table.content![0].content!
+    expect(row0.every((c) => c.type === 'tableHeader')).toBe(true)
+    // Row 1 col 0: tableHeader (row header)
+    expect(table.content![1].content![0].type).toBe('tableHeader')
+    // Row 1 col 1: tableCell
+    expect(table.content![1].content![1].type).toBe('tableCell')
+    // Row 2 col 0: tableHeader (row header)
+    expect(table.content![2].content![0].type).toBe('tableHeader')
+  })
+
+  it('16. 3×3 table with column AND row headers — round-trip', () => {
+    const row = makeRow({
+      id: 'tbl-3x3',
+      block_type: 'table',
+      content: {
+        table_width: 3,
+        has_column_header: true,
+        has_row_header: true,
+        rows: [['', 'Q1', 'Q2'], ['Sales', '100', '120'], ['Costs', '60', '80']],
+      },
+      sort_order: 0,
+    })
+    const doc = rowsToTiptapDoc([row])
+    const rebuilt = tiptapDocToRows(doc, EXPERIMENT_ID)
+    expect(normalizeForComparison(rebuilt)).toEqual(normalizeForComparison([row]))
   })
 })
