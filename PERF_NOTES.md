@@ -60,3 +60,9 @@ viewer in the same document — a meaningful perf hit at 3+ panels.
 ## Other notes
 
 (Add as concerns arise.)
+
+### Update for Phase 8c (IF panel)
+
+Same memoization pattern applied to `IfPanelView` as `FlowPanelView`.
+Manual verification approach is identical: insert two if_panel blocks
+in the sandbox, type in adjacent paragraphs, profile.

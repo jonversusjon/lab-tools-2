@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import IfPanelView from '@/blocks-tiptap/views/IfPanelView'
 
 export const IfPanel = Node.create({
   name: 'if_panel',
@@ -55,5 +57,9 @@ export const IfPanel = Node.create({
 
   renderHTML({ HTMLAttributes }) {
     return ['div', mergeAttributes({ 'data-block-type': 'if_panel' }, HTMLAttributes)]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(IfPanelView)
   },
 })
