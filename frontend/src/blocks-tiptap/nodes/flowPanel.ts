@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import FlowPanelView from '@/blocks-tiptap/views/FlowPanelView'
 
 export const FlowPanel = Node.create({
   name: 'flow_panel',
@@ -41,6 +43,10 @@ export const FlowPanel = Node.create({
         rendered: false,
       },
     }
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(FlowPanelView)
   },
 
   parseHTML() {

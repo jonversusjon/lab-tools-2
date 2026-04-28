@@ -73,6 +73,23 @@ const INITIAL_CONTENT = {
         },
       ],
     },
+    { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Flow panel example' }] },
+    {
+      type: 'flow_panel',
+      attrs: {
+        source_panel_id: null,
+        name: 'Sandbox demo panel',
+        instrument: null,
+        targets: [],
+        assignments: [],
+        volume_params: {
+          num_samples: 1,
+          volume_per_sample_ul: 100,
+          pipet_error_factor: 1.1,
+          dilution_source: 'flow',
+        },
+      },
+    },
     { type: 'paragraph', content: [{ type: 'text', text: 'End of seed content.' }] },
   ],
 }
