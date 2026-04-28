@@ -1,4 +1,22 @@
+/**
+ * Panel designer state hook. Two modes share the same reducer:
+ *
+ * - Template mode: usePanelDesigner(panel, instrument). State is
+ *   loaded from props via SET_PANEL / SET_INSTRUMENT effects.
+ *   Backend persistence is the responsibility of the caller (it
+ *   reads `state` and saves on debounce).
+ *
+ * - Instance mode: usePanelDesignerInstance(initialState, onChange).
+ *   State is loaded eagerly from a fully-realized initial state.
+ *   Every change triggers onChange(newState), which Phase 7b uses
+ *   to mirror state into a Tiptap node's attrs.
+ *
+ * Both modes delegate to usePanelDesignerCore, which holds the
+ * useReducer + memoized action callbacks.
+ */
+
 import { useReducer, useEffect, useCallback, useRef } from 'react'
+import type { Dispatch } from 'react'
 import type { Panel, PanelTarget, PanelAssignment, Instrument } from '@/types'
 
 const UNDO_CAP = 50
@@ -30,7 +48,21 @@ export type PanelDesignerAction =
   | { type: 'REPLACE_TARGET_ANTIBODY'; targetId: string; oldAntibodyId: string; newAntibodyId: string; updatedTarget: PanelTarget }
   | { type: 'REORDER_TARGETS'; targetIds: string[] }
 
-const initialState: PanelDesignerState = {
+/**
+ * Handlers parameterizing how state flows in/out of the reducer.
+ * Template mode uses prop-driven initial-state effects; instance mode
+ * uses a fully-realized initial state and emits every change to a sink.
+ */
+export interface PanelDesignerHandlers {
+  /** Source of initial state. Template: emptyPanelDesignerState (effects hydrate it);
+   *  Instance: a stable initial state object passed by the caller. */
+  initialState: PanelDesignerState
+  /** Optional side effect on every state change. Instance mode uses
+   *  this to push attrs back to Tiptap; template mode passes undefined. */
+  onChange?: (state: PanelDesignerState) => void
+}
+
+const emptyPanelDesignerState: PanelDesignerState = {
   panel: null,
   instrument: null,
   targets: [],
@@ -195,20 +227,31 @@ export function panelDesignerReducer(
   }
 }
 
-export function usePanelDesigner(panel: Panel | null, instrument: Instrument | null) {
-  const [state, dispatch] = useReducer(panelDesignerReducer, initialState)
-  const lastPanelIdRef = useRef<string | null>(null)
+// ─── Core ────────────────────────────────────────────────────────────────────
 
+function usePanelDesignerCore(
+  startingState: PanelDesignerState,
+  onChange?: (state: PanelDesignerState) => void,
+) {
+  const [state, dispatch] = useReducer(panelDesignerReducer, startingState)
+
+  // Keep onChange ref current so the effect closure always calls the
+  // latest version without adding onChange to the effect's dep array.
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  // onChange fires on every state change EXCEPT the initial mount.
+  // Skipping mount prevents a useless round-trip in instance mode:
+  // emitting the state we just loaded from Tiptap attrs back into attrs
+  // would create a spurious Tiptap transaction and trigger onUpdate.
+  const isMountedRef = useRef(false)
   useEffect(() => {
-    if (panel && panel.id !== lastPanelIdRef.current) {
-      lastPanelIdRef.current = panel.id
-      dispatch({ type: 'SET_PANEL', panel })
+    if (!isMountedRef.current) {
+      isMountedRef.current = true
+      return
     }
-  }, [panel])
-
-  useEffect(() => {
-    dispatch({ type: 'SET_INSTRUMENT', instrument })
-  }, [instrument?.id])
+    onChangeRef.current?.(state)
+  }, [state])
 
   const addTarget = useCallback((target: PanelTarget) => {
     dispatch({ type: 'ADD_TARGET', target })
@@ -235,7 +278,6 @@ export function usePanelDesigner(panel: Panel | null, instrument: Instrument | n
   }, [])
 
   const forceRefresh = useCallback((fresh: Panel) => {
-    lastPanelIdRef.current = fresh.id
     dispatch({ type: 'FORCE_REFRESH', panel: fresh })
   }, [])
 
@@ -244,3 +286,45 @@ export function usePanelDesigner(panel: Panel | null, instrument: Instrument | n
 
   return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, undo, redo, forceRefresh, canUndo, canRedo }
 }
+
+// ─── Template mode ───────────────────────────────────────────────────────────
+
+export function usePanelDesigner(panel: Panel | null, instrument: Instrument | null) {
+  const lastPanelIdRef = useRef<string | null>(null)
+
+  // No onChange in template mode — backend persistence is handled by the
+  // caller reading `state` on a save debounce.
+  const { forceRefresh: coreForceRefresh, dispatch, ...rest } = usePanelDesignerCore(emptyPanelDesignerState)
+
+  useEffect(() => {
+    if (panel && panel.id !== lastPanelIdRef.current) {
+      lastPanelIdRef.current = panel.id
+      dispatch({ type: 'SET_PANEL', panel })
+    }
+  }, [panel]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    dispatch({ type: 'SET_INSTRUMENT', instrument })
+  }, [instrument?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Template wrapper wraps forceRefresh to also update lastPanelIdRef,
+  // preventing the SET_PANEL effect above from re-firing on next render.
+  const forceRefresh = useCallback((fresh: Panel) => {
+    lastPanelIdRef.current = fresh.id
+    coreForceRefresh(fresh)
+  }, [coreForceRefresh])
+
+  return { ...rest, dispatch, forceRefresh }
+}
+
+// ─── Instance mode ───────────────────────────────────────────────────────────
+
+export function usePanelDesignerInstance(
+  initialState: PanelDesignerState,
+  onChange: (state: PanelDesignerState) => void,
+) {
+  return usePanelDesignerCore(initialState, onChange)
+}
+
+// Re-export dispatch type for Phase 7b NodeView consumers
+export type { Dispatch as PanelDesignerDispatch }
