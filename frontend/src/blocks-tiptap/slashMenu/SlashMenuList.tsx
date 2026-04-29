@@ -43,7 +43,7 @@ const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
     }
 
     return (
-      <div className="max-h-72 min-w-[12rem] overflow-y-auto rounded border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+      <div className="max-h-96 min-w-[12rem] overflow-y-auto rounded border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
         {items.map((item, index) => (
           <button
             key={item.title}
@@ -51,7 +51,7 @@ const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
             onClick={() => command(item)}
             onMouseEnter={() => setSelectedIndex(index)}
             className={
-              'w-full px-3 py-2 text-left text-sm ' +
+              'w-full px-3 py-1.5 text-left text-sm ' +
               (index === selectedIndex
                 ? 'bg-blue-50 dark:bg-blue-900/30'
                 : 'hover:bg-gray-50 dark:hover:bg-gray-700')

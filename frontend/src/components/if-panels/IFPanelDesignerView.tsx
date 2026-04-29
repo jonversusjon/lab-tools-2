@@ -507,7 +507,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
       {/* Table */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handlers.onReorderTargets}>
-        <div className="overflow-x-auto rounded border border-gray-200 dark:border-gray-700">
+        <div className="overflow-x-auto scrollbar-hide panel-fade-right rounded border border-gray-200 dark:border-gray-700">
           <SortableContext items={state.targets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
             <table className="w-full border-collapse text-left text-sm">
               <thead>

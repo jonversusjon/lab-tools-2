@@ -1,6 +1,7 @@
 import { EditorContent, useEditor } from '@tiptap/react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
+import { filterJsonTree } from '@/utils/jsonFilter'
 
 function makeColumnLayout(n: number) {
   const widthPct = 100 / n
@@ -132,6 +133,13 @@ const INITIAL_CONTENT = {
 
 export default function TiptapSandbox() {
   const [json, setJson] = useState<unknown>(INITIAL_CONTENT)
+  const [jsonFilter, setJsonFilter] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const filteredJson = useMemo(() => {
+    if (!jsonFilter.trim()) return json
+    return filterJsonTree(json, jsonFilter.toLowerCase())
+  }, [json, jsonFilter])
 
   const editor = useEditor({
     extensions: tiptapExtensions,
@@ -143,8 +151,18 @@ export default function TiptapSandbox() {
     editor?.chain().focus().insertContent(makeColumnLayout(n)).run()
   }
 
+  async function handleCopyJson() {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(filteredJson, null, 2))
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1000)
+    } catch {
+      // clipboard API unavailable — silent no-op
+    }
+  }
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="w-full px-[5vw] py-6 space-y-6">
       <h1 className="text-2xl font-bold dark:text-gray-100">Tiptap Sandbox</h1>
       <div className="flex gap-2 text-sm">
         <button
@@ -169,14 +187,32 @@ export default function TiptapSandbox() {
       <div className="prose dark:prose-invert max-w-none border border-gray-200 dark:border-gray-700 rounded p-4">
         <EditorContent editor={editor} />
       </div>
-      <details>
-        <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400">
-          Editor JSON (debug)
-        </summary>
-        <pre className="mt-2 text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto">
-          {JSON.stringify(json, null, 2)}
-        </pre>
-      </details>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={jsonFilter}
+            onChange={(e) => setJsonFilter(e.target.value)}
+            placeholder="Filter JSON (e.g. column_list)"
+            className="flex-1 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900"
+          />
+          <button
+            type="button"
+            onClick={handleCopyJson}
+            className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            {copied ? 'Copied!' : 'Copy JSON'}
+          </button>
+        </div>
+        <details>
+          <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400">
+            Editor JSON (debug)
+          </summary>
+          <pre className="mt-2 text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto">
+            {JSON.stringify(filteredJson, null, 2)}
+          </pre>
+        </details>
+      </div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { ReactRenderer } from '@tiptap/react'
 import SlashMenuList from './SlashMenuList'
 import { filterItems, type SlashMenuItem } from './items'
 import type { SlashMenuListRef } from './SlashMenuList'
+import { positionPopup } from './positioning'
 
 export const SlashMenu = Extension.create({
   name: 'slashMenu',
@@ -45,11 +46,16 @@ export const SlashMenu = Extension.create({
 
               popup = document.createElement('div')
               popup.style.position = 'absolute'
-              popup.style.left = String(rect.left + window.scrollX) + 'px'
-              popup.style.top = String(rect.bottom + window.scrollY) + 'px'
               popup.style.zIndex = '50'
+              popup.style.visibility = 'hidden'
               popup.appendChild(component.element)
               document.body.appendChild(popup)
+
+              // Append first so popup has dimensions, then position
+              const { left, top } = positionPopup({ refRect: rect, popup })
+              popup.style.left = String(left) + 'px'
+              popup.style.top = String(top) + 'px'
+              popup.style.visibility = ''
             },
 
             onUpdate: (props: SuggestionProps<SlashMenuItem, SlashMenuItem>) => {
@@ -58,8 +64,9 @@ export const SlashMenu = Extension.create({
               if (!props.clientRect || !popup) return
               const rect = props.clientRect()
               if (!rect) return
-              popup.style.left = String(rect.left + window.scrollX) + 'px'
-              popup.style.top = String(rect.bottom + window.scrollY) + 'px'
+              const { left, top } = positionPopup({ refRect: rect, popup })
+              popup.style.left = String(left) + 'px'
+              popup.style.top = String(top) + 'px'
             },
 
             onKeyDown: (props: SuggestionKeyDownProps) => {

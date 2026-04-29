@@ -8,3 +8,53 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
+
+/* Tiptap editor: ensure cursor is visible in heading blocks. */
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  caret-color: currentColor;
+}
+
+/* Tiptap Placeholder extension styles. */
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror p.is-empty::before,
+.ProseMirror h1.is-empty::before,
+.ProseMirror h2.is-empty::before,
+.ProseMirror h3.is-empty::before,
+.ProseMirror li.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: rgb(156 163 175); /* gray-400 */
+  pointer-events: none;
+  height: 0;
+}
+
+.dark .ProseMirror p.is-editor-empty:first-child::before,
+.dark .ProseMirror p.is-empty::before,
+.dark .ProseMirror h1.is-empty::before,
+.dark .ProseMirror h2.is-empty::before,
+.dark .ProseMirror h3.is-empty::before,
+.dark .ProseMirror li.is-empty::before {
+  color: rgb(75 85 99); /* gray-600 */
+}
+
+/* Hide scrollbars while keeping scroll functionality. */
+.scrollbar-hide {
+  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;        /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari/Webkit */
+}
+
+/* Subtle right-edge fade indicating more content is available
+   when horizontally scrollable. The mask fades the rightmost 10%
+   regardless of actual overflow state. */
+.panel-fade-right {
+  mask-image: linear-gradient(to right, black 0%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 90%, transparent 100%);
+}

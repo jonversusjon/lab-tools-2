@@ -1,5 +1,6 @@
 import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table'
+import Placeholder from '@tiptap/extension-placeholder'
 import { Callout } from '@/blocks-tiptap/nodes/callout'
 import { ColumnList } from '@/blocks-tiptap/nodes/columnList'
 import { Column } from '@/blocks-tiptap/nodes/column'
@@ -26,4 +27,19 @@ export const tiptapExtensions = [
   FlowPanel,
   IfPanel,
   SlashMenu,
+  Placeholder.configure({
+    placeholder: ({ node }) => {
+      switch (node.type.name) {
+        case 'heading':
+          return 'Heading ' + String(node.attrs.level)
+        case 'paragraph':
+          return 'Type / for commands...'
+        case 'listItem':
+          return 'List item'
+        default:
+          return ''
+      }
+    },
+    showOnlyCurrent: true,
+  }),
 ]
