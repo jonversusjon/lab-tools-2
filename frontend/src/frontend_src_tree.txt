@@ -1,0 +1,216 @@
+.
+├── App.tsx
+├── __tests__
+│   ├── AntibodyForm.test.tsx
+│   ├── AntibodyTable.test.tsx
+│   ├── AssignmentTable.test.tsx
+│   ├── ColumnLayout.test.tsx
+│   ├── FlowPanelBlock.test.tsx
+│   ├── FluorophorePicker.test.tsx
+│   ├── FluorophoreTable.test.tsx
+│   ├── FpbaseFetchModal.test.tsx
+│   ├── HoverActions.test.tsx
+│   ├── IFPanelBlock.test.tsx
+│   ├── IFPanelDesignerView.test.tsx
+│   ├── InstrumentEditor.test.tsx
+│   ├── InstrumentList.test.tsx
+│   ├── Modal.test.tsx
+│   ├── PanelDesigner.test.tsx
+│   ├── PanelDesignerView.test.tsx
+│   ├── SpectraViewer.test.tsx
+│   ├── SpilloverHeatmap.test.tsx
+│   ├── colors.test.ts
+│   ├── integration
+│   │   ├── fluorophoreWorkflow.test.tsx
+│   │   ├── instrumentWorkflow.test.tsx
+│   │   ├── panelTargetPersistence.test.tsx
+│   │   └── panelWorkflow.test.tsx
+│   ├── spectra.test.ts
+│   ├── spillover.test.ts
+│   ├── usePanelDesigner.test.ts
+│   └── wellUtils.test.ts
+├── api
+│   ├── antibodies.ts
+│   ├── conjugateChemistries.ts
+│   ├── dyeLabels.ts
+│   ├── experiments.ts
+│   ├── exportImport.ts
+│   ├── fluorophores.ts
+│   ├── if_panels.ts
+│   ├── instruments.ts
+│   ├── listEntries.ts
+│   ├── microscopes.ts
+│   ├── panels.ts
+│   ├── plateMaps.ts
+│   ├── preferences.ts
+│   ├── secondaries.ts
+│   └── tags.ts
+├── blocks-tiptap
+│   ├── __tests__
+│   │   ├── adapter.test.ts
+│   │   ├── calloutView.test.tsx
+│   │   ├── columns.test.tsx
+│   │   ├── flowPanel.test.tsx
+│   │   ├── lists.test.ts
+│   │   ├── schema.test.ts
+│   │   └── table.test.ts
+│   ├── adapter
+│   │   ├── dbToTiptap.ts
+│   │   ├── errors.ts
+│   │   ├── index.ts
+│   │   └── tiptapToDb.ts
+│   ├── extensions.ts
+│   ├── nodes
+│   │   ├── callout.ts
+│   │   ├── column.ts
+│   │   ├── columnList.ts
+│   │   ├── flowPanel.ts
+│   │   ├── ifPanel.ts
+│   │   └── index.ts
+│   └── views
+│       ├── CalloutView.tsx
+│       ├── ColumnListView.tsx
+│       ├── ColumnView.tsx
+│       ├── FlowPanelView.tsx
+│       ├── columnCommands.ts
+│       └── index.ts
+├── components
+│   ├── antibodies
+│   │   ├── AntibodyForm.tsx
+│   │   ├── AntibodyFormFields.tsx
+│   │   ├── AntibodyImportDiffModal.tsx
+│   │   ├── AntibodyTable.tsx
+│   │   ├── ConjugateOmnibox.tsx
+│   │   ├── DilutionInput.tsx
+│   │   ├── FavoriteButton.tsx
+│   │   ├── ImportWizard.tsx
+│   │   ├── TagBadge.tsx
+│   │   └── TagManager.tsx
+│   ├── dye-labels
+│   │   └── DyeLabelList.tsx
+│   ├── experiments
+│   │   ├── BlockCommandMenu.tsx
+│   │   ├── BlockContextMenu.tsx
+│   │   ├── BlockRenderer.tsx
+│   │   ├── CalloutBlock.tsx
+│   │   ├── ColumnLayout.tsx
+│   │   ├── DividerBlock.tsx
+│   │   ├── ExperimentList.tsx
+│   │   ├── ExperimentPage.tsx
+│   │   ├── FlowPanelBlock.tsx
+│   │   ├── IFPanelBlock.tsx
+│   │   ├── PanelTemplatePicker.tsx
+│   │   ├── TableBlock.tsx
+│   │   ├── TextBlockEditor.tsx
+│   │   └── TiptapSandbox.tsx
+│   ├── fluorophores
+│   │   ├── FluorophoreBrowser.tsx
+│   │   ├── FluorophoreImportWizard.tsx
+│   │   ├── FluorophoreTable.tsx
+│   │   └── FpbaseFetchModal.tsx
+│   ├── home
+│   │   └── Homepage.tsx
+│   ├── if-panels
+│   │   ├── IFFluorophorePicker.tsx
+│   │   ├── IFPanelDesigner.tsx
+│   │   ├── IFPanelDesignerView.tsx
+│   │   ├── IFPanelList.tsx
+│   │   └── __tests__
+│   │       └── IFFluorophorePicker.test.tsx
+│   ├── instruments
+│   │   ├── DetectorRow.tsx
+│   │   ├── InstrumentEditor.tsx
+│   │   ├── InstrumentList.tsx
+│   │   └── LaserSection.tsx
+│   ├── layout
+│   │   ├── ConnectionStatus.tsx
+│   │   ├── ErrorBoundary.tsx
+│   │   ├── HoverActions.tsx
+│   │   ├── HoverActionsRow.tsx
+│   │   ├── Modal.tsx
+│   │   ├── PreferencesMenu.tsx
+│   │   ├── Shell.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── ThemeContext.tsx
+│   │   └── Toast.tsx
+│   ├── microscopes
+│   │   ├── MicroscopeEditor.tsx
+│   │   ├── MicroscopeLaserSection.tsx
+│   │   └── MicroscopeList.tsx
+│   ├── panels
+│   │   ├── AntibodyOmnibox.tsx
+│   │   ├── CellAssignmentPicker.tsx
+│   │   ├── FluorophorePicker.tsx
+│   │   ├── PanelDesigner.tsx
+│   │   ├── PanelDesignerView.tsx
+│   │   ├── PanelList.tsx
+│   │   ├── PanelSpectraByLaser.tsx
+│   │   ├── SecondaryOmnibox.tsx
+│   │   ├── SpilloverHeatmap.tsx
+│   │   ├── TargetOmnibox.tsx
+│   │   └── __tests__
+│   │       └── PanelDesignerView.test.tsx
+│   ├── placeholder
+│   │   └── PlaceholderPage.tsx
+│   ├── plate-maps
+│   │   ├── PlateMapControls.tsx
+│   │   ├── PlateMapEditor.tsx
+│   │   ├── PlateMapGrid.tsx
+│   │   ├── PlateMapLegendPanel.tsx
+│   │   ├── PlateMapList.tsx
+│   │   ├── PlateMapWidget.tsx
+│   │   └── UndoContext.tsx
+│   ├── secondaries
+│   │   └── SecondaryList.tsx
+│   ├── settings
+│   │   └── Settings.tsx
+│   ├── shared
+│   │   ├── CrossReactivityWarnings.tsx
+│   │   ├── FluorophoreSearch.tsx
+│   │   ├── GenericImportDiffModal.tsx
+│   │   ├── ListEditor.tsx
+│   │   ├── NestedImportDiffModal.tsx
+│   │   └── importSchemas.ts
+│   └── spectra
+│       └── SpectraViewer.tsx
+├── frontend_src_tree.txt
+├── hooks
+│   ├── __tests__
+│   │   ├── useIFPanelDesigner.test.ts
+│   │   ├── useIFPanelDesignerInstance.test.tsx
+│   │   └── usePanelDesignerInstance.test.tsx
+│   ├── useAntibodies.ts
+│   ├── useConjugateChemistries.ts
+│   ├── useDyeLabels.ts
+│   ├── useExperimentBlocks.ts
+│   ├── useExperiments.ts
+│   ├── useFluorophores.ts
+│   ├── useIFPanelDesigner.ts
+│   ├── useIFPanels.ts
+│   ├── useInstruments.ts
+│   ├── useListEntries.ts
+│   ├── useMicroscopes.ts
+│   ├── usePanelDesigner.ts
+│   ├── usePanels.ts
+│   ├── usePlateMaps.ts
+│   ├── useSecondaries.ts
+│   └── useTags.ts
+├── index.css
+├── main.tsx
+├── test-setup.ts
+├── types
+│   └── index.ts
+└── utils
+    ├── colors.ts
+    ├── conjugates.ts
+    ├── crossReactivity.ts
+    ├── dilutions.ts
+    ├── fuzzySearch.ts
+    ├── plateMapColors.ts
+    ├── plateTypes.ts
+    ├── search.ts
+    ├── spectra.ts
+    ├── spillover.ts
+    └── wellUtils.ts
+
+31 directories, 182 files
