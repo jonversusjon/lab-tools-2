@@ -52,6 +52,9 @@ export interface PanelDesignerViewConfig {
   instruments?: Instrument[]
   showAutoAssign: boolean
   showDelete: boolean
+  /** When false, hides undo/redo buttons and keyboard shortcuts.
+   *  Defaults to true for backward compatibility. */
+  showUndoRedo?: boolean
 }
 
 export interface PanelDesignerViewHandlers {
@@ -207,6 +210,7 @@ export default function PanelDesignerView({
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
+    if (config.showUndoRedo === false) return
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault()
@@ -223,7 +227,7 @@ export default function PanelDesignerView({
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handlers])
+  }, [handlers, config.showUndoRedo])
 
   // --- Derived state (pure computations from props) ---
 
@@ -746,6 +750,7 @@ export default function PanelDesignerView({
               {panel.name}
             </h1>
           )}
+          {config.showUndoRedo !== false && (
           <div className="flex items-center gap-1 ml-2">
             <button
               onClick={handlers.onUndo}
@@ -764,6 +769,7 @@ export default function PanelDesignerView({
               Redo
             </button>
           </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

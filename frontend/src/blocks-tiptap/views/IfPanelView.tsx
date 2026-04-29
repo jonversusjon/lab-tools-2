@@ -454,6 +454,7 @@ function IfPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewPro
       showMicroscopeSelector: true,
       showDelete: true,
       showViewModeToggle: true,
+      showUndoRedo: false,
     }),
     []
   )

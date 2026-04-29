@@ -471,6 +471,7 @@ function FlowPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewP
       instruments: instrumentsData?.items ?? [],
       showAutoAssign: true,
       showDelete: true,
+      showUndoRedo: false,
     }),
     [instrumentsData]
   )

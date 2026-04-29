@@ -57,6 +57,7 @@ export interface IFPanelDesignerViewConfig {
   showMicroscopeSelector: boolean
   showDelete: boolean
   showViewModeToggle: boolean
+  showUndoRedo?: boolean
 }
 
 export interface IFPanelDesignerViewProps {

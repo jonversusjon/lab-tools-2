@@ -30,18 +30,19 @@ export const tiptapExtensions = [
   IfPanel,
   SlashMenu,
   Placeholder.configure({
-    placeholder: ({ node }) => {
+    placeholder: ({ node, hasAnchor }) => {
       switch (node.type.name) {
         case 'heading':
+          // Always visible — helps "lay out structure first, fill in later"
           return 'Heading ' + String(node.attrs.level)
         case 'paragraph':
-          return 'Type / for commands...'
+          return hasAnchor ? 'Type / for commands...' : ''
         case 'listItem':
-          return 'List item'
+          return hasAnchor ? 'List item' : ''
         default:
           return ''
       }
     },
-    showOnlyCurrent: true,
+    showOnlyCurrent: false,
   }),
 ]
