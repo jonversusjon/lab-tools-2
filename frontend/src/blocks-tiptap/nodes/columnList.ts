@@ -1,6 +1,4 @@
 import { Node, mergeAttributes } from '@tiptap/core'
-import { ReactNodeViewRenderer } from '@tiptap/react'
-import ColumnListView from '@/blocks-tiptap/views/ColumnListView'
 
 export const ColumnList = Node.create({
   name: 'column_list',
@@ -22,10 +20,13 @@ export const ColumnList = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes({ 'data-block-type': 'column_list' }, HTMLAttributes), 0]
-  },
-
-  addNodeView() {
-    return ReactNodeViewRenderer(ColumnListView)
+    return [
+      'div',
+      mergeAttributes(HTMLAttributes, {
+        'data-block-type': 'column_list',
+        style: 'display: flex; width: 100%; gap: 1rem; margin-top: 0.75rem; margin-bottom: 0.75rem;',
+      }),
+      0,
+    ]
   },
 })

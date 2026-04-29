@@ -79,19 +79,15 @@ describe('ColumnView — NodeView rendering', () => {
     expect(await screen.findByText('col-left')).toBeInTheDocument()
     expect(await screen.findByText('col-right')).toBeInTheDocument()
 
-    // ColumnView sets inline style; ColumnListView has no inline style (only className).
-    // So [data-node-view-wrapper] elements with a style attribute are ColumnView wrappers.
-    const wrappers = Array.from(
-      document.querySelectorAll<HTMLElement>('[data-node-view-wrapper]')
+    // Native renderHTML emits [data-block-type="column"] divs with inline style.
+    const columns = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-block-type="column"]')
     )
-    const columnWrappers = wrappers.filter((el) => el.getAttribute('style'))
-    expect(columnWrappers.length).toBeGreaterThanOrEqual(2)
+    expect(columns.length).toBeGreaterThanOrEqual(2)
 
-    // For null width_pct, ColumnView uses { flex: 1, minWidth: 0 }.
-    // flexBasis should NOT be a non-zero explicit percentage (e.g. '30%').
-    // jsdom may normalize flex:1 to flex-basis:0 / 0% / 0px — all fine.
-    const hasExplicitPct = columnWrappers.some((el) =>
-      /^[1-9]\d*(\.\d+)?%$/.test(el.style.flexBasis)
+    // For null width_pct, column uses 'flex: 1 1 0' — no explicit percentage.
+    const hasExplicitPct = columns.some((el) =>
+      /[1-9]\d*(\.\d+)?%/.test(el.getAttribute('style') ?? '')
     )
     expect(hasExplicitPct).toBe(false)
   })
@@ -105,11 +101,12 @@ describe('ColumnView — NodeView rendering', () => {
     await screen.findByText('narrow')
     await screen.findByText('wide')
 
-    const wrappers = Array.from(
-      document.querySelectorAll<HTMLElement>('[data-node-view-wrapper]')
+    // Native renderHTML emits [data-block-type="column"] with inline flex shorthand.
+    const columns = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-block-type="column"]')
     )
-    const col30 = wrappers.find((el) => el.style.flexBasis === '30%')
-    const col70 = wrappers.find((el) => el.style.flexBasis === '70%')
+    const col30 = columns.find((el) => (el.getAttribute('style') ?? '').includes('30%'))
+    const col70 = columns.find((el) => (el.getAttribute('style') ?? '').includes('70%'))
     expect(col30).toBeDefined()
     expect(col70).toBeDefined()
   })

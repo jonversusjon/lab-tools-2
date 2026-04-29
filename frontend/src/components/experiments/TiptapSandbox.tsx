@@ -73,41 +73,58 @@ const INITIAL_CONTENT = {
         },
       ],
     },
-    { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Flow panel example' }] },
+    { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Panels side-by-side' }] },
     {
-      type: 'flow_panel',
-      attrs: {
-        source_panel_id: null,
-        name: 'Sandbox demo panel',
-        instrument: null,
-        targets: [],
-        assignments: [],
-        volume_params: {
-          num_samples: 1,
-          volume_per_sample_ul: 100,
-          pipet_error_factor: 1.1,
-          dilution_source: 'flow',
+      type: 'column_list',
+      attrs: { column_count: 2 },
+      content: [
+        {
+          type: 'column',
+          attrs: { width_pct: 50 },
+          content: [
+            {
+              type: 'flow_panel',
+              attrs: {
+                source_panel_id: null,
+                name: 'Sandbox demo panel',
+                instrument: null,
+                targets: [],
+                assignments: [],
+                volume_params: {
+                  num_samples: 1,
+                  volume_per_sample_ul: 100,
+                  pipet_error_factor: 1.1,
+                  dilution_source: 'flow',
+                },
+              },
+            },
+          ],
         },
-      },
-    },
-    { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'IF panel example' }] },
-    {
-      type: 'if_panel',
-      attrs: {
-        source_panel_id: null,
-        name: 'Sandbox IF demo panel',
-        panel_type: 'IF',
-        microscope: null,
-        view_mode: 'simple',
-        targets: [],
-        assignments: [],
-        volume_params: {
-          num_samples: 1,
-          volume_per_sample_ul: 200,
-          pipet_error_factor: 1.1,
-          dilution_source: 'icc_if',
+        {
+          type: 'column',
+          attrs: { width_pct: 50 },
+          content: [
+            {
+              type: 'if_panel',
+              attrs: {
+                source_panel_id: null,
+                name: 'Sandbox IF demo panel',
+                panel_type: 'IF',
+                microscope: null,
+                view_mode: 'simple',
+                targets: [],
+                assignments: [],
+                volume_params: {
+                  num_samples: 1,
+                  volume_per_sample_ul: 200,
+                  pipet_error_factor: 1.1,
+                  dilution_source: 'icc_if',
+                },
+              },
+            },
+          ],
         },
-      },
+      ],
     },
     { type: 'paragraph', content: [{ type: 'text', text: 'End of seed content.' }] },
   ],
@@ -127,7 +144,7 @@ export default function TiptapSandbox() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold dark:text-gray-100">Tiptap Sandbox</h1>
       <div className="flex gap-2 text-sm">
         <button
