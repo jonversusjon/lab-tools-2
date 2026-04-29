@@ -150,3 +150,26 @@ for new content. Until then, this is a known visual gap.
 To work around manually: select the empty column and use undo (Ctrl+Z)
 if the deletion was recent, or use the (eventual) column drag-handle
 context menu (Phase 9b) to delete the column explicitly.
+
+## Hand-rolled engine save mechanisms (Phase 12 cleanup target)
+
+The hand-rolled engine has two parallel save patterns that the new
+save coordinator (Phase 10b) replaces:
+
+- **Structural ops** in `BlockRenderer.tsx`: direct `await` calls to
+  `@/api/experiments.ts` functions (createBlock, updateBlock,
+  deleteBlock, reorderBlocks, snapshotPanel) followed by manual
+  `qc.invalidateQueries(['experiments', experimentId])`.
+- **Content edits** in 4+ child components (`TextBlockEditor`,
+  `CalloutBlock`, `TableBlock`, `FlowPanelBlock`, `IFPanelBlock`):
+  inline `fetch('/api/v1/experiments/...')` calls with 1500ms
+  debounce, `keepalive: true` on unmount, errors silently swallowed.
+
+Phase 12 cleanup deletes both patterns when removing the hand-rolled
+engine. The TanStack Query mutation hooks in
+`useExperimentBlocks.ts` (currently dead code) become the canonical
+API surface, used internally by Phase 10b's save coordinator.
+
+The `_rowId` attribute added in Phase 10a is what enables this
+replacement: Phase 10b's transaction inspector identifies which
+database rows to save by reading `_rowId` from each Tiptap node.

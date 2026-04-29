@@ -9,6 +9,16 @@ function nowIso(): string {
   return new Date().toISOString()
 }
 
+function rowIdFromAttrs(attrs: Record<string, unknown> | undefined | null): string {
+  const value = attrs?.['_rowId']
+  return typeof value === 'string' && value.length > 0 ? value : newId()
+}
+
+function stripRowId(attrs: Record<string, unknown>): Record<string, unknown> {
+  const { _rowId: _ignored, ...rest } = attrs
+  return rest
+}
+
 function extractText(node: JSONContent): string {
   const content = node.content
   if (!content || content.length === 0) {
@@ -85,13 +95,14 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
   const rows: ExperimentBlock[] = []
 
   function emitRow(
+    id: string,
     blockType: string,
     content: Record<string, unknown>,
     parentId: string | null,
     sortOrder: number
   ): ExperimentBlock {
     const row: ExperimentBlock = {
-      id: newId(),
+      id,
       experiment_id: experimentId,
       block_type: blockType,
       content,
@@ -115,23 +126,25 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
   // Returns the next sortOrder for siblings at this level.
   function handleNode(node: JSONContent, parentId: string | null, sortOrder: number): number {
     const type = node.type
+    const attrs = (node.attrs ?? {}) as Record<string, unknown>
+    const id = rowIdFromAttrs(attrs)
     if (type === 'paragraph') {
-      emitRow('paragraph', { text: extractText(node) }, parentId, sortOrder)
+      emitRow(id, 'paragraph', { text: extractText(node) }, parentId, sortOrder)
       return sortOrder + 1
     }
     if (type === 'heading') {
-      const rawLevel = (node.attrs?.['level'] as number | undefined) ?? 3
+      const rawLevel = (attrs['level'] as number | undefined) ?? 3
       const level = rawLevel === 1 || rawLevel === 2 || rawLevel === 3 ? rawLevel : 3
-      emitRow('heading_' + String(level), { text: extractText(node) }, parentId, sortOrder)
+      emitRow(id, 'heading_' + String(level), { text: extractText(node) }, parentId, sortOrder)
       return sortOrder + 1
     }
     if (type === 'horizontalRule') {
-      emitRow('divider', {}, parentId, sortOrder)
+      emitRow(id, 'divider', {}, parentId, sortOrder)
       return sortOrder + 1
     }
     if (type === 'callout') {
-      const attrs = (node.attrs ?? {}) as Record<string, unknown>
       emitRow(
+        id,
         'callout',
         {
           text: typeof attrs['text'] === 'string' ? attrs['text'] : '',
@@ -144,18 +157,16 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
       return sortOrder + 1
     }
     if (type === 'flow_panel') {
-      const attrs = (node.attrs ?? {}) as Record<string, unknown>
-      emitRow('flow_panel', { ...attrs }, parentId, sortOrder)
+      emitRow(id, 'flow_panel', stripRowId(attrs), parentId, sortOrder)
       return sortOrder + 1
     }
     if (type === 'if_panel') {
-      const attrs = (node.attrs ?? {}) as Record<string, unknown>
-      emitRow('if_panel', { ...attrs }, parentId, sortOrder)
+      emitRow(id, 'if_panel', stripRowId(attrs), parentId, sortOrder)
       return sortOrder + 1
     }
     if (type === 'column_list') {
-      const attrs = (node.attrs ?? {}) as Record<string, unknown>
       const row = emitRow(
+        id,
         'column_list',
         { column_count: typeof attrs['column_count'] === 'number' ? attrs['column_count'] : 2 },
         parentId,
@@ -165,10 +176,9 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
       return sortOrder + 1
     }
     if (type === 'column') {
-      const attrs = (node.attrs ?? {}) as Record<string, unknown>
       const widthPct = typeof attrs['width_pct'] === 'number' ? attrs['width_pct'] : null
       const content: Record<string, unknown> = widthPct !== null ? { width_pct: widthPct } : {}
-      const row = emitRow('column', content, parentId, sortOrder)
+      const row = emitRow(id, 'column', content, parentId, sortOrder)
       walkContent(node.content, row.id)
       return sortOrder + 1
     }
@@ -179,7 +189,10 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
       let nextSort = sortOrder
       for (const item of items) {
         if (item.type !== 'listItem') continue
+        const itemAttrs = (item.attrs ?? {}) as Record<string, unknown>
+        const itemId = rowIdFromAttrs(itemAttrs)
         const row = emitRow(
+          itemId,
           itemBlockType,
           { text: extractListItemText(item) },
           parentId,
@@ -194,7 +207,7 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
       return nextSort
     }
     if (type === 'table') {
-      emitRow('table', extractTableContent(node), parentId, sortOrder)
+      emitRow(id, 'table', extractTableContent(node), parentId, sortOrder)
       return sortOrder + 1
     }
     if (type === 'listItem') {

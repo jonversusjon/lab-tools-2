@@ -6,6 +6,7 @@ import { ColumnList } from '@/blocks-tiptap/nodes/columnList'
 import { Column } from '@/blocks-tiptap/nodes/column'
 import { FlowPanel } from '@/blocks-tiptap/nodes/flowPanel'
 import { IfPanel } from '@/blocks-tiptap/nodes/ifPanel'
+import { RowIdExtension } from '@/blocks-tiptap/nodes/rowIdExtension'
 import { SlashMenu } from '@/blocks-tiptap/slashMenu'
 
 export const tiptapExtensions = [
@@ -21,6 +22,7 @@ export const tiptapExtensions = [
     underline: false,
   }),
   TableKit,
+  RowIdExtension,
   Callout,
   ColumnList,
   Column,

@@ -77,7 +77,11 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
         ? { type: 'paragraph' }
         : { type: 'paragraph', content: paragraphContent }
     const children = walkSiblings(item.id)
-    return { type: 'listItem', content: [paragraph, ...children] }
+    return {
+      type: 'listItem',
+      attrs: { _rowId: item.id },
+      content: [paragraph, ...children],
+    }
   }
 
   function buildTableCell(text: string, isHeader: boolean): JSONContent {
@@ -109,21 +113,23 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
     const tableRows = rows.map((rowData, rowIndex) =>
       buildTableRow(rowIndex, rowData, hasColHeader, hasRowHeader)
     )
-    return { type: 'table', content: tableRows }
+    return { type: 'table', attrs: { _rowId: row.id }, content: tableRows }
   }
 
   function buildSingleNode(row: ExperimentBlock): JSONContent {
     const blockType = row.block_type
     if (blockType === 'paragraph') {
       const inline = textContent(getContentField<string>(row, 'text', ''))
-      return inline === undefined
-        ? { type: 'paragraph' }
-        : { type: 'paragraph', content: inline }
+      const node: JSONContent = { type: 'paragraph', attrs: { _rowId: row.id } }
+      if (inline !== undefined) {
+        node.content = inline
+      }
+      return node
     }
     if (blockType === 'heading_1' || blockType === 'heading_2' || blockType === 'heading_3') {
       const level = Number(blockType.slice(-1))
       const inline = textContent(getContentField<string>(row, 'text', ''))
-      const node: JSONContent = { type: 'heading', attrs: { level } }
+      const node: JSONContent = { type: 'heading', attrs: { level, _rowId: row.id } }
       if (inline !== undefined) {
         node.content = inline
       }
@@ -134,14 +140,14 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
         'rowsToTiptapDoc: demoting heading_4 (block id: ' + row.id + ') to heading_3'
       )
       const inline = textContent(getContentField<string>(row, 'text', ''))
-      const node: JSONContent = { type: 'heading', attrs: { level: 3 } }
+      const node: JSONContent = { type: 'heading', attrs: { level: 3, _rowId: row.id } }
       if (inline !== undefined) {
         node.content = inline
       }
       return node
     }
     if (blockType === 'divider') {
-      return { type: 'horizontalRule' }
+      return { type: 'horizontalRule', attrs: { _rowId: row.id } }
     }
     if (blockType === 'callout') {
       return {
@@ -150,13 +156,17 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
           icon: getContentField<string>(row, 'icon', '💡'),
           color: getContentField<string>(row, 'color', 'gray'),
           text: getContentField<string>(row, 'text', ''),
+          _rowId: row.id,
         },
       }
     }
     if (blockType === 'column_list') {
       return {
         type: 'column_list',
-        attrs: { column_count: getContentField<number>(row, 'column_count', 2) },
+        attrs: {
+          column_count: getContentField<number>(row, 'column_count', 2),
+          _rowId: row.id,
+        },
         content: walkSiblings(row.id),
       }
     }
@@ -165,20 +175,20 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
       const widthPct = typeof rawWidthPct === 'number' ? rawWidthPct : null
       return {
         type: 'column',
-        attrs: { width_pct: widthPct },
+        attrs: { width_pct: widthPct, _rowId: row.id },
         content: walkSiblings(row.id),
       }
     }
     if (blockType === 'flow_panel') {
       return {
         type: 'flow_panel',
-        attrs: { ...(row.content as Record<string, unknown>) },
+        attrs: { ...(row.content as Record<string, unknown>), _rowId: row.id },
       }
     }
     if (blockType === 'if_panel') {
       return {
         type: 'if_panel',
-        attrs: { ...(row.content as Record<string, unknown>) },
+        attrs: { ...(row.content as Record<string, unknown>), _rowId: row.id },
       }
     }
     if (blockType === 'table') {

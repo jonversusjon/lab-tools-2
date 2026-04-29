@@ -128,6 +128,7 @@ function fixture2_singleParagraph(): Fixture {
       content: [
         {
           type: 'paragraph',
+          attrs: { _rowId: 'p1' },
           content: [{ type: 'text', text: 'Hello' }],
         },
       ],
@@ -150,7 +151,7 @@ function fixture3_singleHeading(): Fixture {
       content: [
         {
           type: 'heading',
-          attrs: { level: 2 },
+          attrs: { level: 2, _rowId: 'h1' },
           content: [{ type: 'text', text: 'Section A' }],
         },
       ],
@@ -176,6 +177,7 @@ function fixture4_singleBullet(): Fixture {
           content: [
             {
               type: 'listItem',
+              attrs: { _rowId: 'b1' },
               content: [
                 {
                   type: 'paragraph',
@@ -204,10 +206,15 @@ function fixture5_threeBullets(): Fixture {
       content: [
         {
           type: 'bulletList',
-          content: ['a', 'b', 'c'].map((t) => ({
+          content: [
+            { id: 'b1', text: 'a' },
+            { id: 'b2', text: 'b' },
+            { id: 'b3', text: 'c' },
+          ].map(({ id, text }) => ({
             type: 'listItem',
+            attrs: { _rowId: id },
             content: [
-              { type: 'paragraph', content: [{ type: 'text', text: t }] },
+              { type: 'paragraph', content: [{ type: 'text', text }] },
             ],
           })),
         },
@@ -229,22 +236,24 @@ function fixture6_mixedGrouping(): Fixture {
     expectedDoc: {
       type: 'doc',
       content: [
-        { type: 'paragraph', content: [{ type: 'text', text: 'P1' }] },
+        { type: 'paragraph', attrs: { _rowId: 'p1' }, content: [{ type: 'text', text: 'P1' }] },
         {
           type: 'bulletList',
           content: [
             {
               type: 'listItem',
+              attrs: { _rowId: 'b1' },
               content: [{ type: 'paragraph', content: [{ type: 'text', text: 'L1' }] }],
             },
           ],
         },
-        { type: 'paragraph', content: [{ type: 'text', text: 'P2' }] },
+        { type: 'paragraph', attrs: { _rowId: 'p2' }, content: [{ type: 'text', text: 'P2' }] },
         {
           type: 'bulletList',
           content: [
             {
               type: 'listItem',
+              attrs: { _rowId: 'b2' },
               content: [{ type: 'paragraph', content: [{ type: 'text', text: 'L2' }] }],
             },
           ],
@@ -270,10 +279,12 @@ function fixture7_numberedList(): Fixture {
           content: [
             {
               type: 'listItem',
+              attrs: { _rowId: 'n1' },
               content: [{ type: 'paragraph', content: [{ type: 'text', text: 'one' }] }],
             },
             {
               type: 'listItem',
+              attrs: { _rowId: 'n2' },
               content: [{ type: 'paragraph', content: [{ type: 'text', text: 'two' }] }],
             },
           ],
@@ -305,6 +316,7 @@ function fixture8_nestedBullets(): Fixture {
           content: [
             {
               type: 'listItem',
+              attrs: { _rowId: 'A' },
               content: [
                 { type: 'paragraph', content: [{ type: 'text', text: 'A' }] },
                 {
@@ -312,6 +324,7 @@ function fixture8_nestedBullets(): Fixture {
                   content: [
                     {
                       type: 'listItem',
+                      attrs: { _rowId: 'B' },
                       content: [
                         { type: 'paragraph', content: [{ type: 'text', text: 'B' }] },
                       ],
@@ -372,20 +385,20 @@ function fixture9_columns(): Fixture {
       content: [
         {
           type: 'column_list',
-          attrs: { column_count: 2 },
+          attrs: { column_count: 2, _rowId: 'CL' },
           content: [
             {
               type: 'column',
-              attrs: { width_pct: 50 },
+              attrs: { width_pct: 50, _rowId: 'C0' },
               content: [
-                { type: 'paragraph', content: [{ type: 'text', text: 'left' }] },
+                { type: 'paragraph', attrs: { _rowId: 'P0' }, content: [{ type: 'text', text: 'left' }] },
               ],
             },
             {
               type: 'column',
-              attrs: { width_pct: 50 },
+              attrs: { width_pct: 50, _rowId: 'C1' },
               content: [
-                { type: 'paragraph', content: [{ type: 'text', text: 'right' }] },
+                { type: 'paragraph', attrs: { _rowId: 'P1' }, content: [{ type: 'text', text: 'right' }] },
               ],
             },
           ],
@@ -440,20 +453,20 @@ function fixture17_nonEvenColumns(): Fixture {
       content: [
         {
           type: 'column_list',
-          attrs: { column_count: 2 },
+          attrs: { column_count: 2, _rowId: 'CL17' },
           content: [
             {
               type: 'column',
-              attrs: { width_pct: 30 },
+              attrs: { width_pct: 30, _rowId: 'C17A' },
               content: [
-                { type: 'paragraph', content: [{ type: 'text', text: 'narrow' }] },
+                { type: 'paragraph', attrs: { _rowId: 'P17A' }, content: [{ type: 'text', text: 'narrow' }] },
               ],
             },
             {
               type: 'column',
-              attrs: { width_pct: 70 },
+              attrs: { width_pct: 70, _rowId: 'C17B' },
               content: [
-                { type: 'paragraph', content: [{ type: 'text', text: 'wide' }] },
+                { type: 'paragraph', attrs: { _rowId: 'P17B' }, content: [{ type: 'text', text: 'wide' }] },
               ],
             },
           ],
@@ -541,11 +554,11 @@ function fixture10_atoms(): Fixture {
       content: [
         {
           type: 'callout',
-          attrs: { icon: '💡', color: 'gray_background', text: 'note' },
+          attrs: { icon: '💡', color: 'gray_background', text: 'note', _rowId: 'cal' },
         },
-        { type: 'horizontalRule' },
-        { type: 'flow_panel', attrs: { ...flowContent } },
-        { type: 'if_panel', attrs: { ...ifContent } },
+        { type: 'horizontalRule', attrs: { _rowId: 'div' } },
+        { type: 'flow_panel', attrs: { ...flowContent, _rowId: 'fp' } },
+        { type: 'if_panel', attrs: { ...ifContent, _rowId: 'ip' } },
       ],
     },
   }
@@ -598,6 +611,10 @@ describe('round-trip — Tiptap→DB→Tiptap structural equivalence', () => {
         return
       }
       expect(normalizeForComparison(rebuilt)).toEqual(normalizeForComparison(fixt.inputRows))
+      // _rowId round-trip: every input row's id appears in rebuilt rows.
+      const inputIds = [...fixt.inputRows.map((r) => r.id)].sort()
+      const rebuiltIds = [...rebuilt.map((r) => r.id)].sort()
+      expect(rebuiltIds).toEqual(inputIds)
     })
   }
 })
@@ -630,7 +647,7 @@ describe('adversarial — heading_4 demotion', () => {
       content: [
         {
           type: 'heading',
-          attrs: { level: 3 },
+          attrs: { level: 3, _rowId: 'h4' },
           content: [{ type: 'text', text: 'subsubsection' }],
         },
       ],
@@ -705,6 +722,7 @@ describe('table — DB→Tiptap + round-trip', () => {
       content: [
         {
           type: 'table',
+          attrs: { _rowId: 'tbl-2x2' },
           content: [
             {
               type: 'tableRow',
@@ -786,3 +804,129 @@ describe('table — DB→Tiptap + round-trip', () => {
     expect(normalizeForComparison(rebuilt)).toEqual(normalizeForComparison([row]))
   })
 })
+
+// -----------------------------------------------------------------------------
+// _rowId stable identity (Phase 10a)
+// -----------------------------------------------------------------------------
+
+describe('_rowId stable identity', () => {
+  it('18. DB→Tiptap populates _rowId on every row-backed node', () => {
+    const rows: ExperimentBlock[] = [
+      makeRow({ id: 'p-x', block_type: 'paragraph', content: { text: 'hi' }, sort_order: 0 }),
+      makeRow({ id: 'h-x', block_type: 'heading_1', content: { text: 'Title' }, sort_order: 1 }),
+      makeRow({ id: 'd-x', block_type: 'divider', content: {}, sort_order: 2 }),
+      makeRow({ id: 'b-x', block_type: 'bulleted_list_item', content: { text: 'b' }, sort_order: 3 }),
+      makeRow({ id: 'cal-x', block_type: 'callout', content: { text: 'note', icon: '💡', color: 'gray' }, sort_order: 4 }),
+      makeRow({ id: 'cl-x', block_type: 'column_list', content: { column_count: 2 }, sort_order: 5 }),
+      makeRow({ id: 'col-a', block_type: 'column', content: { width_pct: 50 }, sort_order: 0, parent_id: 'cl-x' }),
+      makeRow({ id: 'col-b', block_type: 'column', content: { width_pct: 50 }, sort_order: 1, parent_id: 'cl-x' }),
+      makeRow({
+        id: 'tbl-x',
+        block_type: 'table',
+        content: { table_width: 1, has_column_header: false, has_row_header: false, rows: [['cell']] },
+        sort_order: 6,
+      }),
+    ]
+    const doc = rowsToTiptapDoc(rows)
+    const inputIds = new Set(rows.map((r) => r.id))
+    const seenRowIds = new Set<string>()
+    // Synthetic wrappers/inner structure that don't correspond to a DB row.
+    // _rowId on these (if present) MUST be null/undefined.
+    const SYNTHETIC_TYPES = new Set([
+      'doc', 'bulletList', 'orderedList', 'tableRow', 'tableHeader', 'tableCell', 'text',
+    ])
+
+    function walk(node: JSONContentLike, ancestorIsSynthetic: boolean): void {
+      const type = node.type
+      const attrs = node.attrs ?? {}
+      const isSynthetic = SYNTHETIC_TYPES.has(type)
+      if (isSynthetic) {
+        const rid = attrs._rowId
+        expect(rid === null || rid === undefined).toBe(true)
+      } else if (ancestorIsSynthetic) {
+        // E.g., the inner paragraph emitted by buildListItem (parent is listItem
+        // but listItem itself is row-backed) — actually inner paragraphs of
+        // listItem and tableCell are nested inside non-row-backed structure.
+        // Skip the assertion if this node is structural fill.
+        const rid = attrs._rowId
+        expect(rid === null || rid === undefined).toBe(true)
+      } else {
+        const rid = attrs._rowId
+        expect(typeof rid).toBe('string')
+        expect((rid as string).length).toBeGreaterThan(0)
+        expect(inputIds.has(rid as string)).toBe(true)
+        seenRowIds.add(rid as string)
+      }
+      // Inner paragraphs of listItem/tableCell are structural fill — flag
+      // their children as synthetic-descended.
+      const childIsSyntheticDescended =
+        type === 'listItem' || type === 'tableCell' || type === 'tableHeader'
+      for (const child of node.content ?? []) {
+        walk(child as JSONContentLike, childIsSyntheticDescended)
+      }
+    }
+
+    walk(doc as JSONContentLike, false)
+
+    expect([...seenRowIds].sort()).toEqual([...rows.map((r) => r.id)].sort())
+  })
+
+  it('19. fresh Tiptap nodes (no _rowId) get generated UUIDs', () => {
+    // Construct a doc directly — simulating slash-menu-inserted nodes
+    // before the save coordinator assigns ids.
+    const doc: TiptapDoc = {
+      type: 'doc',
+      content: [
+        // No attrs at all.
+        { type: 'paragraph', content: [{ type: 'text', text: 'fresh para' }] },
+        // attrs without _rowId.
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'fresh heading' }] },
+        // _rowId explicitly null.
+        { type: 'horizontalRule', attrs: { _rowId: null } },
+      ],
+    }
+    const rebuilt = tiptapDocToRows(doc, EXPERIMENT_ID)
+    expect(rebuilt).toHaveLength(3)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    for (const row of rebuilt) {
+      expect(row.id).toMatch(uuidRegex)
+    }
+    // All ids unique.
+    expect(new Set(rebuilt.map((r) => r.id)).size).toBe(3)
+  })
+
+  it('19b. _rowId is stripped from row.content for panels and callout', () => {
+    const flowContent: Record<string, unknown> = {
+      source_panel_id: 'src-flow',
+      name: 'X',
+      targets: [],
+      assignments: [],
+    }
+    const doc: TiptapDoc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'flow_panel',
+          attrs: { ...flowContent, _rowId: 'fp-99' },
+        },
+        {
+          type: 'callout',
+          attrs: { text: 'note', icon: '💡', color: 'gray', _rowId: 'cal-99' },
+        },
+      ],
+    }
+    const rebuilt = tiptapDocToRows(doc, EXPERIMENT_ID)
+    expect(rebuilt).toHaveLength(2)
+    expect(rebuilt[0].id).toBe('fp-99')
+    expect(rebuilt[1].id).toBe('cal-99')
+    expect('_rowId' in (rebuilt[0].content as Record<string, unknown>)).toBe(false)
+    expect('_rowId' in (rebuilt[1].content as Record<string, unknown>)).toBe(false)
+  })
+})
+
+// Local type for walking JSONContent in test 18.
+interface JSONContentLike {
+  type: string
+  attrs?: Record<string, unknown>
+  content?: JSONContentLike[]
+}
