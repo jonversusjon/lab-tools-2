@@ -173,3 +173,23 @@ API surface, used internally by Phase 10b's save coordinator.
 The `_rowId` attribute added in Phase 10a is what enables this
 replacement: Phase 10b's transaction inspector identifies which
 database rows to save by reading `_rowId` from each Tiptap node.
+
+## Phase 10b-redo — items deferred from this commit
+
+Phase 10b-redo lands the save coordinator + `_rowId` auto-populate
+plugin + sandbox wiring. The following pieces are intentionally NOT
+in this commit and will be addressed in later phases:
+
+- **Keepalive on unmount.** When the user navigates away with pending
+  unsaved changes, we don't yet flush via `keepalive: true`. The
+  hand-rolled engine has this; Phase 12 cleanup will port the pattern
+  to the save coordinator (or accept the loss and rely on manual
+  saves via reload).
+- **Compact `sort_order` floats.** The float scheme allows O(1)
+  insert-between but loses precision after enough rapid inserts in
+  the same gap. A compaction pass that renumbers rows back to integers
+  is deferred.
+- **Render-count / re-mount tests.** Per the spec, no render-count
+  tests in this phase.
+- **Manual sandbox verification (Scenarios A/B/C).** The project
+  manager runs these in the sandbox before pushing.
