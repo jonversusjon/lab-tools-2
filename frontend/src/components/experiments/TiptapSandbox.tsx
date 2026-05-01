@@ -84,6 +84,59 @@ const INITIAL_CONTENT = {
         },
       ],
     },
+    { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Panels side-by-side' }] },
+    {
+      type: 'column_list',
+      attrs: { column_count: 2 },
+      content: [
+        {
+          type: 'column',
+          attrs: { width_pct: 50 },
+          content: [
+            {
+              type: 'flow_panel',
+              attrs: {
+                source_panel_id: null,
+                name: 'Sandbox demo panel',
+                instrument: null,
+                targets: [],
+                assignments: [],
+                volume_params: {
+                  num_samples: 1,
+                  volume_per_sample_ul: 100,
+                  pipet_error_factor: 1.1,
+                  dilution_source: 'flow',
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'column',
+          attrs: { width_pct: 50 },
+          content: [
+            {
+              type: 'if_panel',
+              attrs: {
+                source_panel_id: null,
+                name: 'Sandbox IF demo panel',
+                panel_type: 'IF',
+                microscope: null,
+                view_mode: 'simple',
+                targets: [],
+                assignments: [],
+                volume_params: {
+                  num_samples: 1,
+                  volume_per_sample_ul: 200,
+                  pipet_error_factor: 1.1,
+                  dilution_source: 'icc_if',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
     { type: 'paragraph', content: [{ type: 'text', text: 'End of seed content.' }] },
   ],
 }
@@ -93,24 +146,37 @@ type LoadState =
   | { kind: 'ready'; experiment: Experiment }
   | { kind: 'error'; message: string }
 
+// Module-level cache: both StrictMode mounts await the same Promise.
+// This is intentionally not React state — the cache must persist across
+// Strict-Mode-induced double-mounts and across HMR replacements within
+// the same module instance. A rejected promise is cleared so the next
+// mount can retry.
+let sandboxExperimentPromise: Promise<Experiment> | null = null
+
 async function ensureSandboxExperiment(): Promise<Experiment> {
-  // Walk pages until we find one named SANDBOX_NAME or run out.
-  let skip = 0
-  const limit = 100
-  // Hard cap to avoid pathological loops.
-  for (let pageGuard = 0; pageGuard < 50; pageGuard++) {
-    const page = await listExperiments(skip, limit)
-    const match = page.items.find((e) => e.name === SANDBOX_NAME)
-    if (match) {
-      return getExperiment(match.id)
+  if (sandboxExperimentPromise) return sandboxExperimentPromise
+  sandboxExperimentPromise = (async () => {
+    // Walk pages until we find one named SANDBOX_NAME or run out.
+    let skip = 0
+    const limit = 100
+    for (let pageGuard = 0; pageGuard < 50; pageGuard++) {
+      const page = await listExperiments(skip, limit)
+      const match = page.items.find((e) => e.name === SANDBOX_NAME)
+      if (match) {
+        return getExperiment(match.id)
+      }
+      if (page.items.length < limit) break
+      skip += limit
     }
-    if (page.items.length < limit) break
-    skip += limit
-  }
-  return createExperiment({
-    name: SANDBOX_NAME,
-    description: 'Auto-created for Tiptap migration sandbox',
+    return createExperiment({
+      name: SANDBOX_NAME,
+      description: 'Auto-created for Tiptap migration sandbox',
+    })
+  })()
+  sandboxExperimentPromise.catch(() => {
+    sandboxExperimentPromise = null
   })
+  return sandboxExperimentPromise
 }
 
 function statusLabel(status: string): { text: string; cls: string } {
