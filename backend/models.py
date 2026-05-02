@@ -579,4 +579,3 @@ class ExperimentBlock(Base):
 
     experiment = relationship("Experiment", back_populates="blocks")
     parent = relationship("ExperimentBlock", remote_side="ExperimentBlock.id")
-
