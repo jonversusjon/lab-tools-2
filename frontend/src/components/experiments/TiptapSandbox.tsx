@@ -1,6 +1,7 @@
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useState, useMemo, useEffect } from 'react'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
+import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { filterJsonTree } from '@/utils/jsonFilter'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator } from '@/blocks-tiptap/save'
@@ -248,6 +249,9 @@ export default function TiptapSandbox() {
       extensions: tiptapExtensions,
       content: initialEditorContent ?? INITIAL_CONTENT,
       onUpdate: ({ editor }) => setJson(editor.getJSON()),
+      editorProps: {
+        transformPasted: (slice) => stripRowIdsFromSlice(slice),
+      },
     },
     // Re-create the editor once content is loaded.
     [initialEditorContent]

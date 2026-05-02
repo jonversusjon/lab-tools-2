@@ -1,0 +1,1 @@
+export { stripRowIdsFromSlice } from './transformPasted'

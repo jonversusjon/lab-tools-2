@@ -731,3 +731,29 @@ in this commit and will be addressed in later phases:
   tests in this phase.
 - **Manual sandbox verification (Scenarios A/B/C).** The project
   manager runs these in the sandbox before pushing.
+
+## Phase 11 deferred items
+
+The following were considered for Phase 11 and deferred. None block
+Phase 12.
+
+- **Hover-copy affordance per block.** A small "copy block" button
+  visible on hover. Bundled with Phase 9b's drag-handle work — both
+  rely on the same hover-target infrastructure. Phase 9b is deferred
+  pending Tiptap peer-dep stabilization.
+
+- **Paste-from-Notion / Tiptap-CDN-formatted content.** External pastes
+  arriving as Tiptap-flavored HTML (with `data-type` attributes that
+  could match our custom nodes) are not given parseHTML rules. They
+  paste as plain text fallback. If users start needing this, add
+  parseHTML rules to specific custom node specs.
+
+- **Paste-as-plain-text shortcut.** Cmd+Shift+V to strip all formatting.
+  Tiptap supports this via a built-in command but no UI surface is
+  added in v0.
+
+- **Cross-experiment paste UX feedback.** When pasting across
+  experiments, the user gets no signal that `_rowId`s were stripped.
+  In v0 this is silent and works correctly. If users get confused
+  ("why are these new rows when I copied existing ones?"), add a
+  brief toast or notification.
