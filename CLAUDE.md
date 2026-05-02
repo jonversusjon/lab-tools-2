@@ -3,7 +3,6 @@
 ## Reference Documents
 @ARCHITECTURE.md
 @FRONTEND-CONVENTIONS.md
-@EXPERIMENT-PAGE-ARCHITECTURE.md
 
 ## ⚠️ NEVER FORGET — Check Every File Against This List
 
