@@ -198,8 +198,18 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
   }
 
   const topLevel = walkSiblings(null)
+
+  // Always append a trailing empty paragraph to match ProseMirror's
+  // auto-trailing behavior. Without this, the save coordinator's baseline
+  // (captured from this output) would not match Tiptap's post-load editor
+  // state, producing a phantom create on first transaction.
+  topLevel.push({
+    type: 'paragraph',
+    attrs: { _rowId: null },
+  })
+
   return {
     type: 'doc',
-    content: topLevel.length === 0 ? [{ type: 'paragraph' }] : topLevel,
+    content: topLevel,
   }
 }

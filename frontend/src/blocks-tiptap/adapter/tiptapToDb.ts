@@ -217,6 +217,18 @@ export function tiptapDocToRows(doc: JSONContent, experimentId: string): Experim
     throw new Error('Unknown Tiptap node type: ' + String(type))
   }
 
-  walkContent(doc.content, null)
+  // Skip the adapter-injected trailing empty paragraph (last top-level node).
+  // rowsToTiptapDoc always appends one to match ProseMirror's auto-trailing;
+  // without this skip the save coordinator sees it as a new row and fires a
+  // phantom create on every page load.
+  function isEmptyParagraph(node: JSONContent): boolean {
+    return node.type === 'paragraph' && extractText(node) === ''
+  }
+  const topNodes = doc.content ?? []
+  const effectiveNodes =
+    topNodes.length > 0 && isEmptyParagraph(topNodes[topNodes.length - 1])
+      ? topNodes.slice(0, -1)
+      : topNodes
+  walkContent(effectiveNodes, null)
   return rows
 }

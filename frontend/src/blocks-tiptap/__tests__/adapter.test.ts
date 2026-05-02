@@ -108,7 +108,7 @@ function fixture1_emptyDoc(): Fixture {
     inputRows: [],
     expectedDoc: {
       type: 'doc',
-      content: [{ type: 'paragraph' }],
+      content: [{ type: 'paragraph', attrs: { _rowId: null } }],
     },
   }
 }
@@ -131,6 +131,7 @@ function fixture2_singleParagraph(): Fixture {
           attrs: { _rowId: 'p1' },
           content: [{ type: 'text', text: 'Hello' }],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -154,6 +155,7 @@ function fixture3_singleHeading(): Fixture {
           attrs: { level: 2, _rowId: 'h1' },
           content: [{ type: 'text', text: 'Section A' }],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -187,6 +189,7 @@ function fixture4_singleBullet(): Fixture {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -218,6 +221,7 @@ function fixture5_threeBullets(): Fixture {
             ],
           })),
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -258,6 +262,7 @@ function fixture6_mixedGrouping(): Fixture {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -289,6 +294,7 @@ function fixture7_numberedList(): Fixture {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -335,6 +341,7 @@ function fixture8_nestedBullets(): Fixture {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -403,6 +410,7 @@ function fixture9_columns(): Fixture {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -471,6 +479,7 @@ function fixture17_nonEvenColumns(): Fixture {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -559,6 +568,7 @@ function fixture10_atoms(): Fixture {
         { type: 'horizontalRule', attrs: { _rowId: 'div' } },
         { type: 'flow_panel', attrs: { ...flowContent, _rowId: 'fp' } },
         { type: 'if_panel', attrs: { ...ifContent, _rowId: 'ip' } },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     },
   }
@@ -596,20 +606,8 @@ describe('round-trip — Tiptap→DB→Tiptap structural equivalence', () => {
       const fixt = factory()
       const doc = rowsToTiptapDoc(fixt.inputRows)
       const rebuilt = tiptapDocToRows(doc, EXPERIMENT_ID)
-      // For empty-doc, source rows is [] and rebuilt has one paragraph row.
-      // Normalize source by piping it through rowsToTiptapDoc → tiptapDocToRows
-      // is wrong; instead compare normalized versions of (input vs rebuilt).
-      // For fixture 1 specifically, rebuilt will produce one empty paragraph
-      // because we emit an empty paragraph in the doc. The "input" is [].
-      // Skip the normalization equality for fixture 1; verify rebuilt has 1
-      // empty paragraph row instead.
-      if (fixt.inputRows.length === 0) {
-        expect(rebuilt).toHaveLength(1)
-        expect(rebuilt[0].block_type).toBe('paragraph')
-        expect(rebuilt[0].content).toEqual({ text: '' })
-        expect(rebuilt[0].parent_id).toBeNull()
-        return
-      }
+      // tiptapDocToRows skips the adapter-injected trailing empty paragraph,
+      // so rebuilt should always match the original input rows exactly.
       expect(normalizeForComparison(rebuilt)).toEqual(normalizeForComparison(fixt.inputRows))
       // _rowId round-trip: every input row's id appears in rebuilt rows.
       const inputIds = [...fixt.inputRows.map((r) => r.id)].sort()
@@ -650,6 +648,7 @@ describe('adversarial — heading_4 demotion', () => {
           attrs: { level: 3, _rowId: 'h4' },
           content: [{ type: 'text', text: 'subsubsection' }],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     })
     expect(warnSpy).toHaveBeenCalled()
@@ -740,6 +739,7 @@ describe('table — DB→Tiptap + round-trip', () => {
             },
           ],
         },
+        { type: 'paragraph', attrs: { _rowId: null } },
       ],
     })
   })
@@ -852,10 +852,14 @@ describe('_rowId stable identity', () => {
         expect(rid === null || rid === undefined).toBe(true)
       } else {
         const rid = attrs._rowId
-        expect(typeof rid).toBe('string')
-        expect((rid as string).length).toBeGreaterThan(0)
-        expect(inputIds.has(rid as string)).toBe(true)
-        seenRowIds.add(rid as string)
+        if (rid === null || rid === undefined) {
+          // Adapter-injected node (e.g., trailing empty paragraph) — no DB row.
+        } else {
+          expect(typeof rid).toBe('string')
+          expect((rid as string).length).toBeGreaterThan(0)
+          expect(inputIds.has(rid as string)).toBe(true)
+          seenRowIds.add(rid as string)
+        }
       }
       // Inner paragraphs of listItem/tableCell are structural fill — flag
       // their children as synthetic-descended.
@@ -921,6 +925,67 @@ describe('_rowId stable identity', () => {
     expect(rebuilt[1].id).toBe('cal-99')
     expect('_rowId' in (rebuilt[0].content as Record<string, unknown>)).toBe(false)
     expect('_rowId' in (rebuilt[1].content as Record<string, unknown>)).toBe(false)
+  })
+})
+
+// -----------------------------------------------------------------------------
+// Trailing paragraph — phantom-write prevention (Phase 12-fix)
+// -----------------------------------------------------------------------------
+
+describe('trailing paragraph — phantom-write prevention', () => {
+  it('20. rowsToTiptapDoc always appends a trailing empty paragraph', () => {
+    const inputs: ExperimentBlock[][] = [
+      [],
+      [makeRow({ id: 'fp', block_type: 'flow_panel', content: { name: 'P', targets: [], assignments: [] }, sort_order: 0 })],
+      [makeRow({ id: 'h', block_type: 'heading_1', content: { text: 'Title' }, sort_order: 0 })],
+      [makeRow({ id: 'div', block_type: 'divider', content: {}, sort_order: 0 })],
+      [makeRow({ id: 'p', block_type: 'paragraph', content: { text: 'Hello' }, sort_order: 0 })],
+    ]
+    for (const rows of inputs) {
+      const doc = rowsToTiptapDoc(rows)
+      const content = doc.content ?? []
+      const last = content[content.length - 1]
+      expect(last).toBeDefined()
+      expect(last.type).toBe('paragraph')
+      expect(last.attrs?._rowId).toBeNull()
+      const hasText = last.content != null && last.content.length > 0
+      expect(hasText).toBe(false)
+    }
+  })
+
+  it('21. tiptapDocToRows skips a trailing empty paragraph', () => {
+    const trailingParagraph: TiptapDoc = {
+      type: 'doc',
+      content: [
+        { type: 'flow_panel', attrs: { name: 'P', targets: [], assignments: [], _rowId: 'fp-1' } },
+        { type: 'paragraph', attrs: { _rowId: null } },
+      ],
+    }
+    const rows = tiptapDocToRows(trailingParagraph, EXPERIMENT_ID)
+    expect(rows).toHaveLength(1)
+    expect(rows[0].block_type).toBe('flow_panel')
+
+    // Non-empty trailing paragraph is NOT skipped.
+    const nonEmptyTrailing: TiptapDoc = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', attrs: { _rowId: 'p-a' }, content: [{ type: 'text', text: 'kept' }] },
+        { type: 'paragraph', attrs: { _rowId: 'p-b' }, content: [{ type: 'text', text: 'also kept' }] },
+      ],
+    }
+    const rows2 = tiptapDocToRows(nonEmptyTrailing, EXPERIMENT_ID)
+    expect(rows2).toHaveLength(2)
+
+    // Middle empty paragraph is NOT skipped (only trailing is).
+    const middleEmpty: TiptapDoc = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', attrs: { _rowId: 'p-1' } },
+        { type: 'paragraph', attrs: { _rowId: 'p-2' }, content: [{ type: 'text', text: 'end' }] },
+      ],
+    }
+    const rows3 = tiptapDocToRows(middleEmpty, EXPERIMENT_ID)
+    expect(rows3).toHaveLength(2)
   })
 })
 
