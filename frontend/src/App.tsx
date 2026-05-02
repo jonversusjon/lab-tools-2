@@ -92,7 +92,7 @@ export default function App() {
 
         <Route path="/settings" element={<Settings />} />
 
-        {/* Developer sandbox — not in Sidebar, removed in Phase 12 */}
+        {/* Developer sandbox — not in Sidebar, kept for ongoing development */}
         <Route path="/tiptap-sandbox" element={<TiptapSandbox />} />
       </Route>
     </Routes>

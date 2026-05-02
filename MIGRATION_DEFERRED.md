@@ -757,3 +757,34 @@ Phase 12.
   In v0 this is silent and works correctly. If users get confused
   ("why are these new rows when I copied existing ones?"), add a
   brief toast or notification.
+
+## Phase 12 — Migration complete (terminal phase)
+
+**Status:** COMPLETE — landed at TBD (filled in after commit).
+
+The Tiptap migration is functionally complete. The new editor is the
+canonical experiment-page renderer at `/experiments/:id`. The
+hand-rolled `BlockRenderer.tsx` and its child components have been
+deleted; their parallel save mechanisms (inline `fetch()` calls in
+each child) are gone with them.
+
+Remaining tracked work:
+
+- **Phase 9b/c — drag handles + column drag-resize.** Deferred pending
+  Tiptap peer-dep stabilization (`@tiptap/extension-drag-handle-react`
+  catching up to 3.22.x) OR a DIY implementation against bare
+  `@tiptap/extension-drag-handle`. Tracked separately; not blocking
+  any other migration work.
+
+- **Phase 13 — configurable block frames.** Design doc landed in
+  earlier MIGRATION_DEFERRED.md sections. Implementation deferred to
+  whenever the block-frames feature is prioritized.
+
+- **Phase B — IF panel target/antibody column merge.** Tracked in
+  user notes. Post-migration UX work.
+
+- **Microscope import bug.** Pre-existing bug, unrelated to migration,
+  tracked separately.
+
+The migration's branch (`migration/tiptap`) is ready to merge to main
+after Phase 12's manual verification of cK009.

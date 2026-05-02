@@ -1,272 +1,133 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
-import { useExperiment, useDeleteExperiment } from '@/hooks/useExperiments'
-import { updateExperiment } from '@/api/experiments'
-import { useAntibodies } from '@/hooks/useAntibodies'
-import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
-import { useSecondaries } from '@/hooks/useSecondaries'
-import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
-import { useInstruments } from '@/hooks/useInstruments'
-import { useMicroscopes } from '@/hooks/useMicroscopes'
-import { useDyeLabels } from '@/hooks/useDyeLabels'
-import type { FluorophoreWithSpectra } from '@/types'
-import type { PanelLibraryData } from './FlowPanelBlock'
-import BlockRenderer from './BlockRenderer'
+import { useParams, Navigate } from 'react-router-dom'
+import { EditorContent, useEditor } from '@tiptap/react'
+import { useEffect, useMemo, useState } from 'react'
+import { tiptapExtensions } from '@/blocks-tiptap/extensions'
+import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
+import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
+import { useSaveCoordinator } from '@/blocks-tiptap/save'
+import { getExperiment } from '@/api/experiments'
+import type { Experiment } from '@/types'
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+type LoadState =
+  | { kind: 'loading' }
+  | { kind: 'ready'; experiment: Experiment }
+  | { kind: 'not-found' }
+  | { kind: 'error'; message: string }
 
-const DEBOUNCE_MS = 1500
+// TODO: extract to shared util alongside TiptapSandbox's copy
+function statusLabel(status: string): { text: string; cls: string } {
+  switch (status) {
+    case 'idle':
+      return { text: 'Saved', cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
+    case 'dirty':
+      return { text: 'Unsaved changes', cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200' }
+    case 'saving':
+      return { text: 'Saving...', cls: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200' }
+    case 'error':
+      return { text: 'Save error', cls: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200' }
+    default:
+      return { text: status, cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
+  }
+}
 
 export default function ExperimentPage() {
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const qc = useQueryClient()
+  const [loadState, setLoadState] = useState<LoadState>({ kind: 'loading' })
 
-  if (!id) return <p className="text-red-600">No experiment ID in URL.</p>
-
-  const { data: experiment, isLoading, error } = useExperiment(id)
-  const deleteMutation = useDeleteExperiment()
-
-  // Library data for panel instance blocks
-  const { data: antibodiesData } = useAntibodies({ skip: 0, limit: 2000 })
-  const { data: fluorophoreData } = useFluorophores({ skip: 0, limit: 2000, has_spectra: true })
-  const { data: allFluorophoreData } = useFluorophores({ skip: 0, limit: 2000 })
-  const { data: secondariesData } = useSecondaries()
-  const { data: conjugateChemistries = [] } = useConjugateChemistries()
-  const { data: instrumentsData } = useInstruments(0, 500)
-  const { data: microscopesData } = useMicroscopes(0, 500)
-  const { data: dyeLabelsData } = useDyeLabels({ limit: 2000 })
-
-  const antibodies = antibodiesData?.items ?? []
-  const fluorophoreList = fluorophoreData?.items ?? []
-  const allFluorophores = allFluorophoreData?.items ?? []
-  const secondaries = secondariesData?.items ?? []
-  const instruments = instrumentsData?.items ?? []
-  const microscopes = microscopesData?.items ?? []
-  const dyeLabels = dyeLabelsData?.items ?? []
-
-  const fluorophoreIdsToFetch = useMemo(() => {
-    return fluorophoreList.map((f) => f.id)
-  }, [fluorophoreList])
-  const { data: spectraCache = null } = useBatchSpectra(fluorophoreIdsToFetch)
-
-  const fluorophoresWithSpectra: FluorophoreWithSpectra[] = useMemo(() => {
-    return fluorophoreList.map((fl) => ({
-      ...fl,
-      spectra: spectraCache?.[fl.id] ?? null,
-    }))
-  }, [fluorophoreList, spectraCache])
-
-  const allFluorophoresForScoring: FluorophoreWithSpectra[] = useMemo(() => {
-    return allFluorophores.map((fl) => ({
-      ...fl,
-      spectra: spectraCache?.[fl.id] ?? null,
-    }))
-  }, [allFluorophores, spectraCache])
-
-  const libraryData: PanelLibraryData | null = useMemo(() => {
-    if (!antibodiesData || !allFluorophoreData) return null
-    return {
-      antibodies,
-      allFluorophores,
-      secondaries,
-      conjugateChemistries,
-      spectraCache,
-      fluorophoresWithSpectra,
-      allFluorophoresForScoring,
-      instruments,
-      microscopes,
-      dyeLabels,
+  useEffect(() => {
+    if (!id) {
+      setLoadState({ kind: 'not-found' })
+      return
     }
-  }, [antibodiesData, allFluorophoreData, antibodies, allFluorophores, secondaries, conjugateChemistries, spectraCache, fluorophoresWithSpectra, allFluorophoresForScoring, instruments, microscopes, dyeLabels])
+    let cancelled = false
+    getExperiment(id)
+      .then((exp) => {
+        if (cancelled) return
+        setLoadState({ kind: 'ready', experiment: exp })
+      })
+      .catch((err) => {
+        if (cancelled) return
+        const message = err instanceof Error ? err.message : String(err)
+        if (message.includes('404') || message.toLowerCase().includes('not found')) {
+          setLoadState({ kind: 'not-found' })
+        } else {
+          setLoadState({ kind: 'error', message })
+        }
+      })
+    return () => { cancelled = true }
+  }, [id])
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [initialized, setInitialized] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
-  const [isFullWidth, setIsFullWidth] = useState(() => {
-    try { return localStorage.getItem('experiment-page-full-width') === 'true' } catch { return false }
+  const initialEditorContent = useMemo(() => {
+    if (loadState.kind !== 'ready') return null
+    const blocks = loadState.experiment.blocks
+    if (!blocks || blocks.length === 0) {
+      return { type: 'doc', content: [{ type: 'paragraph' }] }
+    }
+    return rowsToTiptapDoc(blocks)
+  }, [loadState])
+
+  const editor = useEditor(
+    {
+      extensions: tiptapExtensions,
+      content: initialEditorContent ?? { type: 'doc', content: [] },
+      editorProps: {
+        transformPasted: (slice) => stripRowIdsFromSlice(slice),
+      },
+    },
+    [initialEditorContent]
+  )
+
+  const saveState = useSaveCoordinator({
+    editor,
+    experimentId: loadState.kind === 'ready' ? loadState.experiment.id : null,
+    initialBlocks: loadState.kind === 'ready' ? loadState.experiment.blocks : undefined,
   })
 
-  const userEdited = useRef(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const dirtyRef = useRef(false)
-  const titleRef = useRef(title)
-  titleRef.current = title
-  const descriptionRef = useRef(description)
-  descriptionRef.current = description
-
-  const descTextareaRef = useRef<HTMLTextAreaElement>(null)
-
-  // Initialize title + description once on first load
-  useEffect(() => {
-    if (experiment && !initialized) {
-      setTitle(experiment.name)
-      setDescription(experiment.description ?? '')
-      setInitialized(true)
-    }
-  }, [experiment, initialized])
-
-  // Auto-resize description textarea
-  useEffect(() => {
-    if (descTextareaRef.current) {
-      descTextareaRef.current.style.height = 'auto'
-      descTextareaRef.current.style.height = descTextareaRef.current.scrollHeight + 'px'
-    }
-  }, [description])
-
-  const doSave = useCallback(async () => {
-    setSaveStatus('saving')
-    try {
-      await updateExperiment(id, {
-        name: titleRef.current.trim() || 'Untitled',
-        description: descriptionRef.current.trim() || null,
-      })
-      setSaveStatus('saved')
-      dirtyRef.current = false
-      // Delay list invalidation to avoid triggering mid-typing
-      setTimeout(() => {
-        qc.invalidateQueries({ queryKey: ['experiments'] })
-      }, 2000)
-    } catch {
-      setSaveStatus('error')
-    }
-  }, [id, qc])
-
-  // Debounced autosave on title/description change
-  useEffect(() => {
-    if (!userEdited.current) return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      doSave()
-    }, DEBOUNCE_MS)
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [title, description, doSave])
-
-  // Flush pending save on unmount with keepalive
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      if (dirtyRef.current) {
-        fetch('/api/v1/experiments/' + id, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: titleRef.current.trim() || 'Untitled',
-            description: descriptionRef.current.trim() || null,
-          }),
-          keepalive: true,
-        }).catch((err) => console.error('Auto-save failed:', err))
-      }
-    }
-  }, [])
-
-  const handleTitleChange = (value: string) => {
-    userEdited.current = true
-    dirtyRef.current = true
-    setSaveStatus('idle')
-    setTitle(value)
+  if (loadState.kind === 'loading') {
+    return <div className="p-8 text-gray-500 dark:text-gray-400">Loading experiment...</div>
   }
 
-  const handleDescriptionChange = (value: string) => {
-    userEdited.current = true
-    dirtyRef.current = true
-    setSaveStatus('idle')
-    setDescription(value)
+  if (loadState.kind === 'not-found') {
+    return <Navigate to="/experiments" replace />
   }
 
-  const handleDelete = async () => {
-    if (!experiment) return
-    if (!confirm('Delete experiment "' + experiment.name + '"? All blocks and data will be lost.')) return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    dirtyRef.current = false
-    try {
-      await deleteMutation.mutateAsync(id)
-      navigate('/experiments')
-    } catch {
-      // Silently fail
-    }
+  if (loadState.kind === 'error') {
+    return (
+      <div className="p-8">
+        <h1 className="text-xl font-semibold dark:text-gray-100">Failed to load experiment</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          {loadState.message}
+        </p>
+      </div>
+    )
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading experiment...</p>
-  if (error || !experiment) return <p className="text-red-600">Failed to load experiment.</p>
-
-  const handleToggleFullWidth = () => {
-    const next = !isFullWidth
-    setIsFullWidth(next)
-    try { localStorage.setItem('experiment-page-full-width', String(next)) } catch { /* ignore */ }
-  }
+  const status = statusLabel(saveState.status)
 
   return (
-    <div className={(isFullWidth ? 'max-w-7xl' : 'max-w-4xl') + ' mx-auto'}>
-      {/* Title + save status row */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="Untitled Experiment"
-            className={
-              'text-3xl font-bold bg-transparent border-none outline-none focus:ring-0 ' +
-              'w-full text-gray-900 dark:text-gray-100 ' +
-              'placeholder:text-gray-400 dark:placeholder:text-gray-600'
-            }
-          />
-        </div>
-        <div className="flex items-center gap-3 shrink-0 pt-2">
-          {saveStatus === 'saving' && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">Saving...</span>
-          )}
-          {saveStatus === 'saved' && (
-            <span className="text-xs text-green-600 dark:text-green-400">Saved</span>
-          )}
-          {saveStatus === 'error' && (
-            <span className="text-xs text-red-500">Save failed</span>
-          )}
-          <button
-            onClick={handleToggleFullWidth}
-            title={isFullWidth ? 'Collapse to normal width' : 'Expand to full width'}
-            className={
-              'rounded border px-3 py-1.5 text-xs font-medium transition-colors ' +
-              (isFullWidth
-                ? 'border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-                : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800')
-            }
+    <div className="w-full px-[5vw] py-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold dark:text-gray-100">
+          {loadState.experiment.name}
+        </h1>
+        <div className="flex items-center gap-3">
+          <span
+            className={'px-2 py-0.5 rounded text-xs font-medium ' + status.cls}
+            title={saveState.lastError ?? undefined}
           >
-            {isFullWidth ? '⟵ Collapse' : '⟷ Full width'}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="rounded border border-red-300 dark:border-red-700 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
-          >
-            Delete
-          </button>
+            {status.text}
+          </span>
+          {saveState.pendingCount > 0 && saveState.status !== 'saving' && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {String(saveState.pendingCount)} pending
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Description */}
-      <textarea
-        ref={descTextareaRef}
-        value={description}
-        onChange={(e) => handleDescriptionChange(e.target.value)}
-        placeholder="Add a description..."
-        rows={1}
-        className={
-          'mt-2 text-sm bg-transparent border-none outline-none focus:ring-0 ' +
-          'w-full text-gray-500 dark:text-gray-400 resize-none overflow-y-hidden ' +
-          'placeholder:text-gray-400 dark:placeholder:text-gray-600'
-        }
-      />
-
-      {/* Divider between header and blocks */}
-      <div className="border-b border-gray-100 dark:border-gray-800 pb-6 mb-6 mt-4" />
-
-      {/* Block editor */}
-      <BlockRenderer experimentId={id} blocks={experiment.blocks} libraryData={libraryData} />
+      <div className="prose dark:prose-invert max-w-none border border-gray-200 dark:border-gray-700 rounded p-4">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   )
 }
