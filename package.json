@@ -1,0 +1,23 @@
+{
+  "name": "lab-tools-2",
+  "version": "1.0.0",
+  "description": "A full-stack web application for designing and optimizing multi-color flow cytometry antibody panels. Built for researchers who need to manage antibody inventories, configure cytometer instruments, assign fluorophores to detector channels, and evaluate spectral spillover — all in one place.",
+  "main": "index.js",
+  "devDependencies": {
+    "ts-morph": "^28.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonversusjon/lab-tools-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jonversusjon/lab-tools-2/issues"
+  },
+  "homepage": "https://github.com/jonversusjon/lab-tools-2#readme"
+}
