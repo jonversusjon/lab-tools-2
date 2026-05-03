@@ -657,7 +657,7 @@ during the design phase).
   and its default value is derived from the user's config rather than being a
   static null.
 
-- **Block content JSON schema:** `EXPERIMENT-PAGE-ARCHITECTURE.md`, "Block
+- **Block content JSON schema:** `ARCHITECTURE.md (§ Experiment Pages)`, "Block
   Content JSON — Notion API Alignment" section. This is the source of truth
   for what's stored in each block's `content` column. Phase 13 adds no new
   fields to block content — frame config lives in `UserPreference`, not in
