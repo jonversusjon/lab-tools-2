@@ -11,7 +11,7 @@ import {
 import { tiptapDocToRows } from '@/blocks-tiptap/adapter/tiptapToDb'
 import { inspectTransaction, type TransactionDiff } from './transactionInspector'
 
-export type SaveStatus = 'idle' | 'dirty' | 'saving' | 'error'
+export type SaveStatus = 'idle' | 'dirty' | 'saving' | 'error' | 'saved'
 
 export interface UseSaveCoordinatorOptions {
   editor: Editor | null
@@ -104,6 +104,24 @@ export function useSaveCoordinator(
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const experimentIdRef = useRef<string | null>(experimentId)
   const debounceMsRef = useRef(debounceMs)
+  // Synchronous mirrors of error / has-ever-saved so deriveStatus can read
+  // current truth without waiting for a re-render.
+  const lastErrorRef = useRef<string | null>(null)
+  const hasEverSavedRef = useRef(false)
+
+  function hasUnsynced(): boolean {
+    const diff = inspectTransaction(baselineRowsRef.current, currentRowsRef.current)
+    return totalDiffSize(diff) > 0
+  }
+
+  function deriveStatus(): SaveStatus {
+    if (lastErrorRef.current != null) return 'error'
+    if (isFlushingRef.current) return 'saving'
+    if (debounceTimerRef.current !== null) return 'dirty'
+    if (hasUnsynced()) return 'dirty'
+    if (hasEverSavedRef.current) return 'saved'
+    return 'idle'
+  }
 
   experimentIdRef.current = experimentId
   debounceMsRef.current = debounceMs
@@ -134,13 +152,13 @@ export function useSaveCoordinator(
     const snapshot = currentRowsRef.current
     const diff = inspectTransaction(baseline, snapshot)
     if (totalDiffSize(diff) === 0) {
-      setStatus('idle')
+      setStatus(deriveStatus())
       setPendingCount(0)
       return
     }
 
     isFlushingRef.current = true
-    setStatus('saving')
+    setStatus(deriveStatus())
 
     try {
       // Wave 1: creates, in topological order. Sequential await so each
@@ -237,6 +255,8 @@ export function useSaveCoordinator(
       // wire-time translation for future flushes.
       baselineRowsRef.current = snapshot
       isFlushingRef.current = false
+      lastErrorRef.current = null
+      hasEverSavedRef.current = true
       setLastError(null)
 
       const newDiff = inspectTransaction(
@@ -246,16 +266,15 @@ export function useSaveCoordinator(
       const newPending = totalDiffSize(newDiff)
       setPendingCount(newPending)
       if (newPending > 0) {
-        setStatus('dirty')
         scheduleFlush()
-      } else {
-        setStatus('idle')
       }
+      setStatus(deriveStatus())
     } catch (err) {
       isFlushingRef.current = false
       const message = err instanceof Error ? err.message : String(err)
+      lastErrorRef.current = message
       setLastError(message)
-      setStatus('error')
+      setStatus(deriveStatus())
       queryClient.invalidateQueries({
         queryKey: ['experiments', expId],
       })
@@ -283,16 +302,23 @@ export function useSaveCoordinator(
     setPendingCount(total)
 
     if (total === 0) {
+      // User reverted to baseline. Cancel any pending debounce so the
+      // status can settle to 'saved'/'idle' instead of staying 'dirty'
+      // for up to debounceMs while a no-op flush waits to fire.
+      if (debounceTimerRef.current != null) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
       if (!isFlushingRef.current) {
-        setStatus('idle')
+        setStatus(deriveStatus())
       }
       return
     }
 
-    if (!isFlushingRef.current) {
-      setStatus('dirty')
-    }
     scheduleFlush()
+    if (!isFlushingRef.current) {
+      setStatus(deriveStatus())
+    }
   }
 
   useEffect(() => {
@@ -316,6 +342,28 @@ export function useSaveCoordinator(
         clearTimeout(debounceTimerRef.current)
       }
     }
+  }, [])
+
+  // Browser navigation guard — fire the "are you sure you want to leave?"
+  // prompt whenever there is buffered, in-flight, or unsynced work. Does
+  // NOT actually flush on unload; that's tracked as B2-full in
+  // plans/TIPTAP-FOLLOWUPS.md.
+  useEffect(() => {
+    const handler = (event: BeforeUnloadEvent) => {
+      const hasPending =
+        debounceTimerRef.current !== null ||
+        isFlushingRef.current ||
+        hasUnsynced()
+      if (hasPending) {
+        event.preventDefault()
+        // Required for legacy browsers; modern browsers ignore the
+        // string but require returnValue to be set.
+        event.returnValue = ''
+      }
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return { status, pendingCount, lastError }

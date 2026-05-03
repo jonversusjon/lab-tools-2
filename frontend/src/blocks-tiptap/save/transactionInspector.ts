@@ -1,4 +1,5 @@
 import type { ExperimentBlock } from '@/types'
+import { stableStringify } from './stableStringify'
 
 export interface TransactionDiff {
   created: ExperimentBlock[]
@@ -45,7 +46,7 @@ export function inspectTransaction(
 
     const blockTypeChanged = beforeRow.block_type !== afterRow.block_type
     const contentDiffers =
-      JSON.stringify(beforeRow.content) !== JSON.stringify(afterRow.content)
+      stableStringify(beforeRow.content) !== stableStringify(afterRow.content)
     if (blockTypeChanged || contentDiffers) {
       contentChanged.push(afterRow)
     }

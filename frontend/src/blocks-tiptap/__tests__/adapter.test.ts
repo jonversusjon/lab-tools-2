@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   rowsToTiptapDoc,
   tiptapDocToRows,
@@ -622,16 +622,6 @@ describe('round-trip — Tiptap→DB→Tiptap structural equivalence', () => {
 // -----------------------------------------------------------------------------
 
 describe('adversarial — heading_4 demotion', () => {
-  let warnSpy: ReturnType<typeof vi.spyOn>
-
-  beforeEach(() => {
-    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
-  })
-
-  afterEach(() => {
-    warnSpy.mockRestore()
-  })
-
   it('11. demotes heading_4 to level 3 with original text', () => {
     const row = makeRow({
       id: 'h4',
@@ -651,7 +641,6 @@ describe('adversarial — heading_4 demotion', () => {
         { type: 'paragraph', attrs: { _rowId: null } },
       ],
     })
-    expect(warnSpy).toHaveBeenCalled()
   })
 })
 

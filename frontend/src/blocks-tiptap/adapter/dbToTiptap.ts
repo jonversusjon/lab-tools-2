@@ -136,9 +136,6 @@ export function rowsToTiptapDoc(rows: ExperimentBlock[]): JSONContent {
       return node
     }
     if (blockType === 'heading_4') {
-      console.warn(
-        'rowsToTiptapDoc: demoting heading_4 (block id: ' + row.id + ') to heading_3'
-      )
       const inline = textContent(getContentField<string>(row, 'text', ''))
       const node: JSONContent = { type: 'heading', attrs: { level: 3, _rowId: row.id } }
       if (inline !== undefined) {

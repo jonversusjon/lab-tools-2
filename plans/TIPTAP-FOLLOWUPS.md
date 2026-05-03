@@ -788,3 +788,75 @@ Remaining tracked work:
 
 The migration's branch (`migration/tiptap`) is ready to merge to main
 after Phase 12's manual verification of cK009.
+
+---
+
+## Post-merge follow-ups (from pre-merge audit, 2026-05-03)
+
+The Phase 12-fix-2 commit addressed the two BLOCKING audit findings
+(B1 stable-key content comparison; B2 beforeunload guard + indicator
+gating) and a handful of small advisories (A1, A2/A3, A5, A6). The
+items below were intentionally NOT addressed in that commit and
+become post-merge backlog.
+
+- **B2-full — Sync flush on unmount.** Phase 12-fix-2 added a
+  `beforeunload` guard and stricter indicator gating, but did NOT
+  implement actual flush-on-unmount. Pre-merge accepted: 1500ms
+  typing window before unmount may still be lost if the user
+  dismisses the browser's navigation-warning prompt. Implementation
+  options: synchronous fetch with `keepalive: true`, OR shorten
+  debounce when `document.visibilityState === 'hidden'`. Estimate:
+  medium.
+
+- **A4 — ExperimentPage UX regression.** The Phase 12 cutover removed
+  in-page name editing, description display, and a delete button.
+  These remain available on `ExperimentList` so functionality is not
+  fully lost, just relocated. Decision needed: restore inline
+  editing in production page, or accept the relocation. Estimate:
+  small.
+
+- **A7 — Empty-experiment bootstrap inconsistency.** Both
+  `ExperimentPage.tsx` and `TiptapSandbox.tsx` short-circuit
+  `rowsToTiptapDoc` when `blocks.length === 0`, returning a
+  hand-built doc that doesn't match the canonical trailing-paragraph
+  contract. No bug today (`tiptapToDb` strips trailing empty
+  paragraphs), but a footgun for future trailing-paragraph changes.
+  Fix: route empty input through `rowsToTiptapDoc` in both call
+  sites. Estimate: tiny.
+
+- **A8 — Per-instance library data fetch in panel views.**
+  `FlowPanelView` and `IfPanelView` call `useAntibodies`,
+  `useFluorophores`, `useBatchSpectra`, `useSecondaries`,
+  `useConjugateChemistries`, `useInstruments`, `useDyeLabels` per
+  instance. TanStack Query deduplicates network calls but each
+  instance still subscribes, re-rendering on cache changes. Lift to
+  a context provider in `ExperimentPage`. Estimate: medium.
+
+- **A9 — 404 detection via string matching.** `ExperimentPage`
+  detects not-found by
+  `message.includes('404') || message.toLowerCase().includes('not found')`.
+  Brittle if the API error format changes. Fix: throw typed errors
+  with `.status` from `api/experiments.ts`. Estimate: small.
+
+- **A10 — `saveCoordinator` initialBlocks reset on parent re-render.**
+  The `useEffect([initialBlocks])` reset overwrites baseline if the
+  parent ever passes a new array reference. Currently safe (parents
+  use stable `useState`), but becomes load-bearing if anyone adds
+  memoization or moves to TanStack Query. Fix: gate the effect to
+  "first non-null `initialBlocks`" via a `loaded` boolean. Estimate:
+  tiny.
+
+- **A11 — Stale TODO and `as any`.** `ExperimentPage.tsx:17` TODO for
+  shared `statusLabel` utility (duplicated in `TiptapSandbox.tsx`).
+  `slashMenu/index.ts:38` `as any` cast on Tiptap `ReactRenderer`.
+  Both minor. Estimate: tiny.
+
+- **heading_4 / `is_toggleable` restoration.** Phase 12-fix-2 updated
+  `CLAUDE.md` to acknowledge that `heading_4` and `is_toggleable`
+  are NOT supported by the Tiptap editor (data-loss on first save
+  after load). To restore: add a Tiptap heading-level-4 mode (or an
+  internal `level: 4` attribute on `heading`) that round-trips
+  cleanly through `dbToTiptap` / `tiptapToDb`, plus a
+  `heading_toggleable` global attribute that round-trips
+  `is_toggleable`. Update CLAUDE.md back when restored. Estimate:
+  medium.

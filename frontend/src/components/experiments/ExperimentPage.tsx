@@ -19,6 +19,8 @@ function statusLabel(status: string): { text: string; cls: string } {
   switch (status) {
     case 'idle':
       return { text: 'Saved', cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
+    case 'saved':
+      return { text: 'Saved', cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
     case 'dirty':
       return { text: 'Unsaved changes', cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200' }
     case 'saving':

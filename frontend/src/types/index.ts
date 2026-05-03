@@ -783,21 +783,6 @@ export interface TextBlockContent {
   is_toggleable?: boolean
 }
 
-/** Content shape for callout blocks */
-export interface CalloutBlockContent {
-  text: string
-  icon: string
-  color: string
-}
-
-/** Content shape for table blocks */
-export interface TableBlockContent {
-  table_width: number
-  has_column_header: boolean
-  has_row_header: boolean
-  rows: string[][]
-}
-
 /** Content shape for column_list blocks */
 export interface ColumnListBlockContent {
   column_count: number
@@ -851,16 +836,6 @@ export interface SnapshotMicroscope {
   lasers: SnapshotMicroscopeLaser[]
 }
 
-/** Content shape for flow_panel blocks */
-export interface FlowPanelBlockContent {
-  source_panel_id: string
-  name: string
-  instrument: SnapshotInstrument | null
-  targets: FlowPanelInstanceTarget[]
-  assignments: FlowPanelInstanceAssignment[]
-  volume_params: VolumeParams
-}
-
 export interface FlowPanelInstanceTarget {
   id: string
   antibody_id: string | null
@@ -889,18 +864,6 @@ export interface FlowPanelInstanceAssignment {
   fluorophore_name: string | null
   detector_id: string
   detector_name: string | null
-}
-
-/** Content shape for if_panel blocks */
-export interface IFPanelBlockContent {
-  source_panel_id: string
-  name: string
-  panel_type: string
-  microscope: SnapshotMicroscope | null
-  view_mode: string
-  targets: IFPanelInstanceTarget[]
-  assignments: IFPanelInstanceAssignment[]
-  volume_params: VolumeParams
 }
 
 export interface IFPanelInstanceTarget {

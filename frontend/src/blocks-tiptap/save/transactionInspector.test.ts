@@ -115,4 +115,41 @@ describe('inspectTransaction', () => {
     expect(diff.contentChanged).toEqual([after])
     expect(diff.topologyChanged).toEqual([])
   })
+
+  it('reports zero changes when baseline content has different key order than current', () => {
+    // Baseline simulates server wire order; current simulates tiptapDocToRows
+    // output order (driven by addAttributes declaration order). Logical content
+    // is identical — only key order differs.
+    const wireOrder = {
+      source_panel_id: null,
+      name: 'Demo',
+      instrument: null,
+      targets: [],
+      assignments: [],
+      volume_params: {
+        num_samples: 1,
+        volume_per_sample_ul: 100,
+        pipet_error_factor: 1.1,
+        dilution_source: 'flow',
+      },
+    }
+    const tiptapOrder = {
+      volume_params: {
+        dilution_source: 'flow',
+        pipet_error_factor: 1.1,
+        volume_per_sample_ul: 100,
+        num_samples: 1,
+      },
+      assignments: [],
+      targets: [],
+      instrument: null,
+      name: 'Demo',
+      source_panel_id: null,
+    }
+    const before = row({ id: 'a', block_type: 'flow_panel', content: wireOrder })
+    const after = row({ id: 'a', block_type: 'flow_panel', content: tiptapOrder })
+    const diff = inspectTransaction([before], [after])
+    expect(diff.contentChanged).toEqual([])
+    expect(diff.topologyChanged).toEqual([])
+  })
 })

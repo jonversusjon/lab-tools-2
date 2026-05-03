@@ -204,7 +204,7 @@ describe('useSaveCoordinator', () => {
     editor.destroy()
   })
 
-  it('4. idle after save success', async () => {
+  it('4. saved after save success', async () => {
     const { editor, result } = await setup()
     await act(async () => {
       editor.commands.focus()
@@ -213,7 +213,7 @@ describe('useSaveCoordinator', () => {
         content: [{ type: 'text', text: 'block' }],
       })
     })
-    await waitFor(() => expect(result.current.status).toBe('idle'), {
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
       timeout: 1000,
     })
     expect(createCalls.length).toBeGreaterThanOrEqual(1)
@@ -262,7 +262,7 @@ describe('useSaveCoordinator', () => {
     await act(async () => {
       editor.commands.insertContent(' c')
     })
-    await waitFor(() => expect(result.current.status).toBe('idle'), {
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
       timeout: 1000,
     })
     // Single paragraph existed in baseline, so we expect ONE update call,
@@ -297,7 +297,7 @@ describe('useSaveCoordinator', () => {
       created_at: null,
       updated_at: null,
     })
-    await waitFor(() => expect(result.current.status).toBe('idle'), {
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
       timeout: 1000,
     })
     // Reset the call-record so we observe ONLY the deletes triggered by
@@ -346,7 +346,7 @@ describe('useSaveCoordinator', () => {
       created_at: null,
       updated_at: null,
     })
-    await waitFor(() => expect(result.current.status).toBe('idle'), {
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
       timeout: 1000,
     })
     createMode = 'auto'
@@ -399,7 +399,7 @@ describe('useSaveCoordinator', () => {
       editor.commands.focus()
       editor.commands.insertContent(paragraphs)
     })
-    await waitFor(() => expect(result.current.status).toBe('idle'), {
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
       timeout: 2000,
     })
     expect(createCalls.length).toBe(50)
@@ -459,7 +459,7 @@ describe('useSaveCoordinator', () => {
       editor.commands.focus()
       editor.commands.insertContent(columnLayout)
     })
-    await waitFor(() => expect(result.current.status).toBe('idle'), {
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
       timeout: 2000,
     })
 
@@ -499,6 +499,83 @@ describe('useSaveCoordinator', () => {
     for (const pCall of paragraphCallsAsChildren) {
       expect(columnServerIds.has(pCall.data.parent_id)).toBe(true)
     }
+    editor.destroy()
+  })
+
+  it('13. beforeunload event prevents navigation when pending changes exist', async () => {
+    const { editor } = await setup()
+    // Simulate user typing — schedule a debounce flush, do NOT wait for it
+    // to fire so debounceTimerRef remains set.
+    await act(async () => {
+      editor.commands.focus()
+      editor.commands.insertContent('hi')
+    })
+    await waitMs(2)
+    // Dispatch the beforeunload event directly so we can inspect it.
+    const event = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent
+    let preventCalled = false
+    const origPreventDefault = event.preventDefault.bind(event)
+    event.preventDefault = () => {
+      preventCalled = true
+      origPreventDefault()
+    }
+    window.dispatchEvent(event)
+    expect(preventCalled).toBe(true)
+    editor.destroy()
+  })
+
+  it('14. beforeunload event does NOT prevent navigation when no pending changes', async () => {
+    const { editor } = await setup()
+    await waitMs(50)
+    const event = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent
+    let preventCalled = false
+    const origPreventDefault = event.preventDefault.bind(event)
+    event.preventDefault = () => {
+      preventCalled = true
+      origPreventDefault()
+    }
+    window.dispatchEvent(event)
+    expect(preventCalled).toBe(false)
+    editor.destroy()
+  })
+
+  it('15. status is "dirty" while debounce timer is buffering, not "saved" or "idle"', async () => {
+    const { editor, result } = await setup()
+    await act(async () => {
+      editor.commands.focus()
+      editor.commands.insertContent('hi')
+    })
+    // Don't wait long enough for debounce (20ms) to fire.
+    await waitMs(2)
+    expect(result.current.status).toBe('dirty')
+    editor.destroy()
+  })
+
+  it('16. status returns to "saved" only after flush completes AND no new debounce', async () => {
+    const startContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'start' }],
+        },
+      ],
+    }
+    const { editor, result } = await setup(startContent)
+    // First successful flush.
+    await act(async () => {
+      editor.commands.focus('end')
+      editor.commands.insertContent(' a')
+    })
+    await waitFor(() => expect(result.current.status).toBe('saved'), {
+      timeout: 1000,
+    })
+    // A new edit must immediately move status away from 'saved'.
+    await act(async () => {
+      editor.commands.insertContent(' b')
+    })
+    await waitMs(2)
+    expect(result.current.status).toBe('dirty')
     editor.destroy()
   })
 })
