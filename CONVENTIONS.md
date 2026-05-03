@@ -23,6 +23,17 @@ rule. Caught in review.
 
 ---
 
+## Documentation tense
+
+Architectural docs are tenseless. When migrating content from a phase
+plan into `ARCHITECTURE.md`, drop temporal qualifiers like "introduced
+in a later phase," "to be added," "now planned." `ARCHITECTURE.md`
+describes what is, not what was-or-will-be planned.
+
+**Origin:** docs/restructure phase, commit `fb3fa30`.
+
+---
+
 ## Frontend visual conventions
 
 ### Right-edge fade masks are always-on
