@@ -172,8 +172,16 @@ function render() {
   return L.join("\n") + "\n";
 }
 
-function stripTimestamp(s) {
-  return s.split("\n").filter(l => !l.startsWith("Generated:")).join("\n");
+function stripVolatileHeaders(s) {
+  // Strip header lines that change between identical regenerations.
+  // `Generated:` changes on every run (timestamp). `Commit:` changes on
+  // any new commit, even doc-only commits where the pre-commit hook
+  // correctly skipped index regeneration. Both stay in the rendered
+  // file — they just don't participate in the --check equivalence check.
+  const skipPrefixes = ["Generated:", "Commit:"];
+  return s.split("\n")
+    .filter(l => !skipPrefixes.some(p => l.startsWith(p)))
+    .join("\n");
 }
 
 const out = render();
@@ -181,7 +189,7 @@ const outPath = path.resolve(args.out);
 
 if (args.check) {
   const existing = fs.existsSync(outPath) ? fs.readFileSync(outPath, "utf8") : "";
-  if (stripTimestamp(existing) !== stripTimestamp(out)) {
+  if (stripVolatileHeaders(existing) !== stripVolatileHeaders(out)) {
     process.stderr.write(outPath + " is stale. Run `make index`.\n");
     process.exit(1);
   }

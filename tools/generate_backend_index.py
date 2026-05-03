@@ -327,8 +327,21 @@ def _git_sha():
         return None
 
 
-def _strip_timestamp(s: str) -> str:
-    return "\n".join(l for l in s.splitlines() if not l.startswith("Generated:"))
+def _strip_volatile_headers(s: str) -> str:
+    """Strip header lines that change between identical regenerations.
+
+    `Generated:` changes on every run (timestamp).
+    `Commit:` changes on any new commit, even doc-only commits where the
+    pre-commit hook correctly skipped index regeneration.
+
+    Both are intentional metadata — they stay in the rendered file — but
+    they must not participate in the --check equivalence comparison.
+    """
+    skip_prefixes = ("Generated:", "Commit:")
+    return "\n".join(
+        l for l in s.splitlines()
+        if not any(l.startswith(p) for p in skip_prefixes)
+    )
 
 
 def main() -> int:
@@ -350,7 +363,7 @@ def main() -> int:
 
     if args.check:
         existing = out_path.read_text() if out_path.exists() else ""
-        if _strip_timestamp(existing) != _strip_timestamp(out):
+        if _strip_volatile_headers(existing) != _strip_volatile_headers(out):
             sys.stderr.write(str(out_path) + " is stale. Run `make index`.\n")
             return 1
         return 0
