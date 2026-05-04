@@ -354,3 +354,18 @@ cd backend && pytest tests/ -v --tb=short && cd ../frontend && npx vitest run &&
 ## File Deletion Policy
 - `panels.db`: safe to delete anytime; regenerated on startup with seed data.
 - `seed_data/*.json`: never delete; source-of-truth seed data.
+
+## E2E Tests
+
+After phases that affect editor save behavior, run `npm run e2e` from
+`frontend/` to verify:
+- cK009 round-trip (no row drift on load or reload)
+- Indicator state transitions (idle → dirty → saved → undo cancel)
+- beforeunload guard (fires when pending, releases when saved)
+- Paste correctness (pasted blocks get fresh _rowIds, no PUTs to originals)
+- Sandbox auto-create (idempotent; seed topology correct)
+
+The PM is no longer responsible for manual clickthrough verification on
+phases covered by these tests. Requires backend running on port 8000 and
+cK009 backup at `~/ck009-backup-20260502.sql`. See
+`frontend/tests/e2e/README.md` for full instructions.

@@ -114,6 +114,7 @@ export default function ExperimentPage() {
         </h1>
         <div className="flex items-center gap-3">
           <span
+            data-testid="save-status"
             className={'px-2 py-0.5 rounded text-xs font-medium ' + status.cls}
             title={saveState.lastError ?? undefined}
           >

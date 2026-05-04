@@ -265,6 +265,19 @@ export default function TiptapSandbox() {
       loadState.kind === 'ready' ? loadState.experiment.blocks : undefined,
   })
 
+  // DEV-ONLY: expose editor instance for Playwright E2E paste tests.
+  // Tree-shaken in production builds via import.meta.env.DEV guard.
+  useEffect(() => {
+    if (import.meta.env.DEV && editor) {
+      ;(window as any).__sandboxEditor = editor
+    }
+    return () => {
+      if (import.meta.env.DEV) {
+        delete (window as any).__sandboxEditor
+      }
+    }
+  }, [editor])
+
   const filteredJson = useMemo(() => {
     if (!jsonFilter.trim()) return json
     return filterJsonTree(json, jsonFilter.toLowerCase())
@@ -311,6 +324,7 @@ export default function TiptapSandbox() {
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold dark:text-gray-100">Tiptap Sandbox</h1>
         <span
+          data-testid="save-status"
           className={
             'px-2 py-0.5 rounded text-xs font-medium ' + indicator.cls
           }
