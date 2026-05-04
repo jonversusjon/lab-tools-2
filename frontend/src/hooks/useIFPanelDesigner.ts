@@ -1,3 +1,20 @@
+/**
+ * IF panel designer state hook. Two modes share the same reducer:
+ *
+ * - Template mode: useIFPanelDesigner(panel, microscope). State is
+ *   loaded from props via SET_PANEL / SET_MICROSCOPE effects.
+ *   Backend persistence is the responsibility of the caller (it
+ *   reads `state` and saves on debounce).
+ *
+ * - Instance mode: useIFPanelDesignerInstance(initialState, onChange).
+ *   State is loaded eagerly from a fully-realized initial state.
+ *   Every change triggers onChange(newState), which Phase 8c uses
+ *   to mirror state into a Tiptap node's attrs.
+ *
+ * Both modes delegate to useIFPanelDesignerCore, which holds the
+ * useReducer + memoized action callbacks.
+ */
+
 import { useReducer, useEffect, useCallback, useRef } from 'react'
 import type { IFPanel, IFPanelTarget, IFPanelAssignment, Microscope } from '@/types'
 
@@ -31,7 +48,21 @@ export type IFPanelDesignerAction =
   | { type: 'REPLACE_TARGET_ANTIBODY'; targetId: string; oldAntibodyId: string; newAntibodyId: string; updatedTarget: IFPanelTarget }
   | { type: 'REORDER_TARGETS'; targetIds: string[] }
 
-const initialState: IFPanelDesignerState = {
+/**
+ * Handlers parameterizing how state flows in/out of the reducer.
+ * Template mode uses prop-driven initial-state effects; instance mode
+ * uses a fully-realized initial state and emits every change to a sink.
+ */
+export interface IFPanelDesignerHandlers {
+  /** Source of initial state. Template: emptyIFPanelDesignerState (effects hydrate it);
+   *  Instance: a stable initial state object passed by the caller. */
+  initialState: IFPanelDesignerState
+  /** Optional side effect on every state change. Instance mode uses
+   *  this to push attrs back to Tiptap; template mode passes undefined. */
+  onChange?: (state: IFPanelDesignerState) => void
+}
+
+const emptyIFPanelDesignerState: IFPanelDesignerState = {
   panel: null,
   microscope: null,
   viewMode: 'simple',
@@ -202,20 +233,31 @@ export function ifPanelDesignerReducer(
   }
 }
 
-export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope | null) {
-  const [state, dispatch] = useReducer(ifPanelDesignerReducer, initialState)
-  const lastPanelIdRef = useRef<string | null>(null)
+// ─── Core ────────────────────────────────────────────────────────────────────
 
+function useIFPanelDesignerCore(
+  startingState: IFPanelDesignerState,
+  onChange?: (state: IFPanelDesignerState) => void,
+) {
+  const [state, dispatch] = useReducer(ifPanelDesignerReducer, startingState)
+
+  // Keep onChange ref current so the effect closure always calls the
+  // latest version without adding onChange to the effect's dep array.
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
+  // onChange fires on every state change EXCEPT the initial mount.
+  // Skipping mount prevents a useless round-trip in instance mode:
+  // emitting the state we just loaded from Tiptap attrs back into attrs
+  // would create a spurious Tiptap transaction and trigger onUpdate.
+  const isMountedRef = useRef(false)
   useEffect(() => {
-    if (panel && panel.id !== lastPanelIdRef.current) {
-      lastPanelIdRef.current = panel.id
-      dispatch({ type: 'SET_PANEL', panel })
+    if (!isMountedRef.current) {
+      isMountedRef.current = true
+      return
     }
-  }, [panel])
-
-  useEffect(() => {
-    dispatch({ type: 'SET_MICROSCOPE', microscope })
-  }, [microscope?.id])
+    onChangeRef.current?.(state)
+  }, [state])
 
   const addTarget = useCallback((target: IFPanelTarget) => {
     dispatch({ type: 'ADD_TARGET', target })
@@ -237,11 +279,15 @@ export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope
     dispatch({ type: 'SET_VIEW_MODE', viewMode })
   }, [])
 
-  const undo = useCallback(() => dispatch({ type: 'UNDO' }), [])
-  const redo = useCallback(() => dispatch({ type: 'REDO' }), [])
+  const undo = useCallback(() => {
+    dispatch({ type: 'UNDO' })
+  }, [])
+
+  const redo = useCallback(() => {
+    dispatch({ type: 'REDO' })
+  }, [])
 
   const forceRefresh = useCallback((fresh: IFPanel) => {
-    lastPanelIdRef.current = fresh.id
     dispatch({ type: 'FORCE_REFRESH', panel: fresh })
   }, [])
 
@@ -249,4 +295,43 @@ export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope
   const canRedo = state.future.length > 0
 
   return { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode, undo, redo, forceRefresh, canUndo, canRedo }
+}
+
+// ─── Template mode ───────────────────────────────────────────────────────────
+
+export function useIFPanelDesigner(panel: IFPanel | null, microscope: Microscope | null) {
+  const lastPanelIdRef = useRef<string | null>(null)
+
+  // No onChange in template mode — backend persistence is handled by the
+  // caller reading `state` on a save debounce.
+  const { forceRefresh: coreForceRefresh, dispatch, ...rest } = useIFPanelDesignerCore(emptyIFPanelDesignerState)
+
+  useEffect(() => {
+    if (panel && panel.id !== lastPanelIdRef.current) {
+      lastPanelIdRef.current = panel.id
+      dispatch({ type: 'SET_PANEL', panel })
+    }
+  }, [panel]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    dispatch({ type: 'SET_MICROSCOPE', microscope })
+  }, [microscope?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Template wrapper wraps forceRefresh to also update lastPanelIdRef,
+  // preventing the SET_PANEL effect above from re-firing on next render.
+  const forceRefresh = useCallback((fresh: IFPanel) => {
+    lastPanelIdRef.current = fresh.id
+    coreForceRefresh(fresh)
+  }, [coreForceRefresh])
+
+  return { ...rest, dispatch, forceRefresh }
+}
+
+// ─── Instance mode ───────────────────────────────────────────────────────────
+
+export function useIFPanelDesignerInstance(
+  initialState: IFPanelDesignerState,
+  onChange: (state: IFPanelDesignerState) => void,
+) {
+  return useIFPanelDesignerCore(initialState, onChange)
 }

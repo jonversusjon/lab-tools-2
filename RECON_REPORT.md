@@ -17,7 +17,7 @@ All findings below come from reading the repo only. No files modified.
 ├── ARCHITECTURE.md
 ├── BUG-REPORT.md
 ├── CLAUDE.md
-├── EXPERIMENT-PAGE-ARCHITECTURE.md
+├── ARCHITECTURE.md (§ Experiment Pages)
 ├── FRONTEND-CONVENTIONS.md
 ├── README.md
 ├── .agent/
@@ -295,7 +295,7 @@ export interface VolumeParams {
 }
 ```
 
-The `instrument` field is a **snapshot copy** of the lasers + detectors (ids/labels/wavelengths), not a reference to the live `Instrument` row — see `SnapshotInstrument` (`types/index.ts:826–830`) and `_snapshot_instrument()` in `backend/routers/experiments.py:45–68`. This is the "panel instances are detached snapshots" rule from `EXPERIMENT-PAGE-ARCHITECTURE.md`.
+The `instrument` field is a **snapshot copy** of the lasers + detectors (ids/labels/wavelengths), not a reference to the live `Instrument` row — see `SnapshotInstrument` (`types/index.ts:826–830`) and `_snapshot_instrument()` in `backend/routers/experiments.py:45–68`. This is the "panel instances are detached snapshots" rule from `ARCHITECTURE.md (§ Experiment Pages)`.
 
 ### Persisted shape — IF panel block
 
@@ -425,7 +425,7 @@ const newSortOrder = next ? (current.sort_order + next.sort_order) / 2
                           : current.sort_order + 1.0
 ```
 
-There is no compaction logic anywhere in the codebase — the float will keep splitting until the user manually reorders. This was flagged as a Phase 7 follow-up in `EXPERIMENT-PAGE-ARCHITECTURE.md` but is still open.
+There is no compaction logic anywhere in the codebase — the float will keep splitting until the user manually reorders. This was flagged as a Phase 7 follow-up in `ARCHITECTURE.md (§ Experiment Pages)` but is still open.
 
 Nesting is via `parent_id` (self-FK). It's used for:
 - column children (`parent_id` → a `column` block's id; column's parent is a `column_list`)
@@ -749,7 +749,7 @@ What does exist that's adjacent:
 - Resource exports (instruments, panels, etc.) via `backend/routers/export_import.py` and `frontend/src/api/exportImport.ts` — these emit JSON, not markdown, and are scoped to single resources.
 - `frontend/src/components/instruments/InstrumentEditor.tsx:207–220` `handleExport` — pattern for triggering a JSON file download in-browser using a Blob + anchor click. Reusable as a download primitive when the markdown serializer is built.
 
-The build plan in `EXPERIMENT-PAGE-ARCHITECTURE.md` (lines about "Notion Export Path (Future)") describes the intended translation of each block type to Notion API shape, but **none of it is implemented**. Building this from scratch means:
+The build plan in `ARCHITECTURE.md (§ Experiment Pages)` (lines about "Notion Export Path (Future)") describes the intended translation of each block type to Notion API shape, but **none of it is implemented**. Building this from scratch means:
 
 1. Pure `serializeBlock(block: ExperimentBlock, children?: ExperimentBlock[]): string` per block type.
 2. A walker that traverses `experiment.blocks` in `sort_order`, respecting `parent_id` (for columns / toggle headings).
@@ -795,7 +795,7 @@ The most direct precedent for client-side antibody math:
 - **`utils/spillover.ts`** — heavy numerical computation, manual memoization keyed by id, called from the panel designer view on every render of the heatmap. Excellent template for "compute on the client, cache by id, never call the backend."
 - **`utils/dilutions.ts`** — string → number parsing.
 - **`utils/conjugates.ts`** — derives compatibility from arrays of antibodies + secondaries + conjugate chemistries.
-- **No existing dilution / volume math service.** `EXPERIMENT-PAGE-ARCHITECTURE.md` Phase 5 specifies a `VolumeCalculator` component but neither the component nor a `volumes.ts` utility currently exists in `frontend/src/utils/` or anywhere else. The `VolumeParams` type is defined (`types/index.ts:937–942`) and the snapshot endpoint emits a default — that's it.
+- **No existing dilution / volume math service.** `ARCHITECTURE.md (§ Experiment Pages)` Phase 5 specifies a `VolumeCalculator` component but neither the component nor a `volumes.ts` utility currently exists in `frontend/src/utils/` or anywhere else. The `VolumeParams` type is defined (`types/index.ts:937–942`) and the snapshot endpoint emits a default — that's it.
 
 ### Testing pattern for utilities
 
@@ -1014,12 +1014,12 @@ These need product / architectural decisions before the new features can be desi
 ### Calculations engine (feature b)
 
 7. **Which inputs are user-tunable vs. snapshot-frozen?** `volume_params` lives on each panel block today (`num_samples`, `volume_per_sample_ul`, `pipet_error_factor`, `dilution_source`). For the calculations sidebar, are these editable from the sidebar (cross-panel-aware), or only from the panel block itself? If the sidebar edits them, it has to PUT into multiple blocks.
-8. **Mastermix UX trigger.** `EXPERIMENT-PAGE-ARCHITECTURE.md` Phase 6 describes mastermix selection living in "an experiment-scoped JSON field (either on the experiment model or as a special block type)" — never decided. Where should it live? Adding a column to `Experiment` is the easy path; a synthetic `mastermix` block type fits the existing block model better (and exports more cleanly).
+8. **Mastermix UX trigger.** `ARCHITECTURE.md (§ Experiment Pages)` Phase 6 describes mastermix selection living in "an experiment-scoped JSON field (either on the experiment model or as a special block type)" — never decided. Where should it live? Adding a column to `Experiment` is the easy path; a synthetic `mastermix` block type fits the existing block model better (and exports more cleanly).
 9. **Sidebar / dock / detach — single instance or multi?** Can a user open the calc sidebar for two experiment pages simultaneously in two tabs? Detach the sidebar from one tab while the panel block in the other tab keeps editing? This decides whether you need cross-window sync at all.
 10. **Detach-window data refresh.** When the user detaches the calc panel and then edits a panel block back in the main window, does the detached window auto-refresh, poll, or require a manual refresh? Polling is simplest; live sync via `BroadcastChannel` is slick but unprecedented here.
 11. **Calculation outputs the user expects.** Per-antibody primary volume, primary cocktail, secondary cocktail, mastermix table — all defined in the Phase 5 spec. Anything beyond? E.g.: tube-volume rounding, "x.xx µL ≥ 0.5 µL pipettable" warnings, optional "include 10% extra for dead volume" beyond the existing pipet_error_factor? Each adds calc-engine surface area.
 12. **Save model for the sidebar's own UI state.** Selected mastermix antibodies, expand/collapse states, last-displayed panel — page-scoped? localStorage? Because there's no global UI store, this needs an explicit decision before two surfaces (sidebar + detached window) end up disagreeing.
-13. **Markdown / Notion export — in scope or future?** The task description mentions calculations rendering in a sidebar; it doesn't say "export." But the feature spec in `EXPERIMENT-PAGE-ARCHITECTURE.md` ties Notion export to calculations. If export is in scope for this round, recognize that the Notion export serializer is **fully unbuilt** and will be its own significant slice of work.
+13. **Markdown / Notion export — in scope or future?** The task description mentions calculations rendering in a sidebar; it doesn't say "export." But the feature spec in `ARCHITECTURE.md (§ Experiment Pages)` ties Notion export to calculations. If export is in scope for this round, recognize that the Notion export serializer is **fully unbuilt** and will be its own significant slice of work.
 
 ### Ambient
 

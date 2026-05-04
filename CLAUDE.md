@@ -3,7 +3,6 @@
 ## Reference Documents
 @ARCHITECTURE.md
 @FRONTEND-CONVENTIONS.md
-@EXPERIMENT-PAGE-ARCHITECTURE.md
 
 ## ⚠️ NEVER FORGET — Check Every File Against This List
 
@@ -38,8 +37,8 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **Mastermix dilution mismatch warning** — if two same-type panels share an antibody but at different dilution factors, do NOT add to mastermix. Display explicit warning explaining why.
 - [ ] **Table rows are inline JSON arrays** — table block `content.rows` is an ordered array. Drag-and-drop reorders the array. No separate child blocks or sort_order for rows.
 - [ ] **Block text is plain text only (no rich text)** — headings, paragraphs, list items, callouts store `{ "text": "..." }`, not Notion-style rich_text arrays. Rich text annotations are deferred to a future update.
-- [ ] **heading_4 is internal only** — Notion API supports heading_1 through heading_3 only. On Notion export, heading_4 maps to a bold paragraph.
-- [ ] **Toggle headings use `is_toggleable: true`** — matches Notion API pattern. Children stored via `parent_id` reference to the heading block.
+- [ ] **heading_4 is NOT supported by the Tiptap editor.** Pre-existing `heading_4` rows demote to `heading_3` on first save after load (one-way migration). Restoring heading_4 support requires adding a Tiptap heading-level-4 mode — tracked in `plans/TIPTAP-FOLLOWUPS.md`.
+- [ ] **Toggle headings (`is_toggleable`) are NOT supported by the Tiptap editor.** Pre-existing rows with `is_toggleable: true` lose the attribute on first save after load. Restoration tracked in `plans/TIPTAP-FOLLOWUPS.md`.
 
 ### Chart.js
 - [ ] **`animation: false`** on ALL Chart.js chart configs — without this, spectra charts lag on every data change.
@@ -355,3 +354,18 @@ cd backend && pytest tests/ -v --tb=short && cd ../frontend && npx vitest run &&
 ## File Deletion Policy
 - `panels.db`: safe to delete anytime; regenerated on startup with seed data.
 - `seed_data/*.json`: never delete; source-of-truth seed data.
+
+## E2E Tests
+
+After phases that affect editor save behavior, run `npm run e2e` from
+`frontend/` to verify:
+- cK009 round-trip (no row drift on load or reload)
+- Indicator state transitions (idle → dirty → saved → undo cancel)
+- beforeunload guard (fires when pending, releases when saved)
+- Paste correctness (pasted blocks get fresh _rowIds, no PUTs to originals)
+- Sandbox auto-create (idempotent; seed topology correct)
+
+The PM is no longer responsible for manual clickthrough verification on
+phases covered by these tests. Requires backend running on port 8000 and
+cK009 backup at `~/ck009-backup-20260502.sql`. See
+`frontend/tests/e2e/README.md` for full instructions.

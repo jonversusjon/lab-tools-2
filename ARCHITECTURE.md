@@ -79,6 +79,8 @@ Every FK column MUST specify `ondelete`. With FK pragma enabled, missing `ondele
 | PanelAssignment.fluorophore_id | Fluorophore | CASCADE | Remove assignment if fluorophore deleted |
 | PanelAssignment.detector_id | Detector | CASCADE | Remove assignment if detector deleted |
 | IFPanelAssignment.filter_id | MicroscopeFilter | SET NULL | Preserves fluorophore assignment when filter is deleted during microscope reconfiguration |
+| ExperimentBlock.experiment_id | Experiment | CASCADE | Blocks belong to experiments |
+| ExperimentBlock.parent_id | ExperimentBlock | SET NULL | Orphaned children become top-level blocks |
 
 ---
 
@@ -245,3 +247,296 @@ lab-tools-2/
 │   └── fetch_seed_spectra.py  # Run locally to get real FPbase spectra
 └── README.md
 ```
+
+---
+
+## Experiment Pages
+
+Add an **Experiment Page** system — a Notion-like block editor where researchers compose experiment documentation inline with embedded, editable panel instances. Existing flow and IF panels become **templates**: reusable blueprints that can be stamped into experiment pages as independent copies. Volume calculations, cocktail tables, and cross-panel mastermix detection operate on these page-scoped instances.
+
+### Data Model
+
+#### New Tables
+
+```
+experiments
+├── id              String(36) PK, UUID
+├── name            String, NOT NULL
+├── description     Text, nullable
+├── created_at      DateTime, server_default=now()
+└── updated_at      DateTime, server_default=now(), onupdate=now()
+
+experiment_blocks
+├── id              String(36) PK, UUID
+├── experiment_id   String(36) FK → experiments.id, CASCADE
+├── block_type      String(30), NOT NULL
+│                   (paragraph, heading_1, heading_2, heading_3,
+│                    bulleted_list_item, numbered_list_item,
+│                    callout, table, divider,
+│                    column_list, column,
+│                    flow_panel, if_panel)
+├── content         Text, NOT NULL, default="{}"   ← JSON blob
+├── sort_order      Float, NOT NULL                ← float for cheap insert-between
+├── parent_id       String(36) FK → experiment_blocks.id, SET NULL, nullable
+│                   (non-null for: column children, table_row children,
+│                    toggle heading children, nested list items)
+├── created_at      DateTime, server_default=now()
+└── updated_at      DateTime, server_default=now(), onupdate=now()
+```
+
+`sort_order` uses **float** so inserting a block between sort_order 1.0 and 2.0 can use 1.5 without reindexing. Periodic compaction normalizes back to integers.
+
+#### Why Float Sort Order?
+
+Drag-and-drop reordering with integer sort orders requires updating every row below the insertion point. With floats, inserting between adjacent blocks is O(1). Compaction (renumber to 0, 1, 2...) runs lazily when the fractional gap shrinks below a threshold (e.g. 0.001).
+
+### Block Content JSON — Notion API Alignment
+
+Each block's `content` column stores JSON that mirrors the Notion API block schema as closely as possible. This enables a near-trivial "Export to Notion" translation later.
+
+#### Generic Blocks (Plain Text — No Rich Text)
+
+All text blocks use plain strings. Rich text annotations (bold, italic, color) are deferred to a future update. This keeps Phase 2 scope manageable and doesn't block the Notion export path — plain text can be trivially wrapped in Notion rich_text arrays at export time.
+
+**Paragraph / Headings / List Items:**
+```json
+{ "text": "Hello world" }
+```
+
+**Headings with toggle (heading_1, heading_2, heading_3 only):**
+```json
+{ "text": "Toggleable heading", "is_toggleable": true }
+```
+
+When `is_toggleable: true`, the heading acts as a toggle — its children (stored via `parent_id`) are collapsible. Default: `false`.
+
+**Callout:**
+```json
+{
+  "text": "Important note here",
+  "icon": "💡",
+  "color": "gray_background"
+}
+```
+
+**Table:**
+```json
+{
+  "table_width": 3,
+  "has_column_header": true,
+  "has_row_header": false,
+  "rows": [
+    ["Header 1", "Header 2", "Header 3"],
+    ["Cell A", "Cell B", "Cell C"],
+    ["Cell D", "Cell E", "Cell F"]
+  ]
+}
+```
+
+Table rows are stored inline in the table block's content as an ordered JSON array. Array index IS the sort order — drag-and-drop reordering reorders the array and saves the entire block. No separate child blocks or sort_order column for rows.
+
+**Column List / Column:**
+```json
+// column_list content — column_count for rendering hints
+{ "column_count": 2 }
+
+// column content — width as percentage of parent column_list
+{ "width_pct": 50.0 }
+```
+
+**`width_pct`** is a number 0–100 representing the column's percentage width within its parent column_list. Sibling columns' widths sum to approximately 100. Default on insertion is even distribution (`100 / column_count`). Resize via drag handles updates these values in place. Position within the parent's children array IS the column's index — there is no separate `column_index` field.
+
+Column children are stored as blocks with `parent_id` → the `column` block and their own `sort_order`.
+
+**Divider:**
+```json
+{}
+```
+
+#### Heading 4 (Internal Only)
+
+Notion API only supports heading_1 through heading_3. We support a `heading_4` block type internally with `{ "text": "..." }` content. On Notion export, this maps to a bold paragraph:
+
+```json
+{
+  "type": "paragraph",
+  "paragraph": {
+    "rich_text": [{
+      "type": "text",
+      "text": { "content": "Heading 4 Text" },
+      "annotations": { "bold": true }
+    }]
+  }
+}
+```
+
+#### Panel Instance Blocks
+
+**flow_panel content:**
+```json
+{
+  "source_panel_id": "uuid-of-template",
+  "name": "My T Cell Panel",
+  "instrument": {
+    "id": "uuid",
+    "name": "BD FACSAria Fusion"
+  },
+  "targets": [
+    {
+      "id": "instance-uuid",
+      "antibody_id": "uuid",
+      "antibody_name": "CD3",
+      "antibody_target": "CD3",
+      "antibody_host": "Mouse",
+      "antibody_clone": "OKT3",
+      "staining_mode": "direct",
+      "secondary_antibody_id": null,
+      "secondary_antibody_name": null,
+      "sort_order": 0,
+      "flow_dilution_factor": 100,
+      "icc_if_dilution_factor": null
+    }
+  ],
+  "assignments": [
+    {
+      "id": "instance-uuid",
+      "antibody_id": "uuid",
+      "fluorophore_id": "alexa-fluor-488",
+      "fluorophore_name": "Alexa Fluor 488",
+      "detector_id": "uuid",
+      "detector_name": "530/30"
+    }
+  ],
+  "volume_params": {
+    "num_samples": 1,
+    "volume_per_sample_ul": 100,
+    "pipet_error_factor": 1.1,
+    "dilution_source": "flow"
+  }
+}
+```
+
+**if_panel content:**
+```json
+{
+  "source_panel_id": "uuid-of-template",
+  "name": "Neuronal IF Panel",
+  "panel_type": "IF",
+  "microscope": {
+    "id": "uuid",
+    "name": "Leica SP8 Confocal"
+  },
+  "view_mode": "simple",
+  "targets": [
+    {
+      "id": "instance-uuid",
+      "antibody_id": "uuid",
+      "antibody_name": "MAP2 chk Abcam",
+      "antibody_target": "MAP2",
+      "antibody_host": "Chicken",
+      "staining_mode": "indirect",
+      "secondary_antibody_id": "uuid",
+      "secondary_antibody_name": "Goat anti-Chicken AF647",
+      "secondary_fluorophore_id": "alexa-fluor-647",
+      "secondary_fluorophore_name": "Alexa Fluor 647",
+      "sort_order": 0,
+      "dilution_override": null,
+      "icc_if_dilution_factor": 500
+    }
+  ],
+  "assignments": [
+    {
+      "id": "instance-uuid",
+      "antibody_id": "uuid",
+      "fluorophore_id": "alexa-fluor-647",
+      "fluorophore_name": "Alexa Fluor 647",
+      "filter_id": "uuid",
+      "filter_name": "660/40"
+    }
+  ],
+  "volume_params": {
+    "num_samples": 1,
+    "volume_per_sample_ul": 200,
+    "pipet_error_factor": 1.1,
+    "dilution_source": "icc_if"
+  }
+}
+```
+
+### Volume Calculation (Frontend Only)
+
+All volume math is computed client-side from the panel instance JSON.
+
+**Per-antibody primary volume:**
+```
+ab_vol = (volume_per_sample / dilution_factor) × num_samples × pipet_error_factor
+```
+
+Where `dilution_factor` is:
+- Flow panels: `target.flow_dilution_factor`
+- IF panels: `target.dilution_override ?? target.icc_if_dilution_factor`
+
+**Primary cocktail buffer:**
+```
+total_cocktail_vol = volume_per_sample × num_samples × pipet_error_factor
+buffer_vol = total_cocktail_vol - sum(ab_vol for each antibody)
+```
+
+**Secondary cocktail:** Same formula using secondary antibody dilutions.
+
+**Mastermix (cross-panel):**
+When multiple panel blocks exist on one experiment page, scan for antibodies (by `antibody_id`) that appear in more than one panel. The user selects which shared antibodies to include in a master mix. The system:
+
+1. Sums the per-panel antibody volumes for each shared antibody
+2. Presents a master mix table: total volume per shared antibody
+3. Each panel's cocktail table shows "from master mix: X µL" instead of individual antibody volumes for those shared targets
+
+Mastermix only groups same panel type (flow↔flow, IF↔IF). Cross-type grouping is not supported — different dilution sources. If dilution factors differ across panels for the same antibody, show a warning rather than silently combining.
+
+### Navigation & Routing
+
+```
+/experiments              → ExperimentList
+/experiments/:id          → ExperimentPage (block editor)
+/flow/panels              → relabeled "Flow Panel Templates"
+/if-ihc/panels            → relabeled "IF/IHC Panel Templates"
+```
+
+Sidebar gains an "Experiments" top-level entry above the domain-specific groups.
+
+### Backend API Design
+
+```
+GET    /api/v1/experiments                              → paginated list
+POST   /api/v1/experiments                              → create experiment
+GET    /api/v1/experiments/:id                          → full experiment with all blocks
+PUT    /api/v1/experiments/:id                          → update name/description
+DELETE /api/v1/experiments/:id                          → delete experiment + cascade blocks
+
+POST   /api/v1/experiments/:id/blocks                   → add block
+PUT    /api/v1/experiments/:id/blocks/:block_id         → update block content
+DELETE /api/v1/experiments/:id/blocks/:block_id         → delete block
+PUT    /api/v1/experiments/:id/blocks/reorder           → batch reorder (accepts [{id, sort_order, parent_id}])
+
+POST   /api/v1/experiments/:id/snapshot-panel           → create panel instance from template
+         body: { source_panel_id, panel_type: "flow" | "if" }
+         → reads template, snapshots to JSON, creates block, returns block
+```
+
+The snapshot endpoint is the only one that reads from template tables — everything else operates on block JSON blobs. Panel instance blocks are one-way snapshots: editing a block on an experiment page does NOT propagate changes back to the template panel.
+
+### Notion Export Path (Future)
+
+The block content JSON is designed for easy mapping to Notion API blocks:
+- `paragraph`, `heading_1-3`, `bulleted_list_item`, `numbered_list_item`, `callout`, `table`, `divider`, `column_list`, `column` all map to Notion block types
+- Plain text strings get wrapped in Notion rich_text arrays: `{ "text": "foo" }` → `{ "rich_text": [{ "type": "text", "text": { "content": "foo" } }] }`
+- When rich text annotations are added later, they map directly to Notion's annotation object
+- `heading_4` → bold paragraph (Notion only has heading_1-3)
+- `flow_panel` / `if_panel` → exported as heading + formatted tables (targets table, assignments table, volume table)
+- Colors map directly to Notion's color values
+
+The `Experiment → Notion Page` export function will:
+1. Create a Notion page with the experiment name as title
+2. Walk blocks in sort_order, converting each to Notion API block format
+3. For panel blocks, flatten to heading + formatted tables
+4. Use the Notion MCP server for actual page creation
