@@ -593,10 +593,15 @@ def import_instruments_commit(
     db: Session = Depends(get_db),
 ):
     records = payload.get("records", []) or []
-    for rec in records:
-        _insert_instrument_tree(db, dict(rec))
-    db.commit()
-    return {"imported": len(records)}
+    try:
+        for rec in records:
+            _insert_instrument_tree(db, dict(rec))
+        db.commit()
+        return {"imported": len(records)}
+    except Exception as exc:
+        db.rollback()
+        logger.exception("instruments import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Legacy endpoint retained for non-diff callers.
@@ -720,37 +725,42 @@ def import_microscopes_commit(
     db: Session = Depends(get_db),
 ):
     records = payload.get("records", []) or []
-    for rec in records:
-        rec = dict(rec)
-        lasers = rec.pop("lasers", []) or []
-        parent_clean, _ = _sanitize_generic(rec, set(_MICROSCOPE_FIELDS))
-        if not parent_clean.get("id"):
-            continue
-        db.merge(Microscope(**parent_clean))
-        db.flush()
-        db.execute(
-            MicroscopeLaser.__table__.delete().where(
-                MicroscopeLaser.microscope_id == parent_clean["id"]
-            )
-        )
-        db.flush()
-        for l in lasers:
-            l = dict(l)
-            filters = l.pop("filters", []) or []
-            laser_clean, _ = _sanitize_generic(l, set(_MSCOPE_LASER_FIELDS))
-            if not laser_clean.get("id"):
+    try:
+        for rec in records:
+            rec = dict(rec)
+            lasers = rec.pop("lasers", []) or []
+            parent_clean, _ = _sanitize_generic(rec, set(_MICROSCOPE_FIELDS))
+            if not parent_clean.get("id"):
                 continue
-            laser_clean["microscope_id"] = parent_clean["id"]
-            db.merge(MicroscopeLaser(**laser_clean))
+            db.merge(Microscope(**parent_clean))
             db.flush()
-            for f in filters:
-                filt_clean, _ = _sanitize_generic(dict(f), set(_MSCOPE_FILTER_FIELDS))
-                if not filt_clean.get("id"):
+            db.execute(
+                MicroscopeLaser.__table__.delete().where(
+                    MicroscopeLaser.microscope_id == parent_clean["id"]
+                )
+            )
+            db.flush()
+            for l in lasers:
+                l = dict(l)
+                filters = l.pop("filters", []) or []
+                laser_clean, _ = _sanitize_generic(l, set(_MSCOPE_LASER_FIELDS))
+                if not laser_clean.get("id"):
                     continue
-                filt_clean["laser_id"] = laser_clean["id"]
-                db.merge(MicroscopeFilter(**filt_clean))
-    db.commit()
-    return {"imported": len(records)}
+                laser_clean["microscope_id"] = parent_clean["id"]
+                db.merge(MicroscopeLaser(**laser_clean))
+                db.flush()
+                for f in filters:
+                    filt_clean, _ = _sanitize_generic(dict(f), set(_MSCOPE_FILTER_FIELDS))
+                    if not filt_clean.get("id"):
+                        continue
+                    filt_clean["laser_id"] = laser_clean["id"]
+                    db.merge(MicroscopeFilter(**filt_clean))
+        db.commit()
+        return {"imported": len(records)}
+    except Exception as exc:
+        db.rollback()
+        logger.exception("microscopes import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Legacy endpoint retained for non-diff callers.
@@ -807,13 +817,18 @@ def import_list_entries_commit(
 ):
     records = payload.get("records", []) or []
     allowed = set(_LIST_ENTRY_FIELDS)
-    for raw in records:
-        clean, _ = _sanitize_generic(dict(raw), allowed)
-        if not clean.get("id"):
-            continue
-        db.merge(ListEntry(**clean))
-    db.commit()
-    return {"imported": len(records)}
+    try:
+        for raw in records:
+            clean, _ = _sanitize_generic(dict(raw), allowed)
+            if not clean.get("id"):
+                continue
+            db.merge(ListEntry(**clean))
+        db.commit()
+        return {"imported": len(records)}
+    except Exception as exc:
+        db.rollback()
+        logger.exception("list-entries import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Legacy endpoint retained for non-diff callers.
@@ -870,13 +885,18 @@ def import_conjugate_chemistries_commit(
 ):
     records = payload.get("records", []) or []
     allowed = set(_CHEMISTRY_FIELDS)
-    for raw in records:
-        clean, _ = _sanitize_generic(dict(raw), allowed)
-        if not clean.get("id"):
-            continue
-        db.merge(ConjugateChemistry(**clean))
-    db.commit()
-    return {"imported": len(records)}
+    try:
+        for raw in records:
+            clean, _ = _sanitize_generic(dict(raw), allowed)
+            if not clean.get("id"):
+                continue
+            db.merge(ConjugateChemistry(**clean))
+        db.commit()
+        return {"imported": len(records)}
+    except Exception as exc:
+        db.rollback()
+        logger.exception("conjugate-chemistries import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Legacy endpoint retained for non-diff callers.
