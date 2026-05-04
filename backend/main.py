@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import stat
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -41,6 +43,43 @@ from routers import tags
 
 logger = logging.getLogger(__name__)
 SEED_DIR = Path(__file__).parent / "seed_data"
+
+
+def _check_db_startup(db_path: Path) -> None:
+    """Raise if DB is missing without LAB_INIT_DB env var.
+
+    Also warns on loose file permissions and logs an error if a stray panels.db
+    exists one level above the expected location (created by running uvicorn
+    from the repo root instead of from backend/).
+    """
+    if not db_path.exists():
+        if not os.environ.get("LAB_INIT_DB"):
+            raise RuntimeError(
+                "panels.db not found at %s. "
+                "Set LAB_INIT_DB=1 to create a fresh database on startup. "
+                "Otherwise, you may be running from the wrong directory — "
+                "uvicorn must be invoked from backend/." % str(db_path)
+            )
+        return
+
+    # Warn if file permissions allow group or other access
+    mode = os.stat(db_path).st_mode
+    if mode & (stat.S_IROTH | stat.S_IWOTH | stat.S_IRGRP | stat.S_IWGRP):
+        logger.warning(
+            "panels.db permissions are %o; consider running: chmod 600 panels.db",
+            mode & 0o777,
+        )
+
+    # Detect stray panels.db one level above (created when uvicorn was run from repo root)
+    stray = (db_path.parent.parent / "panels.db").resolve()
+    if stray != db_path.resolve() and stray.exists():
+        logger.error(
+            "Stray panels.db detected at %s. "
+            "This was likely created by running uvicorn from the repo root. "
+            "Remove it to avoid confusion: rm %s",
+            stray,
+            stray,
+        )
 
 
 def load_seed_data() -> None:
@@ -476,6 +515,7 @@ def migrate_dye_label_targets() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _check_db_startup(Path("panels.db").resolve())
     Base.metadata.create_all(bind=engine)
     migrate_instrument_fields()
     migrate_secondary_binding_mode()
