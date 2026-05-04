@@ -5,6 +5,7 @@ import { Editor } from '@tiptap/core'
 import React from 'react'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
 import { tiptapDocToRows } from '@/blocks-tiptap/adapter/tiptapToDb'
+import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator } from './saveCoordinator'
 
 // ---------------------------------------------------------------------------
@@ -548,6 +549,83 @@ describe('useSaveCoordinator', () => {
     // Don't wait long enough for debounce (20ms) to fire.
     await waitMs(2)
     expect(result.current.status).toBe('dirty')
+    editor.destroy()
+  })
+
+  it('17. no phantom reorder when server sort_orders differ from tiptapDocToRows normalisation', async () => {
+    // Regression test for cK009: server stored sort_order=1.0 but tiptapDocToRows
+    // assigns sort_order=0. Without fix, handleDocChange scheduled a reorder PUT on
+    // every docChanged. With fix, relative order is unchanged → no reorder.
+    const editor = createEditor()
+    editor.view.dispatch(editor.state.tr)
+    await waitMs(5)
+    const tiptapBlocks = tiptapDocToRows(editor.getJSON(), EXP_ID)
+
+    // Simulate server returning same blocks with non-zero sort_order
+    const serverBlocks = tiptapBlocks.map((b) => ({ ...b, sort_order: 1.0 }))
+
+    const { result } = renderHook(
+      () =>
+        useSaveCoordinator({
+          editor,
+          experimentId: EXP_ID,
+          initialBlocks: serverBlocks,
+          debounceMs: 20,
+        }),
+      { wrapper: makeWrapper() }
+    )
+
+    // Simulate editor re-loading content (like useEditor re-creating when loadState
+    // changes to 'ready'). rowsToTiptapDoc embeds block.id as _rowId so IDs are
+    // preserved across setContent, making this a pure sort_order-diff scenario.
+    await act(async () => {
+      editor.commands.setContent(rowsToTiptapDoc(serverBlocks))
+    })
+
+    // Wait longer than the debounce window; any phantom flush would have fired by now.
+    await waitMs(60)
+
+    expect(reorderCalls.length).toBe(0)
+    expect(result.current.status).toBe('idle')
+
+    editor.destroy()
+  })
+
+  it('18. beforeunload not prevented when initial blocks have server sort_orders (no pending changes)', async () => {
+    // Regression: the beforeunload handler must not block navigation when the only
+    // difference between baseline and current is sort_order normalisation.
+    const editor = createEditor()
+    editor.view.dispatch(editor.state.tr)
+    await waitMs(5)
+    const tiptapBlocks = tiptapDocToRows(editor.getJSON(), EXP_ID)
+    const serverBlocks = tiptapBlocks.map((b) => ({ ...b, sort_order: 1.0 }))
+
+    renderHook(
+      () =>
+        useSaveCoordinator({
+          editor,
+          experimentId: EXP_ID,
+          initialBlocks: serverBlocks,
+          debounceMs: 20,
+        }),
+      { wrapper: makeWrapper() }
+    )
+
+    await act(async () => {
+      editor.commands.setContent(rowsToTiptapDoc(serverBlocks))
+    })
+    await waitMs(60)
+
+    const event = new Event('beforeunload', { cancelable: true }) as BeforeUnloadEvent
+    let preventCalled = false
+    const origPreventDefault = event.preventDefault.bind(event)
+    event.preventDefault = () => {
+      preventCalled = true
+      origPreventDefault()
+    }
+    window.dispatchEvent(event)
+    expect(preventCalled).toBe(false)
+
     editor.destroy()
   })
 

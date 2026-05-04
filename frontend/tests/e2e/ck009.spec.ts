@@ -20,8 +20,10 @@ test('1.2 block_count stays 1 across 3 reloads', async ({ page }) => {
   await page.goto(`/experiments/${CK009_ID}`)
   for (let i = 0; i < 3; i++) {
     await page.reload()
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(2000)
+    await expect(page.locator('[data-testid="save-status"]')).toHaveText(
+      'Saved',
+      { timeout: 10000 }
+    )
     expect(dbBlockCount(CK009_ID)).toBe(1)
   }
 })

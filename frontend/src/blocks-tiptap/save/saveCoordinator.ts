@@ -234,7 +234,10 @@ export function useSaveCoordinator(
       }
 
       // Wave 4: single reorder call covering all topology changes.
-      if (diff.topologyChanged.length > 0) {
+      // Defensive guard: a document with fewer than 2 blocks cannot have a
+      // meaningful reorder — skip the PUT to avoid sending phantom updates
+      // when sort_order normalisation is the only difference.
+      if (diff.topologyChanged.length > 0 && snapshot.length >= 2) {
         for (const row of diff.topologyChanged) {
           if (inFlightCreatesRef.current.has(row.id)) {
             await inFlightCreatesRef.current.get(row.id)!

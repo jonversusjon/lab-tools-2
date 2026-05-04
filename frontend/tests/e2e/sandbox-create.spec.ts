@@ -58,7 +58,20 @@ test.describe.serial('sandbox seed content topology', () => {
   })
 
   test('6.1 seed content has correct block topology', async ({ page }) => {
-    await waitForSandboxSaved(page)
+    // beforeAll deletes the sandbox, so this is always a fresh creation.
+    // The save coordinator initialises with an empty baseline, then the
+    // editor fires its first transaction which transitions the status from
+    // idle → dirty → saved. We must wait for that full cycle rather than
+    // stopping at the initial idle="Saved" label.
+    await page.goto('/tiptap-sandbox')
+    await expect(page.locator('[data-testid="save-status"]')).not.toHaveText(
+      'Saved',
+      { timeout: 5000 }
+    )
+    await expect(page.locator('[data-testid="save-status"]')).toHaveText(
+      'Saved',
+      { timeout: 30000 }
+    )
 
     const sandboxId = dbExperimentId(SANDBOX_NAME)
     expect(sandboxId).not.toBeNull()

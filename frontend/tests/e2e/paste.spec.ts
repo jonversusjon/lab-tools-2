@@ -123,7 +123,15 @@ test('4.1 pasted content gets fresh _rowIds not reusing originals', async ({
 test('4.2 paste fires no PUT requests to existing rows', async ({ page }) => {
   await page.goto('/tiptap-sandbox')
 
-  // Wait for initial seed flush
+  // Wait for save-status to appear (element is absent during loading state),
+  // then ride the dirty→saved cycle to ensure the initial flush is complete.
+  await expect(page.locator('[data-testid="save-status"]')).toBeVisible({
+    timeout: 15000,
+  })
+  await expect(page.locator('[data-testid="save-status"]')).not.toHaveText(
+    'Saved',
+    { timeout: 10000 }
+  )
   await expect(page.locator('[data-testid="save-status"]')).toHaveText(
     'Saved',
     { timeout: 30000 }

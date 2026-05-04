@@ -197,6 +197,11 @@ function statusLabel(status: string): { text: string; cls: string } {
         text: 'Saving...',
         cls: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200',
       }
+    case 'saved':
+      return {
+        text: 'Saved',
+        cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+      }
     case 'error':
       return {
         text: 'Save error',

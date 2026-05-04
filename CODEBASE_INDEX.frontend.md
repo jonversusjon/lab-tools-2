@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-04T00:22:37Z
-Commit: 03a3214
+Generated: 2026-05-04T06:41:37Z
+Commit: aa6bb56
 
 ---
 
