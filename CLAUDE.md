@@ -23,11 +23,19 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **Indirect staining PanelAssignment** — when creating a PanelAssignment for indirect staining, COPY `fluorophore_id` from `SecondaryAntibody` — do not reference it.
 - [ ] **Seed data source field mapping** — `fluorophores.json` uses `"source": "gaussian_approximation"` but the model expects `"seed"|"fpbase"|"user"`. The seed loader MUST map `gaussian_approximation` → `"seed"` during import.
 - [ ] **Race condition immunity** — all database writes that read-then-write MUST use a single transaction. No optimistic "check then act" patterns across separate requests. See Race Condition Policy below.
+- [ ] **PRAGMA journal_mode=WAL in connect listener** — WAL persists in the DB header so existing DBs stay in WAL once set, but a fresh DB defaults to DELETE journal mode unless explicitly set on connect. Always set both pragmas in the connect listener (see `database.py`).
 
 ### Routing & API
 - [ ] **No prefix on router files** — prefix is ONLY in `main.py`. If routing is broken, check for accidental `APIRouter(prefix=...)` before anything else.
 - [ ] **Proxy key is `/api` not `/api/v1`** — in `vite.config.ts`. The frontend calls `/api/v1/...`, the proxy strips nothing, it just forwards to port 8000.
 - [ ] **Reorder endpoint** expects ALL target IDs for the panel — validates no missing/extra.
+- [ ] **Every import handler wraps commit loop in explicit `try/except` + `db.rollback()`** — implicit rollback via session teardown is not sufficient for all failure modes.
+- [ ] **Every export handler has a round-trip test** — create entity, export, import to fresh DB, assert every field preserved. Microscope laser fields silently dropped on round-trip for months because this test didn't exist.
+
+### Backup and durability
+- [ ] **Backups use SQLite online backup API, never `cp`** — `cp` races with WAL writers and can produce corrupted snapshots. Use `backend/tools/backup.py` via `make backup`.
+- [ ] **`make backup` is idempotent per-day** — skips if today's snapshot exists; pass `ARGS=--force` to override.
+- [ ] **`backend/backups/` is gitignored** — backups never go into git history.
 
 ### Experiment Page System
 - [ ] **Panel instance blocks are one-way snapshots** — editing a flow_panel or if_panel block on an experiment page does NOT propagate changes back to the template panel. The snapshot is a detached copy.

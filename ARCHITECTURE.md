@@ -540,3 +540,44 @@ The `Experiment → Notion Page` export function will:
 2. Walk blocks in sort_order, converting each to Notion API block format
 3. For panel blocks, flatten to heading + formatted tables
 4. Use the Notion MCP server for actual page creation
+
+---
+
+## Backup and Recovery
+
+`backend/panels.db` is the single source of truth for all user data
+(instruments, antibodies, panels, experiments, etc.).
+
+### Automated snapshots
+
+- Daily snapshots run at server startup (idempotent per-day)
+- Manual snapshots via `make backup`
+- Snapshots use SQLite's online backup API and are gzip-compressed:
+  `backend/backups/panels-YYYY-MM-DD.db.gz`
+- Rotation policy: keep last 14 daily + 4 weekly + 2 monthly
+
+### Restore
+
+```
+make restore PATH=backend/backups/panels-2026-05-04.db.gz
+```
+
+- Refuses to overwrite a live `panels.db` without `ARGS=--force`
+- Runs `PRAGMA integrity_check` after restore
+
+### Recovery without backups
+
+If snapshots are missing, the export endpoints under `/api/v1/export/*`
+serve as a partial escape hatch. Coverage gaps as of this writing:
+
+- Fluorophore + FluorophoreSpectrum tables (~840k rows) have no export
+  endpoint and depend on `fpbase_data/fpbase_spectra_long.parquet` for
+  re-seeding. Phase 4 of the persistence sprint adds a fluorophore export.
+
+### Durability settings
+
+| Setting | Value | Where set |
+|---|---|---|
+| `journal_mode` | `WAL` | `database.py` connect listener (explicit on every connect) |
+| `synchronous` | `FULL` | SQLite default — each write is fsync'd |
+| `foreign_keys` | `ON` | `database.py` connect listener |

@@ -91,6 +91,17 @@ constraints are the source of truth for conflicts; application-level
 checks are for user-friendly error messages only. Always catch
 `IntegrityError` and return 409 for conflicts.
 
+### Explicit `PRAGMA journal_mode=WAL` in connect listener
+WAL mode persists in the DB header, so an existing DB stays in WAL once
+set — but a fresh DB created by `create_all()` defaults to DELETE journal
+mode unless explicitly set on connect. Always set both pragmas in the
+connect listener:
+```python
+cursor.execute("PRAGMA foreign_keys=ON")
+cursor.execute("PRAGMA journal_mode=WAL")
+```
+**Origin:** Persistence sprint Phase 1.
+
 ---
 
 ## FastAPI routing
@@ -102,6 +113,56 @@ paths: `@router.get("/")`, `@router.get("/{id}")`.
 
 If routing breaks, FIRST check for accidental `APIRouter(prefix=...)`
 in a router file before debugging anywhere else.
+
+### All import handlers wrap commit loop in explicit `try/except` + `db.rollback()`
+Implicit rollback via `get_db()` session teardown is not sufficient for
+all failure modes. Every `import_*_commit` handler must follow:
+```python
+try:
+    for item in payload.items:
+        # ... process ...
+    db.commit()
+    return {...}
+except Exception as exc:
+    db.rollback()
+    raise HTTPException(status_code=422, detail=str(exc)) from exc
+```
+Catch `Exception`, not `IntegrityError` only — network, OOM, and
+arbitrary bugs all need rollback. `db.commit()` stays OUTSIDE the loop.
+
+**Origin:** Persistence audit (Section 3 Anomaly 4); fixed in
+Persistence sprint Phase 1.
+
+---
+
+## Export/import round-trip
+
+### Every export handler must round-trip cleanly to a fresh DB
+For every `GET /export/<entity>` handler, there must be a test that:
+1. Creates the entity with all its fields populated
+2. Exports it via the endpoint
+3. Imports the JSON into a fresh DB
+4. Re-fetches and asserts every field round-tripped
+
+A previous gap (microscope laser `excitation_type` / `ex_filter_width`)
+went unnoticed for months because no round-trip test existed.
+
+**Origin:** Persistence audit (Section 3); fixed in Persistence sprint Phase 1.
+
+---
+
+## Backup and durability
+
+### Backups use SQLite online backup API, never `cp`
+With WAL active, `cp` races with writes and produces corrupted snapshots.
+Use Python's `sqlite3.Connection.backup()`. Output format:
+`panels-YYYY-MM-DD.db.gz` in `backend/backups/`.
+
+### Daily snapshots are idempotent per-day
+Skip if today's snapshot exists. `--force` to override.
+Rotation: 14 daily + 4 weekly + 2 monthly retention.
+
+**Origin:** Persistence sprint Phase 1.
 
 ---
 
