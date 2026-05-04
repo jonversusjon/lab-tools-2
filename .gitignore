@@ -11,3 +11,4 @@ dist/
 .vite/
 .vscode/
 fpbase_data/fpbase_spectra_wide.csv
+frontend/test-results/
