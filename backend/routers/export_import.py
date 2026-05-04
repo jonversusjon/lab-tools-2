@@ -628,6 +628,8 @@ def export_microscopes(db: Session = Depends(get_db)):
                 "lasers": [
                     {
                         "id": l.id, "wavelength_nm": l.wavelength_nm, "name": l.name,
+                        "excitation_type": l.excitation_type,
+                        "ex_filter_width": l.ex_filter_width,
                         "filters": [
                             {
                                 "id": f.id, "filter_midpoint": f.filter_midpoint,
