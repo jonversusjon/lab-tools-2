@@ -124,6 +124,27 @@ If FPbase data files aren't present, run the downloader first:
 python download_fpbase_spectra.py   # from repo root
 ```
 
+### Database location
+
+The app reads the SQLite path from the `DATABASE_URL` env var. If unset, defaults to `backend/panels.db`.
+
+For real-work data, use a stable path:
+
+```bash
+export DATABASE_URL=sqlite:///panels-work.db
+cd backend && uvicorn main:app --reload --port 8000
+```
+
+For dev experiments — schema iteration, throwaway data — use a separate DB:
+
+```bash
+export DATABASE_URL=sqlite:///panels-dev.db
+export LAB_INIT_DB=1                # creates the dev DB on first start
+cd backend && uvicorn main:app --reload --port 8001
+```
+
+The two DBs share zero state. Backup, restore, and migrations all respect `DATABASE_URL`.
+
 ### Frontend
 
 ```bash

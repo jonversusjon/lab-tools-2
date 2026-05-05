@@ -178,6 +178,26 @@ Example: `LAB_INIT_DB=1` to permit fresh-DB creation on first run.
 
 **Origin:** Persistence sprint Phase 1, Step 4 (commit `bffa9fb`).
 
+### DB path comes from `DATABASE_URL`, not from a `LAB_` variable
+The SQLAlchemy connection URL is the ecosystem-standard `DATABASE_URL`,
+not a project-specific `LAB_DB_URL`. The `LAB_` prefix is reserved for
+project-specific behavior toggles (e.g. `LAB_INIT_DB=1`); standard
+ecosystem variables keep their canonical names.
+
+Default when unset: `sqlite:///panels.db` (CWD-relative; the Phase 1
+startup check refuses to start from the wrong CWD).
+
+SQLite URL slash gotcha: 3 slashes = relative, 4 slashes = absolute,
+2 slashes = in-memory. Use `sqlite:////absolute/path/panels.db` for
+absolute paths.
+
+The helper functions `get_db_url()` and `get_db_path()` in `database.py`
+are the single source of truth for parsing `DATABASE_URL`. All touch
+points (`main.py`, `seed_fpbase.py`, `tools/backup.py`) import and use
+these helpers — do not duplicate the URL-parsing logic.
+
+**Origin:** Persistence sprint Phase 2.
+
 ---
 
 ## Project layout
