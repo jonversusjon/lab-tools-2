@@ -19,7 +19,10 @@ import models  # noqa: F401, E402  # populate Base.metadata
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # disable_existing_loggers=True (the default) wipes loggers configured
+    # outside Alembic — including pytest's caplog handlers when env.py runs
+    # under tests. Keep existing loggers intact.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # Resolve URL from DATABASE_URL at runtime; alembic.ini intentionally leaves it blank.
 config.set_main_option("sqlalchemy.url", get_db_url())
