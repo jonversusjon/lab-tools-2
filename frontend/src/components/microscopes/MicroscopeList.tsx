@@ -1,38 +1,33 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   useMicroscopes,
   useUpdateMicroscope,
   useDeleteMicroscope,
-  useImportMicroscope,
   useToggleMicroscopeFavorite,
 } from '@/hooks/useMicroscopes'
 import { exportMicroscope } from '@/api/microscopes'
+import { previewImport, readImportFile, type ImportPreviewResponse } from '@/api/exportImport'
 import Modal from '@/components/layout/Modal'
 import HoverActionsRow from '@/components/layout/HoverActionsRow'
 import FavoriteButton from '@/components/antibodies/FavoriteButton'
+import NestedImportDiffModal from '@/components/shared/NestedImportDiffModal'
 import type { MicroscopeCreate } from '@/types'
-
-interface ImportProgress {
-  total: number
-  done: number
-  errors: string[]
-}
 
 export default function MicroscopeList() {
   const { data, isLoading, error } = useMicroscopes()
   const updateMutation = useUpdateMicroscope()
   const deleteMutation = useDeleteMicroscope()
-  const importMutation = useImportMicroscope()
   const favoriteMutation = useToggleMicroscopeFavorite()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const dragCounterRef = useRef(0)
 
   const [editingMicroscope, setEditingMicroscope] = useState<{id: string, name: string} | null>(null)
   const [renameValue, setRenameValue] = useState('')
-  const [isDragOver, setIsDragOver] = useState(false)
-  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null)
+  const [importPreview, setImportPreview] = useState<ImportPreviewResponse<Record<string, unknown>> | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
+  const [importSuccessMsg, setImportSuccessMsg] = useState<string | null>(null)
 
   // Filter state
   const [search, setSearch] = useState('')
@@ -130,124 +125,27 @@ export default function MicroscopeList() {
     }
   }
 
-  const runImport = useCallback(
-    (files: FileList | File[]) => {
-      const fileArray = Array.from(files).filter((f) => f.name.endsWith('.json'))
-      if (fileArray.length === 0) {
-        setImportProgress({ total: 0, done: 0, errors: ['No .json files found.'] })
-        return
-      }
-
-      const progress: ImportProgress = { total: fileArray.length, done: 0, errors: [] }
-      setImportProgress({ ...progress })
-
-      for (const file of fileArray) {
-        const reader = new FileReader()
-        reader.onload = (ev) => {
-          const finish = (errMsg?: string) => {
-            setImportProgress((prev) => {
-              if (!prev) return prev
-              const errors = errMsg ? [...prev.errors, errMsg] : prev.errors
-              return { ...prev, done: prev.done + 1, errors }
-            })
-          }
-
-          try {
-            const raw = JSON.parse(ev.target?.result as string)
-            if (raw && typeof raw === 'object' && raw.resource === 'microscopes' && Array.isArray(raw.records)) {
-              finish(file.name + ': bulk export file — use Settings → Import to import this file with conflict detection')
-              return
-            }
-            const parsed = raw as MicroscopeCreate
-            if (!parsed.name || !Array.isArray(parsed.lasers)) {
-              finish(file.name + ': missing name or lasers array')
-              return
-            }
-            importMutation.mutate(parsed, {
-              onSuccess: () => finish(),
-              onError: () => finish(file.name + ': server rejected import'),
-            })
-          } catch {
-            finish(file.name + ': invalid JSON')
-          }
-        }
-        reader.readAsText(file)
-      }
-    },
-    [importMutation]
-  )
-
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-    runImport(files)
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
     e.target.value = ''
+    setImportError(null)
+    setImportSuccessMsg(null)
+    try {
+      const payload = await readImportFile(file)
+      const preview = await previewImport('microscopes', payload)
+      setImportPreview(preview)
+      setImportModalOpen(true)
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Failed to read import file.')
+    }
   }
-
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
-    if (e.dataTransfer.types.includes('Files')) setIsDragOver(true)
-  }, [])
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
-    if (dragCounterRef.current === 0) setIsDragOver(false)
-  }, [])
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounterRef.current = 0
-      setIsDragOver(false)
-      if (e.dataTransfer.files.length > 0) runImport(e.dataTransfer.files)
-    },
-    [runImport]
-  )
-
-  const importDone = importProgress !== null && importProgress.done === importProgress.total
-  const importSucceeded = importDone ? importProgress.done - importProgress.errors.length : 0
-  const progressPct = importProgress && importProgress.total > 0
-    ? Math.round((importProgress.done / importProgress.total) * 100)
-    : 0
 
   if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading microscopes...</p>
   if (error) return <p className="text-red-600">Failed to load microscopes.</p>
 
   return (
-    <div
-      className="relative min-h-full"
-      onDragEnter={handleDragEnter}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {/* Drag-over overlay */}
-      {isDragOver && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg border-2 border-dashed border-blue-400 bg-blue-50/85 dark:bg-blue-900/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3 text-center">
-            <svg className="h-14 w-14 text-blue-500 dark:text-blue-400 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16V4m0 0l-4 4m4-4l4 4M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" />
-            </svg>
-            <p className="text-xl font-semibold text-blue-700 dark:text-blue-200">
-              Drop microscope configs here to add new microscopes
-            </p>
-            <p className="text-sm text-blue-500 dark:text-blue-400">
-              Accepts one or more .json microscope configuration files
-            </p>
-          </div>
-        </div>
-      )}
-
+    <div className="relative min-h-full">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold dark:text-gray-100">Microscopes</h1>
@@ -256,12 +154,11 @@ export default function MicroscopeList() {
             ref={fileInputRef}
             type="file"
             accept=".json"
-            multiple
             onChange={handleImportFile}
             className="hidden"
           />
           <button
-            onClick={() => { setImportProgress(null); fileInputRef.current?.click() }}
+            onClick={() => { setImportError(null); setImportSuccessMsg(null); fileInputRef.current?.click() }}
             className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Import
@@ -275,65 +172,17 @@ export default function MicroscopeList() {
         </div>
       </div>
 
-      {/* Import progress */}
-      {importProgress !== null && (
-        <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${
-          importDone && importProgress.errors.length === 0
-            ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
-            : importDone && importProgress.errors.length > 0 && importSucceeded === 0
-              ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-              : 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20'
-        }`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className={`font-medium ${
-              importDone && importProgress.errors.length === 0
-                ? 'text-green-700 dark:text-green-300'
-                : importDone && importSucceeded === 0
-                  ? 'text-red-700 dark:text-red-300'
-                  : 'text-blue-700 dark:text-blue-300'
-            }`}>
-              {!importDone
-                ? 'Importing ' + importProgress.total + (importProgress.total === 1 ? ' file' : ' files') + '…'
-                : importProgress.errors.length === 0
-                  ? 'Imported ' + importSucceeded + (importSucceeded === 1 ? ' microscope' : ' microscopes') + ' successfully'
-                  : importSucceeded > 0
-                    ? importSucceeded + ' imported, ' + importProgress.errors.length + ' failed'
-                    : 'Import failed — ' + importProgress.errors.length + (importProgress.errors.length === 1 ? ' error' : ' errors')}
-            </span>
-            {importDone && (
-              <button
-                onClick={() => setImportProgress(null)}
-                className="ml-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                Dismiss
-              </button>
-            )}
-          </div>
-          {/* Progress bar */}
-          <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                importDone && importProgress.errors.length === 0
-                  ? 'bg-green-500'
-                  : importDone && importSucceeded === 0
-                    ? 'bg-red-500'
-                    : importDone
-                      ? 'bg-amber-500'
-                      : 'bg-blue-500'
-              }`}
-              style={{ width: progressPct + '%' }}
-            />
-          </div>
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {importProgress.done} / {importProgress.total} processed
-          </div>
-          {importProgress.errors.length > 0 && (
-            <ul className="mt-2 space-y-0.5">
-              {importProgress.errors.map((err, i) => (
-                <li key={i} className="text-xs text-red-600 dark:text-red-400">{err}</li>
-              ))}
-            </ul>
-          )}
+      {importError && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+          <span>{importError}</span>
+          <button onClick={() => setImportError(null)} className="ml-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Dismiss</button>
+        </div>
+      )}
+
+      {importSuccessMsg && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-sm text-green-700 dark:text-green-300">
+          <span>{importSuccessMsg}</span>
+          <button onClick={() => setImportSuccessMsg(null)} className="ml-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Dismiss</button>
         </div>
       )}
 
@@ -412,7 +261,7 @@ export default function MicroscopeList() {
           </svg>
           <p className="text-gray-500 dark:text-gray-400">No microscopes yet.</p>
           <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
-            Drag and drop .json files here or click Import above.
+            Click Import above or New Microscope to get started.
           </p>
         </div>
       ) : filtered.length === 0 ? (
@@ -540,6 +389,24 @@ export default function MicroscopeList() {
           </div>
         </div>
       </Modal>
+
+      {/* Import preview/commit wizard */}
+      <NestedImportDiffModal
+        isOpen={importModalOpen}
+        preview={importPreview}
+        resource="microscopes"
+        title="Import Microscopes"
+        childKeys={['lasers']}
+        labelFor={(r) => String(r.name ?? '')}
+        onClose={() => { setImportModalOpen(false); setImportPreview(null) }}
+        onCompleted={({ imported }) => {
+          setImportModalOpen(false)
+          setImportPreview(null)
+          setImportSuccessMsg(
+            'Imported ' + imported + ' microscope' + (imported === 1 ? '' : 's') + '.'
+          )
+        }}
+      />
     </div>
   )
 }
