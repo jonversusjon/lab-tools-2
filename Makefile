@@ -1,4 +1,4 @@
-.PHONY: index check-index backup restore list-backups
+.PHONY: index check-index backup restore list-backups alembic-revision alembic-upgrade
 
 # Regenerate CODEBASE_INDEX.md (and the .backend.md / .frontend.md partials).
 # Run after any change to models.py, schemas.py, routers/*.py, or frontend/src/**/*.ts(x).
@@ -27,3 +27,13 @@ restore:
 # List all snapshots in backend/backups/ with size, date, and retention classification.
 list-backups:
 	@python backend/tools/backup.py list
+
+# Generate a new Alembic migration via autogenerate. MSG is required.
+#   make alembic-revision MSG="add foo column to bar"
+alembic-revision:
+	@test -n "$(MSG)" || (echo "MSG is required: make alembic-revision MSG=\"description\"" && exit 1)
+	cd backend && alembic revision --autogenerate -m "$(MSG)"
+
+# Apply all pending Alembic migrations to the configured DATABASE_URL.
+alembic-upgrade:
+	cd backend && alembic upgrade head

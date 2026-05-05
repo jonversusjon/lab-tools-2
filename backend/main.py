@@ -7,6 +7,9 @@ import stat
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
@@ -489,6 +492,23 @@ def seed_dye_labels_if_needed() -> None:
         session.close()
 
 
+def _run_alembic_upgrade() -> None:
+    """Stamp the DB at HEAD if missing (fresh or adopted DB), then upgrade head.
+
+    Stamp is gated on `alembic_version` table being absent. Stamping a DB that's
+    already at a different revision corrupts version state, so the absent-table
+    check is the safety guard.
+    """
+    alembic_cfg = Config(str(Path(__file__).parent / "alembic.ini"))
+    with engine.connect() as conn:
+        ctx = MigrationContext.configure(conn)
+        current_rev = ctx.get_current_revision()
+    if current_rev is None:
+        logger.info("alembic_version table missing — stamping at HEAD")
+        command.stamp(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "head")
+
+
 def migrate_dye_label_targets() -> None:
     """One-time migration: add dye_label_id to panel_targets, if_panel_targets, panel_assignments, if_panel_assignments."""
     session = SessionLocal()
@@ -522,6 +542,7 @@ async def lifespan(app: FastAPI):
     migrate_secondary_binding_mode()
     migrate_microscope_excitation()
     migrate_dye_label_targets()
+    _run_alembic_upgrade()
     load_seed_data()
     seed_fluorophores_if_needed()
     seed_non_fluorescent_conjugates()
