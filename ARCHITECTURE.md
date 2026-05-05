@@ -543,6 +543,74 @@ The `Experiment → Notion Page` export function will:
 
 ---
 
+## Schema Migrations
+
+Schema changes go through Alembic. The baseline migration captures the
+schema as of commit `ebeec67`; subsequent changes are versioned as
+separate migration files in `backend/alembic/versions/`.
+
+### Developer workflow for schema changes
+
+1. Edit the model in `backend/models.py`
+2. From the repo root: `make alembic-revision MSG="describe the change"`
+   (this runs `alembic revision --autogenerate` from `backend/`)
+3. Review the generated file in `backend/alembic/versions/`
+4. Hand-correct anything autogenerate missed (server defaults, check
+   constraints, custom types — see Phase 3 baseline review notes)
+5. Test locally: `make alembic-upgrade` against a copy of your DB
+6. Commit the migration file alongside the model change in the same commit
+
+### Coexistence with legacy `migrate_*()` functions
+
+`backend/main.py` retains 4 hand-rolled column-additive migrations
+(`migrate_instrument_fields`, `migrate_secondary_binding_mode`,
+`migrate_microscope_excitation`, `migrate_dye_label_targets`) and 1 data
+migration (`migrate_dilution_factors`) that run before Alembic in the
+lifespan. These exist to bring DBs that predate Alembic to the baseline
+schema. New schema changes do NOT use this pattern — they go through
+Alembic.
+
+A future Phase 3.5 will retire the schema migrate_*() functions once
+all known DBs have been Alembic-stamped.
+
+### Adoption flow
+
+The first time the app starts against a DB that has no `alembic_version`
+table, the lifespan runs `alembic stamp head` to mark the DB as being at
+the baseline. Subsequent startups run only `alembic upgrade head`, which
+is a no-op when no new migrations have been added.
+
+Fresh DBs (`LAB_INIT_DB=1`) follow the same flow: `Base.metadata.create_all`
+creates tables, the migrate_*() functions are no-ops on the new tables,
+and Alembic stamps at the baseline.
+
+### Test infrastructure
+
+Tests use in-memory SQLite with `Base.metadata.create_all()`. Tests
+deliberately do NOT use Alembic. The test
+`test_alembic_baseline_matches_create_all` enforces that the two paths
+produce identical schemas — if it fails, either Alembic or the test is
+wrong, never both.
+
+### Generating migrations: connect to the *previous* schema state
+
+`alembic revision --autogenerate` compares the connected DB's schema
+against your models and emits the diff. The connection target matters:
+
+- **Capturing a baseline:** connect to an empty DB
+  (`DATABASE_URL=sqlite:////tmp/baseline.db`). All models become
+  `op.create_table(...)` calls.
+- **Capturing an incremental change:** connect to a DB already at the
+  previous baseline state. Only the diff (your model edit) becomes the
+  migration.
+
+Connecting to a DB whose schema *already matches* your models will
+produce an empty migration. If autogenerate generates an empty file
+when you expected changes, your DB is too new — connect to one at the
+previous state.
+
+---
+
 ## Backup and Recovery
 
 `backend/panels.db` is the single source of truth for all user data

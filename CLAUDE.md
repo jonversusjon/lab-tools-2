@@ -24,6 +24,9 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **Seed data source field mapping** — `fluorophores.json` uses `"source": "gaussian_approximation"` but the model expects `"seed"|"fpbase"|"user"`. The seed loader MUST map `gaussian_approximation` → `"seed"` during import.
 - [ ] **Race condition immunity** — all database writes that read-then-write MUST use a single transaction. No optimistic "check then act" patterns across separate requests. See Race Condition Policy below.
 - [ ] **PRAGMA journal_mode=WAL in connect listener** — WAL persists in the DB header so existing DBs stay in WAL once set, but a fresh DB defaults to DELETE journal mode unless explicitly set on connect. Always set both pragmas in the connect listener (see `database.py`).
+- [ ] **Schema changes go through Alembic** — `make alembic-revision MSG="..."`, review the generated file, commit migration alongside the model change. Do NOT add new `migrate_*()` functions to `main.py` — those are legacy.
+- [ ] **`alembic stamp head` only when alembic_version table is missing** — stamping a DB at a different revision corrupts version tracking. The lifespan has a guard; new code that touches Alembic must preserve it.
+- [ ] **`test_alembic_baseline_matches_create_all` must pass before merge** — if Alembic and create_all() drift, fix one of them; the test is the contract.
 
 ### Routing & API
 - [ ] **No prefix on router files** — prefix is ONLY in `main.py`. If routing is broken, check for accidental `APIRouter(prefix=...)` before anything else.

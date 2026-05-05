@@ -145,6 +145,24 @@ cd backend && uvicorn main:app --reload --port 8001
 
 The two DBs share zero state. Backup, restore, and migrations all respect `DATABASE_URL`.
 
+### Schema changes
+
+After editing a model:
+
+```bash
+make alembic-revision MSG="add foo column to bar"
+```
+
+Review the generated migration in `backend/alembic/versions/` (autogenerate
+isn't perfect — check FK ondelete rules, indexes, and constraints).
+Then test:
+
+```bash
+make alembic-upgrade
+```
+
+Commit the migration file with the model change.
+
 ### Frontend
 
 ```bash

@@ -200,6 +200,48 @@ these helpers — do not duplicate the URL-parsing logic.
 
 ---
 
+## Schema migrations
+
+### New schema changes go through Alembic, not `migrate_*()`
+Edit the model, then `make alembic-revision MSG="..."`. Review the
+generated migration manually before committing — autogenerate has known
+blind spots (check constraints, server defaults, some index types).
+The migration file goes in the same commit as the model change.
+
+### Don't add new `migrate_*()` functions to main.py
+The 4 schema and 1 data migrate_*() functions in main.py are legacy
+from before Alembic adoption (Phase 3 of the persistence sprint). They
+will be retired in Phase 3.5. Until then, they bring older DBs to the
+Alembic baseline schema. Adding new ones is forbidden — use Alembic.
+
+### `alembic stamp head` only on DBs without alembic_version table
+Stamping a DB that's already at a different revision corrupts the
+version state. The lifespan code uses
+`MigrationContext.get_current_revision() is None` to gate the stamp.
+
+### Test schema fidelity is enforced
+`test_alembic_baseline_matches_create_all` diffs the schema produced
+by `alembic upgrade head` against `Base.metadata.create_all()` (via
+SQLAlchemy Inspector, ordering-independent). They must be identical.
+If a future migration drifts the two, this test catches it.
+
+### `render_as_batch=True` for SQLite migrations
+SQLite does not support most `ALTER TABLE` operations natively (drop
+column, change type, change constraints). Alembic's "batch mode"
+emulates these by recreating the table. Without `render_as_batch=True`
+in `alembic/env.py`, future migrations that touch existing columns will
+fail at apply time. The setting is in both online and offline migration
+paths.
+
+### `fileConfig(disable_existing_loggers=False)` in `alembic/env.py`
+The default wipes pytest's caplog handlers when env.py runs under
+tests, breaking unrelated log-assertion tests. Always pass
+`disable_existing_loggers=False`.
+
+**Origin:** Persistence sprint Phase 3.
+
+---
+
 ## Project layout
 
 ### `backend/` is the Python project root, not a package
