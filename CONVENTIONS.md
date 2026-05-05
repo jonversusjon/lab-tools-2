@@ -166,6 +166,39 @@ Rotation: 14 daily + 4 weekly + 2 monthly retention.
 
 ---
 
+## Configuration & runtime
+
+### Configuration toggles use env vars, not CLI flags
+The FastAPI app is invoked under `uvicorn`, which owns the CLI surface
+and rejects unknown arguments. App-level configuration toggles must be
+environment variables, not `sys.argv` flags. Variables prefixed `LAB_`
+to namespace away from FastAPI/uvicorn/SQLAlchemy/Pydantic variables.
+
+Example: `LAB_INIT_DB=1` to permit fresh-DB creation on first run.
+
+**Origin:** Persistence sprint Phase 1, Step 4 (commit `bffa9fb`).
+
+---
+
+## Project layout
+
+### `backend/` is the Python project root, not a package
+There is no `backend/__init__.py`. The convention is to invoke Python
+tools with `backend/` as the CWD:
+
+```bash
+cd backend && python tools/backup.py
+```
+
+Sub-packages (`backend/tools/`, `backend/routers/`, `backend/tests/`)
+DO have `__init__.py` files because they're imported as packages from
+within `backend/`. The Makefile follows this convention — every backend
+target switches CWD to `backend/` first.
+
+**Origin:** Persistence sprint Phase 1 anomaly (commit `2dd4b3e`).
+
+---
+
 ## Frontend test patterns
 
 ### Mock `react-chartjs-2` in vitest
