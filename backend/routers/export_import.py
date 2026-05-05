@@ -1044,67 +1044,72 @@ def import_flow_panels_commit(
     nulled_target_antibodies = 0
     nulled_dye_labels = 0
 
-    for rec in records:
-        rec = dict(rec)
-        targets = rec.pop("targets", []) or []
-        assignments = rec.pop("assignments", []) or []
-        rec.pop("created_at", None); rec.pop("updated_at", None)
-        parent_clean, _ = _sanitize_generic(rec, set(_FLOW_PANEL_FIELDS))
-        if not parent_clean.get("id"):
-            continue
-        if parent_clean.get("instrument_id") and parent_clean["instrument_id"] not in existing_instruments:
-            parent_clean["instrument_id"] = None
-            nulled_instruments += 1
-        db.merge(Panel(**parent_clean))
-        db.flush()
-        # Wipe existing children (cascade handles it, but explicit delete is safer in case of stale session).
-        db.execute(PanelAssignment.__table__.delete().where(PanelAssignment.panel_id == parent_clean["id"]))
-        db.execute(PanelTarget.__table__.delete().where(PanelTarget.panel_id == parent_clean["id"]))
-        db.flush()
+    try:
+        for rec in records:
+            rec = dict(rec)
+            targets = rec.pop("targets", []) or []
+            assignments = rec.pop("assignments", []) or []
+            rec.pop("created_at", None); rec.pop("updated_at", None)
+            parent_clean, _ = _sanitize_generic(rec, set(_FLOW_PANEL_FIELDS))
+            if not parent_clean.get("id"):
+                continue
+            if parent_clean.get("instrument_id") and parent_clean["instrument_id"] not in existing_instruments:
+                parent_clean["instrument_id"] = None
+                nulled_instruments += 1
+            db.merge(Panel(**parent_clean))
+            db.flush()
+            # Wipe existing children (cascade handles it, but explicit delete is safer in case of stale session).
+            db.execute(PanelAssignment.__table__.delete().where(PanelAssignment.panel_id == parent_clean["id"]))
+            db.execute(PanelTarget.__table__.delete().where(PanelTarget.panel_id == parent_clean["id"]))
+            db.flush()
 
-        for t in targets:
-            t = dict(t)
-            t_clean, _ = _sanitize_generic(t, set(_FLOW_TARGET_FIELDS))
-            if not t_clean.get("id"):
-                continue
-            if t_clean.get("antibody_id") and t_clean["antibody_id"] not in existing_antibodies:
-                t_clean["antibody_id"] = None
-                nulled_target_antibodies += 1
-            if t_clean.get("secondary_antibody_id") and t_clean["secondary_antibody_id"] not in existing_secondaries:
-                t_clean["secondary_antibody_id"] = None
-                nulled_secondaries += 1
-            if t_clean.get("dye_label_id") and t_clean["dye_label_id"] not in existing_dye_labels:
-                t_clean["dye_label_id"] = None
-                nulled_dye_labels += 1
-            t_clean["panel_id"] = parent_clean["id"]
-            db.merge(PanelTarget(**t_clean))
+            for t in targets:
+                t = dict(t)
+                t_clean, _ = _sanitize_generic(t, set(_FLOW_TARGET_FIELDS))
+                if not t_clean.get("id"):
+                    continue
+                if t_clean.get("antibody_id") and t_clean["antibody_id"] not in existing_antibodies:
+                    t_clean["antibody_id"] = None
+                    nulled_target_antibodies += 1
+                if t_clean.get("secondary_antibody_id") and t_clean["secondary_antibody_id"] not in existing_secondaries:
+                    t_clean["secondary_antibody_id"] = None
+                    nulled_secondaries += 1
+                if t_clean.get("dye_label_id") and t_clean["dye_label_id"] not in existing_dye_labels:
+                    t_clean["dye_label_id"] = None
+                    nulled_dye_labels += 1
+                t_clean["panel_id"] = parent_clean["id"]
+                db.merge(PanelTarget(**t_clean))
 
-        for a in assignments:
-            a = dict(a)
-            a_clean, _ = _sanitize_generic(a, set(_FLOW_ASSIGNMENT_FIELDS))
-            if not a_clean.get("id"):
-                skipped_assignments += 1
-                continue
-            # Hard FKs: must exist or skip the row.
-            if a_clean.get("fluorophore_id") not in existing_fluors or a_clean.get("detector_id") not in existing_detectors:
-                skipped_assignments += 1
-                continue
-            if a_clean.get("antibody_id") and a_clean["antibody_id"] not in existing_antibodies:
-                a_clean["antibody_id"] = None
-            if a_clean.get("dye_label_id") and a_clean["dye_label_id"] not in existing_dye_labels:
-                a_clean["dye_label_id"] = None
-                nulled_dye_labels += 1
-            a_clean["panel_id"] = parent_clean["id"]
-            db.merge(PanelAssignment(**a_clean))
-    db.commit()
-    return {
-        "imported": len(records),
-        "nulled_instrument_refs": nulled_instruments,
-        "skipped_assignments": skipped_assignments,
-        "nulled_secondary_refs": nulled_secondaries,
-        "nulled_target_antibody_refs": nulled_target_antibodies,
-        "nulled_dye_label_refs": nulled_dye_labels,
-    }
+            for a in assignments:
+                a = dict(a)
+                a_clean, _ = _sanitize_generic(a, set(_FLOW_ASSIGNMENT_FIELDS))
+                if not a_clean.get("id"):
+                    skipped_assignments += 1
+                    continue
+                # Hard FKs: must exist or skip the row.
+                if a_clean.get("fluorophore_id") not in existing_fluors or a_clean.get("detector_id") not in existing_detectors:
+                    skipped_assignments += 1
+                    continue
+                if a_clean.get("antibody_id") and a_clean["antibody_id"] not in existing_antibodies:
+                    a_clean["antibody_id"] = None
+                if a_clean.get("dye_label_id") and a_clean["dye_label_id"] not in existing_dye_labels:
+                    a_clean["dye_label_id"] = None
+                    nulled_dye_labels += 1
+                a_clean["panel_id"] = parent_clean["id"]
+                db.merge(PanelAssignment(**a_clean))
+        db.commit()
+        return {
+            "imported": len(records),
+            "nulled_instrument_refs": nulled_instruments,
+            "skipped_assignments": skipped_assignments,
+            "nulled_secondary_refs": nulled_secondaries,
+            "nulled_target_antibody_refs": nulled_target_antibodies,
+            "nulled_dye_label_refs": nulled_dye_labels,
+        }
+    except Exception as exc:
+        db.rollback()
+        logger.exception("flow_panels import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Legacy endpoint retained for non-diff callers.
@@ -1259,70 +1264,75 @@ def import_if_panels_commit(
     nulled_target_antibodies = 0
     nulled_dye_labels = 0
 
-    for rec in records:
-        rec = dict(rec)
-        targets = rec.pop("targets", []) or []
-        assignments = rec.pop("assignments", []) or []
-        rec.pop("created_at", None); rec.pop("updated_at", None)
-        parent_clean, _ = _sanitize_generic(rec, set(_IF_PANEL_FIELDS))
-        if not parent_clean.get("id"):
-            continue
-        if parent_clean.get("microscope_id") and parent_clean["microscope_id"] not in existing_microscopes:
-            parent_clean["microscope_id"] = None
-            nulled_microscopes += 1
-        db.merge(IFPanel(**parent_clean))
-        db.flush()
-        db.execute(IFPanelAssignment.__table__.delete().where(IFPanelAssignment.panel_id == parent_clean["id"]))
-        db.execute(IFPanelTarget.__table__.delete().where(IFPanelTarget.panel_id == parent_clean["id"]))
-        db.flush()
+    try:
+        for rec in records:
+            rec = dict(rec)
+            targets = rec.pop("targets", []) or []
+            assignments = rec.pop("assignments", []) or []
+            rec.pop("created_at", None); rec.pop("updated_at", None)
+            parent_clean, _ = _sanitize_generic(rec, set(_IF_PANEL_FIELDS))
+            if not parent_clean.get("id"):
+                continue
+            if parent_clean.get("microscope_id") and parent_clean["microscope_id"] not in existing_microscopes:
+                parent_clean["microscope_id"] = None
+                nulled_microscopes += 1
+            db.merge(IFPanel(**parent_clean))
+            db.flush()
+            db.execute(IFPanelAssignment.__table__.delete().where(IFPanelAssignment.panel_id == parent_clean["id"]))
+            db.execute(IFPanelTarget.__table__.delete().where(IFPanelTarget.panel_id == parent_clean["id"]))
+            db.flush()
 
-        for t in targets:
-            t = dict(t)
-            t_clean, _ = _sanitize_generic(t, set(_IF_TARGET_FIELDS))
-            if not t_clean.get("id"):
-                continue
-            if t_clean.get("antibody_id") and t_clean["antibody_id"] not in existing_antibodies:
-                t_clean["antibody_id"] = None
-                nulled_target_antibodies += 1
-            if t_clean.get("secondary_antibody_id") and t_clean["secondary_antibody_id"] not in existing_secondaries:
-                t_clean["secondary_antibody_id"] = None
-                nulled_secondaries += 1
-            if t_clean.get("dye_label_id") and t_clean["dye_label_id"] not in existing_dye_labels:
-                t_clean["dye_label_id"] = None
-                nulled_dye_labels += 1
-            t_clean["panel_id"] = parent_clean["id"]
-            db.merge(IFPanelTarget(**t_clean))
+            for t in targets:
+                t = dict(t)
+                t_clean, _ = _sanitize_generic(t, set(_IF_TARGET_FIELDS))
+                if not t_clean.get("id"):
+                    continue
+                if t_clean.get("antibody_id") and t_clean["antibody_id"] not in existing_antibodies:
+                    t_clean["antibody_id"] = None
+                    nulled_target_antibodies += 1
+                if t_clean.get("secondary_antibody_id") and t_clean["secondary_antibody_id"] not in existing_secondaries:
+                    t_clean["secondary_antibody_id"] = None
+                    nulled_secondaries += 1
+                if t_clean.get("dye_label_id") and t_clean["dye_label_id"] not in existing_dye_labels:
+                    t_clean["dye_label_id"] = None
+                    nulled_dye_labels += 1
+                t_clean["panel_id"] = parent_clean["id"]
+                db.merge(IFPanelTarget(**t_clean))
 
-        for a in assignments:
-            a = dict(a)
-            a_clean, _ = _sanitize_generic(a, set(_IF_ASSIGNMENT_FIELDS))
-            if not a_clean.get("id"):
-                skipped_assignments += 1
-                continue
-            # fluorophore_id is required; filter_id is nullable.
-            if a_clean.get("fluorophore_id") not in existing_fluors:
-                skipped_assignments += 1
-                continue
-            if a_clean.get("filter_id") and a_clean["filter_id"] not in existing_filters:
-                a_clean["filter_id"] = None
-                nulled_filters += 1
-            if a_clean.get("antibody_id") and a_clean["antibody_id"] not in existing_antibodies:
-                a_clean["antibody_id"] = None
-            if a_clean.get("dye_label_id") and a_clean["dye_label_id"] not in existing_dye_labels:
-                a_clean["dye_label_id"] = None
-                nulled_dye_labels += 1
-            a_clean["panel_id"] = parent_clean["id"]
-            db.merge(IFPanelAssignment(**a_clean))
-    db.commit()
-    return {
-        "imported": len(records),
-        "nulled_microscope_refs": nulled_microscopes,
-        "skipped_assignments": skipped_assignments,
-        "nulled_filter_refs": nulled_filters,
-        "nulled_secondary_refs": nulled_secondaries,
-        "nulled_target_antibody_refs": nulled_target_antibodies,
-        "nulled_dye_label_refs": nulled_dye_labels,
-    }
+            for a in assignments:
+                a = dict(a)
+                a_clean, _ = _sanitize_generic(a, set(_IF_ASSIGNMENT_FIELDS))
+                if not a_clean.get("id"):
+                    skipped_assignments += 1
+                    continue
+                # fluorophore_id is required; filter_id is nullable.
+                if a_clean.get("fluorophore_id") not in existing_fluors:
+                    skipped_assignments += 1
+                    continue
+                if a_clean.get("filter_id") and a_clean["filter_id"] not in existing_filters:
+                    a_clean["filter_id"] = None
+                    nulled_filters += 1
+                if a_clean.get("antibody_id") and a_clean["antibody_id"] not in existing_antibodies:
+                    a_clean["antibody_id"] = None
+                if a_clean.get("dye_label_id") and a_clean["dye_label_id"] not in existing_dye_labels:
+                    a_clean["dye_label_id"] = None
+                    nulled_dye_labels += 1
+                a_clean["panel_id"] = parent_clean["id"]
+                db.merge(IFPanelAssignment(**a_clean))
+        db.commit()
+        return {
+            "imported": len(records),
+            "nulled_microscope_refs": nulled_microscopes,
+            "skipped_assignments": skipped_assignments,
+            "nulled_filter_refs": nulled_filters,
+            "nulled_secondary_refs": nulled_secondaries,
+            "nulled_target_antibody_refs": nulled_target_antibodies,
+            "nulled_dye_label_refs": nulled_dye_labels,
+        }
+    except Exception as exc:
+        db.rollback()
+        logger.exception("if_panels import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 # Legacy endpoint retained for non-diff callers.

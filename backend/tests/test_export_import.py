@@ -7,11 +7,13 @@ import pytest
 from sqlalchemy import select
 
 from models import ConjugateChemistry
+from models import IFPanel
 from models import Instrument
 from models import ListEntry
 from models import Microscope
 from models import MicroscopeFilter
 from models import MicroscopeLaser
+from models import Panel
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -238,4 +240,60 @@ def test_import_conjugate_chemistries_commit_rolls_back_on_error(client, db_sess
     result = db_session.scalar(
         select(ConjugateChemistry).where(ConjugateChemistry.id == "cc-rollback-1")
     )
+    assert result is None, "first record must be rolled back on exception"
+
+
+def test_import_flow_panels_commit_rolls_back_on_error(client, db_session, monkeypatch):
+    """Mid-loop exception in import_flow_panels_commit triggers full rollback."""
+    calls: list = []
+    real_merge = db_session.merge
+
+    def failing_merge(instance):
+        calls.append(instance)
+        if len(calls) >= 2:
+            raise Exception("Injected failure on second merge")
+        return real_merge(instance)
+
+    monkeypatch.setattr(db_session, "merge", failing_merge)
+
+    payload = {
+        "records": [
+            {"id": "fp-rollback-1", "name": "First Flow Panel", "targets": [], "assignments": []},
+            {"id": "fp-rollback-2", "name": "Second Flow Panel", "targets": [], "assignments": []},
+        ]
+    }
+
+    resp = client.post("/api/v1/import/flow-panels/commit", json=payload)
+    assert resp.status_code == 422
+
+    db_session.expire_all()
+    result = db_session.scalar(select(Panel).where(Panel.id == "fp-rollback-1"))
+    assert result is None, "first record must be rolled back on exception"
+
+
+def test_import_if_panels_commit_rolls_back_on_error(client, db_session, monkeypatch):
+    """Mid-loop exception in import_if_panels_commit triggers full rollback."""
+    calls: list = []
+    real_merge = db_session.merge
+
+    def failing_merge(instance):
+        calls.append(instance)
+        if len(calls) >= 2:
+            raise Exception("Injected failure on second merge")
+        return real_merge(instance)
+
+    monkeypatch.setattr(db_session, "merge", failing_merge)
+
+    payload = {
+        "records": [
+            {"id": "ifp-rollback-1", "name": "First IF Panel", "targets": [], "assignments": []},
+            {"id": "ifp-rollback-2", "name": "Second IF Panel", "targets": [], "assignments": []},
+        ]
+    }
+
+    resp = client.post("/api/v1/import/if-panels/commit", json=payload)
+    assert resp.status_code == 422
+
+    db_session.expire_all()
+    result = db_session.scalar(select(IFPanel).where(IFPanel.id == "ifp-rollback-1"))
     assert result is None, "first record must be rolled back on exception"
