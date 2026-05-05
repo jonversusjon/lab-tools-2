@@ -8,3 +8,4 @@ pandas
 pyarrow
 pytest
 pytest-asyncio
+alembic>=1.18,<1.19
