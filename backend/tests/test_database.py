@@ -9,6 +9,55 @@ from sqlalchemy import create_engine
 from sqlalchemy import event
 from sqlalchemy import text
 
+from database import DEFAULT_DB_URL
+from database import get_db_path
+from database import get_db_url
+
+
+# ── get_db_url ────────────────────────────────────────────────────────────────
+
+def test_get_db_url_default(monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    assert get_db_url() == DEFAULT_DB_URL
+
+
+def test_get_db_url_from_env(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///custom.db")
+    assert get_db_url() == "sqlite:///custom.db"
+
+
+def test_get_db_url_empty_string_falls_back(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "")
+    assert get_db_url() == DEFAULT_DB_URL
+
+
+# ── get_db_path ───────────────────────────────────────────────────────────────
+
+def test_get_db_path_relative(monkeypatch, tmp_path):
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///foo.db")
+    result = get_db_path()
+    assert result.is_absolute()
+    assert result.name == "foo.db"
+
+
+def test_get_db_path_absolute(monkeypatch, tmp_path):
+    abs_path = str(tmp_path / "foo.db")
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///" + abs_path)
+    result = get_db_path()
+    assert result == Path(abs_path)
+
+
+def test_get_db_path_rejects_in_memory(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "sqlite://")
+    with pytest.raises(ValueError, match="in-memory"):
+        get_db_path()
+
+
+def test_get_db_path_rejects_non_sqlite(monkeypatch):
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:pass@localhost/db")
+    with pytest.raises(ValueError, match="sqlite:///"):
+        get_db_path()
+
 
 # ── WAL pragma ────────────────────────────────────────────────────────────────
 

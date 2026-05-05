@@ -217,3 +217,31 @@ def test_rotation_dry_run_does_not_delete(tmp_path):
 
     after = len(list(backup_dir.glob("*.gz")))
     assert before == after
+
+
+# ── DATABASE_URL integration ──────────────────────────────────────────────────
+
+def test_backup_uses_database_url(tmp_path, monkeypatch):
+    custom_db = tmp_path / "custom.db"
+    _make_db(custom_db)
+    backup_dir = tmp_path / "backups"
+
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///" + str(custom_db))
+    result = take_snapshot(backup_dir=backup_dir)  # no db_path — must use DATABASE_URL
+
+    assert result is not None
+    assert result.exists()
+    assert result.stat().st_size > 0
+
+
+def test_backup_explicit_src_overrides_env(tmp_path, monkeypatch):
+    real_db = tmp_path / "real.db"
+    _make_db(real_db)
+    backup_dir = tmp_path / "backups"
+
+    # Set DATABASE_URL to a path that doesn't exist — explicit --db must win
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///" + str(tmp_path / "nonexistent.db"))
+    result = take_snapshot(db_path=real_db, backup_dir=backup_dir)
+
+    assert result is not None
+    assert result.exists()

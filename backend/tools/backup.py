@@ -6,6 +6,7 @@ import logging
 import re
 import shutil
 import sqlite3
+import sys
 import time
 from datetime import date
 from datetime import timedelta
@@ -14,12 +15,32 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_DB_PATH = _SCRIPT_DIR.parent / "panels.db"
 DEFAULT_BACKUP_DIR = _SCRIPT_DIR.parent / "backups"
+
+# Add backend/ to sys.path so we can import from database.py
+_backend_dir = str(_SCRIPT_DIR.parent)
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
+
+from database import get_db_path  # noqa: E402
+
+import os as _os  # noqa: E402
+
+
+def _default_db_path() -> Path:
+    """Return the DB path to back up.
+
+    Uses DATABASE_URL when set; falls back to script-relative backend/panels.db.
+    The script-relative fallback is intentional — this tool runs from any CWD
+    via 'make backup', so Path("panels.db").resolve() would be wrong.
+    """
+    if _os.environ.get("DATABASE_URL"):
+        return get_db_path()
+    return _SCRIPT_DIR.parent / "panels.db"
 
 
 def take_snapshot(
-    db_path: Path = DEFAULT_DB_PATH,
+    db_path: Path | None = None,
     backup_dir: Path = DEFAULT_BACKUP_DIR,
     today: date | None = None,
     force: bool = False,
@@ -28,6 +49,8 @@ def take_snapshot(
 
     Returns the created Path, or None if skipped (already exists and not --force).
     """
+    if db_path is None:
+        db_path = _default_db_path()
     if today is None:
         today = date.today()
     backup_dir.mkdir(parents=True, exist_ok=True)
@@ -132,11 +155,13 @@ def rotate(
     return deleted
 
 
-def restore(src: Path, dst: Path, force: bool = False) -> None:
+def restore(src: Path, dst: Path | None = None, force: bool = False) -> None:
     """Decompress src (.db.gz) to dst (.db). Runs integrity_check after restore.
 
     Refuses to overwrite an existing dst unless force=True.
     """
+    if dst is None:
+        dst = _default_db_path()
     if dst.exists() and not force:
         raise FileExistsError(
             "Destination already exists: %s. Use --force to overwrite." % dst
@@ -185,14 +210,14 @@ def _main() -> None:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     snap = sub.add_parser("snapshot", help="Create a daily snapshot")
-    snap.add_argument("--db", type=Path, default=DEFAULT_DB_PATH)
+    snap.add_argument("--db", type=Path, default=None, help="DB path (default: DATABASE_URL or panels.db)")
     snap.add_argument("--backup-dir", type=Path, default=DEFAULT_BACKUP_DIR)
     snap.add_argument("--force", action="store_true", help="Overwrite today's snapshot if it exists")
     snap.add_argument("--no-rotate", action="store_true", help="Skip rotation after snapshot")
 
     res = sub.add_parser("restore", help="Restore from a snapshot")
     res.add_argument("--src", type=Path, required=True)
-    res.add_argument("--dst", type=Path, default=DEFAULT_DB_PATH)
+    res.add_argument("--dst", type=Path, default=None, help="Destination DB path (default: DATABASE_URL or panels.db)")
     res.add_argument("--force", action="store_true", help="Overwrite destination if it exists")
 
     ls = sub.add_parser("list", help="List backups with retention classification")

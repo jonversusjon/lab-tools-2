@@ -15,6 +15,7 @@ from sqlalchemy import text
 from database import Base
 from database import SessionLocal
 from database import engine
+from database import get_db_path
 from models import Antibody
 from models import AntibodyTag
 from models import Fluorophore
@@ -515,7 +516,7 @@ def migrate_dye_label_targets() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _check_db_startup(Path("panels.db").resolve())
+    _check_db_startup(get_db_path())
     Base.metadata.create_all(bind=engine)
     migrate_instrument_fields()
     migrate_secondary_binding_mode()

@@ -21,10 +21,12 @@ logger = logging.getLogger(__name__)
 # Add backend dir to sys.path so local imports work when run as a script
 sys.path.insert(0, str(Path(__file__).parent))
 
+from database import get_db_path  # noqa: E402
+
 FPBASE_DATA_DIR = Path(__file__).parent.parent / "fpbase_data"
 METADATA_CSV = FPBASE_DATA_DIR / "fpbase_metadata.csv"
 SPECTRA_PARQUET = FPBASE_DATA_DIR / "fpbase_spectra_long.parquet"
-DB_PATH = Path(__file__).parent / "panels.db"
+DB_PATH = get_db_path()
 
 
 def _nan_to_none(val):
