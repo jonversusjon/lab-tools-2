@@ -126,6 +126,7 @@ export default function MicroscopeEditor() {
           await updateMutation.mutateAsync({ id: id!, data: payload })
           setSaveStatus('saved')
           dirtyRef.current = false
+          userEdited.current = false
         }
       } catch (err) {
         creatingRef.current = false
