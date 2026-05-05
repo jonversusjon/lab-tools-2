@@ -10,3 +10,9 @@ tiptap blocks with placeholder text don't lose placeholder text (optional) nor s
 
 the IF panel block should default to having an editable panel title with placeholder text, there should be a tiny hide title button on hover. the if panel blocks context menu should have both hide and show title included. hidden titles should just be hidden not erased or deleted
 
+the undo stack needs to be overhauled to include every action, button, edit, move, reorder, delete, insert
+
+experiment title on experiment page should be editable like a block, but not moveable like other blocks
+
+should loction list be shared across resources
+
