@@ -89,11 +89,11 @@ export default function FluorophoreBrowser() {
       <div className="min-w-0 flex-1">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold dark:text-gray-100">Fluorophores</h1>
+          <h1 className="text-2xl font-bold text-foreground">Fluorophores</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowImportWizard(true)}
-              className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-foreground hover:bg-hover"
             >
               Import CSV / JSON
             </button>
@@ -113,7 +113,7 @@ export default function FluorophoreBrowser() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name..."
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 w-52"
+            className="rounded border border-border-strong bg-elevated px-3 py-1.5 text-sm text-foreground w-52"
           />
           <div className="flex rounded border border-border-strong overflow-hidden text-sm">
             {(['all', 'protein', 'dye'] as const).map((t) => (
@@ -123,15 +123,15 @@ export default function FluorophoreBrowser() {
                 className={
                   'px-3 py-1.5 capitalize ' +
                   (typeFilter === t
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600')
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-elevated text-foreground hover:bg-hover')
                 }
               >
                 {t}
               </button>
             ))}
           </div>
-          <label className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+          <label className="flex items-center gap-1.5 text-sm text-foreground cursor-pointer">
             <input
               type="checkbox"
               checked={hasSpectraOnly}
@@ -184,8 +184,8 @@ export default function FluorophoreBrowser() {
                 <React.Fragment key={fl.id}>
                   <tr
                     className={
-                      'border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800' +
-                      (expandedId === fl.id ? ' bg-blue-50 dark:bg-blue-900/20' : '')
+                      'border-b border-border cursor-pointer hover:bg-hover' +
+                      (expandedId === fl.id ? ' bg-accent-soft' : '')
                     }
                     onClick={() => setExpandedId((prev) => (prev === fl.id ? null : fl.id))}
                   >
@@ -216,16 +216,16 @@ export default function FluorophoreBrowser() {
                     <td className="py-2 text-foreground-muted capitalize">
                       {fl.fluor_type ?? '—'}
                     </td>
-                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                    <td className="py-2 text-foreground-muted">
                       {fl.ex_max_nm !== null && fl.ex_max_nm !== undefined ? fl.ex_max_nm.toFixed(0) + ' nm' : '—'}
                     </td>
-                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                    <td className="py-2 text-foreground-muted">
                       {fl.em_max_nm !== null && fl.em_max_nm !== undefined ? fl.em_max_nm.toFixed(0) + ' nm' : '—'}
                     </td>
-                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                    <td className="py-2 text-foreground-muted">
                       {fl.ext_coeff !== null && fl.ext_coeff !== undefined ? fl.ext_coeff.toLocaleString() : '—'}
                     </td>
-                    <td className="py-2 text-gray-600 dark:text-gray-400">
+                    <td className="py-2 text-foreground-muted">
                       {fl.qy !== null && fl.qy !== undefined ? fl.qy.toFixed(2) : '—'}
                     </td>
                     <td className="py-2 text-foreground-muted">{fl.source}</td>
@@ -250,7 +250,7 @@ export default function FluorophoreBrowser() {
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="rounded border border-border-strong px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+              className="rounded border border-border-strong px-3 py-1 text-foreground-muted hover:bg-hover disabled:opacity-40"
             >
               Previous
             </button>
@@ -260,7 +260,7 @@ export default function FluorophoreBrowser() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="rounded border border-border-strong px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+              className="rounded border border-border-strong px-3 py-1 text-foreground-muted hover:bg-hover disabled:opacity-40"
             >
               Next
             </button>
@@ -308,20 +308,20 @@ function InstrumentCompatibilityCard({ compat }: { compat: InstrumentCompatibili
     }
   }
   return (
-    <tr className="border-b border-gray-100 dark:border-gray-700">
-      <td className="py-1 pr-4 text-gray-700 dark:text-gray-300">
+    <tr className="border-b border-border">
+      <td className="py-1 pr-4 text-foreground">
         {compat.instrument_name}
       </td>
-      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+      <td className="py-1 pr-4 text-foreground-muted">
         {bestDet ? bestDet.laser_wavelength_nm + ' nm' : '—'}
       </td>
-      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+      <td className="py-1 pr-4 text-foreground-muted">
         {bestDet ? (bestExEff * 100).toFixed(1) + '%' : '—'}
       </td>
-      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+      <td className="py-1 pr-4 text-foreground-muted">
         {bestDet ? (bestDet.name ?? bestDet.center_nm + '/' + bestDet.bandwidth_nm) : '—'}
       </td>
-      <td className="py-1 text-gray-600 dark:text-gray-400">
+      <td className="py-1 text-foreground-muted">
         {bestDet ? (bestDet.collection_efficiency * 100).toFixed(1) + '%' : '—'}
       </td>
     </tr>
@@ -377,7 +377,7 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
 
   const tableHeader = (
     <thead>
-      <tr className="border-b border-gray-200 dark:border-gray-600 text-foreground-muted">
+      <tr className="border-b border-border-strong text-foreground-muted">
         <th className="py-1 text-left font-medium pr-4">Instrument</th>
         <th className="py-1 text-left font-medium pr-4">Best Laser</th>
         <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
@@ -455,7 +455,7 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
                 others.forEach((c) => recordView.mutate(c.instrument_id))
               }
             }}
-            className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            className="flex items-center gap-1.5 text-xs text-accent hover:text-accent-hover"
           >
             <span>{showAll ? '▼' : '▶'}</span>
             {showAll ? 'Hide' : 'Show'} all instruments ({others.length})
@@ -495,20 +495,20 @@ function MicroscopeCompatibilityCard({ compat }: { compat: MicroscopeCompatibili
     }
   }
   return (
-    <tr className="border-b border-gray-100 dark:border-gray-700">
-      <td className="py-1 pr-4 text-gray-700 dark:text-gray-300">
+    <tr className="border-b border-border">
+      <td className="py-1 pr-4 text-foreground">
         {compat.microscope_name}
       </td>
-      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+      <td className="py-1 pr-4 text-foreground-muted">
         {bestFilter ? bestFilter.laser_wavelength_nm + ' nm' : '—'}
       </td>
-      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+      <td className="py-1 pr-4 text-foreground-muted">
         {bestFilter ? (bestExEff * 100).toFixed(1) + '%' : '—'}
       </td>
-      <td className="py-1 pr-4 text-gray-600 dark:text-gray-400">
+      <td className="py-1 pr-4 text-foreground-muted">
         {bestFilter ? (bestFilter.name ?? bestFilter.center_nm + '/' + bestFilter.bandwidth_nm) : '—'}
       </td>
-      <td className="py-1 text-gray-600 dark:text-gray-400">
+      <td className="py-1 text-foreground-muted">
         {bestFilter ? (bestFilter.collection_efficiency * 100).toFixed(1) + '%' : '—'}
       </td>
     </tr>
@@ -554,7 +554,7 @@ function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibiliti
 
   const tableHeader = (
     <thead>
-      <tr className="border-b border-gray-200 dark:border-gray-600 text-foreground-muted">
+      <tr className="border-b border-border-strong text-foreground-muted">
         <th className="py-1 text-left font-medium pr-4">Microscope</th>
         <th className="py-1 text-left font-medium pr-4">Best Laser</th>
         <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
@@ -629,7 +629,7 @@ function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibiliti
                 others.forEach((c) => recordView.mutate(c.microscope_id))
               }
             }}
-            className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            className="flex items-center gap-1.5 text-xs text-accent hover:text-accent-hover"
           >
             <span>{showAll ? '▼' : '▶'}</span>
             {showAll ? 'Hide' : 'Show'} all microscopes ({others.length})
@@ -664,11 +664,11 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
   )
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-border px-6 py-4">
+    <div className="bg-surface border-b border-border px-6 py-4">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Metadata card */}
         <div>
-          <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <h4 className="mb-2 text-sm font-semibold text-foreground">
             {fluorophore.name}
           </h4>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
@@ -702,7 +702,7 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
 
         {/* Spectra chart */}
         <div>
-          <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Spectra</h4>
+          <h4 className="mb-2 text-sm font-semibold text-foreground">Spectra</h4>
           {!fluorophore.has_spectra ? (
             <p className="text-xs text-foreground-subtle">No spectral data available.</p>
           ) : spectraLoading ? (
@@ -727,13 +727,13 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
 
       {/* Instrument compatibility */}
       <div className="mt-6">
-        <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-gray-200 border-b border-border pb-2">
+        <h3 className="mb-4 text-base font-semibold text-foreground border-b border-border pb-2">
           Instrument Compatibility
         </h3>
 
         {/* Cytometers */}
         <div className="mb-6">
-          <h4 className="mb-2 text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          <h4 className="mb-2 text-sm font-semibold text-foreground-muted uppercase tracking-wide">
             Flow Cytometers
           </h4>
           {compatLoading ? (
@@ -751,7 +751,7 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
 
         {/* Microscopes */}
         <div>
-          <h4 className="mb-2 text-sm font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          <h4 className="mb-2 text-sm font-semibold text-foreground-muted uppercase tracking-wide">
             Microscopes
           </h4>
           {microscopeCompatLoading ? (
@@ -773,7 +773,7 @@ function MetaRow({ label, value }: { label: string; value: string | null | undef
   return (
     <>
       <dt className="text-foreground-muted">{label}</dt>
-      <dd className="text-gray-700 dark:text-gray-300">{value ?? '—'}</dd>
+      <dd className="text-foreground">{value ?? '—'}</dd>
     </>
   )
 }
@@ -800,8 +800,8 @@ function TypeToggle({
           className={
             'px-2 py-0.5 ' +
             (value === t
-              ? 'bg-blue-600 text-white'
-              : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600')
+              ? 'bg-accent text-accent-foreground'
+              : 'bg-elevated text-foreground-muted hover:bg-hover')
           }
         >
           {t === 'both' ? 'Both' : t}
@@ -878,7 +878,7 @@ function OverlaySidebar({
       <div className="rounded-lg border border-border bg-elevated shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+          <h3 className="text-sm font-semibold text-foreground">
             Spectra Overlay
           </h3>
           <div className="flex items-center gap-2">
@@ -886,7 +886,7 @@ function OverlaySidebar({
             <button
               onClick={() => setIsFullscreen(true)}
               title="Fullscreen"
-              className="rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="rounded p-0.5 text-foreground-subtle hover:text-foreground-muted transition-colors"
               aria-label="Expand to fullscreen"
             >
               {/* expand icon */}
@@ -896,7 +896,7 @@ function OverlaySidebar({
             </button>
             <button
               onClick={onClear}
-              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="text-xs text-foreground-subtle hover:text-foreground-muted transition-colors"
             >
               Clear all
             </button>
@@ -904,15 +904,15 @@ function OverlaySidebar({
         </div>
 
         {/* Selected fluorophore chips */}
-        <ul className="border-b border-gray-100 dark:border-gray-700 px-4 py-2 space-y-1">
+        <ul className="border-b border-border px-4 py-2 space-y-1">
           {ids.map((id) => (
             <li key={id} className="flex items-center justify-between gap-2 text-xs">
-              <span className="truncate text-gray-700 dark:text-gray-300">
+              <span className="truncate text-foreground">
                 {overlayMap.get(id)}
               </span>
               <button
                 onClick={() => onRemove(id)}
-                className="shrink-0 rounded px-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                className="shrink-0 rounded px-1 text-foreground-subtle hover:text-red-500 dark:hover:text-red-400 transition-colors"
                 title="Remove"
                 aria-label={'Remove ' + overlayMap.get(id)}
               >
@@ -939,14 +939,14 @@ function OverlaySidebar({
             >
               {/* Modal header */}
               <div className="flex items-center justify-between border-b border-border px-6 py-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                <h3 className="text-sm font-semibold text-foreground">
                   Spectra Overlay
                 </h3>
                 <div className="flex items-center gap-3">
                   <TypeToggle value={visibleTypes} onChange={setVisibleTypes} />
                   <button
                     onClick={() => setIsFullscreen(false)}
-                    className="rounded p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    className="rounded p-0.5 text-foreground-subtle hover:text-foreground-muted transition-colors"
                     aria-label="Close fullscreen"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -957,16 +957,16 @@ function OverlaySidebar({
               </div>
 
               {/* Chip list */}
-              <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-border">
                 {ids.map((id) => (
                   <span
                     key={id}
-                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs text-gray-700 dark:text-gray-300"
+                    className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-0.5 text-xs text-foreground"
                   >
                     {overlayMap.get(id)}
                     <button
                       onClick={() => onRemove(id)}
-                      className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                      className="text-foreground-subtle hover:text-red-500 dark:hover:text-red-400"
                       aria-label={'Remove ' + overlayMap.get(id)}
                     >
                       ×
