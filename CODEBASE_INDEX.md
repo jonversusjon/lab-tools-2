@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-06T01:42:26Z
-Commit: 7a033ca
+Generated: 2026-05-06T01:43:52Z
+Commit: 0feddd5
 
 ---
 
@@ -477,6 +477,7 @@ Commit: 7a033ca
 | `GET` | `/api/v1/export/dye-labels` | `export_import.export_dye_labels` | `` |  |
 | `GET` | `/api/v1/export/experiments` | `export_import.export_experiments` | `` |  |
 | `GET` | `/api/v1/export/flow-panels` | `export_import.export_flow_panels` | `` |  |
+| `GET` | `/api/v1/export/fluorophores` | `export_import.export_fluorophores` | `` |  |
 | `GET` | `/api/v1/export/if-panels` | `export_import.export_if_panels` | `` |  |
 | `GET` | `/api/v1/export/instruments` | `export_import.export_instruments` | `` |  |
 | `GET` | `/api/v1/export/list-entries` | `export_import.export_list_entries` | `` |  |
@@ -522,6 +523,8 @@ Commit: 7a033ca
 | `POST` | `/api/v1/import/flow-panels` | `export_import.import_flow_panels` | `` |  |
 | `POST` | `/api/v1/import/flow-panels/commit` | `export_import.import_flow_panels_commit` | `` |  |
 | `POST` | `/api/v1/import/flow-panels/preview` | `export_import.import_flow_panels_preview` | `` |  |
+| `POST` | `/api/v1/import/fluorophores/commit` | `export_import.import_fluorophores_commit` | `` |  |
+| `POST` | `/api/v1/import/fluorophores/preview` | `export_import.import_fluorophores_preview` | `` |  |
 | `POST` | `/api/v1/import/if-panels` | `export_import.import_if_panels` | `` |  |
 | `POST` | `/api/v1/import/if-panels/commit` | `export_import.import_if_panels_commit` | `` |  |
 | `POST` | `/api/v1/import/if-panels/preview` | `export_import.import_if_panels_preview` | `` |  |
@@ -1533,8 +1536,8 @@ Commit: 7a033ca
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-06T01:42:31Z
-Commit: 7a033ca
+Generated: 2026-05-06T01:43:56Z
+Commit: 0feddd5
 
 ---
 

@@ -13,6 +13,7 @@ from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Response
 from sqlalchemy import func
+from sqlalchemy import insert as sa_insert
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
@@ -20,6 +21,12 @@ from sqlalchemy.orm import selectinload
 logger = logging.getLogger(__name__)
 
 from database import get_db
+from schemas import FluorophoreExportItem
+from schemas import FluorophoreExportResponse
+from schemas import FluorophoreImportCommitRequest
+from schemas import FluorophoreImportCommitResponse
+from schemas import FluorophoreImportPreviewResponse
+from schemas import FluorophoreImportSummaryItem
 from models import Antibody
 from models import AntibodyTag
 from models import AntibodyTagAssignment
@@ -29,6 +36,7 @@ from models import DyeLabel
 from models import Experiment
 from models import ExperimentBlock
 from models import Fluorophore
+from models import FluorophoreSpectrum
 from models import IFPanel
 from models import IFPanelAssignment
 from models import IFPanelTarget
@@ -1651,3 +1659,142 @@ def import_experiments(
     db: Session = Depends(get_db),
 ):
     return import_experiments_commit(payload=payload, db=db)
+
+
+# ── FLUOROPHORES ──────────────────────────────────────────────────────────────
+
+# NOTE: At ~838k spectrum rows this export holds ~20 MB in Python memory during
+# serialization. Acceptable for a one-time recovery operation.
+@router.get("/export/fluorophores")
+def export_fluorophores(db: Session = Depends(get_db)) -> FluorophoreExportResponse:
+    fluorophores = db.scalars(
+        select(Fluorophore).options(selectinload(Fluorophore.spectra_records))
+    ).all()
+    items: list[FluorophoreExportItem] = []
+    for f in fluorophores:
+        spectra: dict[str, list[list[float]]] = {}
+        for row in f.spectra_records:
+            spectra.setdefault(row.spectrum_type, []).append(
+                [row.wavelength_nm, row.intensity]
+            )
+        items.append(FluorophoreExportItem(
+            id=f.id,
+            name=f.name,
+            fluor_type=f.fluor_type,
+            source=f.source,
+            ex_max_nm=f.ex_max_nm,
+            em_max_nm=f.em_max_nm,
+            ext_coeff=f.ext_coeff,
+            qy=f.qy,
+            lifetime_ns=f.lifetime_ns,
+            oligomerization=f.oligomerization,
+            switch_type=f.switch_type,
+            has_spectra=f.has_spectra,
+            is_favorite=f.is_favorite,
+            spectra=spectra,
+        ))
+    return FluorophoreExportResponse(
+        fluorophores=items,
+        total=len(items),
+        exported_at=_now_iso(),
+    )
+
+
+@router.post("/import/fluorophores/preview")
+def import_fluorophores_preview(
+    payload: FluorophoreImportCommitRequest,
+    db: Session = Depends(get_db),
+) -> FluorophoreImportPreviewResponse:
+    existing_by_id: set[str] = set(db.scalars(select(Fluorophore.id)).all())
+    existing_by_name: dict[str, str] = {
+        name: fid
+        for fid, name in db.execute(select(Fluorophore.id, Fluorophore.name)).all()
+    }
+    items: list[FluorophoreImportSummaryItem] = []
+    for f in payload.fluorophores:
+        if f.id in existing_by_id:
+            items.append(FluorophoreImportSummaryItem(
+                id=f.id,
+                name=f.name,
+                status="id_conflict",
+                conflict_reason="Fluorophore with this ID already exists",
+            ))
+        elif f.name in existing_by_name:
+            items.append(FluorophoreImportSummaryItem(
+                id=f.id,
+                name=f.name,
+                status="name_conflict",
+                conflict_reason="Fluorophore with this name already exists (id=" + existing_by_name[f.name] + ")",
+            ))
+        else:
+            items.append(FluorophoreImportSummaryItem(
+                id=f.id,
+                name=f.name,
+                status="new",
+            ))
+    return FluorophoreImportPreviewResponse(
+        new_count=sum(1 for i in items if i.status == "new"),
+        id_conflict_count=sum(1 for i in items if i.status == "id_conflict"),
+        name_conflict_count=sum(1 for i in items if i.status == "name_conflict"),
+        items=items,
+    )
+
+
+@router.post("/import/fluorophores/commit")
+def import_fluorophores_commit(
+    payload: FluorophoreImportCommitRequest,
+    db: Session = Depends(get_db),
+) -> FluorophoreImportCommitResponse:
+    existing_by_id: set[str] = set(db.scalars(select(Fluorophore.id)).all())
+    existing_by_name: set[str] = set(db.scalars(select(Fluorophore.name)).all())
+    created = 0
+    skipped = 0
+    errors: list[str] = []
+    try:
+        for f in payload.fluorophores:
+            if f.id in existing_by_id or f.name in existing_by_name:
+                skipped += 1
+                continue
+            db.add(Fluorophore(
+                id=f.id,
+                name=f.name,
+                fluor_type=f.fluor_type,
+                source=f.source,
+                ex_max_nm=f.ex_max_nm,
+                em_max_nm=f.em_max_nm,
+                ext_coeff=f.ext_coeff,
+                qy=f.qy,
+                lifetime_ns=f.lifetime_ns,
+                oligomerization=f.oligomerization,
+                switch_type=f.switch_type,
+                has_spectra=f.has_spectra,
+                is_favorite=f.is_favorite,
+            ))
+            # Bulk-insert spectrum rows per fluorophore to avoid 838k individual INSERTs.
+            # The ix_fluor_spectra index slows bulk inserts at full scale; this is acceptable
+            # for a recovery operation and can be optimized (drop+recreate index) if needed.
+            if f.spectra:
+                db.execute(
+                    sa_insert(FluorophoreSpectrum),
+                    [
+                        {
+                            "fluorophore_id": f.id,
+                            "spectrum_type": spectrum_type,
+                            "wavelength_nm": wl,
+                            "intensity": intensity,
+                        }
+                        for spectrum_type, points in f.spectra.items()
+                        for wl, intensity in points
+                    ],
+                )
+            created += 1
+        db.commit()
+        return FluorophoreImportCommitResponse(
+            created=created,
+            skipped=skipped,
+            errors=errors,
+        )
+    except Exception as exc:
+        db.rollback()
+        logger.exception("fluorophores import commit failed")
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
