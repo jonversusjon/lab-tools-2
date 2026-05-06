@@ -149,6 +149,37 @@ went unnoticed for months because no round-trip test existed.
 
 **Origin:** Persistence audit (Section 3); fixed in Persistence sprint Phase 1.
 
+### Smart JSON format for spectra-bearing exports
+Entities with large child tables (e.g. FluorophoreSpectrum) export as
+**grouped JSON** — entity metadata plus inline spectra — rather than flat
+row-per-spectrum CSV or a separate spectra file. This keeps the export
+self-contained: one JSON document holds everything needed to reconstitute
+the entity and its full spectral data.
+
+**Reference shape — `FluorophoreExportItem`:**
+```json
+{
+  "id": "fpbase-uuid",
+  "name": "EGFP",
+  "source": "FPbase",
+  "has_spectra": true,
+  "spectra": {
+    "EX": [[464, 0.01], [488, 1.0], ...],
+    "EM": [[490, 0.02], [507, 1.0], ...]
+  },
+  ...other metadata fields...
+}
+```
+
+Spectra keys are spectrum type strings (`"EX"`, `"EM"`, `"A_2P"`).
+Values are ordered `[[wavelength_nm, intensity], ...]` lists.
+
+**Import conflict policy:** match by ID first, then name. Skip both
+ID conflicts and name conflicts (never overwrite). Use the `/preview`
+endpoint to inspect what would change before committing.
+
+**Origin:** Persistence Sprint Phase 4.
+
 ---
 
 ## Backup and durability

@@ -636,11 +636,29 @@ make restore PATH=backend/backups/panels-2026-05-04.db.gz
 ### Recovery without backups
 
 If snapshots are missing, the export endpoints under `/api/v1/export/*`
-serve as a partial escape hatch. Coverage gaps as of this writing:
+serve as a partial escape hatch. All major tables now have export coverage:
 
-- Fluorophore + FluorophoreSpectrum tables (~840k rows) have no export
-  endpoint and depend on `fpbase_data/fpbase_spectra_long.parquet` for
-  re-seeding. Phase 4 of the persistence sprint adds a fluorophore export.
+| Resource | Export endpoint | Import endpoint |
+|---|---|---|
+| Antibodies | `GET /api/v1/export/antibodies` | `POST /api/v1/import/antibodies/commit` |
+| Secondary antibodies | `GET /api/v1/export/secondaries` | `POST /api/v1/import/secondaries/commit` |
+| Instruments | `GET /api/v1/export/instruments` | `POST /api/v1/import/instruments/commit` |
+| Microscopes | `GET /api/v1/export/microscopes` | `POST /api/v1/import/microscopes/commit` |
+| Flow panels | `GET /api/v1/export/flow-panels` | `POST /api/v1/import/flow-panels/commit` |
+| IF panels | `GET /api/v1/export/if-panels` | `POST /api/v1/import/if-panels/commit` |
+| Fluorophores + spectra | `GET /api/v1/export/fluorophores` | `POST /api/v1/import/fluorophores/commit` |
+| Plate maps | `GET /api/v1/export/plate-maps` | `POST /api/v1/import/plate-maps/commit` |
+| Experiments | `GET /api/v1/export/experiments` | `POST /api/v1/import/experiments/commit` |
+
+**Fluorophore export format:** Spectra are bundled inline as grouped JSON
+(`{ spectrum_type: [[wavelength_nm, intensity], ...] }`). A full export of
+~1,896 fluorophores with ~838k spectrum rows produces ~20 MB uncompressed
+(~3–5 MB gzipped). Acceptable for a one-time recovery operation.
+
+**Import conflict policy:** ID conflict → skip. Name conflict → skip.
+Only new fluorophores (no ID or name match) are inserted. Use
+`POST /api/v1/import/fluorophores/preview` to see what would be imported
+before committing.
 
 ### Durability settings
 
