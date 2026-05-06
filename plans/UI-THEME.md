@@ -48,13 +48,29 @@ Lessons learned (Phase B):
   the dominant leftover; these are Phase C+ hand-work.
 - Idempotency verified: second codemod run modified 0 files.
 
-### Phase C+ — Manual cleanup by domain
+### Phase C — Top-3 heaviest leftover files ✅ complete (commits 976dc95, 2db9ca7, f7f2760)
+Manual migration of the three files with the most remaining raw-gray substrings.
+
+Files migrated and final substrate counts (before → after):
+- `SecondaryList.tsx`: 37 → 0
+- `IFPanelDesignerView.tsx`: 31 → 3 (justified holdouts)
+- `FluorophoreBrowser.tsx`: 47 → 0
+
+Lessons learned (Phase C):
+- `cn()`/`clsx()` calls: each conditional branch processed independently; no structural changes needed.
+- Intermediate grays (`text-gray-600`, `text-gray-700`, etc.) all mapped cleanly via heuristic table.
+- The view mode toggle in IFPanelDesignerView uses an intentionally inverted palette (`bg-gray-800 dark:bg-gray-200`) — no token covers this; kept with `// theme-exempt` comment.
+- `bg-red-600 text-white` on the danger Delete button is a justified holdout — `text-white` on colored danger bg has no token equivalent.
+- `bg-gray-50 dark:bg-gray-808/50` and `bg-gray-50 dark:bg-gray-800/60` alpha variants mapped to `bg-surface` (alpha lost, semantic intent preserved).
+- `file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400` → `file:bg-accent-soft file:text-accent-soft-foreground` — CSS file-selector-button pseudo-variant works with semantic tokens.
+- `placeholder-gray-300 dark:placeholder-gray-600` → `placeholder-foreground-subtle` — placeholder Tailwind utilities work with hyphenated token names.
+- `focus:bg-white dark:focus:bg-gray-700` → `focus:bg-elevated` — focus-state bg maps cleanly.
+
+### Phase D — Manual cleanup by domain
 Anything the codemod missed: custom inline hex, unusual class combos,
 specialized components (spillover heatmap, chart annotations, etc.).
-Likely 2–3 phases split by directory:
-- C: layout + shared components
-- D: domain components (antibodies / fluorophores / panels / IF panels /
-  experiments / plate-maps)
+- D: remaining domain components (antibodies / panels / experiments /
+  plate-maps / other shared components)
 - E: convention enforcement + CONVENTIONS.md / FRONTEND-CONVENTIONS.md
   patches forbidding raw gray-* in new code
 
