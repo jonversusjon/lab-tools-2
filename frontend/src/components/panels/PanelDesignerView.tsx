@@ -125,7 +125,7 @@ function SortableRow({
     ...(isDragging ? { opacity: 0.5, position: 'relative', zIndex: 50 } : {}),
   }
 
-  const finalClassName = (className ?? '') + ' bg-white dark:bg-gray-800'
+  const finalClassName = (className ?? '') + ' bg-elevated'
 
   return (
     <tr
@@ -739,11 +739,11 @@ export default function PanelDesignerView({
                   setEditingName(false)
                 }
               }}
-              className="rounded border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-700 px-2 py-1 text-2xl font-bold dark:text-gray-100 focus:outline-none"
+              className="rounded border border-blue-300 dark:border-blue-600 bg-elevated px-2 py-1 text-2xl font-bold text-foreground focus:outline-none"
             />
           ) : (
             <h1
-              className="cursor-pointer text-2xl font-bold dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400"
+              className="cursor-pointer text-2xl font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400"
               onClick={() => setEditingName(true)}
               title="Click to edit name"
             >
@@ -755,7 +755,7 @@ export default function PanelDesignerView({
             <button
               onClick={handlers.onUndo}
               disabled={!handlers.canUndo}
-              className="rounded px-2 py-1 text-sm text-foreground-muted hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="rounded px-2 py-1 text-sm text-foreground-muted hover:bg-hover disabled:opacity-30 disabled:cursor-not-allowed"
               title={handlers.canUndo ? state.past.length + ' action' + (state.past.length !== 1 ? 's' : '') + ' to undo' : 'Nothing to undo'}
             >
               Undo
@@ -763,7 +763,7 @@ export default function PanelDesignerView({
             <button
               onClick={handlers.onRedo}
               disabled={!handlers.canRedo}
-              className="rounded px-2 py-1 text-sm text-foreground-muted hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+              className="rounded px-2 py-1 text-sm text-foreground-muted hover:bg-hover disabled:opacity-30 disabled:cursor-not-allowed"
               title={handlers.canRedo ? state.future.length + ' action' + (state.future.length !== 1 ? 's' : '') + ' to redo' : 'Nothing to redo'}
             >
               Redo
@@ -775,14 +775,14 @@ export default function PanelDesignerView({
         <div className="flex items-center gap-2">
           {config.showInstrumentSelector && (
             <>
-              <label htmlFor="instrument-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="instrument-select" className="text-sm font-medium text-foreground">
                 Instrument:
               </label>
               <select
                 id="instrument-select"
                 value={panel.instrument_id ?? ''}
                 onChange={(e) => handleInstrumentChange(e.target.value)}
-                className="rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                className="rounded border border-border-strong bg-elevated px-3 py-1.5 text-sm text-foreground focus:border-blue-500 focus:outline-none"
               >
                 <option value="">Select an instrument...</option>
                 {(config.instruments ?? []).map((inst) => (
@@ -802,6 +802,7 @@ export default function PanelDesignerView({
                   aria-checked={handlers.autoAssign}
                   onClick={handlers.onAutoAssignToggle}
                   className={'relative inline-flex h-4 w-7 items-center rounded-full transition-colors ' +
+                    // theme-exempt: inactive track uses mid-gray not covered by surface/hover tokens
                     (handlers.autoAssign ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600')
                   }
                 >
@@ -810,7 +811,7 @@ export default function PanelDesignerView({
                   } />
                 </button>
               </label>
-              <label className={'flex items-center gap-1.5 text-xs ' + (handlers.autoAssign ? 'text-gray-400 dark:text-gray-500' : 'text-gray-300 dark:text-gray-600 opacity-50')}>
+              <label className={'flex items-center gap-1.5 text-xs ' + (handlers.autoAssign ? 'text-foreground-subtle' : 'text-foreground-subtle opacity-50')}>
                 Min match
                 <input
                   type="range"
@@ -821,7 +822,7 @@ export default function PanelDesignerView({
                   disabled={!handlers.autoAssign}
                   className="w-20 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
-                <span className={'w-7 text-right text-xs ' + (handlers.autoAssign ? 'text-gray-500 dark:text-gray-400' : 'text-gray-300 dark:text-gray-600')}>
+                <span className={'w-7 text-right text-xs ' + (handlers.autoAssign ? 'text-foreground-muted' : 'text-foreground-subtle')}>
                   {Math.round(handlers.minThreshold * 100)}%
                 </span>
               </label>
@@ -867,7 +868,7 @@ export default function PanelDesignerView({
                     <th
                       key={g.laser.id}
                       colSpan={g.detectors.length}
-                      className="px-2 py-2 text-center text-xs font-semibold text-white"
+                      className="px-2 py-2 text-center text-xs font-semibold text-white" // theme-exempt: white text on dynamic laser-color background
                       style={{ backgroundColor: g.color }}
                     >
                       {g.laser.wavelength_nm}nm {g.laser.name}
@@ -934,8 +935,8 @@ export default function PanelDesignerView({
                       key={t.id}
                       id={t.id}
                       className={
-                        'border-b border-gray-100 dark:border-gray-700' +
-                        (hasAssignment ? ' bg-blue-50/40 dark:bg-blue-900/20' : ' hover:bg-gray-50 dark:hover:bg-gray-800')
+                        'border-b border-border' +
+                        (hasAssignment ? ' bg-blue-50/40 dark:bg-blue-900/20' : ' hover:bg-hover')
                       }
                       data-assigned={hasAssignment ? 'true' : undefined}
                     >
@@ -943,7 +944,7 @@ export default function PanelDesignerView({
                         <>
                           <td
                             {...listeners}
-                            className="w-6 px-1 py-2 cursor-grab text-foreground-subtle hover:text-gray-600 active:cursor-grabbing dark:hover:text-gray-300 select-none"
+                            className="w-6 px-1 py-2 cursor-grab text-foreground-subtle hover:text-foreground active:cursor-grabbing select-none"
                             title="Drag to reorder"
                           >
                             <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto"><path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z"/></svg>
@@ -990,7 +991,7 @@ export default function PanelDesignerView({
                                 ab?.target ?? '\u2014'
                               )}
                           </td>
-                          <td className="px-3 py-2 text-gray-600 dark:text-gray-400">
+                          <td className="px-3 py-2 text-foreground-muted">
                         <span className="inline-flex items-center gap-1">
                           {conflictTargetIds.has(t.id) && (
                             <span
@@ -1023,7 +1024,7 @@ export default function PanelDesignerView({
                           </span>
                           <button
                             onClick={() => setOverriddenRows((prev) => new Set(prev).add(t.id))}
-                            className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-gray-400 hover:text-blue-500 transition-opacity"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-foreground-subtle hover:text-blue-500 transition-opacity"
                             title="Override pre-conjugated fluorophore"
                           >
                             &#9998;
@@ -1144,7 +1145,7 @@ export default function PanelDesignerView({
                             return (
                               <td
                                 key={det.id}
-                                className="cursor-not-allowed bg-gray-100 dark:bg-gray-700 px-2 py-2 text-center text-xs text-foreground-subtle"
+                                className="cursor-not-allowed bg-surface px-2 py-2 text-center text-xs text-foreground-subtle"
                                 title={'Detector assigned to ' + otherLabel}
                                 data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="occupied"
@@ -1158,7 +1159,7 @@ export default function PanelDesignerView({
                             return (
                               <td
                                 key={det.id}
-                                className="cursor-not-allowed bg-surface px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600"
+                                className="cursor-not-allowed bg-surface px-2 py-2 text-center text-xs text-foreground-subtle"
                                 data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="row-assigned"
                               >
@@ -1172,7 +1173,7 @@ export default function PanelDesignerView({
                             return (
                               <td
                                 key={det.id}
-                                className="cursor-pointer px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                className="cursor-pointer px-2 py-2 text-center text-xs text-foreground-subtle hover:bg-hover"
                                 data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="awaiting"
                                 onClick={(e) =>
@@ -1192,7 +1193,7 @@ export default function PanelDesignerView({
                             return (
                               <td
                                 key={det.id}
-                                className="cursor-pointer px-2 py-2 text-center text-xs text-gray-300 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                className="cursor-pointer px-2 py-2 text-center text-xs text-foreground-subtle hover:bg-hover"
                                 data-testid={'cell-' + rowId + '-' + det.id}
                                 data-state="incompatible"
                                 onClick={(e) =>
@@ -1240,7 +1241,7 @@ export default function PanelDesignerView({
               {pendingRows.map((pendingId) => (
                 <tr
                   key={pendingId}
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="border-b border-border hover:bg-hover"
                 >
                   <td className="w-6 px-1 py-2" />
                   <td className="sticky left-0 z-10 px-3 py-2" style={{ minWidth: '200px' }}>
@@ -1285,7 +1286,7 @@ export default function PanelDesignerView({
             </tbody>
           </table>
           {laserGroups.length > 0 && (
-            <div className="flex items-center gap-4 px-3 py-2 border-t border-gray-100 dark:border-gray-700 text-xs text-foreground-subtle">
+            <div className="flex items-center gap-4 px-3 py-2 border-t border-border text-xs text-foreground-subtle">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: laserGroups[0]?.color + '25' }} /> Assigned
               </span>
@@ -1338,7 +1339,7 @@ export default function PanelDesignerView({
         <div className="rounded border border-border bg-elevated">
           <button
             onClick={() => setSpectraCollapsed(!spectraCollapsed)}
-            className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-foreground hover:bg-hover"
           >
             <span>{spectraCollapsed ? '\u25B6' : '\u25BC'}</span>
             Panel Spectra
@@ -1347,7 +1348,7 @@ export default function PanelDesignerView({
             </span>
           </button>
           {!spectraCollapsed && (
-            <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-4">
+            <div className="border-t border-border px-4 pb-4">
               <PanelSpectraByLaser
                 instrument={state.instrument}
                 activeTargets={activeTargets}
@@ -1367,10 +1368,10 @@ export default function PanelDesignerView({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="w-[440px] rounded-lg bg-elevated shadow-xl">
             <div className="border-b border-border px-6 py-4">
-              <h2 className="text-lg font-bold dark:text-gray-100">Change Instrument</h2>
+              <h2 className="text-lg font-bold text-foreground">Change Instrument</h2>
             </div>
             <div className="px-6 py-4">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-foreground">
                 Changing the instrument will remove all current fluorophore assignments.
                 Your target antibodies will be preserved.
               </p>
@@ -1384,7 +1385,7 @@ export default function PanelDesignerView({
             <div className="flex justify-end gap-2 border-t border-border px-6 py-3">
               <button
                 onClick={() => setInstrumentChangeModal(null)}
-                className="rounded border border-border-strong px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-foreground hover:bg-hover"
               >
                 Cancel
               </button>
@@ -1407,7 +1408,7 @@ export default function PanelDesignerView({
                   setInstrumentChangeModal(null)
                   handlers.onInstrumentChange!(newId ?? '')
                 }}
-                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700" // theme-exempt: danger button needs white-on-red, no danger-foreground token
               >
                 Continue
               </button>
