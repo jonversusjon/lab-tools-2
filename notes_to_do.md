@@ -16,3 +16,4 @@ experiment title on experiment page should be editable like a block, but not mov
 
 should loction list be shared across resources
 
+IN THE if panel spectral mode a blank channel box with no channels should not appear with no instrument selected. there needs to be an indication to the user that channel selection will become active once a microscope is selected. it could even be a link to select microscope from where the channel box appears after microscope is slected.
