@@ -198,16 +198,16 @@ export default function SecondaryList() {
   if (isLoading) return <p className="text-foreground-muted">Loading secondary antibodies...</p>
   if (error) return <p className="text-red-600">Failed to load secondary antibodies.</p>
 
-  const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+  const inputClass = "w-full rounded border border-border-strong bg-elevated px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Secondary Antibodies</h1>
+        <h1 className="text-2xl font-bold text-foreground">Secondary Antibodies</h1>
         <div className="flex gap-2">
           <button
             onClick={() => setShowImport(true)}
-            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-foreground hover:bg-hover"
           >
             Import CSV
           </button>
@@ -252,7 +252,7 @@ export default function SecondaryList() {
               <HoverActionsRow
                 key={sa.id}
                 as="tr"
-                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="border-b border-border hover:bg-hover"
                 onClick={() => setExpandedId(expandedId === sa.id ? null : sa.id)}
                 actions={{
                   onRename: () => openEdit(sa),
@@ -260,8 +260,8 @@ export default function SecondaryList() {
                 }}
               >
                 <td className="py-2 font-medium text-foreground">{sa.name}</td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{sa.host}</td>
-              <td className="py-2 text-gray-600 dark:text-gray-400">
+                <td className="py-2 text-foreground-muted">{sa.host}</td>
+              <td className="py-2 text-foreground-muted">
                   {sa.binding_mode === 'conjugate' ? (
                     <span className="text-amber-600 dark:text-amber-400" title="Targets conjugate">
                       {sa.target_conjugate ?? '?'}
@@ -270,7 +270,7 @@ export default function SecondaryList() {
                     sa.target_species
                   )}
                 </td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{sa.target_isotype ?? '—'}</td>
+                <td className="py-2 text-foreground-muted">{sa.target_isotype ?? '—'}</td>
                 <td className="py-2">
                   {sa.fluorophore_name ? (
                     <span className="text-teal-700 dark:text-teal-400">{sa.fluorophore_name}</span>
@@ -300,7 +300,7 @@ export default function SecondaryList() {
       >
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -313,7 +313,7 @@ export default function SecondaryList() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Binding Mode <span className="text-red-500">*</span>
             </label>
             <div className="flex gap-2">
@@ -322,8 +322,8 @@ export default function SecondaryList() {
                 onClick={() => setField('binding_mode', 'species')}
                 className={`rounded border px-3 py-1.5 text-sm ${
                   form.binding_mode === 'species'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                    ? 'border-accent bg-accent-soft text-accent-soft-foreground font-medium'
+                    : 'border-border-strong text-foreground-muted'
                 }`}
               >
                 Anti-Species
@@ -333,8 +333,8 @@ export default function SecondaryList() {
                 onClick={() => setField('binding_mode', 'conjugate')}
                 className={`rounded border px-3 py-1.5 text-sm ${
                   form.binding_mode === 'conjugate'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
+                    ? 'border-accent bg-accent-soft text-accent-soft-foreground font-medium'
+                    : 'border-border-strong text-foreground-muted'
                 }`}
               >
                 Conjugate Reagent
@@ -368,7 +368,7 @@ export default function SecondaryList() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-1 block text-sm font-medium text-foreground">
                     Target Isotype
                   </label>
                   <input
@@ -384,7 +384,7 @@ export default function SecondaryList() {
                   </datalist>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-1 block text-sm font-medium text-foreground">
                     Vendor
                   </label>
                   {/* TODO: This vendor input needs to be a select/combobox with the same
@@ -415,7 +415,7 @@ export default function SecondaryList() {
                   required
                 />
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-1 block text-sm font-medium text-foreground">
                     Target Conjugate <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -433,7 +433,7 @@ export default function SecondaryList() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-1 block text-sm font-medium text-foreground">
                     Vendor
                   </label>
                   {/* TODO: This vendor input needs to be a select/combobox with the same
@@ -453,7 +453,7 @@ export default function SecondaryList() {
             </>
           )}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Fluorophore
             </label>
             <FluorophoreSearch
@@ -472,7 +472,7 @@ export default function SecondaryList() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Catalog Number
               </label>
               <input
@@ -483,7 +483,7 @@ export default function SecondaryList() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Lot Number
               </label>
               <input
@@ -495,7 +495,7 @@ export default function SecondaryList() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground">
               Notes
             </label>
             <textarea
@@ -509,7 +509,7 @@ export default function SecondaryList() {
             <button
               type="button"
               onClick={() => { setShowModal(false); setEditingId(null) }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground hover:bg-hover"
             >
               Cancel
             </button>
@@ -538,7 +538,7 @@ export default function SecondaryList() {
         <div className="space-y-4">
           {!importItems && !importResult && (
             <div>
-              <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+              <p className="mb-3 text-sm text-foreground-muted">
                 Upload a CSV file with columns: name, host, target_species, target_isotype, fluorophore, vendor, catalog_number.
                 Required columns: name, host, target_species.
               </p>
@@ -547,7 +547,7 @@ export default function SecondaryList() {
                 type="file"
                 accept=".csv"
                 onChange={handleCsvUpload}
-                className="block w-full text-sm text-foreground-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/50"
+                className="block w-full text-sm text-foreground-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-accent-soft file:text-accent-soft-foreground hover:file:bg-accent-soft"
               />
               {uploadCsvMutation.isPending && (
                 <p className="mt-2 text-sm text-foreground-muted">Parsing CSV...</p>
@@ -561,7 +561,7 @@ export default function SecondaryList() {
           {importItems && (
             <div>
               <div className="mb-3 flex items-center justify-between">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-foreground-muted">
                   {importItems.length} rows ready to import
                   {importItems.filter((i) => i.warnings.length > 0).length > 0 && (
                     <span className="ml-1 text-amber-600 dark:text-amber-400">
@@ -571,7 +571,7 @@ export default function SecondaryList() {
                 </p>
                 <button
                   onClick={() => { setImportItems(null) }}
-                  className="text-sm text-foreground-muted hover:text-gray-700 dark:hover:text-gray-200"
+                  className="text-sm text-foreground-muted hover:text-foreground"
                 >
                   Back
                 </button>
@@ -595,22 +595,22 @@ export default function SecondaryList() {
                       <tr
                         key={item.row_number}
                         className={
-                          'border-b border-gray-100 dark:border-gray-700' +
+                          'border-b border-border' +
                           (item.warnings.length > 0 ? ' bg-amber-50 dark:bg-amber-900/20' : '')
                         }
                       >
-                        <td className="px-2 py-1.5 text-gray-400">{item.row_number}</td>
+                        <td className="px-2 py-1.5 text-foreground-subtle">{item.row_number}</td>
                         <td className="px-2 py-1.5 text-foreground">{item.name}</td>
-                        <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400">{item.host}</td>
-                        <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400">{item.target_species}</td>
-                        <td className="px-2 py-1.5 text-gray-600 dark:text-gray-400">{item.target_isotype ?? '—'}</td>
+                        <td className="px-2 py-1.5 text-foreground-muted">{item.host}</td>
+                        <td className="px-2 py-1.5 text-foreground-muted">{item.target_species}</td>
+                        <td className="px-2 py-1.5 text-foreground-muted">{item.target_isotype ?? '—'}</td>
                         <td className="px-2 py-1.5">
                           {item.fluorophore_id ? (
                             <span className="text-teal-700 dark:text-teal-400">{item.fluorophore_name}</span>
                           ) : item.fluorophore_name ? (
                             <span className="text-amber-600 dark:text-amber-400" title="Not matched">{item.fluorophore_name}</span>
                           ) : (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-foreground-subtle">—</span>
                           )}
                         </td>
                         <td className="px-2 py-1.5 text-foreground-muted">{item.vendor ?? '—'}</td>
@@ -645,7 +645,7 @@ export default function SecondaryList() {
                 <button
                   type="button"
                   onClick={closeImport}
-                  className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="rounded border border-border-strong px-4 py-2 text-sm text-foreground hover:bg-hover"
                 >
                   Cancel
                 </button>
@@ -662,7 +662,7 @@ export default function SecondaryList() {
 
           {importResult && (
             <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-foreground">
                 Created <span className="font-semibold text-green-600 dark:text-green-400">{importResult.created}</span> secondary antibodies.
                 {importResult.skipped > 0 && (
                   <span>
@@ -701,14 +701,14 @@ function SecondaryDetail({
   onEdit: (sa: SecondaryAntibody) => void
 }) {
   return (
-    <div className="mt-2 rounded-lg border border-border bg-gray-50 dark:bg-gray-800/50 p-4">
+    <div className="mt-2 rounded-lg border border-border bg-surface p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold dark:text-gray-100">
+        <h3 className="text-sm font-semibold text-foreground">
           {sa.name}
         </h3>
         <button
           onClick={() => onEdit(sa)}
-          className="rounded border border-border-strong px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+          className="rounded border border-border-strong px-3 py-1 text-xs text-foreground hover:bg-elevated"
         >
           Edit
         </button>
@@ -727,7 +727,7 @@ function SecondaryDetail({
       {sa.notes && (
         <div className="mt-2">
           <span className="text-xs font-medium text-foreground-muted">Notes:</span>
-          <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">{sa.notes}</p>
+          <p className="mt-0.5 text-xs text-foreground">{sa.notes}</p>
         </div>
       )}
     </div>
@@ -738,8 +738,8 @@ function DetailField({ label, value }: { label: string; value: string | null | u
   return (
     <div>
       <span className="text-foreground-muted">{label}: </span>
-      <span className="text-gray-800 dark:text-gray-200">
-        {value || <span className="italic text-gray-400">--</span>}
+      <span className="text-foreground">
+        {value || <span className="italic text-foreground-subtle">--</span>}
       </span>
     </div>
   )
