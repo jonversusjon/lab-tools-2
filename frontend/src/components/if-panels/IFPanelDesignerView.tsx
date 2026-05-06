@@ -91,7 +91,7 @@ function SortableRow({
     ...(isDragging ? { opacity: 0.5, position: 'relative', zIndex: 50 } : {}),
   }
 
-  const finalClassName = (className ?? '') + ' bg-white dark:bg-gray-800'
+  const finalClassName = (className ?? '') + ' bg-elevated'
 
   return (
     <tr ref={setNodeRef} style={style} className={finalClassName} {...attributes}>
@@ -384,7 +384,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
           {config.showBackButton && (
             <button
               onClick={() => window.history.back()}
-              className="text-sm text-foreground-muted hover:text-gray-700 dark:hover:text-gray-200"
+              className="text-sm text-foreground-muted hover:text-foreground"
             >
               &larr; Panels
             </button>
@@ -404,11 +404,11 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   setEditingName(false)
                 }
               }}
-              className="rounded border border-blue-300 dark:border-blue-600 bg-white dark:bg-gray-700 px-2 py-1 text-2xl font-bold dark:text-gray-100 focus:outline-none"
+              className="rounded border border-accent bg-elevated px-2 py-1 text-2xl font-bold text-foreground focus:outline-none"
             />
           ) : (
             <h1
-              className="cursor-pointer text-2xl font-bold dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400"
+              className="cursor-pointer text-2xl font-bold text-foreground hover:text-accent"
               onClick={() => setEditingName(true)}
               title="Click to edit name"
             >
@@ -425,8 +425,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   className={
                     'px-3 py-1.5 ' +
                     (state.viewMode === 'simple'
+                      // theme-exempt: inverted toggle — dark bg in light mode, light bg in dark mode by design
                       ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 font-medium'
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700')
+                      : 'bg-elevated text-foreground-muted hover:bg-hover')
                   }
                 >
                   Simple
@@ -434,10 +435,11 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                 <button
                   onClick={() => handlers.onViewModeToggle?.('spectral')}
                   className={
-                    'px-3 py-1.5 border-l border-gray-200 dark:border-gray-700 ' +
+                    'px-3 py-1.5 border-l border-border ' +
                     (state.viewMode === 'spectral'
+                      // theme-exempt: inverted toggle — dark bg in light mode, light bg in dark mode by design
                       ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 font-medium'
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700')
+                      : 'bg-elevated text-foreground-muted hover:bg-hover')
                   }
                 >
                   Spectral
@@ -461,14 +463,14 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
         {/* Microscope selector row */}
         {config.showMicroscopeSelector && microscopes && handlers.onMicroscopeChange && (
           <div className="flex items-center gap-2">
-            <label htmlFor="microscope-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="microscope-select" className="text-sm font-medium text-foreground">
               Microscope:
             </label>
             <select
               id="microscope-select"
               value={state.panel!.microscope_id ?? ''}
               onChange={(e) => handlers.onMicroscopeChange!(e.target.value)}
-              className="rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="rounded border border-border-strong bg-elevated px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
             >
               <option value="">None</option>
               {microscopes.map((m) => (
@@ -565,10 +567,10 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                         key={t.id}
                         id={t.id}
                         className={
-                          'border-b border-gray-100 dark:border-gray-700' +
+                          'border-b border-border' +
                           (hasAssignment
                             ? ' bg-emerald-50/30 dark:bg-emerald-900/10'
-                            : ' hover:bg-gray-50 dark:hover:bg-gray-800/50')
+                            : ' hover:bg-hover')
                         }
                       >
                         {(listeners) => (
@@ -576,7 +578,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             {/* Drag handle */}
                             <td
                               {...listeners}
-                              className="w-7 px-1 py-2 cursor-grab text-foreground-subtle hover:text-gray-600 active:cursor-grabbing dark:hover:text-gray-300 select-none"
+                              className="w-7 px-1 py-2 cursor-grab text-foreground-subtle hover:text-foreground-muted active:cursor-grabbing select-none"
                               title="Drag to reorder"
                             >
                               <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto">
@@ -639,7 +641,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             </td>
 
                             {/* Primary Ab name (or dye label name) */}
-                            <td className="px-3 py-2 text-gray-600 dark:text-gray-300" style={{ minWidth: 180 }}>
+                            <td className="px-3 py-2 text-foreground-muted" style={{ minWidth: 180 }}>
                               <span className="text-sm">
                                 {isDyeLabelRow
                                   ? (t.dye_label_name ?? dl?.name ?? '\u2014')
@@ -673,7 +675,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                     </span>
                                     <button
                                       onClick={() => setOverriddenRows((prev) => new Set(prev).add(t.id))}
-                                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-gray-400 hover:text-blue-500 transition-opacity"
+                                      className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-foreground-subtle hover:text-accent transition-opacity"
                                       title="Override pre-conjugated fluorophore"
                                     >
                                       &#9998;
@@ -712,7 +714,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                       onClear={() => handleClearFluorophore(t.antibody_id!)}
                                     />
                                   ) : (
-                                    <span className="text-xs italic text-gray-300 dark:text-gray-600">&mdash;</span>
+                                    <span className="text-xs italic text-foreground-subtle">&mdash;</span>
                                   )}
                                 </td>
                               )
@@ -729,7 +731,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                       const rowId = isDyeLabelRow ? t.dye_label_id! : t.antibody_id!
                                       handlers.onUpdateChannel(rowId, isDyeLabelRow, assignment, newFilterId)
                                     }}
-                                    className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-0.5 text-xs dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                                    className="w-full rounded border border-border-strong bg-elevated px-2 py-0.5 text-xs text-foreground focus:border-accent focus:outline-none"
                                   >
                                     <option value="">None</option>
                                     {state.microscope?.lasers.map((laser) => (
@@ -747,7 +749,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                     ))}
                                   </select>
                                 ) : (
-                                  <span className="text-xs italic text-gray-300 dark:text-gray-600">&mdash;</span>
+                                  <span className="text-xs italic text-foreground-subtle">&mdash;</span>
                                 )}
                               </td>
                             )}
@@ -763,7 +765,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                 if (match) exPct = Math.round(match.excitation_efficiency * 100) + '%'
                               }
                               return (
-                                <td className="px-3 py-2 text-xs text-center text-gray-600 dark:text-gray-300 tabular-nums" style={{ width: 60 }}>
+                                <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
                                   {exPct}
                                 </td>
                               )
@@ -780,7 +782,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                 if (match) detPct = Math.round(match.detection_efficiency * 100) + '%'
                               }
                               return (
-                                <td className="px-3 py-2 text-xs text-center text-gray-600 dark:text-gray-300 tabular-nums" style={{ width: 60 }}>
+                                <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
                                   {detPct}
                                 </td>
                               )
@@ -813,13 +815,13 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                   className={
                                     'w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-xs ' +
                                     (t.dilution_override
-                                      ? 'text-gray-700 dark:text-gray-300'
-                                      : 'text-gray-400 dark:text-gray-500 italic') +
-                                    ' placeholder-gray-300 dark:placeholder-gray-600 focus:border-gray-300 dark:focus:border-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-700 focus:text-gray-700 dark:focus:text-gray-300 focus:not-italic'
+                                      ? 'text-foreground'
+                                      : 'text-foreground-subtle italic') +
+                                    ' placeholder-foreground-subtle focus:border-border-strong focus:outline-none focus:bg-elevated focus:text-foreground focus:not-italic'
                                   }
                                 />
                               ) : (
-                                <span className="text-xs italic text-gray-300 dark:text-gray-600">&mdash;</span>
+                                <span className="text-xs italic text-foreground-subtle">&mdash;</span>
                               )}
                             </td>
 
@@ -827,7 +829,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             <td className="px-3 py-2" style={{ minWidth: 120 }}>
                               {(() => {
                                 const noteKey = isDyeLabelRow ? t.dye_label_id : t.antibody_id
-                                if (!noteKey) return <span className="text-xs italic text-gray-300 dark:text-gray-600">&mdash;</span>
+                                if (!noteKey) return <span className="text-xs italic text-foreground-subtle">&mdash;</span>
                                 return (
                                   <input
                                     type="text"
@@ -842,7 +844,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                       })
                                     }}
                                     placeholder="Add note..."
-                                    className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-gray-600 dark:text-gray-400 placeholder-gray-300 dark:placeholder-gray-600 focus:border-gray-300 dark:focus:border-gray-600 focus:outline-none focus:bg-white dark:focus:bg-gray-700"
+                                    className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-foreground-muted placeholder-foreground-subtle focus:border-border-strong focus:outline-none focus:bg-elevated"
                                   />
                                 )
                               })()}
@@ -869,7 +871,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                 {pendingRows.map((pendingId) => (
                   <tr
                     key={pendingId}
-                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    className="border-b border-border hover:bg-hover"
                   >
                     <td className="w-7 px-1 py-2" />
                     <td className="px-3 py-2" style={{ minWidth: 160 }}>
@@ -907,7 +909,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   <td colSpan={totalCols} className="px-3 py-2">
                     <button
                       onClick={handleAddRowClick}
-                      className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                      className="flex items-center gap-1 text-sm text-accent hover:text-accent-hover"
                     >
                       <span className="text-lg leading-none">+</span> Add Target
                     </button>
@@ -927,13 +929,13 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
           onClose={() => setShowDeleteConfirm(false)}
           title="Delete Panel"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-foreground-muted">
             Are you sure you want to delete <strong>{state.panel!.name}</strong>? This action cannot be undone.
           </p>
           <div className="mt-4 flex justify-end gap-2">
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="rounded px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="rounded px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
@@ -942,7 +944,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                 setShowDeleteConfirm(false)
                 handlers.onDelete!()
               }}
-              className="rounded px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700"
+              className="rounded px-4 py-2 text-sm bg-red-600 text-white hover:bg-red-700" /* theme-exempt: danger button — white text on red bg */
             >
               Delete
             </button>
