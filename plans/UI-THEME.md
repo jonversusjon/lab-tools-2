@@ -17,7 +17,7 @@ the accent.
 - Convert Tiptap-specific hardcoded `rgb()` values to CSS vars
 - No `.tsx` files modified
 
-### Phase B — Codemod for predictable replacements
+### Phase B — Codemod for predictable replacements ✅ complete (commit ae56900)
 A scripted find-and-replace handles the regular patterns across all
 `.tsx` files. Mapping table:
 
@@ -35,6 +35,18 @@ A scripted find-and-replace handles the regular patterns across all
 
 Agent runs codemod, builds, screenshots key pages, reports diffs and
 any non-matching gray-* leftovers per directory.
+
+Lessons learned (Phase B):
+- Codemod scanned 107 .tsx files, modified 62 (609 individual replacements across 9 patterns).
+- `bg-accent` reordering (inserting at position of first matched class) produces slightly
+  different class-string order than the original but is functionally identical — expected.
+- Template-literal classNames (`className={\`...\`}`) and `cn()`/`clsx()` calls were
+  deliberately skipped; 61 files still have raw grays (see Phase C+ scope below).
+- `bg-white dark:bg-gray-800` → `bg-elevated` had 38 hits — the largest 2-class pattern.
+- `border-border-strong` and `border-border` together had 222 hits — bulk of the work.
+- Intermediate grays not in migration table (`text-gray-600`, `bg-gray-100`, etc.) are
+  the dominant leftover; these are Phase C+ hand-work.
+- Idempotency verified: second codemod run modified 0 files.
 
 ### Phase C+ — Manual cleanup by domain
 Anything the codemod missed: custom inline hex, unusual class combos,
