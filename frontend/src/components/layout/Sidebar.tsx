@@ -26,10 +26,26 @@ const sidebarEntries: SidebarEntry[] = [
   {
     type: 'group',
     group: {
+      key: 'templates',
+      label: 'Templates',
+      icon: '📋',
+      children: [
+        { to: '/flow/panels', label: 'Flow Cytometry', icon: '🔬' },
+        { to: '/if-ihc/panels', label: 'Immunostaining', icon: '🔬' },
+        { to: '/plate-maps', label: 'Plate Maps', icon: '🧫' },
+        { to: '/qpcr/plates', label: 'qPCR', icon: '📋' },
+      ],
+    },
+  },
+  {
+    type: 'group',
+    group: {
       key: 'resources',
       label: 'Resources',
       icon: '📦',
       children: [
+        { to: '/flow/instruments', label: 'Instruments', icon: '🔧' },
+        { to: '/if-ihc/microscopes', label: 'Microscopes', icon: '🔧' },
         { to: '/resources/primaries', label: 'Primaries', icon: '🧬' },
         { to: '/resources/secondaries', label: 'Secondaries', icon: '🔗' },
         { to: '/resources/fluorophores', label: 'Fluorophores', icon: '🌈' },
@@ -38,42 +54,6 @@ const sidebarEntries: SidebarEntry[] = [
       ],
     },
   },
-  {
-    type: 'group',
-    group: {
-      key: 'flow',
-      label: 'Flow Cytometry',
-      icon: '🔬',
-      children: [
-        { to: '/flow/instruments', label: 'Instruments', icon: '🔧' },
-        { to: '/flow/panels', label: 'Panel Templates', icon: '📋' },
-      ],
-    },
-  },
-  {
-    type: 'group',
-    group: {
-      key: 'if-ihc',
-      label: 'IF / IHC',
-      icon: '🔬',
-      children: [
-        { to: '/if-ihc/microscopes', label: 'Microscopes', icon: '🔧' },
-        { to: '/if-ihc/panels', label: 'Panel Templates', icon: '📋' },
-      ],
-    },
-  },
-  {
-    type: 'group',
-    group: {
-      key: 'qpcr',
-      label: 'qPCR',
-      icon: '🧬',
-      children: [
-        { to: '/qpcr/plates', label: 'Plates', icon: '📋' },
-      ],
-    },
-  },
-  { type: 'link', item: { to: '/plate-maps', label: 'Plate Maps', icon: '🧫' } },
   { type: 'link', item: { to: '/settings', label: 'Settings', icon: '⚙️' } },
 ]
 

@@ -180,6 +180,20 @@ endpoint to inspect what would change before committing.
 
 **Origin:** Persistence Sprint Phase 4.
 
+### Import preview endpoints use O(n) set lookups, not O(n²) per-item queries
+Build existence sets with one SELECT each before looping — not one query per item:
+```python
+existing_ids = {r.id for r in db.query(Model.id).all()}
+existing_names = {r.name for r in db.query(Model.name).all()}
+for item in payload.items:
+    if item.id in existing_ids: ...
+    elif item.name in existing_names: ...
+```
+Per-item queries are fine for small payloads but unacceptably slow at scale
+(fluorophore imports can have 1,896 items).
+
+**Origin:** Persistence Sprint Phase 4, commit `88c3359`.
+
 ---
 
 ## Backup and durability

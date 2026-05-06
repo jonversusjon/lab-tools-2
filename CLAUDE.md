@@ -16,6 +16,10 @@ These are the mistakes that cause the most rework. Verify every one before commi
 - [ ] **ExperimentBlock.content is JSON text** — always `json.loads()` on read, `json.dumps()` on write in the router. Same pattern as PlateMap.well_data.
 - [ ] **PlateMap.well_data and legend are JSON text columns** — always `json.loads()` on read, `json.dumps()` on write in the router. Pydantic handles dict ↔ JSON at the API boundary but SQLAlchemy stores raw strings.
 - [ ] **PlateMap: no FK columns, no cascade rules needed** — well_data and legend are JSON text columns, no child records.
+- [ ] **`db.flush()` before bulk insert when parent was just added** — if you `db.add(parent)` then immediately bulk-insert child rows referencing its ID, call `db.flush()` first. The test fixture uses `autoflush=False`; without the flush the FK constraint fires on the bulk insert even though production (`autoflush=True`) would never hit this. Pattern: `db.add(parent); db.flush(); db.execute(insert(Child).values([...]))`
+
+  **Origin:** Persistence Sprint Phase 4 anomaly, commit `88c3359`.
+
 - [ ] **PanelTarget.antibody_id is NULLABLE** — empty rows are valid placeholders. Multiple null-antibody rows are allowed.
 - [ ] **PanelTarget uniqueness on (panel_id, antibody_id)** is enforced in APPLICATION CODE, not DB constraint (because antibody_id can be null).
 - [ ] **SecondaryAntibody.fluorophore_id** uses `ondelete="SET NULL"` (same pattern as Antibody).
