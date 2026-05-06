@@ -66,7 +66,17 @@ Lessons learned (Phase C):
 - `placeholder-gray-300 dark:placeholder-gray-600` → `placeholder-foreground-subtle` — placeholder Tailwind utilities work with hyphenated token names.
 - `focus:bg-white dark:focus:bg-gray-700` → `focus:bg-elevated` — focus-state bg maps cleanly.
 
-### Phase D — Manual cleanup by domain
+### Phase D — Manual cleanup by domain ✅ complete (commits ce75bf0, 481436a, d295962)
+
+Migrated `PanelDesignerView.tsx`, `AntibodyTable.tsx`, and `GenericImportDiffModal.tsx`.
+
+**Lessons learned:**
+- **Table migration pattern** (AntibodyTable): `text-gray-600 dark:text-gray-400` → `text-foreground-muted` (canonical for secondary cell text); `border-gray-100 dark:border-gray-700` → `border-border`; `hover:bg-gray-50 dark:hover:bg-gray-800` → `hover:bg-hover`. This template applies to all future `*List.tsx` / `*Table.tsx` migrations.
+- **Diff-modal migration pattern** (GenericImportDiffModal): Resolution-button active state `bg-blue-600 text-white` → `bg-accent text-accent-foreground`; inactive state `border-gray-300 ... hover:bg-gray-100 dark:hover:bg-gray-700` → `border-border-strong ... hover:bg-hover`. Apply button (`bg-green-600 text-white`) kept raw — semantic success action with no `success-foreground` token.
+- **Token gap surfaced**: `success-soft`, `danger-soft`, `warning-soft` tokens would eliminate holdouts in diff modals and other semantic-color areas (informs Phase E).
+- **Toggle inactive track** (`bg-gray-300 dark:bg-gray-600`) has no token between `surface` and `border-strong`; kept raw in two places.
+- **Ring-offset colors** (`dark:ring-offset-gray-800/900`) have no token; kept raw in tag-filter and highlight-ring patterns.
+
 Anything the codemod missed: custom inline hex, unusual class combos,
 specialized components (spillover heatmap, chart annotations, etc.).
 - D: remaining domain components (antibodies / panels / experiments /
