@@ -1770,6 +1770,9 @@ def import_fluorophores_commit(
                 has_spectra=f.has_spectra,
                 is_favorite=f.is_favorite,
             ))
+            # Flush so the FK constraint on fluorophore_spectra.fluorophore_id resolves
+            # even when autoflush=False (e.g. test fixtures).
+            db.flush()
             # Bulk-insert spectrum rows per fluorophore to avoid 838k individual INSERTs.
             # The ix_fluor_spectra index slows bulk inserts at full scale; this is acceptable
             # for a recovery operation and can be optimized (drop+recreate index) if needed.
