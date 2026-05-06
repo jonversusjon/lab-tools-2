@@ -4,7 +4,7 @@ import ConnectionStatus from './ConnectionStatus'
 
 export default function Shell() {
   return (
-    <div className="flex h-screen flex-col bg-white dark:bg-gray-900">
+    <div className="flex h-screen flex-col bg-background">
       <ConnectionStatus />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

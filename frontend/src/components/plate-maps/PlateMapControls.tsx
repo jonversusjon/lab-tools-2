@@ -95,10 +95,10 @@ export default function PlateMapControls({
     'rounded px-3 py-1.5 text-sm font-medium transition-colors duration-100 '
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+    <div className="flex flex-col gap-4 p-4 bg-elevated border border-border rounded-lg">
       {/* Plate type selector */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-1">
           Plate Type
         </label>
         <select
@@ -118,7 +118,7 @@ export default function PlateMapControls({
 
       {/* Color layer tabs */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-1">
           Color Layer
         </label>
         <div className="flex rounded border border-gray-200 dark:border-gray-600 overflow-hidden">
@@ -141,17 +141,17 @@ export default function PlateMapControls({
         {activeColor && (
           <div className="mt-1 flex items-center gap-2">
             <div
-              className="w-4 h-4 rounded border border-gray-300 dark:border-gray-600"
+              className="w-4 h-4 rounded border border-border-strong"
               style={{ backgroundColor: activeColor }}
             />
-            <span className="text-xs text-gray-500 dark:text-gray-400">{activeColor}</span>
+            <span className="text-xs text-foreground-muted">{activeColor}</span>
           </div>
         )}
       </div>
 
       {/* Color palette */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-1">
           Color Palette
         </label>
         <div className="flex flex-col gap-0.5">
@@ -168,7 +168,7 @@ export default function PlateMapControls({
             >
               <span className="text-xs leading-none">✕</span>
             </button>
-            <span className="text-xs text-gray-400 dark:text-gray-500">None</span>
+            <span className="text-xs text-foreground-subtle">None</span>
           </div>
           {displayColors.map((hue) => (
             <div key={hue.name} className="flex gap-0.5">
@@ -201,7 +201,7 @@ export default function PlateMapControls({
 
       {/* Custom hex */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-1">
           Custom Hex
         </label>
         <div className="flex gap-2">
@@ -234,7 +234,7 @@ export default function PlateMapControls({
       {/* Presets */}
       {presets.length > 0 && (
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-1">
             Presets
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -244,7 +244,7 @@ export default function PlateMapControls({
                   type="button"
                   title={hex}
                   onClick={() => onApplyColor(hex)}
-                  className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform"
+                  className="w-6 h-6 rounded border border-border-strong hover:scale-110 transition-transform"
                   style={{ backgroundColor: hex }}
                 />
                 <button
@@ -277,7 +277,7 @@ export default function PlateMapControls({
       )}
 
       {/* Actions */}
-      <div className="flex flex-col gap-2 border-t border-gray-200 dark:border-gray-700 pt-3">
+      <div className="flex flex-col gap-2 border-t border-border pt-3">
         <div className="flex gap-2">
           <button
             type="button"

@@ -93,7 +93,7 @@ function RecordSummary({
         }
         return (
           <div key={k} className={rowClass + ' flex items-baseline gap-2'}>
-            <span className="w-28 shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400">{k}</span>
+            <span className="w-28 shrink-0 text-xs font-medium text-foreground-muted">{k}</span>
             <span className="text-sm text-gray-800 dark:text-gray-200 break-all">
               {v === null || v === undefined || v === ''
                 ? <span className="text-gray-400 italic">null</span>
@@ -124,7 +124,7 @@ function NestedChildLine({ child }: { child: RawRecord }) {
     <>
       {label}
       {nested ? (
-        <ul className="ml-4 list-[circle] text-gray-500 dark:text-gray-400">
+        <ul className="ml-4 list-[circle] text-foreground-muted">
           {(child.detectors as RawRecord[] | undefined)?.map((d, i) => (
             <li key={'d-' + i}>
               <NestedChildLine child={d} />
@@ -233,7 +233,7 @@ export default function NestedImportDiffModal({
         </ul>
       </div>
 
-      <div className="mb-3 flex gap-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="mb-3 flex gap-2 border-b border-border">
         <button
           onClick={() => setTab('conflicts')}
           className={
@@ -261,7 +261,7 @@ export default function NestedImportDiffModal({
       {tab === 'conflicts' && (
         <>
           {conflicts.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="py-8 text-center text-sm text-foreground-muted">
               No conflicts.
             </div>
           ) : currentConflict ? (
@@ -292,21 +292,21 @@ export default function NestedImportDiffModal({
                   <button
                     onClick={() => setConflictIndex((i) => Math.max(0, i - 1))}
                     disabled={conflictIndex === 0}
-                    className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs disabled:opacity-40"
+                    className="rounded border border-border-strong px-2 py-1 text-xs disabled:opacity-40"
                   >
                     ← Prev
                   </button>
                   <button
                     onClick={() => setConflictIndex((i) => Math.min(conflicts.length - 1, i + 1))}
                     disabled={conflictIndex >= conflicts.length - 1}
-                    className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs disabled:opacity-40"
+                    className="rounded border border-border-strong px-2 py-1 text-xs disabled:opacity-40"
                   >
                     Next →
                   </button>
                 </div>
               </div>
 
-              <div className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="mb-2 text-xs text-foreground-muted">
                 Differing fields: {currentConflict.diff_fields.join(', ')}
               </div>
 
@@ -319,7 +319,7 @@ export default function NestedImportDiffModal({
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+                <div className="rounded border border-border bg-gray-50 p-3 dark:bg-gray-900/40">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
                       Existing · {summaryLine(currentConflict.existing, childKeys)}
@@ -369,16 +369,16 @@ export default function NestedImportDiffModal({
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-200 pt-3 dark:border-gray-700">
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
                 <button
                   onClick={acceptAllImported}
-                  className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                  className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1.5 text-xs font-medium"
                 >
                   Accept all imported
                 </button>
                 <button
                   onClick={keepAllExisting}
-                  className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="rounded border border-border-strong px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Keep all existing
                 </button>
@@ -396,7 +396,7 @@ export default function NestedImportDiffModal({
       {tab === 'new' && (
         <>
           {newItems.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="py-8 text-center text-sm text-foreground-muted">
               No new items.
             </div>
           ) : (
@@ -404,17 +404,17 @@ export default function NestedImportDiffModal({
               {newItems.map((item, idx) => (
                 <div
                   key={String(item.id ?? idx)}
-                  className="rounded border border-gray-200 p-3 dark:border-gray-700"
+                  className="rounded border border-border p-3"
                 >
                   <div className="mb-1 text-sm font-medium text-gray-800 dark:text-gray-200">
                     {labelFor(item)}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-foreground-muted">
                     {summaryLine(item, childKeys)}
                   </div>
                 </div>
               ))}
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-foreground-muted">
                 All new items will be imported as-is.
               </p>
             </div>
@@ -428,11 +428,11 @@ export default function NestedImportDiffModal({
         </div>
       )}
 
-      <div className="mt-5 flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+      <div className="mt-5 flex justify-end gap-2 border-t border-border pt-4">
         <button
           onClick={onClose}
           disabled={applying}
-          className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+          className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
         >
           Cancel
         </button>

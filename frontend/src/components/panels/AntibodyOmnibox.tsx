@@ -105,7 +105,7 @@ export default function AntibodyOmnibox({
       ? createPortal(
           <div
             ref={dropdownRef}
-            className="max-h-60 w-80 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+            className="max-h-60 w-80 overflow-y-auto rounded border border-border bg-elevated shadow-lg"
             style={{
               position: 'fixed',
               top: dropdownPos.top,
@@ -132,15 +132,15 @@ export default function AntibodyOmnibox({
                   <span>
                     <span className="font-medium">{ab.target}</span>
                     {ab.clone && (
-                      <span className="ml-2 text-gray-500 dark:text-gray-400">({ab.clone})</span>
+                      <span className="ml-2 text-foreground-muted">({ab.clone})</span>
                     )}
                   </span>
                   {ab.host && (
-                    <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">{ab.host}</span>
+                    <span className="shrink-0 text-xs text-foreground-subtle">{ab.host}</span>
                   )}
                 </div>
                 {(ab.fluorophore_name || ab.vendor) && (
-                  <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                  <div className="mt-0.5 text-xs text-foreground-subtle">
                     {ab.fluorophore_name && (
                       <span className="text-teal-600 dark:text-teal-400">{ab.fluorophore_name}</span>
                     )}
@@ -159,7 +159,7 @@ export default function AntibodyOmnibox({
         ? createPortal(
             <div
               ref={dropdownRef}
-              className="w-80 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+              className="w-80 rounded border border-border bg-elevated shadow-lg"
               style={{
                 position: 'fixed',
                 top: dropdownPos.top,
@@ -167,7 +167,7 @@ export default function AntibodyOmnibox({
                 zIndex: 9999,
               }}
             >
-              <div className="px-3 py-3 text-sm text-gray-400 dark:text-gray-500">
+              <div className="px-3 py-3 text-sm text-foreground-subtle">
                 No matches for &ldquo;{search}&rdquo;
               </div>
             </div>,
@@ -185,7 +185,7 @@ export default function AntibodyOmnibox({
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={updatePosition}
-        className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+        className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
       />
       {dropdown}
     </>

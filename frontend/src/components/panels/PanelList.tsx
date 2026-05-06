@@ -56,7 +56,7 @@ export default function PanelList() {
     deleteMutation.mutate(id)
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading panel templates...</p>
+  if (isLoading) return <p className="text-foreground-muted">Loading panel templates...</p>
   if (error) return <p className="text-red-600">Failed to load panels.</p>
 
   const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
@@ -66,24 +66,24 @@ export default function PanelList() {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold dark:text-gray-100">Flow Panel Templates</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-sm text-foreground-muted mt-0.5">
             Design reusable panels here. Add them to experiments to use.
           </p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
         >
           New Template
         </button>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No panel templates yet. Create one to get started.</p>
+        <p className="text-foreground-muted">No panel templates yet. Create one to get started.</p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+            <tr className="border-b border-border text-foreground-muted">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Instrument</th>
               <th className="py-2 font-medium">Targets</th>
@@ -108,7 +108,7 @@ export default function PanelList() {
                   onDelete: () => handleDelete(p.id, p.name),
                 }}
               >
-                <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{p.name}</td>
+                <td className="py-2 font-medium text-foreground">{p.name}</td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">
                   {p.instrument_id ? (
                     (() => {
@@ -129,7 +129,7 @@ export default function PanelList() {
                       )
                     })()
                   ) : (
-                    <span className="italic text-gray-400 dark:text-gray-500">No instrument</span>
+                    <span className="italic text-foreground-subtle">No instrument</span>
                   )}
                 </td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">{p.target_count}</td>
@@ -172,13 +172,13 @@ export default function PanelList() {
                 setShowCreate(false)
                 setNewName('')
               }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Create
             </button>
@@ -218,13 +218,13 @@ export default function PanelList() {
                 setEditingPanel(null)
                 setRenameValue('')
               }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleRename}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Save
             </button>

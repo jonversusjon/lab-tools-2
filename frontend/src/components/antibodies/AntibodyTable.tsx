@@ -117,13 +117,13 @@ export default function AntibodyTable() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowImport(true)}
-            className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Import CSV
           </button>
           <button
             onClick={() => setShowNew(true)}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
           >
             New Primary
           </button>
@@ -138,7 +138,7 @@ export default function AntibodyTable() {
             placeholder="Search by target, name, catalog #, vendor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+            className="flex-1 rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
           />
           <button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -156,7 +156,7 @@ export default function AntibodyTable() {
           <select
             value={hostFilter}
             onChange={(e) => setHostFilter(e.target.value)}
-            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
           >
             <option value="">All hosts</option>
             {uniqueHosts.map((h) => (
@@ -167,7 +167,7 @@ export default function AntibodyTable() {
           <select
             value={vendorFilter}
             onChange={(e) => setVendorFilter(e.target.value)}
-            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
           >
             <option value="">All vendors</option>
             {uniqueVendors.map((v) => (
@@ -182,7 +182,7 @@ export default function AntibodyTable() {
                 e.target.value === '' ? null : e.target.value === 'true'
               )
             }
-            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
           >
             <option value="">In stock: Any</option>
             <option value="true">In stock</option>
@@ -229,7 +229,7 @@ export default function AntibodyTable() {
       {/* Table */}
       <table className="w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+          <tr className="border-b border-border text-foreground-muted">
             <th className="w-8 py-2" />
             <th
               className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
@@ -265,7 +265,7 @@ export default function AntibodyTable() {
         <tbody>
           {isLoading && !data ? (
             <tr>
-              <td colSpan={10} className="py-6 text-center text-gray-400 dark:text-gray-500">
+              <td colSpan={10} className="py-6 text-center text-foreground-subtle">
                 Loading antibodies...
               </td>
             </tr>
@@ -279,7 +279,7 @@ export default function AntibodyTable() {
             <tr>
               <td
                 colSpan={10}
-                className="py-6 text-center text-gray-400 dark:text-gray-500"
+                className="py-6 text-center text-foreground-subtle"
               >
                 {search || showFavoritesOnly || selectedTagIds.length > 0
                   ? 'No primary antibodies matching your filters.'
@@ -312,10 +312,10 @@ export default function AntibodyTable() {
                   }
                 />
               </td>
-              <td className="py-2 font-medium text-gray-900 dark:text-gray-100">
+              <td className="py-2 font-medium text-foreground">
                 {ab.target}
                 {ab.name && ab.name !== ab.target && (
-                  <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
+                  <span className="ml-1 text-xs text-foreground-subtle">
                     ({ab.name})
                   </span>
                 )}
@@ -341,7 +341,7 @@ export default function AntibodyTable() {
                     {ab.fluorophore_name}
                   </span>
                 ) : (
-                  <span className="italic text-gray-400 dark:text-gray-500">
+                  <span className="italic text-foreground-subtle">
                     --
                   </span>
                 )}
@@ -362,7 +362,7 @@ export default function AntibodyTable() {
                       e.stopPropagation()
                       setTagManagerId(tagManagerId === ab.id ? null : ab.id)
                     }}
-                    className="rounded-full border border-dashed border-gray-300 dark:border-gray-600 px-1.5 text-xs text-gray-400 hover:border-gray-400 hover:text-gray-500 dark:text-gray-500"
+                    className="rounded-full border border-dashed border-border-strong px-1.5 text-xs text-foreground-subtle hover:border-gray-400 hover:text-gray-500"
                   >
                     +
                   </button>
@@ -412,14 +412,14 @@ function AntibodyDetail({
   onEdit: (ab: Antibody) => void
 }) {
   return (
-    <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
+    <div className="mt-2 rounded-lg border border-border bg-gray-50 dark:bg-gray-800/50 p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold dark:text-gray-100">
           {ab.target} Details
         </h3>
         <button
           onClick={() => onEdit(ab)}
-          className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+          className="rounded border border-border-strong px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
         >
           Edit
         </button>
@@ -449,7 +449,7 @@ function AntibodyDetail({
       </div>
       {ab.notes && (
         <div className="mt-2">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          <span className="text-xs font-medium text-foreground-muted">
             Notes:
           </span>
           <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">
@@ -459,7 +459,7 @@ function AntibodyDetail({
       )}
       {ab.validation_notes && (
         <div className="mt-1">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          <span className="text-xs font-medium text-foreground-muted">
             Validation:
           </span>
           <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">
@@ -492,7 +492,7 @@ function Detail({
 }) {
   return (
     <div>
-      <span className="text-gray-500 dark:text-gray-400">{label}: </span>
+      <span className="text-foreground-muted">{label}: </span>
       <span className="text-gray-800 dark:text-gray-200">
         {value || <span className="italic text-gray-400">--</span>}
       </span>

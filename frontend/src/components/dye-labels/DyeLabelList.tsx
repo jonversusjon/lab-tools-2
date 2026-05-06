@@ -131,7 +131,7 @@ export default function DyeLabelList() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading dyes & labels...</p>
+  if (isLoading) return <p className="text-foreground-muted">Loading dyes & labels...</p>
   if (error) return <p className="text-red-600">Failed to load dyes & labels.</p>
 
   const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
@@ -142,7 +142,7 @@ export default function DyeLabelList() {
         <h1 className="text-2xl font-bold dark:text-gray-100">Dyes & Labels</h1>
         <button
           onClick={openCreate}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
         >
           New Dye/Label
         </button>
@@ -159,13 +159,13 @@ export default function DyeLabelList() {
       </div>
 
       {items.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">
+        <p className="text-foreground-muted">
           {search ? 'No matching dyes or labels.' : 'No dyes or labels yet. Create one to get started.'}
         </p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+            <tr className="border-b border-border text-foreground-muted">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Label Target</th>
               <th className="py-2 font-medium">Category</th>
@@ -186,17 +186,17 @@ export default function DyeLabelList() {
                   onDelete: () => handleDelete(dl),
                 }}
               >
-                <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{dl.name}</td>
+                <td className="py-2 font-medium text-foreground">{dl.name}</td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">{dl.label_target}</td>
-                <td className="py-2 text-gray-500 dark:text-gray-400">{dl.category ?? '—'}</td>
+                <td className="py-2 text-foreground-muted">{dl.category ?? '—'}</td>
                 <td className="py-2">
                   {dl.fluorophore_name ? (
                     <span className="text-teal-700 dark:text-teal-400">{dl.fluorophore_name}</span>
                   ) : (
-                    <span className="text-gray-400 dark:text-gray-500">—</span>
+                    <span className="text-foreground-subtle">—</span>
                   )}
                 </td>
-                <td className="py-2 text-gray-500 dark:text-gray-400">{dl.vendor ?? '—'}</td>
+                <td className="py-2 text-foreground-muted">{dl.vendor ?? '—'}</td>
               </HoverActionsRow>
             ))}
           </tbody>
@@ -354,14 +354,14 @@ export default function DyeLabelList() {
             <button
               type="button"
               onClick={() => { setShowModal(false); setEditingId(null) }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!form.name.trim() || !form.label_target.trim()}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {editingId ? 'Save' : 'Create'}
             </button>
@@ -380,12 +380,12 @@ function DyeLabelDetail({
   onEdit: (dl: DyeLabel) => void
 }) {
   return (
-    <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
+    <div className="mt-2 rounded-lg border border-border bg-gray-50 dark:bg-gray-800/50 p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold dark:text-gray-100">{dl.name}</h3>
         <button
           onClick={() => onEdit(dl)}
-          className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+          className="rounded border border-border-strong px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
         >
           Edit
         </button>
@@ -402,7 +402,7 @@ function DyeLabelDetail({
       </div>
       {dl.notes && (
         <div className="mt-2">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Notes:</span>
+          <span className="text-xs font-medium text-foreground-muted">Notes:</span>
           <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">{dl.notes}</p>
         </div>
       )}
@@ -413,7 +413,7 @@ function DyeLabelDetail({
 function DetailField({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <div>
-      <span className="text-gray-500 dark:text-gray-400">{label}: </span>
+      <span className="text-foreground-muted">{label}: </span>
       <span className="text-gray-800 dark:text-gray-200">
         {value || <span className="italic text-gray-400">--</span>}
       </span>

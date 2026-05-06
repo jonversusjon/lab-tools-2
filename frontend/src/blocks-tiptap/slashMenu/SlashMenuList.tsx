@@ -36,14 +36,14 @@ const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
 
     if (items.length === 0) {
       return (
-        <div className="min-w-[12rem] rounded border border-gray-200 bg-white px-3 py-3 text-sm text-gray-400 shadow-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500">
+        <div className="min-w-[12rem] rounded border border-border bg-elevated px-3 py-3 text-sm text-foreground-subtle shadow-lg">
           No matching blocks
         </div>
       )
     }
 
     return (
-      <div className="max-h-96 min-w-[12rem] overflow-y-auto rounded border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+      <div className="max-h-96 min-w-[12rem] overflow-y-auto rounded border border-border bg-elevated shadow-lg">
         {items.map((item, index) => (
           <button
             key={item.title}

@@ -67,8 +67,8 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-[480px] rounded-lg bg-white dark:bg-gray-800 shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <div className="w-[480px] rounded-lg bg-elevated shadow-xl">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-lg font-bold dark:text-gray-100">Fetch from FPbase</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">&times;</button>
         </div>
@@ -82,7 +82,7 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search FPbase fluorophores..."
-                className="mb-3 w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100"
+                className="mb-3 w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100"
                 autoFocus
               />
 
@@ -105,9 +105,9 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
                 </div>
               )}
 
-              <div className="max-h-60 overflow-y-auto rounded border border-gray-200 dark:border-gray-700">
+              <div className="max-h-60 overflow-y-auto rounded border border-border">
                 {catalogQuery.isLoading && (
-                  <p className="px-3 py-6 text-center text-sm text-gray-400 dark:text-gray-500">Loading catalog...</p>
+                  <p className="px-3 py-6 text-center text-sm text-foreground-subtle">Loading catalog...</p>
                 )}
                 {catalogQuery.isError && (
                   <p className="px-3 py-6 text-center text-sm text-red-500">
@@ -115,7 +115,7 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
                   </p>
                 )}
                 {catalogQuery.data && filtered.length === 0 && (
-                  <p className="px-3 py-4 text-center text-sm text-gray-400 dark:text-gray-500">No matches</p>
+                  <p className="px-3 py-4 text-center text-sm text-foreground-subtle">No matches</p>
                 )}
                 {filtered.map((item) => {
                   const isSelected = selected.includes(item.name)
@@ -157,7 +157,7 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
           {modalState === 'fetching' && (
             <div className="py-8 text-center">
               <p className="mb-2 text-sm font-medium dark:text-gray-100">Fetching fluorophores...</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">
+              <p className="text-xs text-foreground-subtle">
                 {batchMutation.isPending
                   ? `Importing ${selected.length} fluorophore${selected.length !== 1 ? 's' : ''}...`
                   : 'Preparing...'}
@@ -197,19 +197,19 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
           )}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700 px-6 py-3">
+        <div className="flex justify-end gap-2 border-t border-border px-6 py-3">
           {modalState === 'browse' && (
             <>
               <button
                 onClick={onClose}
-                className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
               </button>
               <button
                 onClick={handleFetch}
                 disabled={selected.length === 0}
-                className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
               >
                 Fetch {selected.length > 0 ? `(${selected.length})` : ''}
               </button>
@@ -223,7 +223,7 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
           {modalState === 'done' && (
             <button
               onClick={onClose}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Done
             </button>

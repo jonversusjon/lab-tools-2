@@ -142,7 +142,7 @@ export default function TargetOmnibox({
       ? createPortal(
           <div
             ref={dropdownRef}
-            className="max-h-72 w-96 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+            className="max-h-72 w-96 overflow-y-auto rounded border border-border bg-elevated shadow-lg"
             style={{
               position: 'fixed',
               top: dropdownPos.top,
@@ -171,19 +171,19 @@ export default function TargetOmnibox({
                       <span>
                         <span className="font-medium">{(entry.item as Antibody).target}</span>
                         {(entry.item as Antibody).clone && (
-                          <span className="ml-2 text-gray-500 dark:text-gray-400">
+                          <span className="ml-2 text-foreground-muted">
                             ({(entry.item as Antibody).clone})
                           </span>
                         )}
                       </span>
                       {(entry.item as Antibody).host && (
-                        <span className="shrink-0 text-xs text-gray-400 dark:text-gray-500">
+                        <span className="shrink-0 text-xs text-foreground-subtle">
                           {(entry.item as Antibody).host}
                         </span>
                       )}
                     </div>
                     {((entry.item as Antibody).fluorophore_name || (entry.item as Antibody).vendor) && (
-                      <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                      <div className="mt-0.5 text-xs text-foreground-subtle">
                         {(entry.item as Antibody).fluorophore_name && (
                           <span className="text-teal-600 dark:text-teal-400">
                             {(entry.item as Antibody).fluorophore_name}
@@ -206,7 +206,7 @@ export default function TargetOmnibox({
                         </span>
                       </span>
                     </div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-0.5 text-xs text-foreground-muted">
                       {(entry.item as DyeLabel).label_target}
                       {(entry.item as DyeLabel).fluorophore_name && (
                         <span className="ml-1 text-teal-600 dark:text-teal-400">
@@ -225,7 +225,7 @@ export default function TargetOmnibox({
         ? createPortal(
             <div
               ref={dropdownRef}
-              className="w-96 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+              className="w-96 rounded border border-border bg-elevated shadow-lg"
               style={{
                 position: 'fixed',
                 top: dropdownPos.top,
@@ -233,7 +233,7 @@ export default function TargetOmnibox({
                 zIndex: 9999,
               }}
             >
-              <div className="px-3 py-3 text-sm text-gray-400 dark:text-gray-500">
+              <div className="px-3 py-3 text-sm text-foreground-subtle">
                 No matches for &ldquo;{search}&rdquo;
               </div>
             </div>,
@@ -251,7 +251,7 @@ export default function TargetOmnibox({
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={updatePosition}
-        className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+        className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
       />
       {dropdown}
     </>

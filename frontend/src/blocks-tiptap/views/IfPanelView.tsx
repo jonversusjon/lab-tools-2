@@ -460,7 +460,7 @@ function IfPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewPro
   )
 
   return (
-    <NodeViewWrapper className="if-panel-instance my-4 border border-gray-200 dark:border-gray-700 rounded-md p-4">
+    <NodeViewWrapper className="if-panel-instance my-4 border border-border rounded-md p-4">
       <IFPanelDesignerView
         state={hookOutput.state}
         dispatch={hookOutput.dispatch}

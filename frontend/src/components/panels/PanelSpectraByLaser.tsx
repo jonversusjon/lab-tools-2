@@ -96,7 +96,7 @@ export default function PanelSpectraByLaser({
 
   if (activeTargets.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
+      <p className="py-4 text-center text-sm text-foreground-subtle">
         Assign fluorophores to targets to see per-laser spectra
       </p>
     )
@@ -122,7 +122,7 @@ export default function PanelSpectraByLaser({
         const excitedCount = excitedFluorophores.length
 
         return (
-          <div key={laser.id} className="rounded border border-gray-200 dark:border-gray-700">
+          <div key={laser.id} className="rounded border border-border">
             <button
               onClick={() => toggleLaser(laser.id)}
               className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -134,7 +134,7 @@ export default function PanelSpectraByLaser({
               <span className="dark:text-gray-200">
                 {laser.wavelength_nm}nm {laser.name}
               </span>
-              <span className="text-xs text-gray-400 dark:text-gray-500">
+              <span className="text-xs text-foreground-subtle">
                 ({excitedCount} fluorophore{excitedCount !== 1 ? 's' : ''})
               </span>
               <span className="ml-auto text-xs text-gray-400">
@@ -144,7 +144,7 @@ export default function PanelSpectraByLaser({
             {!isCollapsed && (
               <div className="border-t border-gray-100 dark:border-gray-700 px-3 pb-3">
                 {excitedCount === 0 ? (
-                  <p className="py-3 text-center text-xs text-gray-400 dark:text-gray-500">
+                  <p className="py-3 text-center text-xs text-foreground-subtle">
                     No assigned fluorophores excited by this laser
                   </p>
                 ) : (

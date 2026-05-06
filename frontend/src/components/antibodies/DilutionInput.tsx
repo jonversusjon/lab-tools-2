@@ -47,7 +47,7 @@ export default function DilutionInput({
         {label}
       </label>
       <div className="flex items-center gap-0">
-        <span className="rounded-l border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 px-2 py-2 text-sm text-gray-500 dark:text-gray-300">
+        <span className="rounded-l border border-r-0 border-border-strong bg-gray-50 dark:bg-gray-600 px-2 py-2 text-sm text-gray-500 dark:text-gray-300">
           1:
         </span>
         <input

@@ -232,11 +232,11 @@ export default function CellAssignmentPicker({
   const content = (
     <div
       ref={containerRef}
-      className="w-80 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+      className="w-80 rounded border border-border bg-elevated shadow-lg"
       style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
     >
       {/* Header: detector context */}
-      <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-1.5 text-xs text-gray-400 dark:text-gray-500">
+      <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-1.5 text-xs text-foreground-subtle">
         {filterMidpoint}/{filterWidth} detector &middot; {laserWavelength}nm laser
       </div>
 
@@ -249,7 +249,7 @@ export default function CellAssignmentPicker({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
         />
       </div>
 
@@ -270,7 +270,7 @@ export default function CellAssignmentPicker({
         {/* Species-matched secondaries */}
         {speciesSecondaries.length > 0 && (
           <>
-            <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
               Anti-{antibody?.host ?? 'Host'} Secondaries
               {antibody?.isotype && (
                 <span className="ml-1 font-normal text-gray-400">({antibody.isotype})</span>
@@ -288,7 +288,7 @@ export default function CellAssignmentPicker({
         {/* Conjugate reagents */}
         {conjugateSecondaries.length > 0 && (
           <>
-            <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
               {detectionStrategy.type === 'both' || detectionStrategy.type === 'conjugate'
                 ? detectionStrategy.label
                 : 'Conjugate Reagents'}
@@ -305,7 +305,7 @@ export default function CellAssignmentPicker({
         {/* Direct fluorophores */}
         {compatibleFluorophores.length > 0 && (
           <>
-            <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
               Fluorophores
             </div>
             {compatibleFluorophores.map((fl) => {
@@ -333,7 +333,7 @@ export default function CellAssignmentPicker({
                 >
                   <span className="font-medium">{fl.name}</span>
                   {fl.ex_max_nm != null && fl.em_max_nm != null && (
-                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                    <span className="ml-2 text-xs text-foreground-subtle">
                       {fl.ex_max_nm}/{fl.em_max_nm}
                     </span>
                   )}
@@ -352,7 +352,7 @@ export default function CellAssignmentPicker({
         {speciesSecondaries.length === 0 &&
           conjugateSecondaries.length === 0 &&
           compatibleFluorophores.length === 0 && (
-          <div className="px-3 py-4 text-center text-sm text-gray-400 dark:text-gray-500">
+          <div className="px-3 py-4 text-center text-sm text-foreground-subtle">
             No compatible secondaries or fluorophores found
           </div>
         )}

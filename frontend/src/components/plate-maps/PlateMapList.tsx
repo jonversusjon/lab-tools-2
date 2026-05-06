@@ -58,7 +58,7 @@ export default function PlateMapList() {
     deleteMutation.mutate(id)
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading plate maps...</p>
+  if (isLoading) return <p className="text-foreground-muted">Loading plate maps...</p>
   if (error) return <p className="text-red-600">Failed to load plate maps.</p>
 
   const inputClass =
@@ -71,18 +71,18 @@ export default function PlateMapList() {
         <button
           onClick={handleCreate}
           disabled={createMutation.isPending}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
           New Plate Map
         </button>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No plate maps yet. Create one to get started.</p>
+        <p className="text-foreground-muted">No plate maps yet. Create one to get started.</p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+            <tr className="border-b border-border text-foreground-muted">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Type</th>
               <th className="py-2 font-medium">Created</th>
@@ -104,9 +104,9 @@ export default function PlateMapList() {
                   onDelete: () => handleDelete(pm.id, pm.name),
                 }}
               >
-                <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{pm.name}</td>
+                <td className="py-2 font-medium text-foreground">{pm.name}</td>
                 <td className="py-2 text-gray-600 dark:text-gray-400">{pm.plate_type}</td>
-                <td className="py-2 text-gray-500 dark:text-gray-400">
+                <td className="py-2 text-foreground-muted">
                   {pm.created_at ? new Date(pm.created_at).toLocaleDateString() : '—'}
                 </td>
               </HoverActionsRow>
@@ -139,13 +139,13 @@ export default function PlateMapList() {
             <button
               type="button"
               onClick={() => { setEditingMap(null); setRenameValue('') }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleRename}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Save
             </button>

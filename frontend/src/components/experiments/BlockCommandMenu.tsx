@@ -140,7 +140,7 @@ export default function BlockCommandMenu({
     return (
       <div
         ref={menuRef}
-        className="z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-sm text-gray-400 dark:text-gray-500"
+        className="z-50 bg-elevated border border-border rounded-lg shadow-lg p-3 text-sm text-foreground-subtle"
       >
         No results
       </div>
@@ -152,7 +152,7 @@ export default function BlockCommandMenu({
   return (
     <div
       ref={menuRef}
-      className="z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-80 overflow-y-auto w-64"
+      className="z-50 bg-elevated border border-border rounded-lg shadow-lg max-h-80 overflow-y-auto w-64"
     >
       {categories.map((cat) => {
         const catItems = cat.items.filter(
@@ -161,7 +161,7 @@ export default function BlockCommandMenu({
         if (catItems.length === 0) return null
         return (
           <div key={cat.name}>
-            <div className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 px-3 py-1.5">
+            <div className="text-xs font-semibold uppercase text-foreground-subtle px-3 py-1.5">
               {cat.name}
             </div>
             {catItems.map((item) => {

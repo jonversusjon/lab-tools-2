@@ -202,7 +202,7 @@ export default function SecondaryOmnibox({
       ? createPortal(
           <div
             ref={dropdownRef}
-            className="w-80 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+            className="w-80 rounded border border-border bg-elevated shadow-lg"
             style={{
               position: 'fixed',
               top: dropdownPos.top,
@@ -218,7 +218,7 @@ export default function SecondaryOmnibox({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
               />
             </div>
             {hasSelection && (
@@ -237,7 +237,7 @@ export default function SecondaryOmnibox({
             <div className="max-h-60 overflow-y-auto">
               {speciesSecondaries.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
                     Anti-{primaryAntibody.host ?? 'Host'} Secondaries
                   </div>
                   {speciesSecondaries.map((sec) => renderSecondaryButton(sec))}
@@ -245,7 +245,7 @@ export default function SecondaryOmnibox({
               )}
               {conjugateSecondaries.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
                     {detectionStrategy.type === 'both' || detectionStrategy.type === 'conjugate'
                       ? detectionStrategy.label
                       : 'Conjugate Reagents'}
@@ -255,7 +255,7 @@ export default function SecondaryOmnibox({
               )}
               {filteredFluorophores.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
                     Fluorophores
                   </div>
                   {filteredFluorophores.map((fl) => {
@@ -279,7 +279,7 @@ export default function SecondaryOmnibox({
                       >
                         <span className="font-medium">{fl.name}</span>
                         {fl.ex_max_nm && fl.em_max_nm && (
-                          <span className="ml-2 text-gray-400 dark:text-gray-500">
+                          <span className="ml-2 text-foreground-subtle">
                             {fl.ex_max_nm}/{fl.em_max_nm}
                           </span>
                         )}
@@ -289,7 +289,7 @@ export default function SecondaryOmnibox({
                 </>
               )}
               {speciesSecondaries.length === 0 && conjugateSecondaries.length === 0 && filteredFluorophores.length === 0 && (
-                <div className="px-3 py-4 text-center text-sm text-gray-400 dark:text-gray-500">
+                <div className="px-3 py-4 text-center text-sm text-foreground-subtle">
                   No results found
                 </div>
               )}
@@ -319,7 +319,7 @@ export default function SecondaryOmnibox({
     )
   } else {
     displayLabel = (
-      <span className="text-sm italic text-gray-400 dark:text-gray-500">Select secondary...</span>
+      <span className="text-sm italic text-foreground-subtle">Select secondary...</span>
     )
   }
 

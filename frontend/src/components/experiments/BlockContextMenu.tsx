@@ -116,9 +116,9 @@ export default function BlockContextMenu({
     return (
       <div
         ref={menuRef}
-        className="z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-52 py-1"
+        className="z-50 bg-elevated border border-border rounded-lg shadow-lg w-52 py-1"
       >
-        <div className="px-3 py-1 text-xs font-medium text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700 mb-1">
+        <div className="px-3 py-1 text-xs font-medium text-foreground-subtle border-b border-gray-100 dark:border-gray-700 mb-1">
           {selectedBlocks!.length} blocks selected
         </div>
         {canBulkConvert && (
@@ -127,7 +127,7 @@ export default function BlockContextMenu({
               Convert all to
               <span className="text-xs text-gray-400">▶</span>
             </button>
-            <div className="absolute left-full top-0 ml-0.5 hidden group-hover/convert:block z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-44 py-1">
+            <div className="absolute left-full top-0 ml-0.5 hidden group-hover/convert:block z-50 bg-elevated border border-border rounded-lg shadow-lg w-44 py-1">
               {BULK_CONVERT_OPTIONS.map((opt) => (
                 <button
                   key={opt.type}
@@ -143,7 +143,7 @@ export default function BlockContextMenu({
             </div>
           </div>
         )}
-        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+        <div className="border-t border-border my-1" />
         <button
           onClick={handleDelete}
           className="w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -157,7 +157,7 @@ export default function BlockContextMenu({
   return (
     <div
       ref={menuRef}
-      className="z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-48 py-1"
+      className="z-50 bg-elevated border border-border rounded-lg shadow-lg w-48 py-1"
     >
       <button
         onClick={() => {
@@ -174,7 +174,7 @@ export default function BlockContextMenu({
             Convert to
             <span className="text-xs text-gray-400">▶</span>
           </button>
-          <div className="absolute left-full top-0 ml-0.5 hidden group-hover/convert:block z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-40 py-1">
+          <div className="absolute left-full top-0 ml-0.5 hidden group-hover/convert:block z-50 bg-elevated border border-border rounded-lg shadow-lg w-40 py-1">
             {CONVERT_OPTIONS.filter((opt) => opt.type !== block.block_type).map(
               (opt) => (
                 <button
@@ -192,7 +192,7 @@ export default function BlockContextMenu({
           </div>
         </div>
       )}
-      <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+      <div className="border-t border-border my-1" />
       <button
         onClick={handleDelete}
         className="w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"

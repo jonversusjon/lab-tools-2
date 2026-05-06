@@ -8,13 +8,13 @@ import { usePlateMaps } from '@/hooks/usePlateMaps'
 
 function StatCard({ value, label }: { value: number | null; label: string }) {
   return (
-    <div className="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+    <div className="rounded-lg bg-surface p-4">
       {value === null ? (
         <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-8 w-16 mb-1" />
       ) : (
-        <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+        <p className="text-3xl font-bold text-foreground">{value}</p>
       )}
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm text-foreground-muted">{label}</p>
     </div>
   )
 }
@@ -41,7 +41,7 @@ function SectionCard({
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="text-xl" aria-hidden="true">{icon}</span>
-        <h2 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+        <h2 className="font-semibold text-foreground">{title}</h2>
       </div>
       {children}
     </div>
@@ -50,7 +50,7 @@ function SectionCard({
 
 function ComingSoon() {
   return (
-    <span className="inline-block rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+    <span className="inline-block rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-foreground-muted">
       Coming Soon
     </span>
   )
@@ -75,8 +75,8 @@ export default function Homepage() {
     <div className="max-w-4xl space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome to Lab Tools</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">Your experiment design workspace</p>
+        <h1 className="text-3xl font-bold text-foreground">Welcome to Lab Tools</h1>
+        <p className="mt-1 text-foreground-muted">Your experiment design workspace</p>
       </div>
 
       {/* Section cards */}
@@ -101,7 +101,7 @@ export default function Homepage() {
           </div>
           <Link
             to="/flow/panels"
-            className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+            className="inline-flex items-center gap-1 rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1.5 text-sm font-medium"
           >
             Open Panels →
           </Link>
@@ -117,7 +117,7 @@ export default function Homepage() {
           </div>
           <Link
             to="/plate-maps"
-            className="inline-flex items-center gap-1 rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+            className="inline-flex items-center gap-1 rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1.5 text-sm font-medium"
           >
             Open Plate Maps →
           </Link>
@@ -134,7 +134,7 @@ export default function Homepage() {
 
       {/* Quick Stats */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground-muted">
           Quick Stats
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -148,11 +148,11 @@ export default function Homepage() {
 
       {/* Recent Activity (placeholder) */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-foreground-muted">
           Recent Activity
         </h2>
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-8 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-border bg-elevated px-5 py-8 text-center">
+          <p className="text-sm text-foreground-muted">
             No recent activity yet. Start by creating a panel or importing antibodies.
           </p>
         </div>

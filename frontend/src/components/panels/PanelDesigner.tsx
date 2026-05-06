@@ -464,7 +464,7 @@ export default function PanelDesigner() {
   }
 
   if (!id) return <p className="text-red-600">No panel ID in URL.</p>
-  if (!panel) return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
+  if (!panel) return <p className="text-foreground-muted">Loading panel...</p>
 
   return (
     <PanelDesignerView

@@ -60,7 +60,7 @@ export default function ExperimentList() {
     deleteMutation.mutate(id)
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading experiments...</p>
+  if (isLoading) return <p className="text-foreground-muted">Loading experiments...</p>
   if (error) return <p className="text-red-600">Failed to load experiments.</p>
 
   const inputClass =
@@ -72,18 +72,18 @@ export default function ExperimentList() {
         <h1 className="text-2xl font-bold dark:text-gray-100">Experiments</h1>
         <button
           onClick={() => setShowCreate(true)}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
         >
           New Experiment
         </button>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No experiments yet. Create one to get started.</p>
+        <p className="text-foreground-muted">No experiments yet. Create one to get started.</p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+            <tr className="border-b border-border text-foreground-muted">
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Description</th>
               <th className="py-2 font-medium">Blocks</th>
@@ -118,14 +118,14 @@ export default function ExperimentList() {
                     onDelete: () => handleDelete(item.id, item.name),
                   }}
                 >
-                  <td className="py-2 font-medium text-gray-900 dark:text-gray-100">{item.name}</td>
+                  <td className="py-2 font-medium text-foreground">{item.name}</td>
                   <td className="py-2 text-gray-600 dark:text-gray-400">
                     {description ?? (
-                      <span className="italic text-gray-400 dark:text-gray-500">—</span>
+                      <span className="italic text-foreground-subtle">—</span>
                     )}
                   </td>
                   <td className="py-2 text-gray-600 dark:text-gray-400">{item.block_count}</td>
-                  <td className="py-2 text-gray-500 dark:text-gray-400">{createdAt}</td>
+                  <td className="py-2 text-foreground-muted">{createdAt}</td>
                 </HoverActionsRow>
               )
             })}
@@ -179,13 +179,13 @@ export default function ExperimentList() {
                 setNewName('')
                 setNewDescription('')
               }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleCreate}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Create
             </button>
@@ -225,13 +225,13 @@ export default function ExperimentList() {
                 setEditingExperiment(null)
                 setRenameValue('')
               }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleRename}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Save
             </button>

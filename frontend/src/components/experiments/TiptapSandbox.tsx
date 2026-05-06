@@ -338,7 +338,7 @@ export default function TiptapSandbox() {
           {indicator.text}
         </span>
         {saveState.pendingCount > 0 && saveState.status !== 'saving' && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-foreground-muted">
             {String(saveState.pendingCount)} pending
           </span>
         )}
@@ -363,7 +363,7 @@ export default function TiptapSandbox() {
           Insert 4 columns
         </button>
       </div>
-      <div className="prose dark:prose-invert max-w-none border border-gray-200 dark:border-gray-700 rounded p-4">
+      <div className="prose dark:prose-invert max-w-none border border-border rounded p-4">
         <EditorContent editor={editor} />
       </div>
       <div className="space-y-2">
@@ -373,18 +373,18 @@ export default function TiptapSandbox() {
             value={jsonFilter}
             onChange={(e) => setJsonFilter(e.target.value)}
             placeholder="Filter JSON (e.g. column_list)"
-            className="flex-1 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900"
+            className="flex-1 px-2 py-1 text-xs border border-border rounded bg-background"
           />
           <button
             type="button"
             onClick={handleCopyJson}
-            className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="px-2 py-1 text-xs border border-border rounded hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {copied ? 'Copied!' : 'Copy JSON'}
           </button>
         </div>
         <details>
-          <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400">
+          <summary className="cursor-pointer text-sm text-foreground-muted">
             Editor JSON (debug)
           </summary>
           <pre className="mt-2 text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto">

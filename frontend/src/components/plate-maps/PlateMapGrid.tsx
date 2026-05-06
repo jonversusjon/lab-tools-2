@@ -151,7 +151,7 @@ export default function PlateMapGrid({
                       </span>
                     )}
                   </div>
-                  <span className="absolute bottom-1 right-1 text-xs text-gray-400 dark:text-gray-500">
+                  <span className="absolute bottom-1 right-1 text-xs text-foreground-subtle">
                     {wellId}
                   </span>
                 </div>

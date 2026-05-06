@@ -98,7 +98,7 @@ export default function ColumnLayout({
           >
             <span className="text-lg leading-none">+</span>
           </button>
-          <div className="flex-1 border-t border-gray-200 dark:border-gray-700 ml-2" />
+          <div className="flex-1 border-t border-border ml-2" />
         </div>
         {renderColumnMenu(colId)}
       </div>
@@ -113,7 +113,7 @@ export default function ColumnLayout({
           <div
             key={col.id}
             data-block-id={col.id}
-            className="border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 min-h-[80px]"
+            className="border border-dashed border-border rounded-lg p-3 min-h-[80px]"
           >
             {columnChildren.length === 0 ? (
               renderAddButton(col.id, true)
@@ -145,7 +145,7 @@ export default function ColumnLayout({
         (_, i) => (
           <div
             key={'empty-' + String(i)}
-            className="border border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-3 min-h-[80px]"
+            className="border border-dashed border-border rounded-lg p-3 min-h-[80px]"
           >
             <p className="text-xs text-gray-400 dark:text-gray-600">
               Empty column

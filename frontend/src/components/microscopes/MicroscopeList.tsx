@@ -141,7 +141,7 @@ export default function MicroscopeList() {
     }
   }
 
-  if (isLoading) return <p className="text-gray-500 dark:text-gray-400">Loading microscopes...</p>
+  if (isLoading) return <p className="text-foreground-muted">Loading microscopes...</p>
   if (error) return <p className="text-red-600">Failed to load microscopes.</p>
 
   return (
@@ -159,13 +159,13 @@ export default function MicroscopeList() {
           />
           <button
             onClick={() => { setImportError(null); setImportSuccessMsg(null); fileInputRef.current?.click() }}
-            className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Import
           </button>
           <button
             onClick={() => navigate('/if-ihc/microscopes/new')}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
           >
             New Microscope
           </button>
@@ -193,13 +193,13 @@ export default function MicroscopeList() {
           placeholder="Search by name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
         />
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={laserFilter}
             onChange={(e) => setLaserFilter(e.target.value)}
-            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
           >
             <option value="">All laser wavelengths</option>
             {uniqueLaserWavelengths.map((wl) => (
@@ -210,7 +210,7 @@ export default function MicroscopeList() {
           <select
             value={filterFilter}
             onChange={(e) => setFilterFilter(e.target.value)}
-            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
           >
             <option value="">All filter wavelengths</option>
             {uniqueFilterMidpoints.map((mp) => (
@@ -222,7 +222,7 @@ export default function MicroscopeList() {
             <select
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+              className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
             >
               <option value="">All locations</option>
               {uniqueLocations.map((loc) => (
@@ -255,23 +255,23 @@ export default function MicroscopeList() {
 
       {/* Table / empty state */}
       {microscopes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 py-20 text-center">
-          <svg className="mb-3 h-10 w-10 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong py-20 text-center">
+          <svg className="mb-3 h-10 w-10 text-foreground-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16V4m0 0l-4 4m4-4l4 4M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" />
           </svg>
-          <p className="text-gray-500 dark:text-gray-400">No microscopes yet.</p>
-          <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-foreground-muted">No microscopes yet.</p>
+          <p className="mt-1 text-sm text-foreground-subtle">
             Click Import above or New Microscope to get started.
           </p>
         </div>
       ) : filtered.length === 0 ? (
-        <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">
+        <p className="py-6 text-center text-sm text-foreground-subtle">
           No microscopes match your filters.
         </p>
       ) : (
         <table className="w-full border-collapse text-left text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400">
+            <tr className="border-b border-border text-foreground-muted">
               <th className="w-8 py-2" />
               <th className="py-2 font-medium">Name</th>
               <th className="py-2 font-medium">Location</th>
@@ -324,7 +324,7 @@ export default function MicroscopeList() {
                       }
                     />
                   </td>
-                  <td className="py-3 font-medium text-gray-900 dark:text-gray-100">
+                  <td className="py-3 font-medium text-foreground">
                     {m.name}
                     {laserFilter && (
                       <span className="ml-2 inline-flex gap-1">
@@ -368,7 +368,7 @@ export default function MicroscopeList() {
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleRename() }}
-              className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
               autoFocus
             />
           </div>
@@ -376,13 +376,13 @@ export default function MicroscopeList() {
             <button
               type="button"
               onClick={() => { setEditingMicroscope(null); setRenameValue('') }}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Cancel
             </button>
             <button
               onClick={handleRename}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Save
             </button>

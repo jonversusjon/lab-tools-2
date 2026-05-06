@@ -86,7 +86,7 @@ export default function ExperimentPage() {
   })
 
   if (loadState.kind === 'loading') {
-    return <div className="p-8 text-gray-500 dark:text-gray-400">Loading experiment...</div>
+    return <div className="p-8 text-foreground-muted">Loading experiment...</div>
   }
 
   if (loadState.kind === 'not-found') {
@@ -121,14 +121,14 @@ export default function ExperimentPage() {
             {status.text}
           </span>
           {saveState.pendingCount > 0 && saveState.status !== 'saving' && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-foreground-muted">
               {String(saveState.pendingCount)} pending
             </span>
           )}
         </div>
       </div>
 
-      <div className="prose dark:prose-invert max-w-none border border-gray-200 dark:border-gray-700 rounded p-4">
+      <div className="prose dark:prose-invert max-w-none border border-border rounded p-4">
         <EditorContent editor={editor} />
       </div>
     </div>

@@ -90,7 +90,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
     <Modal isOpen onClose={onClose} title="Import Fluorophores" wide>
       <div className="min-h-[400px]">
         {/* Step indicator */}
-        <div className="mb-6 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="mb-6 flex items-center gap-2 text-xs text-foreground-muted">
           {(['upload', 'review', 'done'] as Step[]).map((s, i) => (
             <span key={s} className="flex items-center gap-1">
               {i > 0 && <span className="mx-1">&rarr;</span>}
@@ -110,7 +110,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
-            className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 p-12"
+            className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong p-12"
           >
             <svg
               className="mb-4 h-12 w-12 text-gray-400"
@@ -132,7 +132,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               CSV: name, ex_max_nm, em_max_nm, fluor_type, qy, ext_coeff &nbsp;|&nbsp;
               JSON: array or {"{"}"fluorophores": [...]{"}"}
             </p>
-            <label className="cursor-pointer rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <label className="cursor-pointer rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium">
               Choose File
               <input
                 type="file"
@@ -156,7 +156,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
         {step === 'review' && preview && (
           <div>
             {/* Summary bar */}
-            <div className="mb-4 rounded bg-gray-50 dark:bg-gray-800 p-3 text-sm">
+            <div className="mb-4 rounded bg-surface p-3 text-sm">
               <strong>{preview.total_rows}</strong> rows parsed &mdash;{' '}
               <span className="text-green-600 dark:text-green-400">
                 {items.length} new
@@ -203,7 +203,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
             {/* Duplicates */}
             {preview.duplicates.length > 0 && (
               <details className="mb-3">
-                <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400">
+                <summary className="cursor-pointer text-sm text-foreground-muted">
                   {preview.duplicates.length} duplicate(s) — already in database, will be skipped
                 </summary>
                 <ul className="mt-1 space-y-1 text-xs text-gray-400 pl-4">
@@ -218,7 +218,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
 
             {/* Review table */}
             {items.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+              <p className="text-sm text-foreground-muted py-4 text-center">
                 No new fluorophores to import.
               </p>
             ) : (
@@ -365,14 +365,14 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                   setItems([])
                   uploadMutation.reset()
                 }}
-                className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Back
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={items.length === 0 || confirmMutation.isPending}
-                className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
               >
                 {confirmMutation.isPending
                   ? 'Importing...'
@@ -414,7 +414,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
             )}
             <button
               onClick={onClose}
-              className="mt-6 rounded bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="mt-6 rounded bg-accent hover:bg-accent-hover text-accent-foreground px-6 py-2 text-sm font-medium"
             >
               Done
             </button>

@@ -55,8 +55,8 @@ export default function TagManager({
   }
 
   return (
-    <div className="absolute right-0 top-full z-20 mt-1 w-64 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg">
-      <div className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+    <div className="absolute right-0 top-full z-20 mt-1 w-64 rounded-lg border border-border bg-elevated p-3 shadow-lg">
+      <div className="mb-2 text-xs font-medium text-foreground-muted">
         Assign Tags
       </div>
 
@@ -83,7 +83,7 @@ export default function TagManager({
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
-          className="flex-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+          className="flex-1 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
         />
         <button
           onClick={handleCreateTag}
@@ -104,7 +104,7 @@ export default function TagManager({
         <button
           onClick={handleSave}
           disabled={assignMutation.isPending}
-          className="rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1 text-xs font-medium disabled:opacity-50"
         >
           Save
         </button>

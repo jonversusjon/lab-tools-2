@@ -310,7 +310,7 @@ export default function Sidebar() {
                       </svg>
                     </button>
                     {isOpen && (
-                      <ul className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-gray-200 dark:border-gray-700">
+                      <ul className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-border">
                         {group.children.map((child) => (
                           <li key={child.to}>
                             <NavLink
@@ -348,10 +348,10 @@ export default function Sidebar() {
       {collapsed && activeFlyoutGroup && createPortal(
         <div
           ref={flyoutRef}
-          className="fixed z-50 w-48 rounded-r-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-2"
+          className="fixed z-50 w-48 rounded-r-lg border border-border bg-elevated shadow-lg py-2"
           style={{ top: flyoutPos.top, left: flyoutPos.left }}
         >
-          <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-foreground-subtle">
             {activeFlyoutGroup.label}
           </div>
           {activeFlyoutGroup.children.map((child) => (

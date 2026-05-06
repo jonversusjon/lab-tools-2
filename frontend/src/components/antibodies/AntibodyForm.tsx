@@ -110,14 +110,14 @@ export default function AntibodyForm({ antibody, fluorophores, onClose }: Antibo
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-60"
           >
             {isEdit ? 'Save' : 'Create'}
           </button>

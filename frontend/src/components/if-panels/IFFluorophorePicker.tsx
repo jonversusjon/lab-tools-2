@@ -105,7 +105,7 @@ export default function IFFluorophorePicker({
       ? createPortal(
           <div
             ref={dropdownRef}
-            className="w-72 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+            className="w-72 rounded border border-border bg-elevated shadow-lg"
             style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
           >
             <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
@@ -116,7 +116,7 @@ export default function IFFluorophorePicker({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
               />
             </div>
             {currentFluorophoreId && (
@@ -153,18 +153,18 @@ export default function IFFluorophorePicker({
                   >
                     <span className="font-medium">{fl.name}</span>
                     {fl.ex_max_nm != null && fl.em_max_nm != null && (
-                      <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                      <span className="ml-2 text-xs text-foreground-subtle">
                         ex {fl.ex_max_nm} / em {fl.em_max_nm}
                       </span>
                     )}
                     {inUse && (
-                      <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">(in use)</span>
+                      <span className="ml-1 text-xs text-foreground-subtle">(in use)</span>
                     )}
                   </button>
                 )
               })}
               {filtered.length === 0 && (
-                <div className="px-3 py-4 text-center text-sm text-gray-400 dark:text-gray-500">
+                <div className="px-3 py-4 text-center text-sm text-foreground-subtle">
                   No fluorophores found
                 </div>
               )}
@@ -183,7 +183,7 @@ export default function IFFluorophorePicker({
             {currentFluorophore.name}
           </span>
         ) : (
-          <span className="text-sm italic text-gray-400 dark:text-gray-500">Select...</span>
+          <span className="text-sm italic text-foreground-subtle">Select...</span>
         )}
       </button>
       {dropdown}

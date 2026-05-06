@@ -181,7 +181,7 @@ export default function ConjugateOmnibox({
       <button
         type="button"
         onClick={() => setIsActive(true)}
-        className="text-sm text-gray-400 dark:text-gray-500 hover:text-blue-500"
+        className="text-sm text-foreground-subtle hover:text-blue-500"
       >
         + Add conjugate
       </button>
@@ -194,7 +194,7 @@ export default function ConjugateOmnibox({
       ? createPortal(
           <div
             ref={dropdownRef}
-            className="max-h-60 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+            className="max-h-60 overflow-y-auto rounded border border-border bg-elevated shadow-lg"
             style={{
               position: 'fixed',
               top: dropdownPos.top,
@@ -211,7 +211,7 @@ export default function ConjugateOmnibox({
               return (
                 <div key={fl.id}>
                   {showGroupHeader && (
-                    <div className="px-3 py-1 text-[10px] font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900/50">
+                    <div className="px-3 py-1 text-[10px] font-semibold uppercase text-foreground-subtle bg-gray-50 dark:bg-gray-900/50">
                       Non-fluorescent
                     </div>
                   )}
@@ -232,13 +232,13 @@ export default function ConjugateOmnibox({
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="font-medium dark:text-gray-100">{fl.name}</span>
                       {isNonFluorescent ? (
-                        <span className="shrink-0 text-[10px] text-gray-400 dark:text-gray-500">
+                        <span className="shrink-0 text-[10px] text-foreground-subtle">
                           Non-fluorescent
                         </span>
                       ) : (
                         fl.ex_max_nm != null &&
                         fl.em_max_nm != null && (
-                          <span className="shrink-0 text-[10px] text-gray-400 dark:text-gray-500">
+                          <span className="shrink-0 text-[10px] text-foreground-subtle">
                             {Math.round(fl.ex_max_nm)}/{Math.round(fl.em_max_nm)}
                           </span>
                         )
@@ -255,7 +255,7 @@ export default function ConjugateOmnibox({
         ? createPortal(
             <div
               ref={dropdownRef}
-              className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg"
+              className="rounded border border-border bg-elevated shadow-lg"
               style={{
                 position: 'fixed',
                 top: dropdownPos.top,
@@ -264,7 +264,7 @@ export default function ConjugateOmnibox({
                 zIndex: 9999,
               }}
             >
-              <div className="px-3 py-3 text-sm text-gray-400 dark:text-gray-500">
+              <div className="px-3 py-3 text-sm text-foreground-subtle">
                 No matches
               </div>
             </div>,
@@ -282,7 +282,7 @@ export default function ConjugateOmnibox({
         onChange={(e) => setSearch(e.target.value)}
         onKeyDown={handleKeyDown}
         onFocus={updatePosition}
-        className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+        className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
       />
       {dropdown}
     </>

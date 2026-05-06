@@ -208,7 +208,7 @@ export default function AntibodyImportDiffModal({
       </div>
 
       {/* Tab switcher */}
-      <div className="mb-3 flex gap-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="mb-3 flex gap-2 border-b border-border">
         <button
           onClick={() => setTab('conflicts')}
           className={
@@ -237,7 +237,7 @@ export default function AntibodyImportDiffModal({
       {tab === 'conflicts' && (
         <>
           {conflicts.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="py-8 text-center text-sm text-foreground-muted">
               No conflicts. All matched records are identical to the import.
             </div>
           ) : currentConflict ? (
@@ -263,26 +263,26 @@ export default function AntibodyImportDiffModal({
                   <button
                     onClick={() => setConflictIndex((i) => Math.max(0, i - 1))}
                     disabled={conflictIndex === 0}
-                    className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs disabled:opacity-40"
+                    className="rounded border border-border-strong px-2 py-1 text-xs disabled:opacity-40"
                   >
                     ← Prev
                   </button>
                   <button
                     onClick={() => setConflictIndex((i) => Math.min(conflicts.length - 1, i + 1))}
                     disabled={conflictIndex >= conflicts.length - 1}
-                    className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs disabled:opacity-40"
+                    className="rounded border border-border-strong px-2 py-1 text-xs disabled:opacity-40"
                   >
                     Next →
                   </button>
                 </div>
               </div>
 
-              <div className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              <div className="mb-2 text-xs text-foreground-muted">
                 Differing fields: {currentConflict.diff_fields.join(', ')}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+                <div className="rounded border border-border bg-gray-50 p-3 dark:bg-gray-900/40">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
                       Existing (your DB)
@@ -345,16 +345,16 @@ export default function AntibodyImportDiffModal({
               </div>
 
               {/* Global conflict actions */}
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-gray-200 pt-3 dark:border-gray-700">
+              <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-3">
                 <button
                   onClick={acceptAllImported}
-                  className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
+                  className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1.5 text-xs font-medium"
                 >
                   Accept all imported
                 </button>
                 <button
                   onClick={keepAllExisting}
-                  className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="rounded border border-border-strong px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Keep all existing
                 </button>
@@ -373,7 +373,7 @@ export default function AntibodyImportDiffModal({
       {tab === 'new' && (
         <>
           {newItems.length === 0 ? (
-            <div className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="py-8 text-center text-sm text-foreground-muted">
               No new items.
             </div>
           ) : currentNew ? (
@@ -389,20 +389,20 @@ export default function AntibodyImportDiffModal({
                   <button
                     onClick={() => setNewIndex((i) => Math.max(0, i - 1))}
                     disabled={newIndex === 0}
-                    className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs disabled:opacity-40"
+                    className="rounded border border-border-strong px-2 py-1 text-xs disabled:opacity-40"
                   >
                     ← Prev
                   </button>
                   <button
                     onClick={() => setNewIndex((i) => Math.min(newItems.length - 1, i + 1))}
                     disabled={newIndex >= newItems.length - 1}
-                    className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs disabled:opacity-40"
+                    className="rounded border border-border-strong px-2 py-1 text-xs disabled:opacity-40"
                   >
                     Next →
                   </button>
                 </div>
               </div>
-              <div className="rounded border border-gray-200 p-3 dark:border-gray-700">
+              <div className="rounded border border-border p-3">
                 <AntibodyFormFields
                   values={getNewValues(String(currentNew.id), currentNew)}
                   onChange={(patch) =>
@@ -419,7 +419,7 @@ export default function AntibodyImportDiffModal({
                   idPrefix={'new-' + String(currentNew.id)}
                 />
               </div>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-xs text-foreground-muted">
                 Fields highlighted in amber are present in your database but missing from the import file.
                 You may fill them in before applying, or leave them empty.
               </p>
@@ -434,11 +434,11 @@ export default function AntibodyImportDiffModal({
         </div>
       )}
 
-      <div className="mt-5 flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+      <div className="mt-5 flex justify-end gap-2 border-t border-border pt-4">
         <button
           onClick={onClose}
           disabled={applying}
-          className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+          className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
         >
           Cancel
         </button>

@@ -67,7 +67,7 @@ export default function CalloutView({ node, updateAttributes }: NodeViewProps) {
               onClick={startEdit}
               className="w-full text-left text-sm text-gray-800 dark:text-gray-200 focus:outline-none"
             >
-              {text || <span className="text-gray-400 dark:text-gray-500">Click to edit…</span>}
+              {text || <span className="text-foreground-subtle">Click to edit…</span>}
             </button>
           )}
         </div>

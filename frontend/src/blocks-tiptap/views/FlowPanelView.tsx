@@ -477,7 +477,7 @@ function FlowPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewP
   )
 
   return (
-    <NodeViewWrapper className="flow-panel-instance my-4 border border-gray-200 dark:border-gray-700 rounded-md p-4">
+    <NodeViewWrapper className="flow-panel-instance my-4 border border-border rounded-md p-4">
       <PanelDesignerView
         state={hookOutput.state}
         dispatch={hookOutput.dispatch}

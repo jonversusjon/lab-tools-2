@@ -344,12 +344,12 @@ export default function Settings() {
       <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
       {/* Fluorophore Thresholds */}
-      <div className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="space-y-6 rounded-lg border border-border bg-elevated p-6 shadow-sm">
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-medium text-foreground">
             Fluorophore Visibility Thresholds
           </h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-foreground-muted">
             Lower values show more fluorophores per channel. Higher values show only well-matched
             fluorophores.
           </p>
@@ -387,7 +387,7 @@ export default function Settings() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
@@ -406,12 +406,12 @@ export default function Settings() {
       </div>
 
       {/* Conjugate Chemistries */}
-      <div className="mt-6 space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="mt-6 space-y-4 rounded-lg border border-border bg-elevated p-6 shadow-sm">
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-medium text-foreground">
             Conjugate Chemistries
           </h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-foreground-muted">
             Define non-fluorescent conjugation types (e.g. Biotin, DIG) and their binding partner labels.
             These are used by the panel designer to recognize when a primary antibody needs a
             conjugate-targeting secondary reagent (e.g. Streptavidin for Biotin).
@@ -421,7 +421,7 @@ export default function Settings() {
         {/* Add new chemistry */}
         <div className="flex gap-2 items-end border-b border-gray-100 dark:border-gray-700 pb-4">
           <div className="flex-1">
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <label className="block text-xs font-medium text-foreground-muted mb-1">
               Conjugate Name
             </label>
             <input
@@ -432,11 +432,11 @@ export default function Settings() {
                 if (e.key === 'Enter') handleAddChemistry()
               }}
               placeholder="e.g. dnp"
-              className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div className="flex-[2]">
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <label className="block text-xs font-medium text-foreground-muted mb-1">
               Binding Partner Label
             </label>
             <input
@@ -447,13 +447,13 @@ export default function Settings() {
                 if (e.key === 'Enter') handleAddChemistry()
               }}
               placeholder="e.g. Anti-DNP"
-              className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
             />
           </div>
           <button
             onClick={handleAddChemistry}
             disabled={!newName.trim() || !newLabel.trim() || createMut.isPending}
-            className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1.5 text-sm font-medium disabled:opacity-50"
           >
             Add
           </button>
@@ -463,13 +463,13 @@ export default function Settings() {
         {chemLoading ? (
           <div className="py-4 text-center text-sm text-gray-400">Loading...</div>
         ) : chemistries.length === 0 ? (
-          <div className="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
+          <div className="py-4 text-center text-sm text-foreground-subtle">
             No conjugate chemistries defined.
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-foreground-muted">
                 <th className="py-2">Conjugate</th>
                 <th className="py-2">Binding Partner Label</th>
                 <th className="py-2 w-28 text-right">Actions</th>
@@ -492,7 +492,7 @@ export default function Settings() {
                             if (e.key === 'Enter') handleSaveEdit()
                             if (e.key === 'Escape') setEditingId(null)
                           }}
-                          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
                           autoFocus
                         />
                       </td>
@@ -505,7 +505,7 @@ export default function Settings() {
                             if (e.key === 'Enter') handleSaveEdit()
                             if (e.key === 'Escape') setEditingId(null)
                           }}
-                          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
                         />
                       </td>
                       <td className="py-2 text-right">
@@ -568,17 +568,17 @@ export default function Settings() {
       </div>
 
       {/* Export / Import */}
-      <div className="mt-6 space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="mt-6 space-y-4 rounded-lg border border-border bg-elevated p-6 shadow-sm">
         <div>
-          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Export / Import Data</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <h2 className="text-lg font-medium text-foreground">Export / Import Data</h2>
+          <p className="mt-1 text-sm text-foreground-muted">
             Export any resource as JSON to back up your data. Re-import the file after deleting the
             database to restore. For panels, import their dependencies first.
           </p>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-foreground-muted">
               <th className="py-2">Resource</th>
               <th className="py-2 w-24 text-center">Export</th>
               <th className="py-2 w-24 text-center">Import</th>
@@ -600,7 +600,7 @@ export default function Settings() {
                   <td className="py-2 text-gray-800 dark:text-gray-200">
                     {label}
                     {note && (
-                      <span className="ml-1.5 text-xs text-gray-400 dark:text-gray-500">({note})</span>
+                      <span className="ml-1.5 text-xs text-foreground-subtle">({note})</span>
                     )}
                   </td>
                   <td className="py-2 text-center">
@@ -626,7 +626,7 @@ export default function Settings() {
                     <button
                       onClick={() => fileInputRefs.current[key]?.click()}
                       disabled={isBusy}
-                      className="rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                      className="rounded border border-border-strong px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
                     >
                       {status === 'importing' ? '...' : 'Upload'}
                     </button>

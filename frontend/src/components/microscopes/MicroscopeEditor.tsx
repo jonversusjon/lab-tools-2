@@ -178,7 +178,7 @@ export default function MicroscopeEditor() {
   }, [])
 
   if (!isNew && isLoading) {
-    return <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+    return <p className="text-foreground-muted">Loading...</p>
   }
 
   // Wrap setForm to mark user edits and dirty state
@@ -256,7 +256,7 @@ export default function MicroscopeEditor() {
             {isNew ? 'New Microscope' : 'Edit Microscope'}
           </h1>
           {saveStatus === 'saving' && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">Saving...</span>
+            <span className="text-xs text-foreground-subtle">Saving...</span>
           )}
           {saveStatus === 'saved' && (
             <span className="text-xs text-green-600 dark:text-green-400">Saved</span>
@@ -267,7 +267,7 @@ export default function MicroscopeEditor() {
         </div>
         <button
           onClick={() => navigate('/if-ihc/microscopes')}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+          className="text-sm text-foreground-muted hover:text-gray-700 dark:hover:text-gray-300"
         >
           Back to list
         </button>
@@ -288,7 +288,7 @@ export default function MicroscopeEditor() {
           value={form.name}
           onChange={(e) => updateForm({ ...form, name: e.target.value })}
           placeholder="e.g. Leica SP8 Confocal"
-          className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100"
+          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100"
         />
       </div>
 
@@ -324,10 +324,10 @@ export default function MicroscopeEditor() {
       </div>
 
       {!isNew && (
-        <div className="flex items-center gap-3 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <div className="flex items-center gap-3 border-t border-border pt-4">
           <button
             onClick={handleExport}
-            className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Export JSON
           </button>

@@ -71,15 +71,15 @@ export default function FluorophorePicker({
     const conjugatedFl = fluorophores.find((f) => f.id === antibody.fluorophore_id)
     if (!conjugatedFl) {
       content = (
-        <div ref={ref} className="w-56 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg" style={style}>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Conjugated fluorophore not found in library.</p>
+        <div ref={ref} className="w-56 rounded border border-border bg-elevated p-3 shadow-lg" style={style}>
+          <p className="text-sm text-foreground-muted">Conjugated fluorophore not found in library.</p>
         </div>
       )
     } else {
       const compat = isCompatible(conjugatedFl, laserWavelength, filterMidpoint, filterWidth)
       if (!compat) {
         content = (
-          <div ref={ref} className="w-64 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg" style={style}>
+          <div ref={ref} className="w-64 rounded border border-border bg-elevated p-3 shadow-lg" style={style}>
             <p className="text-sm text-amber-600 dark:text-amber-400">
               Pre-conjugated fluorophore ({conjugatedFl.name}) is not compatible with this detector.
             </p>
@@ -87,13 +87,13 @@ export default function FluorophorePicker({
         )
       } else {
         content = (
-          <div ref={ref} className="w-56 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg" style={style}>
+          <div ref={ref} className="w-56 rounded border border-border bg-elevated shadow-lg" style={style}>
             <button
               onClick={() => onSelect(conjugatedFl.id)}
               className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30"
             >
               {conjugatedFl.name}
-              <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+              <span className="ml-2 text-xs text-foreground-subtle">
                 {conjugatedFl.ex_max_nm}/{conjugatedFl.em_max_nm}
               </span>
             </button>
@@ -108,7 +108,7 @@ export default function FluorophorePicker({
     )
 
     content = (
-      <div ref={ref} className="max-h-60 w-64 overflow-y-auto rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg" style={style}>
+      <div ref={ref} className="max-h-60 w-64 overflow-y-auto rounded border border-border bg-elevated shadow-lg" style={style}>
         {currentAssignmentFluorophoreId && (
           <button
             onClick={onClear}
@@ -118,7 +118,7 @@ export default function FluorophorePicker({
           </button>
         )}
         {compatible.length === 0 ? (
-          <p className="px-3 py-2 text-sm text-gray-400 dark:text-gray-500">No compatible fluorophores</p>
+          <p className="px-3 py-2 text-sm text-foreground-subtle">No compatible fluorophores</p>
         ) : (
           compatible.map((fl) => {
             const alreadyAssigned = assignedFluorophoreIds.has(fl.id)
@@ -132,7 +132,7 @@ export default function FluorophorePicker({
                 }
               >
                 <span className="font-medium">{fl.name}</span>
-                <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
+                <span className="ml-2 text-xs text-foreground-subtle">
                   {fl.ex_max_nm}/{fl.em_max_nm}
                 </span>
                 {alreadyAssigned && <span className="ml-1" title="Already assigned in this panel">&#9888;&#65039;</span>}

@@ -72,19 +72,19 @@ export default function PanelTemplatePicker({
           placeholder="Search templates..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-md border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm text-foreground placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           autoFocus
         />
 
         {isEmpty && !search && (
-          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">
+          <p className="text-sm text-foreground-subtle text-center py-4">
             No panel templates found. Create one in Panel Templates first.
           </p>
         )}
 
         {showFlow && (
           <div>
-            <div className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-2">
+            <div className="text-xs font-semibold uppercase text-foreground-subtle mb-2">
               Flow Panel Templates
             </div>
 
@@ -97,11 +97,11 @@ export default function PanelTemplatePicker({
                 <span className="text-base">📋</span>
                 <span className="text-sm text-gray-700 dark:text-gray-300">Blank Flow Panel</span>
               </div>
-              <span className="text-xs text-gray-400 dark:text-gray-500 italic">empty</span>
+              <span className="text-xs text-foreground-subtle italic">empty</span>
             </button>
 
             {flowTemplates.length === 0 && search ? (
-              <p className="text-sm text-gray-400 dark:text-gray-500 px-3 py-2">
+              <p className="text-sm text-foreground-subtle px-3 py-2">
                 No flow panel templates found
               </p>
             ) : (
@@ -116,12 +116,12 @@ export default function PanelTemplatePicker({
                     className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{p.name}</span>
+                      <span className="text-sm text-foreground">{p.name}</span>
                       <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                         {p.target_count} target{p.target_count !== 1 ? 's' : ''}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                    <span className="text-xs text-foreground-subtle shrink-0">
                       {instrName}
                     </span>
                   </button>
@@ -133,7 +133,7 @@ export default function PanelTemplatePicker({
 
         {showIF && (
           <div>
-            <div className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-2">
+            <div className="text-xs font-semibold uppercase text-foreground-subtle mb-2">
               IF/IHC Panel Templates
             </div>
 
@@ -146,11 +146,11 @@ export default function PanelTemplatePicker({
                 <span className="text-base">🔬</span>
                 <span className="text-sm text-gray-700 dark:text-gray-300">Blank IF Panel</span>
               </div>
-              <span className="text-xs text-gray-400 dark:text-gray-500 italic">empty</span>
+              <span className="text-xs text-foreground-subtle italic">empty</span>
             </button>
 
             {ifTemplates.length === 0 && search ? (
-              <p className="text-sm text-gray-400 dark:text-gray-500 px-3 py-2">
+              <p className="text-sm text-foreground-subtle px-3 py-2">
                 No IF/IHC panel templates found
               </p>
             ) : (
@@ -165,7 +165,7 @@ export default function PanelTemplatePicker({
                     className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{p.name}</span>
+                      <span className="text-sm text-foreground">{p.name}</span>
                       <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
                         {p.target_count} target{p.target_count !== 1 ? 's' : ''}
                       </span>
@@ -180,7 +180,7 @@ export default function PanelTemplatePicker({
                         {p.panel_type}
                       </span>
                     </div>
-                    <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                    <span className="text-xs text-foreground-subtle shrink-0">
                       {scopeName}
                     </span>
                   </button>

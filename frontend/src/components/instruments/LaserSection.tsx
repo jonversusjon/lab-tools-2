@@ -41,7 +41,7 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
   }
 
   return (
-    <div className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+    <div className="rounded border border-border bg-elevated">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -61,18 +61,18 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
             onChange({ ...laser, wavelength_nm: parseInt(e.target.value) || 0 })
           }
           placeholder="Wavelength"
-          className="w-20 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
           min={1}
         />
-        <span className="text-xs text-gray-400 dark:text-gray-500">nm</span>
+        <span className="text-xs text-foreground-subtle">nm</span>
         <input
           type="text"
           value={laser.name}
           onChange={(e) => onChange({ ...laser, name: e.target.value })}
           placeholder="Laser name"
-          className="w-40 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-40 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
         />
-        <span className="ml-auto text-xs text-gray-400 dark:text-gray-500">
+        <span className="ml-auto text-xs text-foreground-subtle">
           {laser.detectors.length} detector{laser.detectors.length !== 1 ? 's' : ''}
         </span>
         <button
@@ -87,7 +87,7 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
       {!collapsed && (
         <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-3 pt-2">
           {laser.detectors.length === 0 && (
-            <p className="py-1 text-xs text-gray-400 dark:text-gray-500">No detectors yet.</p>
+            <p className="py-1 text-xs text-foreground-subtle">No detectors yet.</p>
           )}
           {laser.detectors.map((det, i) => (
             <DetectorRow

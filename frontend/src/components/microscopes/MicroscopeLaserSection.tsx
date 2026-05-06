@@ -35,10 +35,10 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
             onChange({ ...filter, filter_midpoint: parseInt(e.target.value) || 0 })
           }
           placeholder="Midpoint"
-          className="w-20 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
           min={1}
         />
-        <span className="text-gray-400 dark:text-gray-500">/</span>
+        <span className="text-foreground-subtle">/</span>
         <input
           type="number"
           value={filter.filter_width || ''}
@@ -46,7 +46,7 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
             onChange({ ...filter, filter_width: parseInt(e.target.value) || 0 })
           }
           placeholder="Width"
-          className="w-16 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-16 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
           min={1}
         />
       </div>
@@ -55,10 +55,10 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
         value={filter.name}
         onChange={(e) => onChange({ ...filter, name: e.target.value })}
         placeholder="Name (optional)"
-        className="w-32 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+        className="w-32 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
       />
       {filter.filter_midpoint > 0 && filter.filter_width > 0 && (
-        <span className="text-xs text-gray-400 dark:text-gray-500">
+        <span className="text-xs text-foreground-subtle">
           {low}&ndash;{high} nm
         </span>
       )}
@@ -118,7 +118,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
     : `${laser.wavelength_nm || '?'} nm`
 
   return (
-    <div className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+    <div className="rounded border border-border bg-elevated">
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -133,7 +133,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
         />
 
         {/* Excitation type toggle */}
-        <div className="flex rounded border border-gray-300 dark:border-gray-600 text-xs overflow-hidden shrink-0">
+        <div className="flex rounded border border-border-strong text-xs overflow-hidden shrink-0">
           <button
             onClick={() => setExcitationType('laser')}
             className={
@@ -168,12 +168,12 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
             }
             placeholder={isArc ? 'Center' : 'Wavelength'}
             title={isArc ? 'Excitation filter center wavelength' : 'Laser wavelength'}
-            className="w-20 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+            className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
             min={1}
           />
           {isArc && (
             <>
-              <span className="text-gray-400 dark:text-gray-500">/</span>
+              <span className="text-foreground-subtle">/</span>
               <input
                 type="number"
                 value={laser.ex_filter_width ?? ''}
@@ -182,12 +182,12 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
                 }
                 placeholder="Width"
                 title="Excitation filter bandpass width"
-                className="w-16 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+                className="w-16 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
                 min={1}
               />
             </>
           )}
-          <span className="text-xs text-gray-400 dark:text-gray-500">nm</span>
+          <span className="text-xs text-foreground-subtle">nm</span>
         </div>
 
         <input
@@ -195,10 +195,10 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
           value={laser.name}
           onChange={(e) => onChange({ ...laser, name: e.target.value })}
           placeholder={isArc ? 'Source name' : 'Laser name'}
-          className="w-36 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-36 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
         />
 
-        <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 shrink-0">
+        <span className="ml-auto text-xs text-foreground-subtle shrink-0">
           {exLabel} &middot; {laser.filters.length} filter{laser.filters.length !== 1 ? 's' : ''}
         </span>
         <button
@@ -212,11 +212,11 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
 
       {!collapsed && (
         <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-3 pt-2">
-          <p className="mb-1 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+          <p className="mb-1 text-xs font-medium text-foreground-subtle uppercase tracking-wide">
             Emission Filters
           </p>
           {laser.filters.length === 0 && (
-            <p className="py-1 text-xs text-gray-400 dark:text-gray-500">No filters yet.</p>
+            <p className="py-1 text-xs text-foreground-subtle">No filters yet.</p>
           )}
           {laser.filters.map((fil, i) => (
             <FilterRow

@@ -155,10 +155,10 @@ export default function ListEditor({
       {editorOpen && (
         <div
           ref={popoverRef}
-          className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-xl"
+          className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-gray-200 dark:border-gray-600 bg-elevated shadow-xl"
         >
           <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
               Manage {label}s
             </p>
           </div>
@@ -176,13 +176,13 @@ export default function ListEditor({
                 }
               }}
               placeholder="Add new..."
-              className="flex-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="flex-1 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
             />
             <button
               type="button"
               onClick={handleAdd}
               disabled={!newValue.trim() || createMut.isPending}
-              className="rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-2 py-1 text-xs font-medium disabled:opacity-50"
             >
               Add
             </button>
@@ -191,7 +191,7 @@ export default function ListEditor({
           {/* Existing entries */}
           <ul className="max-h-52 overflow-y-auto">
             {entries.length === 0 && (
-              <li className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500">
+              <li className="px-3 py-2 text-xs text-foreground-subtle">
                 No entries yet.
               </li>
             )}
@@ -213,7 +213,7 @@ export default function ListEditor({
                         }
                         if (e.key === 'Escape') setEditingId(null)
                       }}
-                      className="flex-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-0.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                      className="flex-1 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-0.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
                       autoFocus
                     />
                     <button

@@ -373,7 +373,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   const totalCols = 7 + (showSpectral ? 1 : 0) + (showCompatCols ? 2 : 0)
 
   if (!state.panel) {
-    return <p className="text-gray-500 dark:text-gray-400">Loading panel...</p>
+    return <p className="text-foreground-muted">Loading panel...</p>
   }
 
   return (
@@ -384,7 +384,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
           {config.showBackButton && (
             <button
               onClick={() => window.history.back()}
-              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              className="text-sm text-foreground-muted hover:text-gray-700 dark:hover:text-gray-200"
             >
               &larr; Panels
             </button>
@@ -419,7 +419,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
           <div className="ml-auto flex items-center gap-2">
             {/* View mode toggle */}
             {config.showViewModeToggle && (
-              <div className="flex rounded border border-gray-200 dark:border-gray-700 overflow-hidden text-xs">
+              <div className="flex rounded border border-border overflow-hidden text-xs">
                 <button
                   onClick={() => handlers.onViewModeToggle?.('simple')}
                   className={
@@ -468,7 +468,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
               id="microscope-select"
               value={state.panel!.microscope_id ?? ''}
               onChange={(e) => handlers.onMicroscopeChange!(e.target.value)}
-              className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
             >
               <option value="">None</option>
               {microscopes.map((m) => (
@@ -508,11 +508,11 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
       {/* Table */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handlers.onReorderTargets}>
-        <div className="overflow-x-auto scrollbar-hide panel-fade-right rounded border border-gray-200 dark:border-gray-700">
+        <div className="overflow-x-auto scrollbar-hide panel-fade-right rounded border border-border">
           <SortableContext items={state.targets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                <tr className="border-b border-border bg-surface text-foreground-muted">
                   <th className="w-7 px-1 py-2" />
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Target</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Primary Ab</th>
@@ -536,7 +536,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   <tr>
                     <td
                       colSpan={totalCols}
-                      className="px-3 py-8 text-center text-gray-400 dark:text-gray-500"
+                      className="px-3 py-8 text-center text-foreground-subtle"
                     >
                       No targets added yet. Click &ldquo;+ Add Target&rdquo; below to begin.
                     </td>
@@ -576,7 +576,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             {/* Drag handle */}
                             <td
                               {...listeners}
-                              className="w-7 px-1 py-2 cursor-grab text-gray-400 hover:text-gray-600 active:cursor-grabbing dark:text-gray-500 dark:hover:text-gray-300 select-none"
+                              className="w-7 px-1 py-2 cursor-grab text-foreground-subtle hover:text-gray-600 active:cursor-grabbing dark:hover:text-gray-300 select-none"
                               title="Drag to reorder"
                             >
                               <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto">
@@ -586,7 +586,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
                             {/* Target (antibody_target or dye_label_target) */}
                             <td
-                              className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100 cursor-pointer"
+                              className="px-3 py-2 font-medium text-foreground cursor-pointer"
                               style={{ minWidth: 160 }}
                               onClick={() => {
                                 if (editingTargetId !== t.id) setEditingTargetId(t.id)
@@ -729,7 +729,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                       const rowId = isDyeLabelRow ? t.dye_label_id! : t.antibody_id!
                                       handlers.onUpdateChannel(rowId, isDyeLabelRow, assignment, newFilterId)
                                     }}
-                                    className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-0.5 text-xs dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                                    className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-0.5 text-xs dark:text-gray-100 focus:border-blue-500 focus:outline-none"
                                   >
                                     <option value="">None</option>
                                     {state.microscope?.lasers.map((laser) => (
@@ -852,7 +852,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             <td className="w-7 px-1 py-2 text-center">
                               <button
                                 onClick={() => handleRemoveTarget(t.id, t.antibody_id)}
-                                className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                                className="text-foreground-subtle hover:text-red-500 dark:hover:text-red-400"
                                 aria-label="Remove target"
                               >
                                 &times;
@@ -893,7 +893,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                     <td className="w-7 px-1 py-2 text-center">
                       <button
                         onClick={() => handleRemovePendingRow(pendingId)}
-                        className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                        className="text-foreground-subtle hover:text-red-500 dark:hover:text-red-400"
                         aria-label="Remove pending row"
                       >
                         &times;

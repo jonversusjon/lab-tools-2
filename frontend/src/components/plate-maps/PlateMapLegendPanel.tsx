@@ -80,7 +80,7 @@ function LegendItem({
         )}
         {onColorChange ? (
           <label
-            className="w-5 h-5 rounded-full shrink-0 block cursor-pointer border border-gray-300 dark:border-gray-600 overflow-hidden"
+            className="w-5 h-5 rounded-full shrink-0 block cursor-pointer border border-border-strong overflow-hidden"
             style={{ backgroundColor: hex }}
             title="Change border color"
           >
@@ -93,7 +93,7 @@ function LegendItem({
           </label>
         ) : (
           <div
-            className="w-5 h-5 rounded-full shrink-0 border border-gray-300 dark:border-gray-600"
+            className="w-5 h-5 rounded-full shrink-0 border border-border-strong"
             style={{ backgroundColor: hex }}
           />
         )}
@@ -118,7 +118,7 @@ function LegendItem({
               onChange={(e) => onApplyToWellsChange(e.target.checked)}
               className="rounded"
             />
-            <span className="text-xs text-gray-500 dark:text-gray-400">Show</span>
+            <span className="text-xs text-foreground-muted">Show</span>
           </label>
         )}
         <button
@@ -131,7 +131,7 @@ function LegendItem({
       </div>
       {expanded && (
         <div className="px-2 pb-2">
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+          <p className="text-xs text-foreground-muted font-mono">
             {wellIds.slice(0, 20).join(', ')}
             {wellIds.length > 20 && ` …+${wellIds.length - 20} more`}
           </p>
@@ -205,7 +205,7 @@ export default function PlateMapLegendPanel({
 
   if (!hasAny) {
     return (
-      <div className="text-sm text-gray-400 dark:text-gray-500 py-4 text-center">
+      <div className="text-sm text-foreground-subtle py-4 text-center">
         No colors applied yet.
       </div>
     )
@@ -272,7 +272,7 @@ export default function PlateMapLegendPanel({
 
         return (
           <div key={layer}>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-2">
               {LAYER_LABELS[layer]}
             </h3>
             <DndContext

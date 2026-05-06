@@ -93,13 +93,13 @@ export default function FluorophoreBrowser() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowImportWizard(true)}
-              className="rounded border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Import CSV / JSON
             </button>
             <button
               onClick={() => setShowFpbaseModal(true)}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Fetch from FPbase
             </button>
@@ -113,9 +113,9 @@ export default function FluorophoreBrowser() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name..."
-            className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 w-52"
+            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-1.5 text-sm dark:text-gray-100 w-52"
           />
-          <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-sm">
+          <div className="flex rounded border border-border-strong overflow-hidden text-sm">
             {(['all', 'protein', 'dye'] as const).map((t) => (
               <button
                 key={t}
@@ -139,7 +139,7 @@ export default function FluorophoreBrowser() {
             />
             Has spectra
           </label>
-          <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+          <span className="text-xs text-foreground-subtle ml-auto">
             {total.toLocaleString()} fluorophores
           </span>
         </div>
@@ -148,7 +148,7 @@ export default function FluorophoreBrowser() {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wide">
+              <tr className="border-b border-border text-foreground-muted text-xs uppercase tracking-wide">
                 <th className="w-8 py-2" />
                 <th className="w-8 py-2" />
                 <th className="py-2 font-medium">Name</th>
@@ -163,7 +163,7 @@ export default function FluorophoreBrowser() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-gray-400 dark:text-gray-500">
+                  <td colSpan={9} className="py-8 text-center text-foreground-subtle">
                     Loading fluorophores...
                   </td>
                 </tr>
@@ -175,7 +175,7 @@ export default function FluorophoreBrowser() {
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-gray-400 dark:text-gray-500">
+                  <td colSpan={9} className="py-8 text-center text-foreground-subtle">
                     No fluorophores found.
                   </td>
                 </tr>
@@ -207,13 +207,13 @@ export default function FluorophoreBrowser() {
                         }
                       />
                     </td>
-                    <td className="py-2 font-medium text-gray-900 dark:text-gray-100">
+                    <td className="py-2 font-medium text-foreground">
                       {fl.name}
                       {fl.has_spectra && (
                         <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-400" title="Has spectra" />
                       )}
                     </td>
-                    <td className="py-2 text-gray-500 dark:text-gray-400 capitalize">
+                    <td className="py-2 text-foreground-muted capitalize">
                       {fl.fluor_type ?? '—'}
                     </td>
                     <td className="py-2 text-gray-600 dark:text-gray-400">
@@ -228,7 +228,7 @@ export default function FluorophoreBrowser() {
                     <td className="py-2 text-gray-600 dark:text-gray-400">
                       {fl.qy !== null && fl.qy !== undefined ? fl.qy.toFixed(2) : '—'}
                     </td>
-                    <td className="py-2 text-gray-500 dark:text-gray-400">{fl.source}</td>
+                    <td className="py-2 text-foreground-muted">{fl.source}</td>
                   </tr>
 
                   {expandedId === fl.id && (
@@ -250,17 +250,17 @@ export default function FluorophoreBrowser() {
             <button
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+              className="rounded border border-border-strong px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
             >
               Previous
             </button>
-            <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-foreground-muted">
               Page {page + 1} of {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
-              className="rounded border border-gray-300 dark:border-gray-600 px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+              className="rounded border border-border-strong px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
             >
               Next
             </button>
@@ -377,7 +377,7 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
 
   const tableHeader = (
     <thead>
-      <tr className="border-b border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+      <tr className="border-b border-gray-200 dark:border-gray-600 text-foreground-muted">
         <th className="py-1 text-left font-medium pr-4">Instrument</th>
         <th className="py-1 text-left font-medium pr-4">Best Laser</th>
         <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
@@ -408,7 +408,7 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
     <div className="overflow-x-auto">
       {favorites.length > 0 && (
         <>
-          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <div className="mb-1 text-xs font-semibold text-foreground-muted uppercase tracking-wide">
             Favorites
           </div>
           <table className="text-xs w-full border-collapse">
@@ -423,12 +423,12 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
       )}
 
       {favorites.length > 0 && recents.length > 0 && (
-        <hr className="my-3 border-gray-200 dark:border-gray-700" />
+        <hr className="my-3 border-border" />
       )}
 
       {recents.length > 0 && (
         <>
-          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <div className="mb-1 text-xs font-semibold text-foreground-muted uppercase tracking-wide">
             Recent
           </div>
           <table className="text-xs w-full border-collapse">
@@ -447,7 +447,7 @@ function TieredCompatibilityTable({ compatibilities }: { compatibilities: Instru
 
       {others.length > 0 && (
         <>
-          <hr className="my-3 border-gray-200 dark:border-gray-700" />
+          <hr className="my-3 border-border" />
           <button
             onClick={() => {
               setShowAll(!showAll)
@@ -554,7 +554,7 @@ function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibiliti
 
   const tableHeader = (
     <thead>
-      <tr className="border-b border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400">
+      <tr className="border-b border-gray-200 dark:border-gray-600 text-foreground-muted">
         <th className="py-1 text-left font-medium pr-4">Microscope</th>
         <th className="py-1 text-left font-medium pr-4">Best Laser</th>
         <th className="py-1 text-left font-medium pr-4">Ex Eff.</th>
@@ -585,7 +585,7 @@ function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibiliti
     <div className="overflow-x-auto">
       {favorites.length > 0 && (
         <>
-          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <div className="mb-1 text-xs font-semibold text-foreground-muted uppercase tracking-wide">
             Favorites
           </div>
           <table className="text-xs w-full border-collapse">
@@ -600,12 +600,12 @@ function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibiliti
       )}
 
       {favorites.length > 0 && recents.length > 0 && (
-        <hr className="my-3 border-gray-200 dark:border-gray-700" />
+        <hr className="my-3 border-border" />
       )}
 
       {recents.length > 0 && (
         <>
-          <div className="mb-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          <div className="mb-1 text-xs font-semibold text-foreground-muted uppercase tracking-wide">
             Recent
           </div>
           <table className="text-xs w-full border-collapse">
@@ -621,7 +621,7 @@ function TieredMicroscopeCompatibilityTable({ compatibilities }: { compatibiliti
 
       {others.length > 0 && (
         <>
-          <hr className="my-3 border-gray-200 dark:border-gray-700" />
+          <hr className="my-3 border-border" />
           <button
             onClick={() => {
               setShowAll(!showAll)
@@ -664,7 +664,7 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
   )
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+    <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-border px-6 py-4">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Metadata card */}
         <div>
@@ -704,9 +704,9 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
         <div>
           <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Spectra</h4>
           {!fluorophore.has_spectra ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">No spectral data available.</p>
+            <p className="text-xs text-foreground-subtle">No spectral data available.</p>
           ) : spectraLoading ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">Loading spectra...</p>
+            <p className="text-xs text-foreground-subtle">Loading spectra...</p>
           ) : spectraData && Object.keys(spectraData.spectra).length > 0 ? (
             <>
               {/* TODO: Add toggleable Ex / Em curve controls above this chart.
@@ -720,14 +720,14 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
               />
             </>
           ) : (
-            <p className="text-xs text-gray-400 dark:text-gray-500">Spectra unavailable.</p>
+            <p className="text-xs text-foreground-subtle">Spectra unavailable.</p>
           )}
         </div>
       </div>
 
       {/* Instrument compatibility */}
       <div className="mt-6">
-        <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
+        <h3 className="mb-4 text-base font-semibold text-gray-800 dark:text-gray-200 border-b border-border pb-2">
           Instrument Compatibility
         </h3>
 
@@ -737,9 +737,9 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
             Flow Cytometers
           </h4>
           {compatLoading ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+            <p className="text-xs text-foreground-subtle">Loading...</p>
           ) : compatData && compatData.instrument_compatibilities.length === 0 ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-foreground-subtle">
               No cytometers in database.
             </p>
           ) : compatData ? (
@@ -747,7 +747,7 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
           ) : null}
         </div>
 
-        <hr className="border-gray-200 dark:border-gray-700 mb-6" />
+        <hr className="border-border mb-6" />
 
         {/* Microscopes */}
         <div>
@@ -755,9 +755,9 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
             Microscopes
           </h4>
           {microscopeCompatLoading ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+            <p className="text-xs text-foreground-subtle">Loading...</p>
           ) : microscopeCompatData && microscopeCompatData.microscope_compatibilities.length === 0 ? (
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-foreground-subtle">
               No microscopes in database.
             </p>
           ) : microscopeCompatData ? (
@@ -772,7 +772,7 @@ function FluorophoreDetail({ fluorophore }: { fluorophore: Fluorophore }) {
 function MetaRow({ label, value }: { label: string; value: string | null | undefined }) {
   return (
     <>
-      <dt className="text-gray-500 dark:text-gray-400">{label}</dt>
+      <dt className="text-foreground-muted">{label}</dt>
       <dd className="text-gray-700 dark:text-gray-300">{value ?? '—'}</dd>
     </>
   )
@@ -792,7 +792,7 @@ function TypeToggle({
   onChange: (v: VisibleTypes) => void
 }) {
   return (
-    <div className="flex rounded border border-gray-300 dark:border-gray-600 overflow-hidden text-xs">
+    <div className="flex rounded border border-border-strong overflow-hidden text-xs">
       {(['EX', 'EM', 'both'] as VisibleTypes[]).map((t) => (
         <button
           key={t}
@@ -848,13 +848,13 @@ function OverlaySidebar({
   const chartSection = (fullscreen: boolean) => {
     if (ids.length < 2) {
       return (
-        <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
+        <p className="text-xs text-foreground-subtle py-1">
           Select {2 - ids.length} more to compare.
         </p>
       )
     }
     if (isLoading) {
-      return <p className="text-xs text-gray-400 dark:text-gray-500 py-1">Loading spectra...</p>
+      return <p className="text-xs text-foreground-subtle py-1">Loading spectra...</p>
     }
     if (fluorophores.length >= 2) {
       return (
@@ -867,7 +867,7 @@ function OverlaySidebar({
       )
     }
     return (
-      <p className="text-xs text-gray-400 dark:text-gray-500 py-1">
+      <p className="text-xs text-foreground-subtle py-1">
         Spectra unavailable for selected fluorophores.
       </p>
     )
@@ -875,9 +875,9 @@ function OverlaySidebar({
 
   return (
     <>
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <div className="rounded-lg border border-border bg-elevated shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
             Spectra Overlay
           </h3>
@@ -934,11 +934,11 @@ function OverlaySidebar({
             onClick={() => setIsFullscreen(false)}
           >
             <div
-              className="w-full max-w-5xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xl overflow-hidden"
+              className="w-full max-w-5xl rounded-xl border border-border bg-elevated shadow-2xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal header */}
-              <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-3">
+              <div className="flex items-center justify-between border-b border-border px-6 py-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                   Spectra Overlay
                 </h3>

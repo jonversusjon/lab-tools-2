@@ -19,7 +19,7 @@ export default function SpilloverHeatmap({
 
   if (n === 0) {
     return (
-      <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-8 text-center text-gray-400 dark:text-gray-500">
+      <div className="rounded border border-border bg-surface px-6 py-8 text-center text-foreground-subtle">
         Add fluorophore assignments to see spillover matrix
       </div>
     )
@@ -31,7 +31,7 @@ export default function SpilloverHeatmap({
   const cellTextColor = isDark ? '#E5E7EB' : undefined
 
   return (
-    <div className="rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+    <div className="rounded border border-border bg-elevated p-4">
       <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Spillover Matrix</h3>
 
       {/* Warning banner for fluorophores missing spectral data */}
@@ -50,13 +50,13 @@ export default function SpilloverHeatmap({
           <div className="inline-grid" style={{ gridTemplateColumns: 'auto 50px' }}>
             <div />
             <div
-              className="px-1 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 truncate"
+              className="px-1 py-1 text-center text-xs font-medium text-foreground-muted truncate"
               title={labels[0]}
             >
               {labels[0]}
             </div>
             <div
-              className="px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 truncate"
+              className="px-2 py-1 text-xs font-medium text-foreground-muted truncate"
               title={labels[0]}
             >
               {labels[0]}
@@ -68,7 +68,7 @@ export default function SpilloverHeatmap({
               1.00
             </div>
           </div>
-          <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+          <p className="mt-2 text-xs text-foreground-subtle">
             2 or more assignments needed for spillover analysis
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function SpilloverHeatmap({
             {labels.map((label, j) => (
               <div
                 key={'col-' + j}
-                className="px-1 py-1 text-center text-xs font-medium text-gray-500 dark:text-gray-400 truncate"
+                className="px-1 py-1 text-center text-xs font-medium text-foreground-muted truncate"
                 title={label}
               >
                 {label}
@@ -96,7 +96,7 @@ export default function SpilloverHeatmap({
             {matrix.map((row, i) => (
               <Fragment key={'row-' + i}>
                 <div
-                  className="flex items-center px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 truncate"
+                  className="flex items-center px-2 py-1 text-xs font-medium text-foreground-muted truncate"
                   title={labels[i]}
                 >
                   {labels[i]}
