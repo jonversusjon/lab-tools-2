@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-05T17:36:57Z
-Commit: 6cb0f12
+Generated: 2026-05-06T01:42:26Z
+Commit: 7a033ca
 
 ---
 
@@ -1466,4 +1466,63 @@ Commit: 6cb0f12
 | `is_favorite` | `bool` |  |
 | `created_at` | `datetime` |  |
 | `updated_at` | `datetime` |  |
+
+### `FluorophoreExportItem`
+
+| Field | Type | Default |
+|---|---|---|
+| `id` | `str` |  |
+| `name` | `str` |  |
+| `fluor_type` | `str | None` | `None` |
+| `source` | `str` |  |
+| `ex_max_nm` | `float | None` | `None` |
+| `em_max_nm` | `float | None` | `None` |
+| `ext_coeff` | `float | None` | `None` |
+| `qy` | `float | None` | `None` |
+| `lifetime_ns` | `float | None` | `None` |
+| `oligomerization` | `str | None` | `None` |
+| `switch_type` | `str | None` | `None` |
+| `has_spectra` | `bool` |  |
+| `is_favorite` | `bool` |  |
+| `spectra` | `dict[str, list[list[float]]]` | `{}` |
+
+### `FluorophoreExportResponse`
+
+| Field | Type | Default |
+|---|---|---|
+| `fluorophores` | `list[FluorophoreExportItem]` |  |
+| `total` | `int` |  |
+| `exported_at` | `str` |  |
+
+### `FluorophoreImportSummaryItem`
+
+| Field | Type | Default |
+|---|---|---|
+| `id` | `str` |  |
+| `name` | `str` |  |
+| `status` | `str` |  |
+| `conflict_reason` | `str | None` | `None` |
+
+### `FluorophoreImportPreviewResponse`
+
+| Field | Type | Default |
+|---|---|---|
+| `new_count` | `int` |  |
+| `id_conflict_count` | `int` |  |
+| `name_conflict_count` | `int` |  |
+| `items` | `list[FluorophoreImportSummaryItem]` |  |
+
+### `FluorophoreImportCommitRequest`
+
+| Field | Type | Default |
+|---|---|---|
+| `fluorophores` | `list[FluorophoreExportItem]` |  |
+
+### `FluorophoreImportCommitResponse`
+
+| Field | Type | Default |
+|---|---|---|
+| `created` | `int` |  |
+| `skipped` | `int` |  |
+| `errors` | `list[str]` |  |
 

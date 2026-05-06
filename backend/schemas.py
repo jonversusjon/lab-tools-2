@@ -978,3 +978,53 @@ class DyeLabelResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── Fluorophore Export / Import ───────────────────────────────────────────────
+
+class FluorophoreExportItem(BaseModel):
+    model_config = {"from_attributes": True}
+    id: str
+    name: str
+    fluor_type: str | None = None
+    source: str
+    ex_max_nm: float | None = None
+    em_max_nm: float | None = None
+    ext_coeff: float | None = None
+    qy: float | None = None
+    lifetime_ns: float | None = None
+    oligomerization: str | None = None
+    switch_type: str | None = None
+    has_spectra: bool
+    is_favorite: bool
+    spectra: dict[str, list[list[float]]] = {}
+
+
+class FluorophoreExportResponse(BaseModel):
+    fluorophores: list[FluorophoreExportItem]
+    total: int
+    exported_at: str
+
+
+class FluorophoreImportSummaryItem(BaseModel):
+    id: str
+    name: str
+    status: str  # "new" | "id_conflict" | "name_conflict"
+    conflict_reason: str | None = None
+
+
+class FluorophoreImportPreviewResponse(BaseModel):
+    new_count: int
+    id_conflict_count: int
+    name_conflict_count: int
+    items: list[FluorophoreImportSummaryItem]
+
+
+class FluorophoreImportCommitRequest(BaseModel):
+    fluorophores: list[FluorophoreExportItem]
+
+
+class FluorophoreImportCommitResponse(BaseModel):
+    created: int
+    skipped: int
+    errors: list[str]
