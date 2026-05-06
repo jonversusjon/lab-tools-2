@@ -113,11 +113,11 @@ export default function AntibodyTable() {
     <div>
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Primary Antibodies</h1>
+        <h1 className="text-2xl font-bold text-foreground">Primary Antibodies</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowImport(true)}
-            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-foreground hover:bg-hover"
           >
             Import CSV
           </button>
@@ -138,14 +138,14 @@ export default function AntibodyTable() {
             placeholder="Search by target, name, catalog #, vendor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+            className="flex-1 rounded border border-border-strong bg-elevated px-3 py-2 text-sm text-foreground focus:border-blue-500 focus:outline-none"
           />
           <button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={`rounded border px-3 py-2 text-sm ${
               showFavoritesOnly
                 ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
-                : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                : 'border-border-strong text-foreground-muted hover:bg-hover'
             }`}
           >
             &#9733; Favorites
@@ -156,7 +156,7 @@ export default function AntibodyTable() {
           <select
             value={hostFilter}
             onChange={(e) => setHostFilter(e.target.value)}
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+            className="rounded border border-border-strong bg-elevated px-2 py-1 text-xs text-foreground"
           >
             <option value="">All hosts</option>
             {uniqueHosts.map((h) => (
@@ -167,7 +167,7 @@ export default function AntibodyTable() {
           <select
             value={vendorFilter}
             onChange={(e) => setVendorFilter(e.target.value)}
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+            className="rounded border border-border-strong bg-elevated px-2 py-1 text-xs text-foreground"
           >
             <option value="">All vendors</option>
             {uniqueVendors.map((v) => (
@@ -182,7 +182,7 @@ export default function AntibodyTable() {
                 e.target.value === '' ? null : e.target.value === 'true'
               )
             }
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+            className="rounded border border-border-strong bg-elevated px-2 py-1 text-xs text-foreground"
           >
             <option value="">In stock: Any</option>
             <option value="true">In stock</option>
@@ -196,7 +196,7 @@ export default function AntibodyTable() {
               onClick={() => toggleTagFilter(tag.id)}
               className={`rounded-full px-2 py-0.5 text-xs font-medium transition-all ${
                 selectedTagIds.includes(tag.id)
-                  ? 'ring-2 ring-offset-1 dark:ring-offset-gray-900'
+                  ? 'ring-2 ring-offset-1 dark:ring-offset-gray-900' // theme-exempt: ring-offset color has no theme token
                   : 'opacity-60 hover:opacity-100'
               }`}
               style={{
@@ -232,27 +232,27 @@ export default function AntibodyTable() {
           <tr className="border-b border-border text-foreground-muted">
             <th className="w-8 py-2" />
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
+              className="cursor-pointer py-2 font-medium hover:text-foreground"
               onClick={() => handleSort('target')}
             >
               Target{sortIndicator('target')}
             </th>
             <th className="py-2 font-medium">Clone</th>
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
+              className="cursor-pointer py-2 font-medium hover:text-foreground"
               onClick={() => handleSort('host')}
             >
               Host{sortIndicator('host')}
             </th>
             <th className="py-2 font-medium">Isotype</th>
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
+              className="cursor-pointer py-2 font-medium hover:text-foreground"
               onClick={() => handleSort('conjugate')}
             >
               Conjugate{sortIndicator('conjugate')}
             </th>
             <th
-              className="cursor-pointer py-2 font-medium hover:text-gray-800 dark:hover:text-gray-200"
+              className="cursor-pointer py-2 font-medium hover:text-foreground"
               onClick={() => handleSort('vendor')}
             >
               Vendor{sortIndicator('vendor')}
@@ -291,7 +291,7 @@ export default function AntibodyTable() {
             <HoverActionsRow
               key={ab.id}
               as="tr"
-              className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="border-b border-border hover:bg-hover"
               onClick={() =>
                 setExpandedId(expandedId === ab.id ? null : ab.id)
               }
@@ -320,13 +320,13 @@ export default function AntibodyTable() {
                   </span>
                 )}
               </td>
-              <td className="py-2 text-gray-600 dark:text-gray-400">
+              <td className="py-2 text-foreground-muted">
                 {ab.clone ?? ''}
               </td>
-              <td className="py-2 text-gray-600 dark:text-gray-400">
+              <td className="py-2 text-foreground-muted">
                 {ab.host ?? ''}
               </td>
-              <td className="py-2 text-gray-600 dark:text-gray-400">
+              <td className="py-2 text-foreground-muted">
                 {ab.isotype ?? ''}
               </td>
               <td className="py-2">
@@ -346,10 +346,10 @@ export default function AntibodyTable() {
                   </span>
                 )}
               </td>
-              <td className="py-2 text-gray-600 dark:text-gray-400">
+              <td className="py-2 text-foreground-muted">
                 {ab.vendor ?? ''}
               </td>
-              <td className="py-2 text-gray-600 dark:text-gray-400">
+              <td className="py-2 text-foreground-muted">
                 {ab.catalog_number ?? ''}
               </td>
               <td className="py-2">
@@ -362,7 +362,7 @@ export default function AntibodyTable() {
                       e.stopPropagation()
                       setTagManagerId(tagManagerId === ab.id ? null : ab.id)
                     }}
-                    className="rounded-full border border-dashed border-border-strong px-1.5 text-xs text-foreground-subtle hover:border-gray-400 hover:text-gray-500"
+                    className="rounded-full border border-dashed border-border-strong px-1.5 text-xs text-foreground-subtle hover:border-border-strong hover:text-foreground-muted"
                   >
                     +
                   </button>
@@ -412,14 +412,14 @@ function AntibodyDetail({
   onEdit: (ab: Antibody) => void
 }) {
   return (
-    <div className="mt-2 rounded-lg border border-border bg-gray-50 dark:bg-gray-800/50 p-4">
+    <div className="mt-2 rounded-lg border border-border bg-surface p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold dark:text-gray-100">
+        <h3 className="text-sm font-semibold text-foreground">
           {ab.target} Details
         </h3>
         <button
           onClick={() => onEdit(ab)}
-          className="rounded border border-border-strong px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+          className="rounded border border-border-strong px-3 py-1 text-xs text-foreground hover:bg-elevated"
         >
           Edit
         </button>
@@ -452,7 +452,7 @@ function AntibodyDetail({
           <span className="text-xs font-medium text-foreground-muted">
             Notes:
           </span>
-          <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">
+          <p className="mt-0.5 text-xs text-foreground">
             {ab.notes}
           </p>
         </div>
@@ -462,7 +462,7 @@ function AntibodyDetail({
           <span className="text-xs font-medium text-foreground-muted">
             Validation:
           </span>
-          <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">
+          <p className="mt-0.5 text-xs text-foreground">
             {ab.validation_notes}
           </p>
         </div>
@@ -493,8 +493,8 @@ function Detail({
   return (
     <div>
       <span className="text-foreground-muted">{label}: </span>
-      <span className="text-gray-800 dark:text-gray-200">
-        {value || <span className="italic text-gray-400">--</span>}
+      <span className="text-foreground">
+        {value || <span className="italic text-foreground-subtle">--</span>}
       </span>
     </div>
   )
