@@ -90,11 +90,11 @@
 
 /* Hide scrollbars while keeping scroll functionality. */
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;        /* Firefox */
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+  display: none;                /* Chrome/Safari/Webkit */
 }
 
 /* Subtle right-edge fade indicating more content is available
@@ -113,7 +113,11 @@
   margin-top: 0.125rem;
 }
 
-/* === Tiptap block-level styling === */
+/* === Tiptap block-level styling ===
+   The .ProseMirror container does not inherit Tailwind's prose
+   plugin styles. These rules restore sensible defaults for each
+   block type we render natively. Light/dark variants are handled
+   automatically by the CSS variables defined above. */
 
 /* Headings */
 .ProseMirror h1 {
