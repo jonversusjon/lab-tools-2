@@ -32,11 +32,11 @@ interface Props {
 }
 
 const inputClass =
-  'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
+  'w-full rounded border border-border-strong bg-elevated px-2 py-1.5 text-sm text-foreground focus:border-blue-500 focus:outline-none'
 
 function highlightClass(key: string, highlight: Set<string>): string {
   return highlight.has(key)
-    ? 'rounded ring-2 ring-amber-400 dark:ring-amber-500 ring-offset-1 dark:ring-offset-gray-800'
+    ? 'rounded ring-2 ring-amber-400 dark:ring-amber-500 ring-offset-1 dark:ring-offset-gray-800' // theme-exempt: ring-offset color has no theme token
     : ''
 }
 
@@ -60,7 +60,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
           const name = fluorId ? (fluorophores.find((fl) => fl.id === fluorId)?.name ?? fluorId) : ''
           return (
             <div key={f.key} className={highlightClass(f.key, highlight)}>
-              <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-xs font-medium text-foreground">
                 {f.label}
               </label>
               <FluorophoreSearch
@@ -78,7 +78,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
             <label
               key={f.key}
               className={
-                'flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 ' +
+                'flex items-center gap-2 text-sm text-foreground ' +
                 (highlight.has(f.key) ? 'px-1 ring-2 ring-amber-400 rounded' : '')
               }
             >
@@ -95,7 +95,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
         if (f.type === 'select') {
           return (
             <div key={f.key} className={highlightClass(f.key, highlight)}>
-              <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor={id} className="mb-1 block text-xs font-medium text-foreground">
                 {f.label}
               </label>
               <select
@@ -117,7 +117,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
         if (f.type === 'textarea') {
           return (
             <div key={f.key} className={highlightClass(f.key, highlight)}>
-              <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor={id} className="mb-1 block text-xs font-medium text-foreground">
                 {f.label}
               </label>
               <textarea
@@ -133,7 +133,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
         if (f.type === 'number') {
           return (
             <div key={f.key} className={highlightClass(f.key, highlight)}>
-              <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor={id} className="mb-1 block text-xs font-medium text-foreground">
                 {f.label}
               </label>
               <input
@@ -152,7 +152,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
         // text
         return (
           <div key={f.key} className={highlightClass(f.key, highlight)}>
-            <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor={id} className="mb-1 block text-xs font-medium text-foreground">
               {f.label}
             </label>
             <input
@@ -309,7 +309,7 @@ export default function GenericImportDiffModal({
             'border-b-2 px-4 py-2 text-sm font-medium ' +
             (tab === 'conflicts'
               ? 'border-blue-600 text-blue-700 dark:border-blue-400 dark:text-blue-300'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400')
+              : 'border-transparent text-foreground-muted hover:text-foreground')
           }
         >
           Conflicts ({conflicts.length})
@@ -320,7 +320,7 @@ export default function GenericImportDiffModal({
             'border-b-2 px-4 py-2 text-sm font-medium ' +
             (tab === 'new'
               ? 'border-blue-600 text-blue-700 dark:border-blue-400 dark:text-blue-300'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400')
+              : 'border-transparent text-foreground-muted hover:text-foreground')
           }
         >
           New Items ({newItems.length})
@@ -336,7 +336,7 @@ export default function GenericImportDiffModal({
           ) : currentConflict ? (
             <>
               <div className="mb-3 flex items-center justify-between">
-                <div className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="text-sm text-foreground">
                   <span className="font-medium">
                     Item {conflictIndex + 1} of {conflicts.length}:
                   </span>{' '}
@@ -347,7 +347,7 @@ export default function GenericImportDiffModal({
                     </span>
                   )}
                   {resolutions[currentConflict.id] === null && (
-                    <span className="ml-2 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                    <span className="ml-2 rounded bg-surface px-1.5 py-0.5 text-xs text-foreground">
                       Keep existing (skip)
                     </span>
                   )}
@@ -375,9 +375,9 @@ export default function GenericImportDiffModal({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded border border-border bg-gray-50 p-3 dark:bg-gray-900/40">
+                <div className="rounded border border-border bg-surface p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground">
                       Existing (your DB)
                     </span>
                     <button
@@ -385,8 +385,8 @@ export default function GenericImportDiffModal({
                       className={
                         'rounded px-2 py-1 text-xs font-medium ' +
                         (resolutions[currentConflict.id] === 'left'
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700')
+                          ? 'bg-accent text-accent-foreground'
+                          : 'border border-border-strong text-foreground hover:bg-hover')
                       }
                     >
                       Keep this version
@@ -408,7 +408,7 @@ export default function GenericImportDiffModal({
                 </div>
                 <div className="rounded border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground">
                       Imported (from file)
                     </span>
                     <button
@@ -416,8 +416,8 @@ export default function GenericImportDiffModal({
                       className={
                         'rounded px-2 py-1 text-xs font-medium ' +
                         (resolutions[currentConflict.id] === 'right'
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700')
+                          ? 'bg-accent text-accent-foreground'
+                          : 'border border-border-strong text-foreground hover:bg-hover')
                       }
                     >
                       Use this version
@@ -448,7 +448,7 @@ export default function GenericImportDiffModal({
                 </button>
                 <button
                   onClick={keepAllExisting}
-                  className="rounded border border-border-strong px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="rounded border border-border-strong px-3 py-1.5 text-xs font-medium text-foreground hover:bg-hover"
                 >
                   Keep all existing
                 </button>
@@ -472,7 +472,7 @@ export default function GenericImportDiffModal({
           ) : currentNew ? (
             <>
               <div className="mb-3 flex items-center justify-between">
-                <div className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="text-sm text-foreground">
                   <span className="font-medium">
                     Item {newIndex + 1} of {newItems.length}:
                   </span>{' '}
@@ -533,14 +533,14 @@ export default function GenericImportDiffModal({
         <button
           onClick={onClose}
           disabled={applying}
-          className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+          className="rounded border border-border-strong px-4 py-2 text-sm text-foreground hover:bg-hover disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           onClick={handleApply}
           disabled={applying}
-          className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50" // theme-exempt: semantic apply action (green bg + white text); no success-foreground token
         >
           {applying ? 'Applying...' : 'Apply'}
         </button>
