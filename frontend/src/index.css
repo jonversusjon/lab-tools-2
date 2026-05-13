@@ -31,6 +31,18 @@
     --warning: #B45309;
     --danger: #B91C1C;
     --info: #1D4ED8;
+
+    /* Semantic foreground */
+    --danger-foreground: #FFFFFF;
+    --success-foreground: #FFFFFF;
+
+    /* Semantic soft (light backgrounds with matching text) */
+    --success-soft: #DCFCE7;
+    --success-soft-foreground: #15803D;
+    --danger-soft: #FEE2E2;
+    --danger-soft-foreground: #B91C1C;
+    --warning-soft: #FEF3C7;
+    --warning-soft-foreground: #B45309;
   }
 
   .dark {
@@ -56,6 +68,18 @@
     --warning: #FBBF24;
     --danger: #F87171;
     --info: #60A5FA;
+
+    /* Semantic foreground */
+    --danger-foreground: #FFFFFF;
+    --success-foreground: #FFFFFF;
+
+    /* Semantic soft (dark mode) */
+    --success-soft: #14532D;
+    --success-soft-foreground: #86EFAC;
+    --danger-soft: #7F1D1D;
+    --danger-soft-foreground: #FCA5A5;
+    --warning-soft: #78350F;
+    --warning-soft-foreground: #FDE68A;
   }
 
   body {
