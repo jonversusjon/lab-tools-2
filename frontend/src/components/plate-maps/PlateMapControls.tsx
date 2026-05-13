@@ -90,7 +90,7 @@ export default function PlateMapControls({
   }
 
   const inputClass =
-    'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
+    'w-full rounded border border-border bg-elevated text-foreground px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none'
   const btnClass =
     'rounded px-3 py-1.5 text-sm font-medium transition-colors duration-100 '
 
@@ -121,7 +121,7 @@ export default function PlateMapControls({
         <label className="block text-xs font-semibold uppercase tracking-wider text-foreground-muted mb-1">
           Color Layer
         </label>
-        <div className="flex rounded border border-gray-200 dark:border-gray-600 overflow-hidden">
+        <div className="flex rounded border border-border overflow-hidden">
           {(Object.keys(LAYER_LABELS) as ColorLayer[]).map((layer) => (
             <button
               key={layer}
@@ -130,8 +130,8 @@ export default function PlateMapControls({
               className={
                 'flex-1 py-1.5 text-xs font-medium transition-colors duration-100 ' +
                 (activeLayer === layer
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600')
+                  ? 'bg-accent text-accent-foreground'
+                  : 'bg-elevated text-foreground-muted hover:bg-hover')
               }
             >
               {LAYER_LABELS[layer]}
@@ -162,8 +162,8 @@ export default function PlateMapControls({
               title="Remove color"
               onClick={onRemoveColor}
               className={
-                'w-5 h-5 rounded border-2 flex items-center justify-center text-gray-400 hover:text-red-500 ' +
-                'border-gray-300 dark:border-gray-600 hover:border-red-400 transition-colors'
+                'w-5 h-5 rounded border-2 flex items-center justify-center text-foreground-subtle hover:text-danger ' +
+                'border-border hover:border-danger transition-colors'
               }
             >
               <span className="text-xs leading-none">✕</span>
@@ -181,8 +181,8 @@ export default function PlateMapControls({
                   className={
                     'w-4 h-4 rounded-sm border transition-transform duration-75 hover:scale-125 ' +
                     (activeColor === swatch.hex
-                      ? 'border-gray-900 dark:border-white ring-1 ring-offset-1 ring-blue-500'
-                      : 'border-transparent hover:border-gray-400')
+                      ? 'border-gray-900 dark:border-white ring-1 ring-offset-1 ring-accent' // theme-exempt: swatch selected ring-offset needs explicit color
+                      : 'border-transparent hover:border-border-strong')
                   }
                   style={{ backgroundColor: swatch.hex }}
                 />
@@ -193,7 +193,7 @@ export default function PlateMapControls({
         <button
           type="button"
           onClick={() => setShowFullPalette((v) => !v)}
-          className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+          className="mt-1 text-xs text-accent hover:underline"
         >
           {showFullPalette ? 'Show fewer colors' : 'Show all colors'}
         </button>
@@ -224,7 +224,7 @@ export default function PlateMapControls({
               const hex = customHex.trim()
               if (hex) onApplyColor(hex)
             }}
-            className={btnClass + 'bg-blue-600 text-white hover:bg-blue-700'}
+            className={btnClass + 'bg-accent text-accent-foreground hover:bg-accent-hover'}
           >
             Apply
           </button>
@@ -250,7 +250,7 @@ export default function PlateMapControls({
                 <button
                   type="button"
                   onClick={() => handleDeletePreset(hex)}
-                  className="absolute -top-1 -right-1 hidden group-hover:flex w-3.5 h-3.5 items-center justify-center rounded-full bg-red-500 text-white text-[8px] leading-none"
+                  className="absolute -top-1 -right-1 hidden group-hover:flex w-3.5 h-3.5 items-center justify-center rounded-full bg-danger text-danger-foreground text-[8px] leading-none"
                 >
                   ✕
                 </button>
@@ -260,7 +260,7 @@ export default function PlateMapControls({
           <button
             type="button"
             onClick={handleAddPreset}
-            className="mt-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            className="mt-1 text-xs text-accent hover:underline"
           >
             + Save {customHex || 'current'} as preset
           </button>
@@ -270,7 +270,7 @@ export default function PlateMapControls({
         <button
           type="button"
           onClick={handleAddPreset}
-          className="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left"
+          className="text-xs text-accent hover:underline text-left"
         >
           + Save {customHex || 'a color'} as preset
         </button>
@@ -283,11 +283,11 @@ export default function PlateMapControls({
             type="button"
             onClick={onClearSelection}
             disabled={selectedWellCount === 0}
-            className={btnClass + 'flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40'}
+            className={btnClass + 'flex-1 border border-border text-foreground-muted hover:bg-hover disabled:opacity-40'}
           >
             Clear Selection
             {selectedWellCount > 0 && (
-              <span className="ml-1 text-xs text-gray-500">({selectedWellCount})</span>
+              <span className="ml-1 text-xs text-foreground-subtle">({selectedWellCount})</span>
             )}
           </button>
           <button
@@ -295,7 +295,7 @@ export default function PlateMapControls({
             onClick={onUndo}
             disabled={!canUndo}
             title="Undo (Ctrl+Z)"
-            className={btnClass + 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40'}
+            className={btnClass + 'border border-border text-foreground-muted hover:bg-hover disabled:opacity-40'}
           >
             ↩ Undo
           </button>
@@ -305,7 +305,7 @@ export default function PlateMapControls({
           onClick={() => {
             if (confirm('Reset all well colors? This cannot be undone.')) onResetPlate()
           }}
-          className={btnClass + 'border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'}
+          className={btnClass + 'border border-danger text-danger hover:bg-danger-soft'}
         >
           Reset Plate
         </button>

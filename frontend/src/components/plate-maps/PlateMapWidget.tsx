@@ -167,7 +167,7 @@ function ExportButton({
             onExport(oppositeTheme)
             setShowFlyout(false)
           }}
-          className="absolute left-0 top-full mt-1 z-10 whitespace-nowrap rounded border border-gray-200 dark:border-gray-600 bg-elevated px-3 py-1.5 text-xs text-gray-700 dark:text-gray-300 shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="absolute left-0 top-full mt-1 z-10 whitespace-nowrap rounded border border-border bg-elevated px-3 py-1.5 text-xs text-foreground-muted shadow-lg hover:bg-hover"
         >
           {label} in {oppositeTheme} mode
         </button>
@@ -593,7 +593,7 @@ function PlateMapWidgetInner({ plateId, maxWidth, readOnly = false, onDirtyChang
         style={maxWidth ? { maxWidth: `${String(maxWidth)}px` } : undefined}
       >
         <div className="flex flex-col gap-4">
-          <h2 className="text-xl font-bold dark:text-gray-100 px-1">{state.name}</h2>
+          <h2 className="text-xl font-bold text-foreground px-1">{state.name}</h2>
           <div className="flex gap-4">
             <div className="flex-1 min-w-0">
               <PlateMapGrid
@@ -632,7 +632,7 @@ function PlateMapWidgetInner({ plateId, maxWidth, readOnly = false, onDirtyChang
             <button
               type="button"
               onClick={() => dispatch({ type: 'SET_VIEW_MODE', mode: 'edit' })}
-              className="rounded border border-border-strong px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-3 py-1.5 text-sm text-foreground-muted hover:bg-hover"
             >
               ← Edit Plate
             </button>
@@ -668,7 +668,7 @@ function PlateMapWidgetInner({ plateId, maxWidth, readOnly = false, onDirtyChang
               />
             </div>
             <div className="w-56 shrink-0">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Legend</h3>
+              <h3 className="text-sm font-semibold text-foreground-muted mb-3">Legend</h3>
               <PlateMapLegendPanel
                 wellData={state.wellData}
                 legend={state.legend}
@@ -705,14 +705,14 @@ function PlateMapWidgetInner({ plateId, maxWidth, readOnly = false, onDirtyChang
               {saveStatus === 'saving' && 'Saving...'}
               {saveStatus === 'saved' && 'Saved'}
               {saveStatus === 'error' && (
-                <span className="text-red-500 dark:text-red-400">Save failed</span>
+                <span className="text-danger">Save failed</span>
               )}
             </span>
           </div>
           <button
             type="button"
             onClick={() => dispatch({ type: 'SET_VIEW_MODE', mode: 'presentation' })}
-            className="rounded border border-border-strong px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-3 py-1.5 text-sm text-foreground-muted hover:bg-hover"
           >
             Presentation Mode
           </button>
@@ -765,7 +765,7 @@ function PlateMapWidgetInner({ plateId, maxWidth, readOnly = false, onDirtyChang
               {/* Drag rectangle overlay */}
               {dragRect && (
                 <div
-                  className="pointer-events-none absolute border-2 border-blue-500 bg-blue-500/10"
+                  className="pointer-events-none absolute border-2 border-accent bg-accent-soft/50"
                   style={{
                     left: dragRect.left,
                     top: dragRect.top,

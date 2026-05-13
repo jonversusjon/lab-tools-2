@@ -66,7 +66,7 @@ export default function PlateMapGrid({
   id,
 }: PlateMapGridProps) {
   const config = PLATE_TYPES[plateType]
-  if (!config) return <div className="text-red-500 text-sm">Unknown plate type: {plateType}</div>
+  if (!config) return <div className="text-danger text-sm">Unknown plate type: {plateType}</div>
 
   const { rows, cols } = config
   const rowLabels = getRowLabels(rows)
@@ -129,9 +129,9 @@ export default function PlateMapGrid({
                     'relative flex items-center justify-center rounded-lg border-2 cursor-pointer ' +
                     'min-h-[60px] transition-all duration-100 ' +
                     (isSelected
-                      ? 'ring-2 ring-blue-500 dark:ring-blue-400 ring-offset-1'
+                      ? 'ring-2 ring-accent ring-offset-1'
                       : '') +
-                    (isPreview ? ' ring-2 ring-blue-300 dark:ring-yellow-300 ring-offset-1' : '')
+                    (isPreview ? ' ring-2 ring-blue-300 dark:ring-yellow-300 ring-offset-1' : '') // theme-exempt: preview ring uses 2 different colors by mode for visual contrast
                   }
                   style={{
                     backgroundColor: colors.backgroundColor ?? undefined,
@@ -196,7 +196,7 @@ export default function PlateMapGrid({
             className={
               'flex items-center justify-center text-center font-medium ' +
               headerTextClass +
-              ' text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 ' +
+              ' text-foreground-muted hover:bg-hover ' +
               (readOnly ? 'cursor-default' : 'cursor-pointer')
             }
           >
@@ -216,7 +216,7 @@ export default function PlateMapGrid({
               className={
                 'flex items-center justify-center font-medium pr-1 ' +
                 headerTextClass +
-                ' text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 ' +
+                ' text-foreground-muted hover:bg-hover ' +
                 (readOnly ? 'cursor-default' : 'cursor-pointer')
               }
             >

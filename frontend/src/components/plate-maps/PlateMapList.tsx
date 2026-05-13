@@ -59,7 +59,7 @@ export default function PlateMapList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading plate maps...</p>
-  if (error) return <p className="text-red-600">Failed to load plate maps.</p>
+  if (error) return <p className="text-danger">Failed to load plate maps.</p>
 
   const inputClass =
     'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
@@ -67,7 +67,7 @@ export default function PlateMapList() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Plate Maps</h1>
+        <h1 className="text-2xl font-bold text-foreground">Plate Maps</h1>
         <button
           onClick={handleCreate}
           disabled={createMutation.isPending}
@@ -94,7 +94,7 @@ export default function PlateMapList() {
               <HoverActionsRow
                 key={pm.id}
                 as="tr"
-                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="border-b border-border hover:bg-hover"
                 onClick={() => navigate('/plate-maps/' + pm.id)}
                 actions={{
                   onRename: () => {
@@ -105,7 +105,7 @@ export default function PlateMapList() {
                 }}
               >
                 <td className="py-2 font-medium text-foreground">{pm.name}</td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{pm.plate_type}</td>
+                <td className="py-2 text-foreground-muted">{pm.plate_type}</td>
                 <td className="py-2 text-foreground-muted">
                   {pm.created_at ? new Date(pm.created_at).toLocaleDateString() : '—'}
                 </td>
@@ -122,7 +122,7 @@ export default function PlateMapList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-pm" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="rename-pm" className="mb-1 block text-sm font-medium text-foreground-muted">
               Name
             </label>
             <input
@@ -139,7 +139,7 @@ export default function PlateMapList() {
             <button
               type="button"
               onClick={() => { setEditingMap(null); setRenameValue('') }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>

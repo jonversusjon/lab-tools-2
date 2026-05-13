@@ -57,7 +57,7 @@ function LegendItem({
       ref={setNodeRef}
       {...attributes}
       className={
-        'rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 ' +
+        'rounded border border-border bg-elevated ' +
         (isDragging ? 'opacity-50 shadow-lg' : '')
       }
       style={{
@@ -70,7 +70,7 @@ function LegendItem({
           <button
             type="button"
             {...listeners}
-            className="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-none shrink-0"
+            className="cursor-grab text-foreground-subtle hover:text-foreground-muted touch-none shrink-0"
             aria-label="Drag to reorder"
           >
             <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
@@ -98,7 +98,7 @@ function LegendItem({
           />
         )}
         {readOnly ? (
-          <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">
+          <span className="flex-1 text-sm text-foreground-muted">
             {entry.label || hex}
           </span>
         ) : (
@@ -124,7 +124,7 @@ function LegendItem({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="shrink-0 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="shrink-0 text-xs text-foreground-subtle hover:text-foreground-muted"
         >
           {wellIds.length} well{wellIds.length !== 1 ? 's' : ''} {expanded ? '▲' : '▼'}
         </button>
