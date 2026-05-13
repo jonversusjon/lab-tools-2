@@ -723,7 +723,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             {/* Channel (spectral mode only) */}
                             {showSpectral && (
                               <td className="px-3 py-2" style={{ minWidth: 160 }}>
-                                {assignment ? (
+                                {!state.microscope ? (
+                                  <span className="text-xs italic text-foreground-subtle">Select a microscope above</span>
+                                ) : assignment ? (
                                   <select
                                     value={assignment.filter_id ?? ''}
                                     onChange={(e) => {
@@ -734,7 +736,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                     className="w-full rounded border border-border-strong bg-elevated px-2 py-0.5 text-xs text-foreground focus:border-accent focus:outline-none"
                                   >
                                     <option value="">None</option>
-                                    {(state.microscope ? [...state.microscope.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm) : []).map((laser) => (
+                                    {[...state.microscope.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm).map((laser) => (
                                       <optgroup
                                         key={laser.id}
                                         label={`${laser.wavelength_nm}nm${laser.name ? ' \u2014 ' + laser.name : ''}`}
