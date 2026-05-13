@@ -14,9 +14,11 @@ export default function FavoriteButton({ isFavorite, onClick }: FavoriteButtonPr
       title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
     >
       {isFavorite ? (
-        <span className="text-yellow-400">&#9733;</span> {/* theme-exempt: star/favorite semantic color */
+        /* theme-exempt: star/favorite semantic color */
+        <span className="text-yellow-400">&#9733;</span>
       ) : (
-        <span className="text-foreground-subtle hover:text-yellow-400">&#9734;</span> {/* theme-exempt: favorite star hover */
+        /* theme-exempt: favorite star hover color */
+        <span className="text-foreground-subtle hover:text-yellow-400">&#9734;</span>
       )}
     </button>
   )
