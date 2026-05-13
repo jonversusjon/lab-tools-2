@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-06T14:04:09Z
-Commit: 481436a
+Generated: 2026-05-13T02:51:36Z
+Commit: 839057e
 
 ---
 
@@ -143,6 +143,7 @@ Commit: 481436a
 | `ConjugateOmnibox` | `ConjugateOmniboxProps` | `frontend/src/components/antibodies/ConjugateOmnibox.tsx` |
 | `ConnectionStatus` | `` | `frontend/src/components/layout/ConnectionStatus.tsx` |
 | `CrossReactivityWarnings` | `CrossReactivityWarningsProps` | `frontend/src/components/shared/CrossReactivityWarnings.tsx` |
+| `DarkModeToggle` | `` | `frontend/src/components/layout/DarkModeToggle.tsx` |
 | `DetectorRow` | `DetectorRowProps` | `frontend/src/components/instruments/DetectorRow.tsx` |
 | `DilutionInput` | `DilutionInputProps` | `frontend/src/components/antibodies/DilutionInput.tsx` |
 | `DividerBlock` | `DividerBlockProps` | `frontend/src/components/experiments/DividerBlock.tsx` |

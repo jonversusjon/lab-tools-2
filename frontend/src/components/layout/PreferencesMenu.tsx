@@ -1,15 +1,14 @@
 import { useState } from 'react'
-import { useTheme } from './ThemeContext'
+import DarkModeToggle from './DarkModeToggle'
 
 export default function PreferencesMenu() {
   const [open, setOpen] = useState(false)
-  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="mt-auto border-t border-border pt-3">
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-medium text-foreground-muted hover:bg-hover hover:text-foreground"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -26,31 +25,12 @@ export default function PreferencesMenu() {
           />
         </svg>
         Preferences
-        <span className="ml-auto text-xs">{open ? '\u25BC' : '\u25B6'}</span>
+        <span className="ml-auto text-xs">{open ? '▼' : '▶'}</span>
       </button>
 
       {open && (
         <div className="mt-1 space-y-2 px-3 py-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
-            <button
-              onClick={toggleTheme}
-              className={
-                'relative inline-flex h-5 w-9 items-center rounded-full transition-colors ' +
-                (theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600')
-              }
-              role="switch"
-              aria-checked={theme === 'dark'}
-              aria-label="Toggle dark mode"
-            >
-              <span
-                className={
-                  'inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ' +
-                  (theme === 'dark' ? 'translate-x-4.5' : 'translate-x-0.5')
-                }
-              />
-            </button>
-          </div>
+          <DarkModeToggle />
         </div>
       )}
     </div>
