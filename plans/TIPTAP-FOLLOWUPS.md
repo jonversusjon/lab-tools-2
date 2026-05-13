@@ -7,77 +7,53 @@ new migration phases.
 
 ## Drag handle and block context menu (Phase 9b)
 
-**Status:** DEFERRED — waiting on Tiptap upstream package coherence
+**Status:** COMPLETE — 2026-05-13
 
-**Original plan:** Phase 9b was to build a left-margin drag handle
-that doubles as the entry point to a per-block context menu (Duplicate,
-Delete, Convert-to, plus per-block-type items: Clear/Insert-left/
-Insert-right for columns, etc.). Implementation planned via
-`@tiptap/extension-drag-handle-react`.
+**What was built:**
+- `frontend/src/blocks-tiptap/dragHandle/BlockMenu.tsx` — grip icon +
+  context menu dropdown. Grip is the drag target; the `···` button opens
+  a dropdown with Duplicate, Delete (panel types get a `window.confirm`),
+  Convert-to (paragraph/heading only), and column-specific items
+  (Insert left, Insert right, Clear column).
+- `frontend/src/blocks-tiptap/dragHandle/DragHandleWrapper.tsx` — thin
+  state-management wrapper that wires `DragHandle` (React component from
+  `@tiptap/extension-drag-handle-react`) with `BlockMenu`. Freezes node
+  state while the menu is open so actions target the correct block.
+- `frontend/src/blocks-tiptap/dragHandle/index.ts` — exports.
+- `frontend/src/blocks-tiptap/__tests__/dragHandle.test.tsx` — 5 tests.
+- `ExperimentPage.tsx` and `TiptapSandbox.tsx` both wired with
+  `<DragHandleWrapper editor={editor} />` as a sibling to
+  `<EditorContent>`.
 
-### Why this is paused
+### Lessons learned
 
-`@tiptap/extension-drag-handle-react@3.22.5` (latest as of late
-April 2026) declares a strict peer requirement on
-`@tiptap/pm@3.22.5`. The rest of the Tiptap suite in this project
-(and in `@tiptap/extension-drag-handle-react@3.22.5`'s peer
-dependencies-of-dependencies) is pinned at `^3.22.4`. The Tiptap
-suite's other extensions are not yet published at 3.22.5. The
-package literally requires a peer version that hasn't been published
-across the rest of the suite — `npm install` fails with `ERESOLVE`,
-and `--legacy-peer-deps` would ship a tree with a missing peer that
-might surface as runtime import errors.
+1. **React component self-registers** — `@tiptap/extension-drag-handle-react`'s
+   `DragHandle` React component calls `editor.registerPlugin(plugin)` directly
+   inside a `useEffect`. No extension entry in `extensions.ts` is needed or
+   desired (adding it separately would double-register).
 
-This appears to be a recurring issue with Tiptap's monorepo release
-process. Their own v3.22.4 release notes include:
-> "Fix dependencies installation after packages updates producing
-> peer dependency resolution conflicts"
+2. **Convert-to scoped to paragraph + heading** — Tiptap's DragHandle (without
+   `nested: true`) shows handles only at root-level nodes. For lists, the handle
+   attaches to the `bulletList`/`orderedList` wrapper, not individual list items.
+   Converting a list wrapper to paragraph requires lifting all items — out of
+   scope for this phase. Convert-to is shown only for `paragraph` and `heading`
+   node types.
 
-### How to detect it's been fixed (auto-discovery for future agents)
+3. **`DragHandleWrapper` not `BlockMenu` wraps `DragHandle`** — the spec
+   suggested `<DragHandle><BlockMenu /></DragHandle>` with `BlockMenu`
+   receiving only `editor`. In practice, `onNodeChange` is a prop on
+   `DragHandle`, so a thin wrapper manages state and passes `currentNode` +
+   `currentNodePos` down to `BlockMenu`. `BlockMenu` exposes
+   `onMenuOpenChange` so the wrapper can freeze node updates while the
+   menu is open.
 
-Run this from `frontend/`:
-
-```bash
-npm install --save @tiptap/extension-drag-handle-react --dry-run 2>&1 | tail -20
-```
-
-If the output shows a clean install plan with no `ERESOLVE` errors,
-the upstream issue is resolved and Phase 9b can proceed. If it still
-shows `ERESOLVE` mentioning peer dependency conflicts on `@tiptap/pm`,
-remain paused.
-
-A more thorough check that confirms the entire Tiptap suite is coherent:
-
-```bash
-npm install --save \
-  @tiptap/core@latest \
-  @tiptap/pm@latest \
-  @tiptap/react@latest \
-  @tiptap/starter-kit@latest \
-  @tiptap/extension-placeholder@latest \
-  @tiptap/suggestion@latest \
-  @tiptap/extension-table@latest \
-  @tiptap/extension-drag-handle-react@latest \
-  --dry-run 2>&1 | tail -20
-```
-
-If the dry-run succeeds, the entire suite can be coherently updated
-and Phase 9b can proceed.
-
-### What to do when ready to proceed with Phase 9b
-
-1. Run the actual install (drop `--dry-run`).
-2. Verify versions in `package.json` are coherent:
-   ```bash
-   grep -E '"@tiptap/' frontend/package.json | sort
-   ```
-   All Tiptap packages should be at the same patch version
-   (e.g., all at `^3.22.5` or higher).
-3. Run the full test suite — should still pass at 477+ tests.
-4. Resume Phase 9b: build a `<DragHandle>` component using the
-   package's `<DragHandle>` React component, with a hover-revealed
-   menu. Per-block-type menu items defined in a registry
-   (block_type → array of menu items).
+4. **TypeScript `never` narrowing for `let` + closure + `useEditor`** —
+   TypeScript 5.x narrows `let` variables through closure assignments. When
+   `useEditor` is typed as returning `Editor` (non-null, the default overload)
+   and the result is assigned to a `let Editor | null` variable inside a
+   component function, TypeScript can narrow the outer variable to `never`
+   in some code paths. Workaround: use a ref-box (`const box = { current:
+   null as Editor | null }`) which TypeScript does not narrow through.
 
 ### What lives in Phase 9c after 9b
 

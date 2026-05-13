@@ -5,6 +5,7 @@ import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { filterJsonTree } from '@/utils/jsonFilter'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator } from '@/blocks-tiptap/save'
+import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
 import {
   listExperiments,
   createExperiment,
@@ -364,6 +365,7 @@ export default function TiptapSandbox() {
         </button>
       </div>
       <div className="prose dark:prose-invert max-w-none border border-border rounded p-4">
+        {editor && <DragHandleWrapper editor={editor} />}
         <EditorContent editor={editor} />
       </div>
       <div className="space-y-2">

@@ -214,3 +214,17 @@
 /* Note: callout, column_list, column, flow_panel, if_panel are
    handled by their NodeView/renderHTML implementations and don't
    need global rules here. */
+
+/* drag-handle: the DragHandle React component creates a div with
+   class="drag-handle" and positions it absolutely near hovered blocks.
+   These rules size and style that container. */
+.drag-handle {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.15rem;
+  gap: 0;
+  z-index: 10;
+}
+.drag-handle[data-dragging='true'] {
+  cursor: grabbing;
+}

@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-13T06:26:24Z
-Commit: db15d7e
+Generated: 2026-05-13T07:15:16Z
+Commit: 20b45bf
 
 ---
 
@@ -137,6 +137,7 @@ Commit: db15d7e
 | `App` | `` | `frontend/src/App.tsx` |
 | `BlockCommandMenu` | `BlockCommandMenuProps` | `frontend/src/components/experiments/BlockCommandMenu.tsx` |
 | `BlockContextMenu` | `BlockContextMenuProps` | `frontend/src/components/experiments/BlockContextMenu.tsx` |
+| `BlockMenu` | `import("/home/jramirez2/proj/lab-tools-2/frontend/src/blocks-tiptap/dragHandle/BlockMenu").BlockMenuProps` | `frontend/src/blocks-tiptap/dragHandle/BlockMenu.tsx` |
 | `CalloutView` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tiptap/core/dist/index").NodeViewProps` | `frontend/src/blocks-tiptap/views/CalloutView.tsx` |
 | `CellAssignmentPicker` | `CellAssignmentPickerProps` | `frontend/src/components/panels/CellAssignmentPicker.tsx` |
 | `ColumnLayout` | `ColumnLayoutProps` | `frontend/src/components/experiments/ColumnLayout.tsx` |
