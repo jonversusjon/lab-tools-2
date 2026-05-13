@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-13T06:01:05Z
-Commit: 060705b
+Generated: 2026-05-13T06:18:28Z
+Commit: 011e483
 
 ---
 
@@ -1536,8 +1536,8 @@ Commit: 060705b
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-13T06:01:08Z
-Commit: 060705b
+Generated: 2026-05-13T06:18:31Z
+Commit: 011e483
 
 ---
 

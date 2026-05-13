@@ -565,7 +565,12 @@ describe('IFPanelDesignerView', () => {
   // ── Column headers ────────────────────────────────────────────────────────
   describe('table column headers', () => {
     it('sorts filter optgroups by laser wavelength ascending in channel select', () => {
-      renderView({ viewMode: 'spectral', microscope: mockMicroscope1, targets: [makeTarget('t1', 'ab1', 'CD3')] })
+      const target = makeTarget('t1', AB1_ID, 'CD3')
+      const assignment = {
+        id: 'a1', panel_id: PANEL_ID, antibody_id: AB1_ID, dye_label_id: null,
+        fluorophore_id: 'fl-1', filter_id: 'f1', notes: null,
+      }
+      renderView({ viewMode: 'spectral', microscope: mockMicroscope1, targets: [target], assignments: [assignment] })
       const groups = screen.getAllByRole('group')
       const labels = groups.map(g => g.getAttribute('label') || '')
       const violetIdx = labels.findIndex(l => l.includes('405nm'))
