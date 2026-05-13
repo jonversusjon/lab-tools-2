@@ -36,6 +36,11 @@ describes what is, not what was-or-will-be planned.
 
 ## Frontend visual conventions
 
+### Detector/filter columns sort by laser wavelength
+Panel designer tables (flow and IF) iterate `instrument.lasers` / `microscope.lasers` sorted by `wavelength_nm` ascending before flattening into detector/filter columns. Within-laser order is preserved. Editors (`InstrumentEditor`, `MicroscopeEditor`) keep user-defined order unchanged.
+
+**Origin:** Phase A ad-hoc fix batch, commit c15faed
+
 ### Right-edge fade masks are always-on
 Containers with `overflow-x: auto` that use a right-edge fade mask
 (currently `panel-fade-right`) apply the mask unconditionally — the mask
