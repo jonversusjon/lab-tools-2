@@ -463,7 +463,7 @@ export default function PanelDesigner() {
     showDelete: true,
   }
 
-  if (!id) return <p className="text-red-600">No panel ID in URL.</p>
+  if (!id) return <p className="text-danger">No panel ID in URL.</p>
   if (!panel) return <p className="text-foreground-muted">Loading panel...</p>
 
   return (

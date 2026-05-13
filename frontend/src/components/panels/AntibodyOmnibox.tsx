@@ -124,8 +124,8 @@ export default function AntibodyOmnibox({
                 className={
                   'w-full px-3 py-2 text-left text-sm' +
                   (i === highlightIndex
-                    ? ' bg-blue-50 dark:bg-blue-900/30'
-                    : ' hover:bg-gray-50 dark:hover:bg-gray-700')
+                    ? ' bg-accent-soft'
+                    : ' hover:bg-hover')
                 }
               >
                 <div className="flex items-baseline justify-between gap-2">

@@ -80,7 +80,7 @@ export default function FluorophorePicker({
       if (!compat) {
         content = (
           <div ref={ref} className="w-64 rounded border border-border bg-elevated p-3 shadow-lg" style={style}>
-            <p className="text-sm text-amber-600 dark:text-amber-400">
+            <p className="text-sm text-warning-soft-foreground">
               Pre-conjugated fluorophore ({conjugatedFl.name}) is not compatible with this detector.
             </p>
           </div>
@@ -90,7 +90,7 @@ export default function FluorophorePicker({
           <div ref={ref} className="w-56 rounded border border-border bg-elevated shadow-lg" style={style}>
             <button
               onClick={() => onSelect(conjugatedFl.id)}
-              className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/30"
+              className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-accent-soft"
             >
               {conjugatedFl.name}
               <span className="ml-2 text-xs text-foreground-subtle">
@@ -112,7 +112,7 @@ export default function FluorophorePicker({
         {currentAssignmentFluorophoreId && (
           <button
             onClick={onClear}
-            className="w-full border-b border-gray-100 dark:border-gray-700 px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
+            className="w-full border-b border-border px-3 py-2 text-left text-sm text-danger hover:bg-danger-soft"
           >
             Clear assignment
           </button>
@@ -127,7 +127,7 @@ export default function FluorophorePicker({
                 key={fl.id}
                 onClick={() => onSelect(fl.id)}
                 className={
-                  'w-full px-3 py-2 text-left text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30' +
+                  'w-full px-3 py-2 text-left text-sm hover:bg-accent-soft' +
                   (alreadyAssigned ? ' opacity-50' : '')
                 }
               >

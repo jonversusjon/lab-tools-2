@@ -185,8 +185,8 @@ export default function SecondaryOmnibox({
         className={
           'w-full px-3 py-2 text-left text-sm' +
           (idx === highlightIndex
-            ? ' bg-blue-50 dark:bg-blue-900/30'
-            : ' hover:bg-gray-50 dark:hover:bg-gray-700')
+            ? ' bg-accent-soft'
+            : ' hover:bg-hover')
         }
       >
         <span className="font-medium">{sec.name}</span>
@@ -210,7 +210,7 @@ export default function SecondaryOmnibox({
               zIndex: 9999,
             }}
           >
-            <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+            <div className="border-b border-border px-3 py-2">
               <input
                 ref={inputRef}
                 type="text"
@@ -229,7 +229,7 @@ export default function SecondaryOmnibox({
                   setOpen(false)
                   setSearch('')
                 }}
-                className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-b border-gray-100 dark:border-gray-700"
+                className="w-full px-3 py-2 text-left text-sm text-danger hover:bg-danger-soft border-b border-border"
               >
                 Clear selection
               </button>
@@ -237,7 +237,7 @@ export default function SecondaryOmnibox({
             <div className="max-h-60 overflow-y-auto">
               {speciesSecondaries.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-surface">
                     Anti-{primaryAntibody.host ?? 'Host'} Secondaries
                   </div>
                   {speciesSecondaries.map((sec) => renderSecondaryButton(sec))}
@@ -245,7 +245,7 @@ export default function SecondaryOmnibox({
               )}
               {conjugateSecondaries.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-surface">
                     {detectionStrategy.type === 'both' || detectionStrategy.type === 'conjugate'
                       ? detectionStrategy.label
                       : 'Conjugate Reagents'}
@@ -255,7 +255,7 @@ export default function SecondaryOmnibox({
               )}
               {filteredFluorophores.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-surface">
                     Fluorophores
                   </div>
                   {filteredFluorophores.map((fl) => {
@@ -273,8 +273,8 @@ export default function SecondaryOmnibox({
                         className={
                           'w-full px-3 py-2 text-left text-sm' +
                           (idx === highlightIndex
-                            ? ' bg-blue-50 dark:bg-blue-900/30'
-                            : ' hover:bg-gray-50 dark:hover:bg-gray-700')
+                            ? ' bg-accent-soft'
+                            : ' hover:bg-hover')
                         }
                       >
                         <span className="font-medium">{fl.name}</span>
@@ -304,7 +304,7 @@ export default function SecondaryOmnibox({
   if (currentSecondaryName) {
     displayLabel = (
       <span className="inline-flex items-center gap-1 text-sm">
-        <span className="font-medium text-gray-700 dark:text-gray-300">{currentSecondaryName}</span>
+        <span className="font-medium text-foreground-muted">{currentSecondaryName}</span>
         {currentFluorophoreName && (
           <span className="text-teal-600 dark:text-teal-400">{currentFluorophoreName}</span>
         )}

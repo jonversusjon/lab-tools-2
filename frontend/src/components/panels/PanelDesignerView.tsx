@@ -739,11 +739,11 @@ export default function PanelDesignerView({
                   setEditingName(false)
                 }
               }}
-              className="rounded border border-blue-300 dark:border-blue-600 bg-elevated px-2 py-1 text-2xl font-bold text-foreground focus:outline-none"
+              className="rounded border border-accent bg-elevated px-2 py-1 text-2xl font-bold text-foreground focus:outline-none"
             />
           ) : (
             <h1
-              className="cursor-pointer text-2xl font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400"
+              className="cursor-pointer text-2xl font-bold text-foreground hover:text-accent"
               onClick={() => setEditingName(true)}
               title="Click to edit name"
             >
@@ -803,7 +803,7 @@ export default function PanelDesignerView({
                   onClick={handlers.onAutoAssignToggle}
                   className={'relative inline-flex h-4 w-7 items-center rounded-full transition-colors ' +
                     // theme-exempt: inactive track uses mid-gray not covered by surface/hover tokens
-                    (handlers.autoAssign ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600')
+                    (handlers.autoAssign ? 'bg-accent' : 'bg-gray-300 dark:bg-gray-600') // theme-exempt: toggle inactive track
                   }
                 >
                   <span className={'inline-block h-3 w-3 rounded-full bg-white transition-transform ' +
@@ -835,7 +835,7 @@ export default function PanelDesignerView({
       <div>
         {assignError && (
           <div className="mb-3">
-            <span className="text-sm text-red-600">{assignError}</span>
+            <span className="text-sm text-danger">{assignError}</span>
           </div>
         )}
 
@@ -846,7 +846,7 @@ export default function PanelDesignerView({
         />
 
         {!instrumentId && config.showInstrumentSelector && (
-          <div className="mb-4 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 px-4 py-3 text-sm text-blue-700 dark:text-blue-400">
+          <div className="mb-4 rounded border border-accent-soft bg-accent-soft px-4 py-3 text-sm text-accent-soft-foreground">
             Select an instrument to begin designing your panel.
           </div>
         )}
@@ -936,7 +936,7 @@ export default function PanelDesignerView({
                       id={t.id}
                       className={
                         'border-b border-border' +
-                        (hasAssignment ? ' bg-blue-50/40 dark:bg-blue-900/20' : ' hover:bg-hover')
+                        (hasAssignment ? ' bg-accent-soft/40' : ' hover:bg-hover')
                       }
                       data-assigned={hasAssignment ? 'true' : undefined}
                     >
@@ -995,7 +995,7 @@ export default function PanelDesignerView({
                         <span className="inline-flex items-center gap-1">
                           {conflictTargetIds.has(t.id) && (
                             <span
-                              className="inline-block h-2 w-2 rounded-full bg-amber-400 flex-shrink-0"
+                              className="inline-block h-2 w-2 rounded-full bg-warning flex-shrink-0"
                               title="Host species cross-reactivity risk"
                             />
                           )}
@@ -1024,7 +1024,7 @@ export default function PanelDesignerView({
                           </span>
                           <button
                             onClick={() => setOverriddenRows((prev) => new Set(prev).add(t.id))}
-                            className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-foreground-subtle hover:text-blue-500 transition-opacity"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-xs text-foreground-subtle hover:text-accent transition-opacity"
                             title="Override pre-conjugated fluorophore"
                           >
                             &#9998;
@@ -1033,12 +1033,12 @@ export default function PanelDesignerView({
                       ) : strategy && strategy.type !== 'direct' ? (
                         <td className="px-3 py-2">
                           {ab && strategy.type === 'conjugate' && (
-                            <span className="mr-1 text-xs text-amber-600 dark:text-amber-400" title={'Conjugated: ' + ab.conjugate}>
+                            <span className="mr-1 text-xs text-warning-soft-foreground" title={'Conjugated: ' + ab.conjugate}>
                               {ab.conjugate}
                             </span>
                           )}
                           {ab && strategy.type === 'both' && (
-                            <span className="mr-1 text-xs text-amber-600 dark:text-amber-400" title={'Conjugated: ' + ab.conjugate + ' \u2014 select detection reagent'}>
+                            <span className="mr-1 text-xs text-warning-soft-foreground" title={'Conjugated: ' + ab.conjugate + ' \u2014 select detection reagent'}>
                               {ab.conjugate} &middot;
                             </span>
                           )}
@@ -1226,7 +1226,7 @@ export default function PanelDesignerView({
                       <td className="px-3 py-2 text-center">
                         <button
                           onClick={() => handleRemoveTarget(t.id, t.antibody_id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-danger hover:opacity-80"
                           aria-label="Remove target"
                         >
                           &times;
@@ -1265,7 +1265,7 @@ export default function PanelDesignerView({
                   <td className="px-3 py-2 text-center">
                     <button
                       onClick={() => handleRemovePendingRow(pendingId)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-danger hover:opacity-80"
                       aria-label="Remove pending row"
                     >
                       &times;
@@ -1277,7 +1277,7 @@ export default function PanelDesignerView({
                 <td colSpan={4 + totalDetectors + 1} className="px-3 py-2">
                   <button
                     onClick={handleAddRowClick}
-                    className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                    className="flex items-center gap-1 text-sm text-accent hover:opacity-80"
                   >
                     <span className="text-lg leading-none">+</span> Add Target
                   </button>
@@ -1397,7 +1397,7 @@ export default function PanelDesignerView({
                     handlers.onInstrumentChangeCopy!(newId)
                   }}
                   disabled={handlers.copyInProgress}
-                  className="rounded border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 px-4 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50"
+                  className="rounded border border-accent bg-accent-soft px-4 py-2 text-sm font-medium text-accent-soft-foreground hover:opacity-90 disabled:opacity-50"
                 >
                   {handlers.copyInProgress ? 'Copying...' : 'Copy to New Panel'}
                 </button>

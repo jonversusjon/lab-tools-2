@@ -57,7 +57,7 @@ export default function PanelList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading panel templates...</p>
-  if (error) return <p className="text-red-600">Failed to load panels.</p>
+  if (error) return <p className="text-danger">Failed to load panels.</p>
 
   const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
 
@@ -65,7 +65,7 @@ export default function PanelList() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold dark:text-gray-100">Flow Panel Templates</h1>
+          <h1 className="text-2xl font-bold text-foreground">Flow Panel Templates</h1>
           <p className="text-sm text-foreground-muted mt-0.5">
             Design reusable panels here. Add them to experiments to use.
           </p>
@@ -96,7 +96,7 @@ export default function PanelList() {
               <HoverActionsRow
                 key={p.id}
                 as="tr"
-                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="border-b border-border hover:bg-hover"
                 onClick={() => navigate('/flow/panels/' + p.id)}
                 actions={{
                   onRename: () => {
@@ -109,14 +109,14 @@ export default function PanelList() {
                 }}
               >
                 <td className="py-2 font-medium text-foreground">{p.name}</td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">
+                <td className="py-2 text-foreground-muted">
                   {p.instrument_id ? (
                     (() => {
                       const inst = instruments.find(i => i.id === p.instrument_id)
                       return inst ? (
                         <button
                           type="button"
-                          className="text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+                          className="text-accent hover:underline disabled:opacity-50"
                           onClick={(e) => {
                             e.stopPropagation()
                             navigate('/flow/instruments/' + inst.id)
@@ -125,15 +125,15 @@ export default function PanelList() {
                           {inst.name}
                         </button>
                       ) : (
-                        <span className="text-gray-600 dark:text-gray-400">Configured</span>
+                        <span className="text-foreground-muted">Configured</span>
                       )
                     })()
                   ) : (
                     <span className="italic text-foreground-subtle">No instrument</span>
                   )}
                 </td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{p.target_count}</td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{p.assignment_count}</td>
+                <td className="py-2 text-foreground-muted">{p.target_count}</td>
+                <td className="py-2 text-foreground-muted">{p.assignment_count}</td>
               </HoverActionsRow>
             ))}
           </tbody>
@@ -150,7 +150,7 @@ export default function PanelList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="panel-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="panel-name" className="mb-1 block text-sm font-medium text-foreground-muted">
               Panel Name
             </label>
             <input
@@ -172,7 +172,7 @@ export default function PanelList() {
                 setShowCreate(false)
                 setNewName('')
               }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
@@ -196,7 +196,7 @@ export default function PanelList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-foreground-muted">
               Panel Name
             </label>
             <input
@@ -218,7 +218,7 @@ export default function PanelList() {
                 setEditingPanel(null)
                 setRenameValue('')
               }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
