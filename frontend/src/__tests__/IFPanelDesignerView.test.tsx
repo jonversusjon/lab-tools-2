@@ -594,6 +594,23 @@ describe('IFPanelDesignerView', () => {
       expect(screen.queryByText('Channel')).not.toBeInTheDocument()
     })
 
+    it('shows "Select a microscope above" hint in channel cells when no microscope is selected', () => {
+      renderView({ viewMode: 'spectral', microscope: null, targets: [makeTarget('t1', AB1_ID, 'CD3')] })
+      expect(screen.getAllByText('Select a microscope above').length).toBeGreaterThan(0)
+      expect(screen.queryByRole('group')).not.toBeInTheDocument()
+    })
+
+    it('does not show no-microscope hint when microscope is selected', () => {
+      const target = makeTarget('t1', AB1_ID, 'CD3')
+      const assignment = {
+        id: 'a1', panel_id: PANEL_ID, antibody_id: AB1_ID, dye_label_id: null,
+        fluorophore_id: 'fl-1', filter_id: 'f1', notes: null,
+      }
+      renderView({ viewMode: 'spectral', microscope: mockMicroscope1, targets: [target], assignments: [assignment] })
+      expect(screen.queryByText('Select a microscope above')).not.toBeInTheDocument()
+      expect(screen.getAllByRole('group').length).toBeGreaterThan(0)
+    })
+
     it('shows Channel column in spectral view mode', () => {
       renderView({ viewMode: 'spectral' })
       expect(screen.getByText('Channel')).toBeInTheDocument()
