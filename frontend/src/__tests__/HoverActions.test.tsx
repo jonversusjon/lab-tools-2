@@ -50,8 +50,8 @@ describe('HoverActions', () => {
   it('has danger styling on the delete button', () => {
     render(<HoverActions onDelete={() => {}} />)
     const deleteBtn = screen.getByRole('button', { name: /delete/i })
-    // The button class includes text-red-600 or bg-red-50 to indicate danger styling
-    expect(deleteBtn.className).toMatch(/text-red-600|hover:bg-red-50/i)
+    // The button class includes danger token classes to indicate danger styling
+    expect(deleteBtn.className).toMatch(/text-danger|hover:bg-danger-soft/i)
   })
 
   it('is hidden by default with opacity-0 class', () => {
