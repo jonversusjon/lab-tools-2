@@ -26,16 +26,16 @@ const mockInstrument: Instrument = {
   id: INST_ID, name: 'BD FACSAria III', is_favorite: false, location: null,
   lasers: [
     {
+      id: 'l2', instrument_id: INST_ID, wavelength_nm: 637, name: 'Red',
+      detectors: [
+        { id: DET_D3, laser_id: 'l2', filter_midpoint: 670, filter_width: 14, name: null },
+      ],
+    },
+    {
       id: 'l1', instrument_id: INST_ID, wavelength_nm: 488, name: 'Blue',
       detectors: [
         { id: DET_D1, laser_id: 'l1', filter_midpoint: 530, filter_width: 30, name: null },
         { id: DET_D2, laser_id: 'l1', filter_midpoint: 695, filter_width: 40, name: null },
-      ],
-    },
-    {
-      id: 'l2', instrument_id: INST_ID, wavelength_nm: 637, name: 'Red',
-      detectors: [
-        { id: DET_D3, laser_id: 'l2', filter_midpoint: 670, filter_width: 14, name: null },
       ],
     },
   ],
@@ -566,6 +566,17 @@ describe('PanelDesignerView', () => {
 
   // ── Detector column headers ────────────────────────────────────────────────
   describe('detector column headers', () => {
+    it('sorts laser group headers by wavelength ascending', () => {
+      renderView()
+      const headers = screen.getAllByRole('columnheader')
+      const texts = headers.map(h => h.textContent || '')
+      const blueIdx = texts.findIndex(t => t.includes('488nm'))
+      const redIdx = texts.findIndex(t => t.includes('637nm'))
+      expect(blueIdx).toBeGreaterThan(-1)
+      expect(redIdx).toBeGreaterThan(-1)
+      expect(blueIdx).toBeLessThan(redIdx)
+    })
+
     it('laser group headers show wavelength and name on load', () => {
       renderView()
       expect(screen.getByText('488nm Blue')).toBeInTheDocument()

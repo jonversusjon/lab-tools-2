@@ -62,7 +62,17 @@ const mockFluorophores: Fluorophore[] = [
 ]
 
 const mockMicroscope1: Microscope = {
-  id: MICRO_ID, name: 'Leica SP8', is_favorite: false, location: null, lasers: [],
+  id: MICRO_ID, name: 'Leica SP8', is_favorite: false, location: null,
+  lasers: [
+    {
+      id: 'l1', microscope_id: MICRO_ID, wavelength_nm: 633, name: 'Red', excitation_type: 'laser', ex_filter_width: null,
+      filters: [{ id: 'f1', laser_id: 'l1', filter_midpoint: 650, filter_width: 20, name: null }]
+    },
+    {
+      id: 'l2', microscope_id: MICRO_ID, wavelength_nm: 405, name: 'Violet', excitation_type: 'laser', ex_filter_width: null,
+      filters: [{ id: 'f2', laser_id: 'l2', filter_midpoint: 450, filter_width: 50, name: null }]
+    }
+  ]
 }
 
 const mockMicroscope2: Microscope = {
@@ -554,6 +564,17 @@ describe('IFPanelDesignerView', () => {
 
   // ── Column headers ────────────────────────────────────────────────────────
   describe('table column headers', () => {
+    it('sorts filter optgroups by laser wavelength ascending in channel select', () => {
+      renderView({ viewMode: 'spectral', microscope: mockMicroscope1, targets: [makeTarget('t1', 'ab1', 'CD3')] })
+      const groups = screen.getAllByRole('group')
+      const labels = groups.map(g => g.getAttribute('label') || '')
+      const violetIdx = labels.findIndex(l => l.includes('405nm'))
+      const redIdx = labels.findIndex(l => l.includes('633nm'))
+      expect(violetIdx).toBeGreaterThan(-1)
+      expect(redIdx).toBeGreaterThan(-1)
+      expect(violetIdx).toBeLessThan(redIdx)
+    })
+
     it('shows Target, Primary Ab, Secondary/Fluorophore, IF Dilution, Notes columns', () => {
       renderView()
       expect(screen.getByText('Target')).toBeInTheDocument()

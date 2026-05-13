@@ -153,9 +153,9 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
   }
 
   const inputClass =
-    'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
+    'w-full rounded border border-border bg-elevated text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none'
   const missingClass =
-    'w-full rounded border border-amber-400 dark:border-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
+    'w-full rounded border border-amber-400 dark:border-amber-500 bg-warning-soft text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none'
 
   return (
     <Modal isOpen onClose={onClose} title="Import Antibodies from CSV" wide>
@@ -168,7 +168,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
               <span
                 className={
                   step === s
-                    ? 'font-bold text-blue-600 dark:text-blue-400'
+                    ? 'font-bold text-accent'
                     : ''
                 }
               >
@@ -186,7 +186,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
             className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong p-12"
           >
             <svg
-              className="mb-4 h-12 w-12 text-gray-400"
+              className="mb-4 h-12 w-12 text-foreground-subtle"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -198,7 +198,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <p className="mb-2 text-gray-600 dark:text-gray-300">
+            <p className="mb-2 text-foreground-muted">
               Drag & drop a CSV file here, or click to browse
             </p>
             <label className="cursor-pointer rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium">
@@ -211,7 +211,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
               />
             </label>
             {uploadMutation.isPending && (
-              <p className="mt-4 text-sm text-gray-500">Parsing CSV...</p>
+              <p className="mt-4 text-sm text-foreground-muted">Parsing CSV...</p>
             )}
             {uploadMutation.isError && (
               <p className="mt-4 text-sm text-red-600">
@@ -226,11 +226,11 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
           <div>
             <div className="mb-4 rounded bg-surface p-3 text-sm">
               <strong>{importData.summary.total_csv_rows}</strong> rows parsed:{' '}
-              <span className="text-green-600 dark:text-green-400">
+              <span className="text-success">
                 {importData.summary.new} new
               </span>
               ,{' '}
-              <span className="text-gray-500">
+              <span className="text-foreground-muted">
                 {importData.summary.existing} already in database
               </span>
               {importData.summary.errors > 0 && (
@@ -262,13 +262,13 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
               <div className="flex items-center gap-2">
                 <button
                   onClick={selectAll}
-                  className="rounded border border-border-strong px-3 py-1 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
+                  className="rounded border border-border-strong px-3 py-1 text-xs text-foreground-muted hover:bg-hover"
                 >
                   Select All
                 </button>
                 <button
                   onClick={selectNone}
-                  className="rounded border border-border-strong px-3 py-1 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300"
+                  className="rounded border border-border-strong px-3 py-1 text-xs text-foreground-muted hover:bg-hover"
                 >
                   Select None
                 </button>
@@ -282,7 +282,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                 placeholder="Filter..."
                 value={selectSearch}
                 onChange={(e) => setSelectSearch(e.target.value)}
-                className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100 w-48"
+                className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-xs w-48"
               />
             </div>
 
@@ -303,7 +303,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                   {filteredNew.map((row) => (
                     <tr
                       key={row.csv_row_index}
-                      className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                      className="border-b border-border hover:bg-hover cursor-pointer"
                       onClick={() => toggleRow(row.csv_row_index)}
                     >
                       <td className="py-1">
@@ -314,24 +314,24 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                           onClick={(e) => e.stopPropagation()}
                         />
                       </td>
-                      <td className="py-1 font-medium dark:text-gray-100">
+                      <td className="py-1 font-medium text-foreground">
                         {row.parsed.name}
                       </td>
-                      <td className="py-1 text-gray-600 dark:text-gray-400">
+                      <td className="py-1 text-foreground-muted">
                         {row.parsed.catalog_number ?? ''}
                       </td>
-                      <td className="py-1 text-gray-600 dark:text-gray-400">
+                      <td className="py-1 text-foreground-muted">
                         {row.parsed.host_species ?? ''}
                       </td>
-                      <td className="py-1 text-gray-600 dark:text-gray-400">
+                      <td className="py-1 text-foreground-muted">
                         {row.parsed.conjugate ?? ''}
                       </td>
-                      <td className="py-1 text-gray-600 dark:text-gray-400">
+                      <td className="py-1 text-foreground-muted">
                         {row.parsed.manufacturer ?? ''}
                       </td>
                       <td className="py-1">
                         {row.missing_fields.length > 0 && (
-                          <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs text-amber-700 dark:text-amber-300">
+                          <span className="inline-flex items-center rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning-soft-foreground">
                             {row.missing_fields.length}
                           </span>
                         )}
@@ -345,7 +345,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
             <div className="mt-4 flex justify-between">
               <button
                 onClick={() => setStep('upload')}
-                className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
               >
                 Back
               </button>
@@ -363,7 +363,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
         {/* Step 3: Review & Edit */}
         {step === 'review' && (
           <div>
-            <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mb-3 text-sm text-foreground-muted">
               Review {selectedRows.length} antibodies. Click a row to expand and
               edit. Fields highlighted in amber are missing.
             </p>
@@ -379,16 +379,16 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                     className="rounded border border-border"
                   >
                     <div
-                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-hover"
                       onClick={() =>
                         setExpandedRow(isExpanded ? null : row.csv_row_index)
                       }
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-foreground-subtle">
                           {isExpanded ? '\u25BC' : '\u25B6'}
                         </span>
-                        <span className="text-sm font-medium dark:text-gray-100">
+                        <span className="text-sm font-medium text-foreground">
                           {p.name}
                         </span>
                         <span className="text-xs text-foreground-muted">
@@ -396,7 +396,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                         </span>
                       </div>
                       {row.missing_fields.length > 0 && (
-                        <span className="text-xs text-amber-600 dark:text-amber-400">
+                        <span className="text-xs text-warning-soft-foreground">
                           {row.missing_fields.length} missing
                         </span>
                       )}
@@ -615,14 +615,14 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
             <div className="mt-4 flex justify-between">
               <button
                 onClick={() => setStep('select')}
-                className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
               >
                 Back
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={confirmMutation.isPending}
-                className="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                className="rounded bg-success px-4 py-2 text-sm font-medium text-success-foreground hover:opacity-90 disabled:opacity-50"
               >
                 {confirmMutation.isPending
                   ? 'Importing...'
@@ -635,9 +635,9 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
         {/* Step 4: Done */}
         {step === 'done' && importResult && (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="mb-4 rounded-full bg-green-100 dark:bg-green-900/30 p-3">
+            <div className="mb-4 rounded-full bg-success-soft p-3">
               <svg
-                className="h-8 w-8 text-green-600 dark:text-green-400"
+                className="h-8 w-8 text-success"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -650,10 +650,10 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
                 />
               </svg>
             </div>
-            <h3 className="mb-2 text-lg font-semibold dark:text-gray-100">
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
               Import Complete
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-foreground-muted">
               Imported {importResult.imported} antibodies.
               {importResult.errors.length > 0 && (
                 <span className="text-red-600">

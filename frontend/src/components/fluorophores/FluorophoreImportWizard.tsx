@@ -84,7 +84,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
   }
 
   const inputClass =
-    'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
+    'w-full rounded border border-border bg-elevated text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none'
 
   return (
     <Modal isOpen onClose={onClose} title="Import Fluorophores" wide>
@@ -96,7 +96,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               {i > 0 && <span className="mx-1">&rarr;</span>}
               <span
                 className={
-                  step === s ? 'font-bold text-blue-600 dark:text-blue-400' : ''
+                  step === s ? 'font-bold text-accent' : ''
                 }
               >
                 {i + 1}. {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -113,7 +113,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
             className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border-strong p-12"
           >
             <svg
-              className="mb-4 h-12 w-12 text-gray-400"
+              className="mb-4 h-12 w-12 text-foreground-subtle"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -125,10 +125,10 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                 d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
               />
             </svg>
-            <p className="mb-1 text-gray-600 dark:text-gray-300">
+            <p className="mb-1 text-foreground-muted">
               Drag &amp; drop a CSV or JSON file here, or click to browse
             </p>
-            <p className="mb-4 text-xs text-gray-400">
+            <p className="mb-4 text-xs text-foreground-subtle">
               CSV: name, ex_max_nm, em_max_nm, fluor_type, qy, ext_coeff &nbsp;|&nbsp;
               JSON: array or {"{"}"fluorophores": [...]{"}"}
             </p>
@@ -142,7 +142,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               />
             </label>
             {uploadMutation.isPending && (
-              <p className="mt-4 text-sm text-gray-500">Parsing file...</p>
+              <p className="mt-4 text-sm text-foreground-muted">Parsing file...</p>
             )}
             {uploadMutation.isError && (
               <p className="mt-4 text-sm text-red-600">
@@ -158,13 +158,13 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
             {/* Summary bar */}
             <div className="mb-4 rounded bg-surface p-3 text-sm">
               <strong>{preview.total_rows}</strong> rows parsed &mdash;{' '}
-              <span className="text-green-600 dark:text-green-400">
+              <span className="text-success">
                 {items.length} new
               </span>
               {preview.duplicates.length > 0 && (
                 <>
                   ,{' '}
-                  <span className="text-gray-500">
+                  <span className="text-foreground-muted">
                     {preview.duplicates.length} already in database
                   </span>
                 </>
@@ -178,7 +178,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                 </>
               )}
               {preview.format_detected === 'json' && (
-                <span className="ml-2 rounded bg-teal-100 dark:bg-teal-900/30 px-2 py-0.5 text-xs text-teal-700 dark:text-teal-300">
+                <span className="ml-2 rounded bg-accent-soft px-2 py-0.5 text-xs text-accent-soft-foreground">
                   JSON
                 </span>
               )}
@@ -206,7 +206,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                 <summary className="cursor-pointer text-sm text-foreground-muted">
                   {preview.duplicates.length} duplicate(s) — already in database, will be skipped
                 </summary>
-                <ul className="mt-1 space-y-1 text-xs text-gray-400 pl-4">
+                <ul className="mt-1 space-y-1 text-xs text-foreground-subtle pl-4">
                   {preview.duplicates.map((d) => (
                     <li key={d.row_number}>
                       Row {d.row_number}: {d.name}
@@ -225,15 +225,15 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               <div className="overflow-x-auto">
                 <table className="w-full text-xs border-collapse">
                   <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-800 text-left">
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 w-8">#</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400">Name</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 w-24">Type</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 w-20">Ex Max</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 w-20">Em Max</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 w-16">QY</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400 w-16">Spectra</th>
-                      <th className="px-2 py-1 font-medium text-gray-600 dark:text-gray-400">Warnings</th>
+                    <tr className="bg-surface text-left">
+                      <th className="px-2 py-1 font-medium text-foreground-muted w-8">#</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted">Name</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted w-24">Type</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted w-20">Ex Max</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted w-20">Em Max</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted w-16">QY</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted w-16">Spectra</th>
+                      <th className="px-2 py-1 font-medium text-foreground-muted">Warnings</th>
                       <th className="px-2 py-1 w-6"></th>
                     </tr>
                   </thead>
@@ -247,10 +247,10 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                           className={
                             hasWarnings
                               ? 'bg-amber-50 dark:bg-amber-900/10'
-                              : 'even:bg-gray-50 dark:even:bg-gray-800/50'
+                              : 'even:bg-surface'
                           }
                         >
-                          <td className="px-2 py-1 text-gray-400">{item.row_number}</td>
+                          <td className="px-2 py-1 text-foreground-subtle">{item.row_number}</td>
                           <td className="px-2 py-1">
                             <input
                               className={inputClass}
@@ -316,18 +316,18 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                           </td>
                           <td className="px-2 py-1">
                             {badge ? (
-                              <span className="rounded bg-teal-100 dark:bg-teal-900/30 px-1.5 py-0.5 text-xs font-medium text-teal-700 dark:text-teal-300">
+                              <span className="rounded bg-accent-soft px-1.5 py-0.5 text-xs font-medium text-accent-soft-foreground">
                                 {badge}
                               </span>
                             ) : (
-                              <span className="text-gray-400">—</span>
+                              <span className="text-foreground-subtle">—</span>
                             )}
                           </td>
                           <td className="px-2 py-1">
                             {hasWarnings && (
                               <ul className="space-y-0.5">
                                 {item.warnings.map((w, wi) => (
-                                  <li key={wi} className="text-amber-600 dark:text-amber-400">
+                                  <li key={wi} className="text-warning-soft-foreground">
                                     {w}
                                   </li>
                                 ))}
@@ -337,7 +337,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                           <td className="px-2 py-1">
                             <button
                               onClick={() => removeItem(idx)}
-                              className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                              className="text-foreground-subtle hover:text-danger" // theme-exempt: semantic delete hover
                               title="Remove"
                             >
                               &times;
@@ -365,7 +365,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                   setItems([])
                   uploadMutation.reset()
                 }}
-                className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
               >
                 Back
               </button>
@@ -386,7 +386,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
         {step === 'done' && doneResult && (
           <div className="flex flex-col items-center py-8">
             <svg
-              className="mb-4 h-12 w-12 text-green-500"
+              className="mb-4 h-12 w-12 text-success"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -398,10 +398,10 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-lg font-semibold dark:text-gray-100">
+            <p className="text-lg font-semibold text-foreground">
               Import complete
             </p>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-1 text-sm text-foreground-muted">
               {doneResult.created} fluorophore{doneResult.created !== 1 ? 's' : ''} created
               {doneResult.skipped > 0 && `, ${doneResult.skipped} skipped`}
             </p>
