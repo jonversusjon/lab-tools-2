@@ -426,7 +426,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                     'px-3 py-1.5 ' +
                     (state.viewMode === 'simple'
                       // theme-exempt: inverted toggle — dark bg in light mode, light bg in dark mode by design
-                      ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 font-medium'
+                      ? 'bg-foreground text-canvas font-medium'
                       : 'bg-elevated text-foreground-muted hover:bg-hover')
                   }
                 >
@@ -438,7 +438,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                     'px-3 py-1.5 border-l border-border ' +
                     (state.viewMode === 'spectral'
                       // theme-exempt: inverted toggle — dark bg in light mode, light bg in dark mode by design
-                      ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 font-medium'
+                      ? 'bg-foreground text-canvas font-medium'
                       : 'bg-elevated text-foreground-muted hover:bg-hover')
                   }
                 >
@@ -451,7 +451,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
             {config.showDelete && handlers.onDelete && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="rounded px-2 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-800"
+                className="rounded px-2 py-1.5 text-xs text-danger hover:bg-danger-soft border border-danger"
                 title="Delete panel"
               >
                 Delete
@@ -486,11 +486,11 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
       {/* Error banner */}
       {assignError && (
-        <div className="flex items-center justify-between rounded border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-2">
-          <span className="text-sm text-red-600 dark:text-red-400">{assignError}</span>
+        <div className="flex items-center justify-between rounded border border-danger bg-danger-soft px-4 py-2">
+          <span className="text-sm text-danger-soft-foreground">{assignError}</span>
           <button
             onClick={() => setAssignError('')}
-            className="ml-3 text-red-400 hover:text-red-600"
+            className="ml-3 text-danger hover:opacity-80"
           >
             &times;
           </button>
@@ -499,9 +499,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
       {/* Host species cross-reactivity warning */}
       {hostSpeciesConflicts.size > 0 && (
-        <div className="rounded border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 space-y-1">
+        <div className="rounded border border-warning bg-warning-soft px-4 py-2 space-y-1">
           {Array.from(hostSpeciesConflicts.entries()).map(([host, names]) => (
-            <p key={host} className="text-sm text-amber-700 dark:text-amber-400">
+            <p key={host} className="text-sm text-warning-soft-foreground">
               &#9888; Multiple antibodies raised in <strong>{host}</strong>: {names.join(', ')}. A single anti-{host} secondary will cross-react with all of them.
             </p>
           ))}
@@ -631,7 +631,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                 <span className="inline-flex items-center gap-1">
                                   {conflictTargetIds.has(t.id) && (
                                     <span
-                                      className="inline-block h-2 w-2 rounded-full bg-amber-400 flex-shrink-0"
+                                      className="inline-block h-2 w-2 rounded-full bg-warning flex-shrink-0"
                                       title="Host species cross-reactivity risk"
                                     />
                                   )}
@@ -854,7 +854,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             <td className="w-7 px-1 py-2 text-center">
                               <button
                                 onClick={() => handleRemoveTarget(t.id, t.antibody_id)}
-                                className="text-foreground-subtle hover:text-red-500 dark:hover:text-red-400"
+                                className="text-foreground-subtle hover:text-danger"
                                 aria-label="Remove target"
                               >
                                 &times;
@@ -895,7 +895,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                     <td className="w-7 px-1 py-2 text-center">
                       <button
                         onClick={() => handleRemovePendingRow(pendingId)}
-                        className="text-foreground-subtle hover:text-red-500 dark:hover:text-red-400"
+                        className="text-foreground-subtle hover:text-danger"
                         aria-label="Remove pending row"
                       >
                         &times;

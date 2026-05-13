@@ -35,7 +35,7 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
             onChange({ ...filter, filter_midpoint: parseInt(e.target.value) || 0 })
           }
           placeholder="Midpoint"
-          className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-20 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
           min={1}
         />
         <span className="text-foreground-subtle">/</span>
@@ -46,7 +46,7 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
             onChange({ ...filter, filter_width: parseInt(e.target.value) || 0 })
           }
           placeholder="Width"
-          className="w-16 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-16 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
           min={1}
         />
       </div>
@@ -55,7 +55,7 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
         value={filter.name}
         onChange={(e) => onChange({ ...filter, name: e.target.value })}
         placeholder="Name (optional)"
-        className="w-32 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+        className="w-32 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
       />
       {filter.filter_midpoint > 0 && filter.filter_width > 0 && (
         <span className="text-xs text-foreground-subtle">
@@ -64,7 +64,7 @@ function FilterRow({ filter, onChange, onRemove }: FilterRowProps) {
       )}
       <button
         onClick={onRemove}
-        className="ml-auto text-sm text-red-500 hover:text-red-700"
+        className="ml-auto text-sm text-danger hover:opacity-80"
         aria-label="Remove filter"
       >
         Remove
@@ -122,7 +122,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="text-foreground-subtle hover:text-foreground-muted"
           aria-label={collapsed ? 'Expand' : 'Collapse'}
         >
           {collapsed ? '\u25B6' : '\u25BC'}
@@ -139,8 +139,8 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
             className={
               'px-2 py-1 ' +
               (isArc
-                ? 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600'
-                : 'bg-blue-600 text-white')
+                ? 'bg-elevated text-foreground-muted hover:bg-hover'
+                : 'bg-accent text-accent-foreground')
             }
           >
             Laser
@@ -148,10 +148,10 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
           <button
             onClick={() => setExcitationType('arc')}
             className={
-              'px-2 py-1 border-l border-gray-300 dark:border-gray-600 ' +
+              'px-2 py-1 border-l border-border ' +
               (!isArc
-                ? 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600'
-                : 'bg-blue-600 text-white')
+                ? 'bg-elevated text-foreground-muted hover:bg-hover'
+                : 'bg-accent text-accent-foreground')
             }
           >
             Arc/LED
@@ -168,7 +168,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
             }
             placeholder={isArc ? 'Center' : 'Wavelength'}
             title={isArc ? 'Excitation filter center wavelength' : 'Laser wavelength'}
-            className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+            className="w-20 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
             min={1}
           />
           {isArc && (
@@ -182,7 +182,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
                 }
                 placeholder="Width"
                 title="Excitation filter bandpass width"
-                className="w-16 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+                className="w-16 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
                 min={1}
               />
             </>
@@ -195,7 +195,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
           value={laser.name}
           onChange={(e) => onChange({ ...laser, name: e.target.value })}
           placeholder={isArc ? 'Source name' : 'Laser name'}
-          className="w-36 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-36 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
         />
 
         <span className="ml-auto text-xs text-foreground-subtle shrink-0">
@@ -203,7 +203,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
         </span>
         <button
           onClick={onRemove}
-          className="text-sm text-red-500 hover:text-red-700 shrink-0"
+          className="text-sm text-danger hover:opacity-80 shrink-0"
           aria-label="Remove excitation source"
         >
           Remove
@@ -211,7 +211,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
       </div>
 
       {!collapsed && (
-        <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-3 pt-2">
+        <div className="border-t border-border px-4 pb-3 pt-2">
           <p className="mb-1 text-xs font-medium text-foreground-subtle uppercase tracking-wide">
             Emission Filters
           </p>
@@ -228,7 +228,7 @@ export default function MicroscopeLaserSection({ laser, onChange, onRemove }: Mi
           ))}
           <button
             onClick={addFilter}
-            className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            className="mt-2 text-sm text-accent hover:opacity-80"
           >
             + Add Filter
           </button>

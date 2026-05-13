@@ -142,13 +142,13 @@ export default function MicroscopeList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading microscopes...</p>
-  if (error) return <p className="text-red-600">Failed to load microscopes.</p>
+  if (error) return <p className="text-danger">Failed to load microscopes.</p>
 
   return (
     <div className="relative min-h-full">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Microscopes</h1>
+        <h1 className="text-2xl font-bold text-foreground">Microscopes</h1>
         <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -159,7 +159,7 @@ export default function MicroscopeList() {
           />
           <button
             onClick={() => { setImportError(null); setImportSuccessMsg(null); fileInputRef.current?.click() }}
-            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-foreground-muted hover:bg-hover"
           >
             Import
           </button>
@@ -173,16 +173,16 @@ export default function MicroscopeList() {
       </div>
 
       {importError && (
-        <div className="mb-4 flex items-center justify-between rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-danger bg-danger-soft px-4 py-3 text-sm text-danger-soft-foreground">
           <span>{importError}</span>
-          <button onClick={() => setImportError(null)} className="ml-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Dismiss</button>
+          <button onClick={() => setImportError(null)} className="ml-4 text-xs text-foreground-subtle hover:text-foreground-muted">Dismiss</button>
         </div>
       )}
 
       {importSuccessMsg && (
-        <div className="mb-4 flex items-center justify-between rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-sm text-green-700 dark:text-green-300">
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-success bg-success-soft px-4 py-3 text-sm text-success-soft-foreground">
           <span>{importSuccessMsg}</span>
-          <button onClick={() => setImportSuccessMsg(null)} className="ml-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">Dismiss</button>
+          <button onClick={() => setImportSuccessMsg(null)} className="ml-4 text-xs text-foreground-subtle hover:text-foreground-muted">Dismiss</button>
         </div>
       )}
 
@@ -199,7 +199,7 @@ export default function MicroscopeList() {
           <select
             value={laserFilter}
             onChange={(e) => setLaserFilter(e.target.value)}
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+            className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-xs focus:outline-none"
           >
             <option value="">All laser wavelengths</option>
             {uniqueLaserWavelengths.map((wl) => (
@@ -210,7 +210,7 @@ export default function MicroscopeList() {
           <select
             value={filterFilter}
             onChange={(e) => setFilterFilter(e.target.value)}
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+            className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-xs focus:outline-none"
           >
             <option value="">All filter wavelengths</option>
             {uniqueFilterMidpoints.map((mp) => (
@@ -222,7 +222,7 @@ export default function MicroscopeList() {
             <select
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+              className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-xs focus:outline-none"
             >
               <option value="">All locations</option>
               {uniqueLocations.map((loc) => (
@@ -235,8 +235,8 @@ export default function MicroscopeList() {
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={`rounded border px-3 py-1.5 text-xs ${
               showFavoritesOnly
-                ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
-                : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'border-warning bg-warning-soft text-warning-soft-foreground'
+                : 'border-border text-foreground-muted hover:bg-hover'
             }`}
           >
             ★ Favorites
@@ -245,7 +245,7 @@ export default function MicroscopeList() {
           {hasActiveFilters && (
             <button
               onClick={() => { setSearch(''); setLaserFilter(''); setFilterFilter(''); setShowFavoritesOnly(false); setLocationFilter('') }}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-accent hover:underline"
             >
               Clear filters
             </button>
@@ -291,7 +291,7 @@ export default function MicroscopeList() {
                   key={m.id}
                   as="tr"
                   onClick={() => navigate('/if-ihc/microscopes/' + m.id)}
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="border-b border-border hover:bg-hover"
                   actions={{
                     onRename: () => {
                       setEditingMicroscope({ id: m.id, name: m.name })
@@ -305,7 +305,7 @@ export default function MicroscopeList() {
                           e.stopPropagation()
                           handleExport(m.id, m.name)
                         }}
-                        className="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-1.5 rounded text-foreground-subtle hover:text-foreground hover:bg-hover"
                         aria-label="Export"
                         title="Export"
                       >
@@ -331,16 +331,16 @@ export default function MicroscopeList() {
                         {m.lasers
                           .filter((l) => l.wavelength_nm === Number(laserFilter))
                           .map((l) => (
-                            <span key={l.id} className="rounded-full bg-blue-100 dark:bg-blue-900/40 px-1.5 py-0.5 text-xs text-blue-700 dark:text-blue-300">
+                            <span key={l.id} className="rounded-full bg-accent-soft px-1.5 py-0.5 text-xs text-accent-soft-foreground">
                               {l.wavelength_nm} nm
                             </span>
                           ))}
                       </span>
                     )}
                   </td>
-                  <td className="py-3 text-gray-600 dark:text-gray-400">{m.location ?? '—'}</td>
-                  <td className="py-3 text-gray-600 dark:text-gray-400">{m.lasers.length}</td>
-                  <td className="py-3 text-gray-600 dark:text-gray-400">{totalFilters}</td>
+                  <td className="py-3 text-foreground-muted">{m.location ?? '—'}</td>
+                  <td className="py-3 text-foreground-muted">{m.lasers.length}</td>
+                  <td className="py-3 text-foreground-muted">{totalFilters}</td>
                 </HoverActionsRow>
               )
             })}
@@ -359,7 +359,7 @@ export default function MicroscopeList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-microscope" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="rename-microscope" className="mb-1 block text-sm font-medium text-foreground-muted">
               Microscope Name
             </label>
             <input
@@ -376,7 +376,7 @@ export default function MicroscopeList() {
             <button
               type="button"
               onClick={() => { setEditingMicroscope(null); setRenameValue('') }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>

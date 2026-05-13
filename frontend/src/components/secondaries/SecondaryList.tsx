@@ -196,7 +196,7 @@ export default function SecondaryList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading secondary antibodies...</p>
-  if (error) return <p className="text-red-600">Failed to load secondary antibodies.</p>
+  if (error) return <p className="text-danger">Failed to load secondary antibodies.</p>
 
   const inputClass = "w-full rounded border border-border-strong bg-elevated px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
 
@@ -263,7 +263,7 @@ export default function SecondaryList() {
                 <td className="py-2 text-foreground-muted">{sa.host}</td>
               <td className="py-2 text-foreground-muted">
                   {sa.binding_mode === 'conjugate' ? (
-                    <span className="text-amber-600 dark:text-amber-400" title="Targets conjugate">
+                    <span className="text-warning-soft-foreground" title="Targets conjugate">
                       {sa.target_conjugate ?? '?'}
                     </span>
                   ) : (
@@ -301,7 +301,7 @@ export default function SecondaryList() {
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-sm font-medium text-foreground">
-              Name <span className="text-red-500">*</span>
+              Name <span className="text-danger">*</span>
             </label>
             <input
               type="text"
@@ -314,7 +314,7 @@ export default function SecondaryList() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-foreground">
-              Binding Mode <span className="text-red-500">*</span>
+              Binding Mode <span className="text-danger">*</span>
             </label>
             <div className="flex gap-2">
               <button
@@ -416,7 +416,7 @@ export default function SecondaryList() {
                 />
                 <div>
                   <label className="mb-1 block text-sm font-medium text-foreground">
-                    Target Conjugate <span className="text-red-500">*</span>
+                    Target Conjugate <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
@@ -553,7 +553,7 @@ export default function SecondaryList() {
                 <p className="mt-2 text-sm text-foreground-muted">Parsing CSV...</p>
               )}
               {uploadCsvMutation.isError && (
-                <p className="mt-2 text-sm text-red-600">Failed to parse CSV file. Check the format and try again.</p>
+                <p className="mt-2 text-sm text-danger">Failed to parse CSV file. Check the format and try again.</p>
               )}
             </div>
           )}
@@ -564,7 +564,7 @@ export default function SecondaryList() {
                 <p className="text-sm text-foreground-muted">
                   {importItems.length} rows ready to import
                   {importItems.filter((i) => i.warnings.length > 0).length > 0 && (
-                    <span className="ml-1 text-amber-600 dark:text-amber-400">
+                    <span className="ml-1 text-warning-soft-foreground">
                       ({importItems.filter((i) => i.warnings.length > 0).length} with warnings)
                     </span>
                   )}
@@ -596,7 +596,7 @@ export default function SecondaryList() {
                         key={item.row_number}
                         className={
                           'border-b border-border' +
-                          (item.warnings.length > 0 ? ' bg-amber-50 dark:bg-amber-900/20' : '')
+                          (item.warnings.length > 0 ? ' bg-warning-soft' : '')
                         }
                       >
                         <td className="px-2 py-1.5 text-foreground-subtle">{item.row_number}</td>
@@ -608,7 +608,7 @@ export default function SecondaryList() {
                           {item.fluorophore_id ? (
                             <span className="text-teal-700 dark:text-teal-400">{item.fluorophore_name}</span>
                           ) : item.fluorophore_name ? (
-                            <span className="text-amber-600 dark:text-amber-400" title="Not matched">{item.fluorophore_name}</span>
+                            <span className="text-warning-soft-foreground" title="Not matched">{item.fluorophore_name}</span>
                           ) : (
                             <span className="text-foreground-subtle">—</span>
                           )}
@@ -617,7 +617,7 @@ export default function SecondaryList() {
                         <td className="px-2 py-1.5 text-center">
                           <button
                             onClick={() => handleRemoveImportRow(item.row_number)}
-                            className="text-red-400 hover:text-red-600"
+                            className="text-danger hover:opacity-80"
                             title="Remove row"
                           >
                             &times;
@@ -634,7 +634,7 @@ export default function SecondaryList() {
                     .filter((i) => i.warnings.length > 0)
                     .map((i) =>
                       i.warnings.map((w, wi) => (
-                        <p key={i.row_number + '-' + wi} className="text-xs text-amber-600 dark:text-amber-400">
+                        <p key={i.row_number + '-' + wi} className="text-xs text-warning-soft-foreground">
                           Row {i.row_number}: {w}
                         </p>
                       ))
@@ -663,17 +663,17 @@ export default function SecondaryList() {
           {importResult && (
             <div>
               <p className="text-sm text-foreground">
-                Created <span className="font-semibold text-green-600 dark:text-green-400">{importResult.created}</span> secondary antibodies.
+                Created <span className="font-semibold text-success">{importResult.created}</span> secondary antibodies.
                 {importResult.skipped > 0 && (
                   <span>
-                    {' '}Skipped <span className="font-semibold text-amber-600 dark:text-amber-400">{importResult.skipped}</span> duplicates.
+                    {' '}Skipped <span className="font-semibold text-warning-soft-foreground">{importResult.skipped}</span> duplicates.
                   </span>
                 )}
               </p>
               {confirmImportMutation.data?.errors && confirmImportMutation.data.errors.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {confirmImportMutation.data.errors.map((err, i) => (
-                    <p key={i} className="text-xs text-red-600">{err}</p>
+                    <p key={i} className="text-xs text-danger">{err}</p>
                   ))}
                 </div>
               )}

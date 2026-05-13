@@ -59,16 +59,16 @@ export default function IFPanelList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading panel templates...</p>
-  if (error) return <p className="text-red-600">Failed to load panels.</p>
+  if (error) return <p className="text-danger">Failed to load panels.</p>
 
   const inputClass =
-    'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
+    'w-full rounded border border-border bg-elevated text-foreground px-3 py-2 text-sm focus:border-blue-500 focus:outline-none'
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold dark:text-gray-100">IF/IHC Panel Templates</h1>
+          <h1 className="text-2xl font-bold text-foreground">IF/IHC Panel Templates</h1>
           <p className="text-sm text-foreground-muted mt-0.5">
             Design reusable panels here. Add them to experiments to use.
           </p>
@@ -105,7 +105,7 @@ export default function IFPanelList() {
                 <HoverActionsRow
                   key={p.id}
                   as="tr"
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="border-b border-border hover:bg-hover"
                   onClick={() => navigate('/if-ihc/panels/' + p.id)}
                   actions={{
                     onRename: () => {
@@ -123,20 +123,20 @@ export default function IFPanelList() {
                         IHC
                       </span>
                     ) : (
-                      <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-foreground">
                         IF
                       </span>
                     )}
                   </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">
+                  <td className="py-2 text-foreground-muted">
                     {microscope ? (
                       microscope.name
                     ) : (
                       <span className="text-foreground-subtle">—</span>
                     )}
                   </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">{p.target_count}</td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">{updatedAt}</td>
+                  <td className="py-2 text-foreground-muted">{p.target_count}</td>
+                  <td className="py-2 text-foreground-muted">{updatedAt}</td>
                 </HoverActionsRow>
               )
             })}
@@ -155,7 +155,7 @@ export default function IFPanelList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="panel-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="panel-name" className="mb-1 block text-sm font-medium text-foreground-muted">
               Panel Name
             </label>
             <input
@@ -171,7 +171,7 @@ export default function IFPanelList() {
             />
           </div>
           <div>
-            <p className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Panel Type</p>
+            <p className="mb-1 text-sm font-medium text-foreground-muted">Panel Type</p>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -179,8 +179,8 @@ export default function IFPanelList() {
                 className={
                   'rounded px-4 py-2 text-sm font-medium ' +
                   (newPanelType === 'IF'
-                    ? 'bg-blue-600 text-white'
-                    : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700')
+                    ? 'bg-accent text-accent-foreground'
+                    : 'border border-border text-foreground-muted hover:bg-hover')
                 }
               >
                 IF
@@ -192,7 +192,7 @@ export default function IFPanelList() {
                   'rounded px-4 py-2 text-sm font-medium ' +
                   (newPanelType === 'IHC'
                     ? 'bg-purple-600 text-white'
-                    : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700')
+                    : 'border border-border text-foreground-muted hover:bg-hover')
                 }
               >
                 IHC
@@ -207,7 +207,7 @@ export default function IFPanelList() {
                 setNewName('')
                 setNewPanelType('IF')
               }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
@@ -231,7 +231,7 @@ export default function IFPanelList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="rename-panel" className="mb-1 block text-sm font-medium text-foreground-muted">
               Panel Name
             </label>
             <input
@@ -253,7 +253,7 @@ export default function IFPanelList() {
                 setEditingPanel(null)
                 setRenameValue('')
               }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>

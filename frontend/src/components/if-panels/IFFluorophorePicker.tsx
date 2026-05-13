@@ -108,7 +108,7 @@ export default function IFFluorophorePicker({
             className="w-72 rounded border border-border bg-elevated shadow-lg"
             style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
           >
-            <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+            <div className="border-b border-border px-3 py-2">
               <input
                 ref={inputRef}
                 type="text"
@@ -127,7 +127,7 @@ export default function IFFluorophorePicker({
                   setOpen(false)
                   setSearch('')
                 }}
-                className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-b border-gray-100 dark:border-gray-700"
+                className="w-full px-3 py-2 text-left text-sm text-danger hover:bg-danger-soft border-b border-border"
               >
                 Clear selection
               </button>
@@ -147,7 +147,7 @@ export default function IFFluorophorePicker({
                     onMouseEnter={() => setHighlightIndex(i)}
                     className={
                       'w-full px-3 py-2 text-left text-sm' +
-                      (i === highlightIndex ? ' bg-blue-50 dark:bg-blue-900/30' : ' hover:bg-gray-50 dark:hover:bg-gray-700') +
+                      (i === highlightIndex ? ' bg-accent-soft' : ' hover:bg-hover') +
                       (inUse ? ' opacity-50' : '')
                     }
                   >
