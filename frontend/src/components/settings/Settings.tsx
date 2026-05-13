@@ -336,12 +336,12 @@ export default function Settings() {
   }
 
   if (loading) {
-    return <div className="p-4 py-8 text-center text-gray-500">Loading settings...</div>
+    return <div className="p-4 py-8 text-center text-foreground-muted">Loading settings...</div>
   }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Settings</h1>
 
       {/* Fluorophore Thresholds */}
       <div className="space-y-6 rounded-lg border border-border bg-elevated p-6 shadow-sm">
@@ -356,7 +356,7 @@ export default function Settings() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-sm font-medium text-foreground-muted">
             Minimum Excitation Efficiency ({minEx}%)
           </label>
           <input
@@ -365,12 +365,12 @@ export default function Settings() {
             max="50"
             value={minEx}
             onChange={(e) => setMinEx(Number(e.target.value))}
-            className="mt-2 w-full cursor-pointer accent-blue-600 dark:accent-blue-400"
+            className="mt-2 w-full cursor-pointer accent-accent"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-sm font-medium text-foreground-muted">
             Minimum Detection Efficiency ({minDet}%)
           </label>
           <input
@@ -379,7 +379,7 @@ export default function Settings() {
             max="50"
             value={minDet}
             onChange={(e) => setMinDet(Number(e.target.value))}
-            className="mt-2 w-full cursor-pointer accent-blue-600 dark:accent-blue-400"
+            className="mt-2 w-full cursor-pointer accent-accent"
           />
         </div>
 
@@ -387,7 +387,7 @@ export default function Settings() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
@@ -395,8 +395,8 @@ export default function Settings() {
             <span
               className={`text-sm ${
                 message.includes('Failed')
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-green-600 dark:text-green-400'
+                  ? 'text-danger'
+                  : 'text-success'
               }`}
             >
               {message}
@@ -419,7 +419,7 @@ export default function Settings() {
         </div>
 
         {/* Add new chemistry */}
-        <div className="flex gap-2 items-end border-b border-gray-100 dark:border-gray-700 pb-4">
+        <div className="flex gap-2 items-end border-b border-border pb-4">
           <div className="flex-1">
             <label className="block text-xs font-medium text-foreground-muted mb-1">
               Conjugate Name
@@ -432,7 +432,7 @@ export default function Settings() {
                 if (e.key === 'Enter') handleAddChemistry()
               }}
               placeholder="e.g. dnp"
-              className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
             />
           </div>
           <div className="flex-[2]">
@@ -447,7 +447,7 @@ export default function Settings() {
                 if (e.key === 'Enter') handleAddChemistry()
               }}
               placeholder="e.g. Anti-DNP"
-              className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
             />
           </div>
           <button
@@ -461,7 +461,7 @@ export default function Settings() {
 
         {/* Chemistry list */}
         {chemLoading ? (
-          <div className="py-4 text-center text-sm text-gray-400">Loading...</div>
+          <div className="py-4 text-center text-sm text-foreground-subtle">Loading...</div>
         ) : chemistries.length === 0 ? (
           <div className="py-4 text-center text-sm text-foreground-subtle">
             No conjugate chemistries defined.
@@ -479,7 +479,7 @@ export default function Settings() {
               {chemistries.map((chem) => (
                 <tr
                   key={chem.id}
-                  className="border-b border-gray-50 dark:border-gray-700 group"
+                  className="border-b border-border group"
                 >
                   {editingId === chem.id ? (
                     <>
@@ -492,7 +492,7 @@ export default function Settings() {
                             if (e.key === 'Enter') handleSaveEdit()
                             if (e.key === 'Escape') setEditingId(null)
                           }}
-                          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                          className="w-full rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
                           autoFocus
                         />
                       </td>
@@ -505,20 +505,20 @@ export default function Settings() {
                             if (e.key === 'Enter') handleSaveEdit()
                             if (e.key === 'Escape') setEditingId(null)
                           }}
-                          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+                          className="w-full rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
                         />
                       </td>
                       <td className="py-2 text-right">
                         <button
                           onClick={handleSaveEdit}
                           disabled={!editName.trim() || !editLabel.trim()}
-                          className="text-xs text-green-600 hover:text-green-700 mr-2 disabled:opacity-50"
+                          className="text-xs text-success hover:opacity-80 mr-2 disabled:opacity-50"
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          className="text-xs text-gray-400 hover:text-gray-600"
+                          className="text-xs text-foreground-subtle hover:text-foreground-muted"
                         >
                           Cancel
                         </button>
@@ -526,22 +526,22 @@ export default function Settings() {
                     </>
                   ) : (
                     <>
-                      <td className="py-2 text-gray-800 dark:text-gray-200 font-medium">
+                      <td className="py-2 text-foreground font-medium">
                         {chem.name}
                       </td>
-                      <td className="py-2 text-gray-600 dark:text-gray-400">
+                      <td className="py-2 text-foreground-muted">
                         {chem.label}
                       </td>
                       <td className="py-2 text-right">
                         <button
                           onClick={() => openEdit(chem)}
-                          className="invisible text-xs text-gray-400 hover:text-blue-600 group-hover:visible mr-2"
+                          className="invisible text-xs text-foreground-subtle hover:text-accent group-hover:visible mr-2"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteChemistry(chem.id, chem.name)}
-                          className="invisible text-xs text-gray-400 hover:text-red-600 group-hover:visible"
+                          className="invisible text-xs text-foreground-subtle hover:text-danger group-hover:visible"
                         >
                           Delete
                         </button>
@@ -558,8 +558,8 @@ export default function Settings() {
           <p
             className={`text-sm ${
               chemMessage.includes('Removed') || chemMessage.includes('Updated') || chemMessage.includes('Added')
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-red-600 dark:text-red-400'
+                ? 'text-success'
+                : 'text-danger'
             }`}
           >
             {chemMessage}
@@ -596,8 +596,8 @@ export default function Settings() {
                 status !== 'importing' &&
                 !status.startsWith('Imported')
               return (
-                <tr key={key} className="border-b border-gray-50 dark:border-gray-700">
-                  <td className="py-2 text-gray-800 dark:text-gray-200">
+                <tr key={key} className="border-b border-border">
+                  <td className="py-2 text-foreground">
                     {label}
                     {note && (
                       <span className="ml-1.5 text-xs text-foreground-subtle">({note})</span>
@@ -607,7 +607,7 @@ export default function Settings() {
                     <button
                       onClick={() => handleExport(key)}
                       disabled={isBusy}
-                      className="rounded bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
+                      className="rounded bg-surface px-2.5 py-1 text-xs font-medium text-foreground-muted hover:bg-hover disabled:opacity-50"
                     >
                       {status === 'exporting' ? '...' : 'Download'}
                     </button>
@@ -626,20 +626,20 @@ export default function Settings() {
                     <button
                       onClick={() => fileInputRefs.current[key]?.click()}
                       disabled={isBusy}
-                      className="rounded border border-border-strong px-2.5 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                      className="rounded border border-border-strong px-2.5 py-1 text-xs font-medium text-foreground-muted hover:bg-hover disabled:opacity-50"
                     >
                       {status === 'importing' ? '...' : 'Upload'}
                     </button>
                   </td>
                   <td className="py-2 text-xs">
                     {status === 'ok' && (
-                      <span className="text-green-600 dark:text-green-400">Downloaded</span>
+                      <span className="text-success">Downloaded</span>
                     )}
                     {status.startsWith('Imported') && (
-                      <span className="text-green-600 dark:text-green-400">{status}</span>
+                      <span className="text-success">{status}</span>
                     )}
                     {isError && (
-                      <span className="text-red-600 dark:text-red-400">{status}</span>
+                      <span className="text-danger">{status}</span>
                     )}
                   </td>
                 </tr>

@@ -38,7 +38,7 @@ export default function ConnectionStatus() {
   if (!isDown) return null
 
   return (
-    <div className="bg-red-600 text-white text-center py-2 px-4 text-sm font-medium">
+    <div className="bg-danger text-danger-foreground text-center py-2 px-4 text-sm font-medium">
       Lab Tools 2 Unavailable &mdash; Backend server is not responding
     </div>
   )

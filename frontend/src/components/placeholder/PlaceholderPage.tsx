@@ -10,7 +10,7 @@ function PlaceholderPage({ title, description, icon }: PlaceholderPageProps) {
       <span className="text-5xl mb-4">{icon}</span>
       <h1 className="text-2xl font-bold text-foreground mb-2">{title}</h1>
       <p className="text-foreground-muted max-w-md">{description}</p>
-      <span className="mt-4 inline-block rounded-full bg-blue-100 dark:bg-blue-900/30 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-400">
+      <span className="mt-4 inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent-soft-foreground">
         Coming Soon
       </span>
     </div>

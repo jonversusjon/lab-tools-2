@@ -65,11 +65,11 @@ interface Props {
 }
 
 const inputClass =
-  'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none disabled:opacity-60'
+  'w-full rounded border border-border bg-elevated text-foreground px-3 py-2 text-sm focus:border-blue-500 focus:outline-none disabled:opacity-60'
 
 function highlightClass(field: string, highlight?: Set<string>): string {
   return highlight?.has(field)
-    ? 'rounded ring-2 ring-amber-400 dark:ring-amber-500 ring-offset-1 dark:ring-offset-gray-800'
+    ? 'rounded ring-2 ring-warning ring-offset-1 dark:ring-offset-gray-800' // theme-exempt: ring-offset needs explicit dark bg color
     : ''
 }
 
@@ -88,8 +88,8 @@ export default function AntibodyFormFields({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className={highlightClass('target', hl)}>
-          <label htmlFor={targetId} className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Target <span className="text-red-500">*</span>
+          <label htmlFor={targetId} className="mb-1 block text-sm font-medium text-foreground-muted">
+            Target <span className="text-danger">*</span>
           </label>
           <input
             id={targetId}
@@ -100,11 +100,11 @@ export default function AntibodyFormFields({
             className={inputClass}
           />
           {validationError && (
-            <p className="mt-1 text-sm text-red-600">{validationError}</p>
+            <p className="mt-1 text-sm text-danger">{validationError}</p>
           )}
         </div>
         <div className={highlightClass('name', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">
             Display Name
           </label>
           <input
@@ -120,7 +120,7 @@ export default function AntibodyFormFields({
 
       <div className="grid grid-cols-3 gap-4">
         <div className={highlightClass('clone', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Clone</label>
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">Clone</label>
           <input
             type="text"
             value={values.clone}
@@ -150,11 +150,11 @@ export default function AntibodyFormFields({
       <div
         className={
           hl?.has('fluorophore_id') || hl?.has('conjugate')
-            ? 'rounded ring-2 ring-amber-400 dark:ring-amber-500 ring-offset-1 dark:ring-offset-gray-800'
+            ? 'rounded ring-2 ring-warning ring-offset-1 dark:ring-offset-gray-800' // theme-exempt: ring-offset needs explicit dark bg color
             : ''
         }
       >
-        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="mb-1 block text-sm font-medium text-foreground-muted">
           Conjugate / Fluorophore
         </label>
         <ConjugateOmnibox
@@ -168,7 +168,7 @@ export default function AntibodyFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <div className={highlightClass('vendor', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Vendor</label>
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">Vendor</label>
           <input
             type="text"
             value={values.vendor}
@@ -178,7 +178,7 @@ export default function AntibodyFormFields({
           />
         </div>
         <div className={highlightClass('catalog_number', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Catalog #</label>
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">Catalog #</label>
           <input
             type="text"
             value={values.catalog_number}
@@ -218,7 +218,7 @@ export default function AntibodyFormFields({
 
       <div className="grid grid-cols-3 gap-4">
         <div className={highlightClass('storage_temp', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Storage Temp</label>
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">Storage Temp</label>
           <select
             value={values.storage_temp}
             disabled={disabled}
@@ -231,7 +231,7 @@ export default function AntibodyFormFields({
           </select>
         </div>
         <div className={highlightClass('website', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Website</label>
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">Website</label>
           <input
             type="url"
             value={values.website}
@@ -241,7 +241,7 @@ export default function AntibodyFormFields({
           />
         </div>
         <div className={highlightClass('physical_location', hl)}>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Location</label>
+          <label className="mb-1 block text-sm font-medium text-foreground-muted">Location</label>
           <input
             type="text"
             value={values.physical_location}
@@ -255,8 +255,8 @@ export default function AntibodyFormFields({
       <div className="flex items-center gap-4">
         <label
           className={
-            'flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 ' +
-            (hl?.has('confirmed_in_stock') ? 'px-1 ring-2 ring-amber-400 rounded' : '')
+            'flex items-center gap-2 text-sm text-foreground-muted ' +
+            (hl?.has('confirmed_in_stock') ? 'px-1 ring-2 ring-warning rounded' : '')
           }
         >
           <input
@@ -269,8 +269,8 @@ export default function AntibodyFormFields({
         </label>
         <label
           className={
-            'flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 ' +
-            (hl?.has('is_favorite') ? 'px-1 ring-2 ring-amber-400 rounded' : '')
+            'flex items-center gap-2 text-sm text-foreground-muted ' +
+            (hl?.has('is_favorite') ? 'px-1 ring-2 ring-warning rounded' : '')
           }
         >
           <input
@@ -284,7 +284,7 @@ export default function AntibodyFormFields({
       </div>
 
       <div className={highlightClass('notes', hl)}>
-        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+        <label className="mb-1 block text-sm font-medium text-foreground-muted">Notes</label>
         <textarea
           value={values.notes}
           disabled={disabled}

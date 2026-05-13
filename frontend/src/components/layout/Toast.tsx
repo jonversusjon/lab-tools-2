@@ -38,11 +38,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const bgColor = (type: ToastType) => {
     switch (type) {
       case 'success':
-        return 'bg-green-600'
+        return 'bg-success'
       case 'error':
-        return 'bg-red-600'
+        return 'bg-danger'
       default:
-        return 'bg-gray-800'
+        return 'bg-gray-800' // theme-exempt: info toast always-dark background, no info token
     }
   }
 

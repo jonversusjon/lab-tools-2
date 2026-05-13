@@ -144,7 +144,7 @@ export default function AntibodyTable() {
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={`rounded border px-3 py-2 text-sm ${
               showFavoritesOnly
-                ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
+                ? 'border-warning bg-warning-soft text-warning-soft-foreground'
                 : 'border-border-strong text-foreground-muted hover:bg-hover'
             }`}
           >
@@ -218,7 +218,7 @@ export default function AntibodyTable() {
                 setInStockFilter(null)
                 setSelectedTagIds([])
               }}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-accent hover:underline"
             >
               Clear filters
             </button>
@@ -271,7 +271,7 @@ export default function AntibodyTable() {
             </tr>
           ) : error ? (
             <tr>
-              <td colSpan={10} className="py-6 text-center text-red-600">
+              <td colSpan={10} className="py-6 text-center text-danger">
                 Failed to load antibodies.
               </td>
             </tr>
@@ -473,7 +473,7 @@ function AntibodyDetail({
             href={ab.website}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-xs text-accent hover:underline"
           >
             Product page &rarr;
           </a>

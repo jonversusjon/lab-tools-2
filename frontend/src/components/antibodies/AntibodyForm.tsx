@@ -102,7 +102,7 @@ export default function AntibodyForm({ antibody, fluorophores, onClose }: Antibo
           validationError={validationError}
         />
         {submitError && (
-          <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+          <div className="rounded border border-danger bg-danger-soft px-3 py-2 text-sm text-danger-soft-foreground">
             {submitError}
           </div>
         )}
@@ -110,7 +110,7 @@ export default function AntibodyForm({ antibody, fluorophores, onClose }: Antibo
           <button
             type="button"
             onClick={onClose}
-            className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
           >
             Cancel
           </button>

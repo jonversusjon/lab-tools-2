@@ -64,7 +64,7 @@ export default function TagManager({
         {tags.map((tag) => (
           <label
             key={tag.id}
-            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-hover"
           >
             <input
               type="checkbox"
@@ -83,12 +83,12 @@ export default function TagManager({
           value={newTagName}
           onChange={(e) => setNewTagName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
-          className="flex-1 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-xs dark:text-gray-100"
+          className="flex-1 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-xs"
         />
         <button
           onClick={handleCreateTag}
           disabled={!newTagName.trim()}
-          className="rounded bg-gray-100 dark:bg-gray-700 px-2 py-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-300 disabled:opacity-50"
+          className="rounded bg-surface px-2 py-1 text-xs text-foreground-muted hover:bg-hover disabled:opacity-50"
         >
           +
         </button>
@@ -97,7 +97,7 @@ export default function TagManager({
       <div className="mt-3 flex justify-end gap-2">
         <button
           onClick={onClose}
-          className="rounded px-3 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="rounded px-3 py-1 text-xs text-foreground-muted hover:bg-hover"
         >
           Cancel
         </button>

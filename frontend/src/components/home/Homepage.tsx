@@ -10,7 +10,7 @@ function StatCard({ value, label }: { value: number | null; label: string }) {
   return (
     <div className="rounded-lg bg-surface p-4">
       {value === null ? (
-        <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-8 w-16 mb-1" />
+        <div className="animate-pulse rounded bg-border h-8 w-16 mb-1" />
       ) : (
         <p className="text-3xl font-bold text-foreground">{value}</p>
       )}
@@ -33,10 +33,10 @@ function SectionCard({
   return (
     <div
       className={
-        'rounded-lg border bg-white dark:bg-gray-800 p-5 shadow-sm ' +
+        'rounded-lg border bg-elevated p-5 shadow-sm ' +
         (active
-          ? 'border-l-4 border-l-blue-500 border-gray-200 dark:border-gray-700'
-          : 'border-gray-200 dark:border-gray-700 opacity-60')
+          ? 'border-l-4 border-l-accent border-border'
+          : 'border-border opacity-60')
       }
     >
       <div className="flex items-center gap-2 mb-3">
@@ -50,7 +50,7 @@ function SectionCard({
 
 function ComingSoon() {
   return (
-    <span className="inline-block rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-foreground-muted">
+    <span className="inline-block rounded-full bg-surface px-3 py-1 text-xs font-medium text-foreground-muted">
       Coming Soon
     </span>
   )
@@ -82,19 +82,19 @@ export default function Homepage() {
       {/* Section cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <SectionCard icon="🔬" title="Flow Cytometry" active>
-          <div className="space-y-1 mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="space-y-1 mb-4 text-sm text-foreground-muted">
             {panelCount === null ? (
-              <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-4 w-24" />
+              <div className="animate-pulse rounded bg-border h-4 w-24" />
             ) : (
               <p>{panelCount} panel{panelCount !== 1 ? 's' : ''}</p>
             )}
             {antibodyCount === null ? (
-              <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-4 w-28 mt-1" />
+              <div className="animate-pulse rounded bg-border h-4 w-28 mt-1" />
             ) : (
               <p>{antibodyCount} antibod{antibodyCount !== 1 ? 'ies' : 'y'}</p>
             )}
             {secondaryCount === null ? (
-              <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-4 w-28 mt-1" />
+              <div className="animate-pulse rounded bg-border h-4 w-28 mt-1" />
             ) : (
               <p>{secondaryCount} secondar{secondaryCount !== 1 ? 'ies' : 'y'}</p>
             )}
@@ -108,9 +108,9 @@ export default function Homepage() {
         </SectionCard>
 
         <SectionCard icon="🧫" title="Plate Maps" active>
-          <div className="space-y-1 mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="space-y-1 mb-4 text-sm text-foreground-muted">
             {plateMapCount === null ? (
-              <div className="animate-pulse rounded bg-gray-200 dark:bg-gray-700 h-4 w-24" />
+              <div className="animate-pulse rounded bg-border h-4 w-24" />
             ) : (
               <p>{plateMapCount} plate map{plateMapCount !== 1 ? 's' : ''}</p>
             )}

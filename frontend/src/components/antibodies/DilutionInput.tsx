@@ -43,11 +43,11 @@ export default function DilutionInput({
 
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label className="mb-1 block text-sm font-medium text-foreground-muted">
         {label}
       </label>
       <div className="flex items-center gap-0">
-        <span className="rounded-l border border-r-0 border-border-strong bg-gray-50 dark:bg-gray-600 px-2 py-2 text-sm text-gray-500 dark:text-gray-300">
+        <span className="rounded-l border border-r-0 border-border-strong bg-surface px-2 py-2 text-sm text-foreground-muted">
           1:
         </span>
         <input
@@ -60,13 +60,13 @@ export default function DilutionInput({
           }}
           placeholder="e.g. 100"
           className={
-            'w-full rounded-r border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none' +
-            (parseError ? ' border-red-400 dark:border-red-500' : '')
+            'w-full rounded-r border border-border bg-elevated text-foreground px-2 py-2 text-sm focus:border-blue-500 focus:outline-none' +
+            (parseError ? ' border-danger' : '')
           }
         />
         {showRawHint && (
           <span
-            className="ml-1 text-gray-400 cursor-help"
+            className="ml-1 text-foreground-subtle cursor-help"
             title={'Original: ' + rawText}
           >
             &#9432;
@@ -74,7 +74,7 @@ export default function DilutionInput({
         )}
       </div>
       {parseError && (
-        <p className="mt-0.5 text-xs text-red-500">Could not parse dilution</p>
+        <p className="mt-0.5 text-xs text-danger">Could not parse dilution</p>
       )}
     </div>
   )

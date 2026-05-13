@@ -25,7 +25,7 @@ export default function HoverActionsRow({
       {(actions.onRename || actions.onDuplicate || actions.onDelete || actions.extraActions) && (
         Component === 'tr' ? (
           <td className="w-16 py-2 text-right relative">
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 shadow-sm rounded-md md:bg-transparent md:shadow-none dark:md:bg-transparent">
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 shadow-sm rounded-md md:bg-transparent md:shadow-none dark:md:bg-transparent"> {/* theme-exempt: semi-transparent peek overlay, tokens don't support /opacity modifiers */}
               <HoverActions {...actions} />
             </div>
           </td>
