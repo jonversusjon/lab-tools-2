@@ -215,7 +215,7 @@ export default function InstrumentList() {
     : 0
 
   if (isLoading) return <p className="text-foreground-muted">Loading instruments...</p>
-  if (error) return <p className="text-red-600">Failed to load instruments.</p>
+  if (error) return <p className="text-danger">Failed to load instruments.</p>
 
   return (
     <div
@@ -227,15 +227,15 @@ export default function InstrumentList() {
     >
       {/* Drag-over overlay */}
       {isDragOver && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg border-2 border-dashed border-blue-400 bg-blue-50/85 dark:bg-blue-900/50 backdrop-blur-sm">
+        <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg border-2 border-dashed border-accent bg-accent-soft backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3 text-center">
-            <svg className="h-14 w-14 text-blue-500 dark:text-blue-400 drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-14 w-14 text-accent drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 16V4m0 0l-4 4m4-4l4 4M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" />
             </svg>
-            <p className="text-xl font-semibold text-blue-700 dark:text-blue-200">
+            <p className="text-xl font-semibold text-accent-soft-foreground">
               Drop cytometer configs here to add new instruments
             </p>
-            <p className="text-sm text-blue-500 dark:text-blue-400">
+            <p className="text-sm text-accent">
               Accepts one or more .json instrument configuration files
             </p>
           </div>
@@ -308,12 +308,12 @@ export default function InstrumentList() {
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 importDone && importProgress.errors.length === 0
-                  ? 'bg-green-500'
+                  ? 'bg-success'
                   : importDone && importSucceeded === 0
-                    ? 'bg-red-500'
+                    ? 'bg-danger'
                     : importDone
-                      ? 'bg-amber-500'
-                      : 'bg-blue-500'
+                      ? 'bg-warning'
+                      : 'bg-accent'
               }`}
               style={{ width: progressPct + '%' }}
             />
@@ -324,7 +324,7 @@ export default function InstrumentList() {
           {importProgress.errors.length > 0 && (
             <ul className="mt-2 space-y-0.5">
               {importProgress.errors.map((err, i) => (
-                <li key={i} className="text-xs text-red-600 dark:text-red-400">{err}</li>
+                <li key={i} className="text-xs text-danger">{err}</li>
               ))}
             </ul>
           )}
@@ -380,7 +380,7 @@ export default function InstrumentList() {
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className={`rounded border px-3 py-1.5 text-xs ${
               showFavoritesOnly
-                ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
+                ? 'border-warning bg-warning-soft text-warning-soft-foreground'
                 : 'border-border text-foreground-muted hover:bg-hover'
             }`}
           >

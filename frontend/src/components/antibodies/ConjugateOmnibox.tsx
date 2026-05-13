@@ -136,7 +136,7 @@ export default function ConjugateOmnibox({
           <button
             type="button"
             onClick={onClear}
-            className="text-gray-400 hover:text-red-500 text-xs"
+            className="text-foreground-subtle hover:text-danger text-xs"
             title="Clear conjugate"
           >
             &times;
@@ -144,7 +144,7 @@ export default function ConjugateOmnibox({
           <button
             type="button"
             onClick={() => setIsActive(true)}
-            className="text-gray-400 hover:text-blue-500 text-xs"
+            className="text-foreground-subtle hover:text-accent text-xs"
             title="Change conjugate"
           >
             &#9998;
@@ -155,13 +155,13 @@ export default function ConjugateOmnibox({
     if (currentConjugateText) {
       return (
         <div className="flex items-center gap-1.5">
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning-soft-foreground">
             {currentConjugateText}
           </span>
           <button
             type="button"
             onClick={handleActivate}
-            className="text-xs text-blue-500 hover:text-blue-700"
+            className="text-xs text-accent hover:opacity-80"
             title="Link to database fluorophore"
           >
             link
@@ -169,7 +169,7 @@ export default function ConjugateOmnibox({
           <button
             type="button"
             onClick={onClear}
-            className="text-gray-400 hover:text-red-500 text-xs"
+            className="text-foreground-subtle hover:text-danger text-xs"
             title="Clear conjugate"
           >
             &times;
@@ -181,7 +181,7 @@ export default function ConjugateOmnibox({
       <button
         type="button"
         onClick={() => setIsActive(true)}
-        className="text-sm text-foreground-subtle hover:text-blue-500"
+        className="text-sm text-foreground-subtle hover:text-accent"
       >
         + Add conjugate
       </button>
@@ -211,7 +211,7 @@ export default function ConjugateOmnibox({
               return (
                 <div key={fl.id}>
                   {showGroupHeader && (
-                    <div className="px-3 py-1 text-[10px] font-semibold uppercase text-foreground-subtle bg-gray-50 dark:bg-gray-900/50">
+                    <div className="px-3 py-1 text-[10px] font-semibold uppercase text-foreground-subtle bg-surface">
                       Non-fluorescent
                     </div>
                   )}
@@ -225,12 +225,12 @@ export default function ConjugateOmnibox({
                     className={
                       'w-full px-3 py-1.5 text-left text-sm' +
                       (i === highlightIndex
-                        ? ' bg-blue-50 dark:bg-blue-900/30'
-                        : ' hover:bg-gray-50 dark:hover:bg-gray-700')
+                        ? ' bg-accent-soft'
+                        : ' hover:bg-hover')
                     }
                   >
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="font-medium dark:text-gray-100">{fl.name}</span>
+                      <span className="font-medium text-foreground">{fl.name}</span>
                       {isNonFluorescent ? (
                         <span className="shrink-0 text-[10px] text-foreground-subtle">
                           Non-fluorescent

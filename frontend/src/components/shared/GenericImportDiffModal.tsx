@@ -79,7 +79,7 @@ function GenericFields({ values, schema, onChange, highlight, fluorophores, idPr
               key={f.key}
               className={
                 'flex items-center gap-2 text-sm text-foreground ' +
-                (highlight.has(f.key) ? 'px-1 ring-2 ring-amber-400 rounded' : '')
+                (highlight.has(f.key) ? 'px-1 ring-2 ring-warning rounded' : '')
               }
             >
               <input
@@ -282,9 +282,9 @@ export default function GenericImportDiffModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} size="xl">
-      <div className="mb-4 rounded border border-blue-200 bg-blue-50 p-3 text-sm dark:border-blue-900 dark:bg-blue-950">
-        <div className="font-medium text-blue-900 dark:text-blue-200">Summary</div>
-        <ul className="mt-1 ml-4 list-disc text-blue-800 dark:text-blue-300">
+      <div className="mb-4 rounded border border-accent-soft bg-accent-soft p-3 text-sm">
+        <div className="font-medium text-accent-soft-foreground">Summary</div>
+        <ul className="mt-1 ml-4 list-disc text-accent-soft-foreground">
           <li>{newItems.length} new item{newItems.length === 1 ? '' : 's'} will be added</li>
           <li>{conflicts.length} conflict{conflicts.length === 1 ? '' : 's'} detected</li>
           {preview.db_only_props.length > 0 && (
@@ -308,7 +308,7 @@ export default function GenericImportDiffModal({
           className={
             'border-b-2 px-4 py-2 text-sm font-medium ' +
             (tab === 'conflicts'
-              ? 'border-blue-600 text-blue-700 dark:border-blue-400 dark:text-blue-300'
+              ? 'border-accent text-accent'
               : 'border-transparent text-foreground-muted hover:text-foreground')
           }
         >
@@ -319,7 +319,7 @@ export default function GenericImportDiffModal({
           className={
             'border-b-2 px-4 py-2 text-sm font-medium ' +
             (tab === 'new'
-              ? 'border-blue-600 text-blue-700 dark:border-blue-400 dark:text-blue-300'
+              ? 'border-accent text-accent'
               : 'border-transparent text-foreground-muted hover:text-foreground')
           }
         >
@@ -342,7 +342,7 @@ export default function GenericImportDiffModal({
                   </span>{' '}
                   {labelFor(currentConflict.imported)}
                   {resolutions[currentConflict.id] && (
-                    <span className="ml-2 rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800 dark:bg-green-900 dark:text-green-300">
+                    <span className="ml-2 rounded bg-success-soft px-1.5 py-0.5 text-xs text-success-soft-foreground">
                       {resolutions[currentConflict.id] === 'right' ? 'Imported chosen' : 'Existing chosen'}
                     </span>
                   )}
@@ -406,7 +406,7 @@ export default function GenericImportDiffModal({
                     idPrefix={'diff-l-' + currentConflict.id}
                   />
                 </div>
-                <div className="rounded border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+                <div className="rounded border border-warning bg-warning-soft p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                       Imported (from file)
@@ -453,7 +453,7 @@ export default function GenericImportDiffModal({
                   Keep all existing
                 </button>
                 {unresolvedCount > 0 && (
-                  <span className="ml-auto self-center text-xs text-amber-700 dark:text-amber-300">
+                  <span className="ml-auto self-center text-xs text-warning-soft-foreground">
                     {unresolvedCount} unresolved — unresolved conflicts keep the existing row.
                   </span>
                 )}
@@ -524,7 +524,7 @@ export default function GenericImportDiffModal({
       )}
 
       {error && (
-        <div className="mt-3 rounded border border-red-300 bg-red-50 p-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="mt-3 rounded border border-danger bg-danger-soft p-2 text-sm text-danger-soft-foreground">
           {error}
         </div>
       )}

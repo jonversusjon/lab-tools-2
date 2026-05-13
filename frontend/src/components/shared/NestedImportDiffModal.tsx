@@ -311,7 +311,7 @@ export default function NestedImportDiffModal({
               </div>
 
               {currentFkWarning && (
-                <div className="mb-3 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
+                <div className="mb-3 rounded border border-warning bg-warning-soft p-2 text-xs text-warning-soft-foreground">
                   ⚠ Accepting imported will cascade-delete{' '}
                   <strong>{currentFkWarning.assignments_at_risk}</strong> panel assignment{currentFkWarning.assignments_at_risk === 1 ? '' : 's'}{' '}
                   that reference detectors on this instrument.
@@ -343,7 +343,7 @@ export default function NestedImportDiffModal({
                     highlight={highlight}
                   />
                 </div>
-                <div className="rounded border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+                <div className="rounded border border-warning bg-warning-soft p-3">
                   <div className="mb-2 flex items-center justify-between">
                     <span className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                       Imported · {summaryLine(currentConflict.imported, childKeys)}
@@ -383,7 +383,7 @@ export default function NestedImportDiffModal({
                   Keep all existing
                 </button>
                 {unresolvedCount > 0 && (
-                  <span className="ml-auto self-center text-xs text-amber-700 dark:text-amber-300">
+                  <span className="ml-auto self-center text-xs text-warning-soft-foreground">
                     {unresolvedCount} unresolved — unresolved conflicts keep existing rows unchanged.
                   </span>
                 )}
@@ -423,7 +423,7 @@ export default function NestedImportDiffModal({
       )}
 
       {error && (
-        <div className="mt-3 rounded border border-red-300 bg-red-50 p-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="mt-3 rounded border border-danger bg-danger-soft p-2 text-sm text-danger-soft-foreground">
           {error}
         </div>
       )}
