@@ -19,15 +19,20 @@ export function DragHandleWrapper({ editor }: DragHandleWrapperProps) {
     menuOpenRef.current = open
   }, [])
 
+  const onNodeChange = useCallback(
+    ({ node, pos }: { node: PMNode | null; pos: number }) => {
+      if (!menuOpenRef.current) {
+        setCurrentNode(node)
+        setCurrentNodePos(pos)
+      }
+    },
+    []
+  )
+
   return (
     <DragHandle
       editor={editor}
-      onNodeChange={({ node, pos }) => {
-        if (!menuOpenRef.current) {
-          setCurrentNode(node)
-          setCurrentNodePos(pos)
-        }
-      }}
+      onNodeChange={onNodeChange}
     >
       <BlockMenu
         editor={editor}
