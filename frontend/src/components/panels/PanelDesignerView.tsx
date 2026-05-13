@@ -1385,7 +1385,7 @@ export default function PanelDesignerView({
             <div className="flex justify-end gap-2 border-t border-border px-6 py-3">
               <button
                 onClick={() => setInstrumentChangeModal(null)}
-                className="rounded border border-border-strong px-4 py-2 text-sm text-foreground hover:bg-hover"
+                className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
               >
                 Cancel
               </button>

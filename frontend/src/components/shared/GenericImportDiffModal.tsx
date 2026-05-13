@@ -377,7 +377,7 @@ export default function GenericImportDiffModal({
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded border border-border bg-surface p-3">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                       Existing (your DB)
                     </span>
                     <button
@@ -408,7 +408,7 @@ export default function GenericImportDiffModal({
                 </div>
                 <div className="rounded border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground-muted">
                       Imported (from file)
                     </span>
                     <button
