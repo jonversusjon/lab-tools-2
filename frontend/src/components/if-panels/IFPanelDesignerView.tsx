@@ -734,7 +734,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                     className="w-full rounded border border-border-strong bg-elevated px-2 py-0.5 text-xs text-foreground focus:border-accent focus:outline-none"
                                   >
                                     <option value="">None</option>
-                                    {state.microscope?.lasers.map((laser) => (
+                                    {(state.microscope ? [...state.microscope.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm) : []).map((laser) => (
                                       <optgroup
                                         key={laser.id}
                                         label={`${laser.wavelength_nm}nm${laser.name ? ' \u2014 ' + laser.name : ''}`}
