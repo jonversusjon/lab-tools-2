@@ -1,4 +1,6 @@
 export { default as CalloutView } from './CalloutView'
 export * from './columnCommands'
+export { default as ColumnListView, COLUMN_RESIZE_MIN_PCT } from './ColumnListView'
+export { default as ColumnView } from './ColumnView'
 export { default as FlowPanelView } from './FlowPanelView'
 export { default as IfPanelView } from './IfPanelView'

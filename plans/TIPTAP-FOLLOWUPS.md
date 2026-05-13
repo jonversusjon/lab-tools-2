@@ -5,6 +5,44 @@ This file tracks work paused mid-migration due to external blockers
 own. Future agents and developers should read this before starting
 new migration phases.
 
+## Column drag resize (Phase 9c)
+
+**Status:** COMPLETE — 2026-05-13
+
+**What was built:**
+- `frontend/src/blocks-tiptap/views/ColumnView.tsx` — React NodeView for `column`
+  nodes. Applies `width_pct` as inline `width: X%` / `flex: 0 0 X%` style (or
+  `flex: 1 1 0` for null). Registered via `addNodeView()` in `column.ts`.
+- `frontend/src/blocks-tiptap/views/ColumnListView.tsx` — React NodeView for
+  `column_list` nodes. Renders a flex container via `NodeViewContent` and an
+  absolutely-positioned overlay holding one `.column-resize-handle` div per
+  adjacent column pair. Implements `startResize` drag handler: captures initial
+  widths on `mousedown`, converts pixel delta to `%` on `mousemove`, clamps
+  both affected columns to `COLUMN_RESIZE_MIN_PCT = 15`, dispatches
+  `setNodeMarkup` transactions. Cleans up on `mouseup` and restores
+  `userSelect`. Registered via `addNodeView()` in `column_list.ts`.
+- `frontend/src/blocks-tiptap/__tests__/columnResize.test.tsx` — 4 tests.
+- `frontend/src/index.css` — `.column-resize-handle` CSS block (8px wide,
+  `col-resize` cursor, blue `::after` indicator on hover).
+
+### Lessons learned
+
+1. **NodeViewContent accepts style prop** — `<NodeViewContent style={{ display: 'flex', ... }} />` works correctly; the flex style is applied to the ProseMirror contenteditable div, making column NodeViewWrappers direct flex items. Tested and confirmed in jsdom.
+
+2. **Overlay for between-column handles** — Injecting elements between ProseMirror-managed child nodes inside `NodeViewContent` is not possible via React JSX. The workaround is an absolutely-positioned overlay (`position: absolute; inset: 0; pointer-events: none`) with `pointer-events: auto` on the handle divs themselves.
+
+3. **Handle positions use cumulative width_pct** — Handles are positioned at `left: ${cumPct}%` ignoring the `gap: 1rem` gap. This places them 0–8 px off from the exact column boundary — visually acceptable. The drag calculation uses cursor pixel delta and is gap-agnostic.
+
+4. **Nested-closure TypeScript narrowing** — After `if (colListPos == null) return`, `colListPos` is not narrowed inside inner function declarations (`onMouseMove`, `onMouseUp`). Fix: re-assign to a `const pos: number = colListPos` immediately after the null check and use `pos` inside closures.
+
+5. **`containerWidth` captured at drag start** — `offsetWidth` is 0 in jsdom unless mocked. `vi.spyOn(HTMLDivElement.prototype, 'offsetWidth', 'get').mockReturnValue(1000)` in test 4 lets the drag calculation run. Always restore with `vi.restoreAllMocks()` after the test.
+
+6. **Ref-box for editor capture in tests** — TypeScript narrows `let editor = null` to `never` through closures (see Phase 9b lesson 4). Using a ref-box `{ current: null as Editor | null }` avoids this.
+
+7. **Existing columns.test.tsx passes unchanged** — Tests 1–2 query `[data-block-type="column"]` which is set on the `NodeViewWrapper` in `ColumnView`. The null-width style `flex: 1 1 0; min-width: 0px` contains no explicit percentage, so the regex `/[1-9]\d*(\.\d+)?%/` still fails (passes the test). Explicit widths still include `30%` / `70%` in the inline style.
+
+---
+
 ## Drag handle and block context menu (Phase 9b)
 
 **Status:** COMPLETE — 2026-05-13

@@ -215,6 +215,33 @@
    handled by their NodeView/renderHTML implementations and don't
    need global rules here. */
 
+/* column-resize: the resize handle injected between column pairs by ColumnListView */
+.column-resize-handle {
+  width: 8px;
+  cursor: col-resize;
+  flex-shrink: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.column-resize-handle::after,
+.column-resize-handle.resizing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background-color: transparent;
+  border-radius: 1px;
+  transition: background-color 0.15s ease;
+}
+.column-resize-handle:hover::after,
+.column-resize-handle.resizing::after {
+  background-color: var(--color-accent, #3b82f6);
+}
+
 /* drag-handle: the DragHandle React component creates a div with
    class="drag-handle" and positions it absolutely near hovered blocks.
    These rules size and style that container. */

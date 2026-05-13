@@ -1,4 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import ColumnView from '@/blocks-tiptap/views/ColumnView'
 
 export const Column = Node.create({
   name: 'column',
@@ -17,6 +19,10 @@ export const Column = Node.create({
 
   parseHTML() {
     return [{ tag: 'div[data-block-type="column"]' }]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ColumnView)
   },
 
   renderHTML({ HTMLAttributes, node }) {

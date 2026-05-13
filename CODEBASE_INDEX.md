@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-13T07:15:14Z
-Commit: 20b45bf
+Generated: 2026-05-13T16:34:17Z
+Commit: dbcb2ba
 
 ---
 
@@ -1536,8 +1536,8 @@ Commit: 20b45bf
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-13T07:15:16Z
-Commit: 20b45bf
+Generated: 2026-05-13T16:34:20Z
+Commit: dbcb2ba
 
 ---
 
@@ -1676,6 +1676,8 @@ Commit: 20b45bf
 | `CalloutView` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tiptap/core/dist/index").NodeViewProps` | `frontend/src/blocks-tiptap/views/CalloutView.tsx` |
 | `CellAssignmentPicker` | `CellAssignmentPickerProps` | `frontend/src/components/panels/CellAssignmentPicker.tsx` |
 | `ColumnLayout` | `ColumnLayoutProps` | `frontend/src/components/experiments/ColumnLayout.tsx` |
+| `ColumnListView` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tiptap/core/dist/index").NodeViewProps` | `frontend/src/blocks-tiptap/views/ColumnListView.tsx` |
+| `ColumnView` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tiptap/core/dist/index").NodeViewProps` | `frontend/src/blocks-tiptap/views/ColumnView.tsx` |
 | `ConjugateOmnibox` | `ConjugateOmniboxProps` | `frontend/src/components/antibodies/ConjugateOmnibox.tsx` |
 | `ConnectionStatus` | `` | `frontend/src/components/layout/ConnectionStatus.tsx` |
 | `CrossReactivityWarnings` | `CrossReactivityWarningsProps` | `frontend/src/components/shared/CrossReactivityWarnings.tsx` |
