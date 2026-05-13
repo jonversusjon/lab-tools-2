@@ -244,7 +244,7 @@ export default function InstrumentList() {
 
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Instruments</h1>
+        <h1 className="text-2xl font-bold text-foreground">Instruments</h1>
         <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -256,7 +256,7 @@ export default function InstrumentList() {
           />
           <button
             onClick={() => { setImportProgress(null); fileInputRef.current?.click() }}
-            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="rounded border border-border-strong px-4 py-2 text-sm font-medium text-foreground-muted hover:bg-hover"
           >
             Import
           </button>
@@ -273,18 +273,18 @@ export default function InstrumentList() {
       {importProgress !== null && (
         <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${
           importDone && importProgress.errors.length === 0
-            ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20'
+            ? 'border-success bg-success-soft'
             : importDone && importProgress.errors.length > 0 && importSucceeded === 0
-              ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20'
-              : 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20'
+              ? 'border-danger bg-danger-soft'
+              : 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20' // theme-exempt: info-soft token not yet defined
         }`}>
           <div className="flex items-center justify-between mb-2">
             <span className={`font-medium ${
               importDone && importProgress.errors.length === 0
-                ? 'text-green-700 dark:text-green-300'
+                ? 'text-success-soft-foreground'
                 : importDone && importSucceeded === 0
-                  ? 'text-red-700 dark:text-red-300'
-                  : 'text-blue-700 dark:text-blue-300'
+                  ? 'text-danger-soft-foreground'
+                  : 'text-blue-700 dark:text-blue-300' // theme-exempt: info-soft-foreground token not yet defined
             }`}>
               {!importDone
                 ? 'Importing ' + importProgress.total + (importProgress.total === 1 ? ' file' : ' files') + '…'
@@ -297,14 +297,14 @@ export default function InstrumentList() {
             {importDone && (
               <button
                 onClick={() => setImportProgress(null)}
-                className="ml-4 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="ml-4 text-xs text-foreground-subtle hover:text-foreground"
               >
                 Dismiss
               </button>
             )}
           </div>
           {/* Progress bar */}
-          <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+          <div className="h-1.5 w-full rounded-full bg-border overflow-hidden"> {/* theme-exempt: progress bar track uses border token as closest mid-tone */}
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 importDone && importProgress.errors.length === 0
@@ -338,13 +338,13 @@ export default function InstrumentList() {
           placeholder="Search by name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+          className="w-full rounded border border-border-strong bg-elevated text-foreground px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
         />
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={laserFilter}
             onChange={(e) => setLaserFilter(e.target.value)}
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+            className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-xs focus:outline-none"
           >
             <option value="">All laser wavelengths</option>
             {uniqueLaserWavelengths.map((wl) => (
@@ -355,7 +355,7 @@ export default function InstrumentList() {
           <select
             value={detectorFilter}
             onChange={(e) => setDetectorFilter(e.target.value)}
-            className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+            className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-xs focus:outline-none"
           >
             <option value="">All detector wavelengths</option>
             {uniqueDetectorMidpoints.map((mp) => (
@@ -367,7 +367,7 @@ export default function InstrumentList() {
             <select
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              className="rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1.5 text-xs dark:text-gray-100 focus:outline-none"
+              className="rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-xs focus:outline-none"
             >
               <option value="">All locations</option>
               {uniqueLocations.map((loc) => (
@@ -381,7 +381,7 @@ export default function InstrumentList() {
             className={`rounded border px-3 py-1.5 text-xs ${
               showFavoritesOnly
                 ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300'
-                : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                : 'border-border text-foreground-muted hover:bg-hover'
             }`}
           >
             ★ Favorites
@@ -390,7 +390,7 @@ export default function InstrumentList() {
           {hasActiveFilters && (
             <button
               onClick={() => { setSearch(''); setLaserFilter(''); setDetectorFilter(''); setShowFavoritesOnly(false); setLocationFilter('') }}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-accent hover:underline"
             >
               Clear filters
             </button>
@@ -436,7 +436,7 @@ export default function InstrumentList() {
                   key={inst.id}
                   as="tr"
                   onClick={() => navigate('/flow/instruments/' + inst.id)}
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="border-b border-border hover:bg-hover"
                   actions={{
                     onRename: () => {
                       setEditingInstrument({ id: inst.id, name: inst.name })
@@ -450,7 +450,7 @@ export default function InstrumentList() {
                           e.stopPropagation()
                           handleExport(inst.id, inst.name)
                         }}
-                        className="p-1.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-1.5 rounded text-foreground-subtle hover:text-foreground hover:bg-hover"
                         aria-label="Export"
                         title="Export"
                       >
@@ -476,16 +476,16 @@ export default function InstrumentList() {
                         {inst.lasers
                           .filter((l) => l.wavelength_nm === Number(laserFilter))
                           .map((l) => (
-                            <span key={l.id} className="rounded-full bg-blue-100 dark:bg-blue-900/40 px-1.5 py-0.5 text-xs text-blue-700 dark:text-blue-300">
+                            <span key={l.id} className="rounded-full bg-accent-soft px-1.5 py-0.5 text-xs text-accent-soft-foreground">
                               {l.wavelength_nm} nm
                             </span>
                           ))}
                       </span>
                     )}
                   </td>
-                  <td className="py-3 text-gray-600 dark:text-gray-400">{inst.location ?? '—'}</td>
-                  <td className="py-3 text-gray-600 dark:text-gray-400">{inst.lasers.length}</td>
-                  <td className="py-3 text-gray-600 dark:text-gray-400">{totalDetectors}</td>
+                  <td className="py-3 text-foreground-muted">{inst.location ?? '—'}</td>
+                  <td className="py-3 text-foreground-muted">{inst.lasers.length}</td>
+                  <td className="py-3 text-foreground-muted">{totalDetectors}</td>
                 </HoverActionsRow>
               )
             })}
@@ -504,7 +504,7 @@ export default function InstrumentList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-instrument" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="rename-instrument" className="mb-1 block text-sm font-medium text-foreground-muted">
               Instrument Name
             </label>
             <input
@@ -513,7 +513,7 @@ export default function InstrumentList() {
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleRename() }}
-              className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded border border-border-strong bg-elevated text-foreground px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
               autoFocus
             />
           </div>
@@ -521,7 +521,7 @@ export default function InstrumentList() {
             <button
               type="button"
               onClick={() => { setEditingInstrument(null); setRenameValue('') }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
