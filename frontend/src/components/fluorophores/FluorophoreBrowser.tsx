@@ -169,7 +169,7 @@ export default function FluorophoreBrowser() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={9} className="py-8 text-center text-red-600">
+                  <td colSpan={9} className="py-8 text-center text-danger">
                     Failed to load fluorophores.
                   </td>
                 </tr>
@@ -210,7 +210,7 @@ export default function FluorophoreBrowser() {
                     <td className="py-2 font-medium text-foreground">
                       {fl.name}
                       {fl.has_spectra && (
-                        <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-400" title="Has spectra" />
+                        <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success" title="Has spectra" />
                       )}
                     </td>
                     <td className="py-2 text-foreground-muted capitalize">
@@ -912,7 +912,7 @@ function OverlaySidebar({
               </span>
               <button
                 onClick={() => onRemove(id)}
-                className="shrink-0 rounded px-1 text-foreground-subtle hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                className="shrink-0 rounded px-1 text-foreground-subtle hover:text-danger transition-colors"
                 title="Remove"
                 aria-label={'Remove ' + overlayMap.get(id)}
               >
@@ -966,7 +966,7 @@ function OverlaySidebar({
                     {overlayMap.get(id)}
                     <button
                       onClick={() => onRemove(id)}
-                      className="text-foreground-subtle hover:text-red-500 dark:hover:text-red-400"
+                      className="text-foreground-subtle hover:text-danger"
                       aria-label={'Remove ' + overlayMap.get(id)}
                     >
                       ×

@@ -24,7 +24,7 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
             onChange({ ...detector, filter_midpoint: parseInt(e.target.value) || 0 })
           }
           placeholder="Midpoint"
-          className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-20 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
           min={1}
         />
         <span className="text-foreground-subtle">/</span>
@@ -35,7 +35,7 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
             onChange({ ...detector, filter_width: parseInt(e.target.value) || 0 })
           }
           placeholder="Width"
-          className="w-16 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-16 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
           min={1}
         />
       </div>
@@ -44,7 +44,7 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
         value={detector.name}
         onChange={(e) => onChange({ ...detector, name: e.target.value })}
         placeholder="Name (optional)"
-        className="w-32 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+        className="w-32 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
       />
       {detector.filter_midpoint > 0 && detector.filter_width > 0 && (
         <span className="text-xs text-foreground-subtle" data-testid="bandpass-range">
@@ -53,7 +53,7 @@ export default function DetectorRow({ detector, onChange, onRemove }: DetectorRo
       )}
       <button
         onClick={onRemove}
-        className="ml-auto text-sm text-red-500 hover:text-red-700"
+        className="ml-auto text-sm text-danger hover:opacity-80"
         aria-label="Remove detector"
       >
         Remove

@@ -132,14 +132,14 @@ export default function DyeLabelList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading dyes & labels...</p>
-  if (error) return <p className="text-red-600">Failed to load dyes & labels.</p>
+  if (error) return <p className="text-danger">Failed to load dyes & labels.</p>
 
   const inputClass = "w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Dyes & Labels</h1>
+        <h1 className="text-2xl font-bold text-foreground">Dyes & Labels</h1>
         <button
           onClick={openCreate}
           className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
@@ -179,7 +179,7 @@ export default function DyeLabelList() {
               <HoverActionsRow
                 key={dl.id}
                 as="tr"
-                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="border-b border-border hover:bg-hover"
                 onClick={() => setExpandedId(expandedId === dl.id ? null : dl.id)}
                 actions={{
                   onRename: () => openEdit(dl),
@@ -187,7 +187,7 @@ export default function DyeLabelList() {
                 }}
               >
                 <td className="py-2 font-medium text-foreground">{dl.name}</td>
-                <td className="py-2 text-gray-600 dark:text-gray-400">{dl.label_target}</td>
+                <td className="py-2 text-foreground-muted">{dl.label_target}</td>
                 <td className="py-2 text-foreground-muted">{dl.category ?? '—'}</td>
                 <td className="py-2">
                   {dl.fluorophore_name ? (
@@ -216,8 +216,8 @@ export default function DyeLabelList() {
       >
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Name <span className="text-red-500">*</span>
+            <label className="mb-1 block text-sm font-medium text-foreground-muted">
+              Name <span className="text-danger">*</span>
             </label>
             <input
               type="text"
@@ -229,8 +229,8 @@ export default function DyeLabelList() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Label Target <span className="text-red-500">*</span>
+            <label className="mb-1 block text-sm font-medium text-foreground-muted">
+              Label Target <span className="text-danger">*</span>
             </label>
             <input
               type="text"
@@ -241,7 +241,7 @@ export default function DyeLabelList() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground-muted">
               Category
             </label>
             <input
@@ -253,7 +253,7 @@ export default function DyeLabelList() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground-muted">
               Fluorophore
             </label>
             <FluorophoreSearch
@@ -272,7 +272,7 @@ export default function DyeLabelList() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground-muted">
                 Vendor
               </label>
               {/* TODO: This vendor input needs to be a select/combobox with the same
@@ -289,7 +289,7 @@ export default function DyeLabelList() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground-muted">
                 Catalog #
               </label>
               <input
@@ -302,7 +302,7 @@ export default function DyeLabelList() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground-muted">
                 Lot #
               </label>
               <input
@@ -315,7 +315,7 @@ export default function DyeLabelList() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground-muted">
                 Flow Dilution
               </label>
               <input
@@ -327,7 +327,7 @@ export default function DyeLabelList() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground-muted">
                 ICC/IF Dilution
               </label>
               <input
@@ -340,7 +340,7 @@ export default function DyeLabelList() {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="mb-1 block text-sm font-medium text-foreground-muted">
               Notes
             </label>
             <textarea
@@ -354,7 +354,7 @@ export default function DyeLabelList() {
             <button
               type="button"
               onClick={() => { setShowModal(false); setEditingId(null) }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
@@ -380,12 +380,12 @@ function DyeLabelDetail({
   onEdit: (dl: DyeLabel) => void
 }) {
   return (
-    <div className="mt-2 rounded-lg border border-border bg-gray-50 dark:bg-gray-800/50 p-4">
+    <div className="mt-2 rounded-lg border border-border bg-surface p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold dark:text-gray-100">{dl.name}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{dl.name}</h3>
         <button
           onClick={() => onEdit(dl)}
-          className="rounded border border-border-strong px-3 py-1 text-xs text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700"
+          className="rounded border border-border-strong px-3 py-1 text-xs text-foreground-muted hover:bg-elevated"
         >
           Edit
         </button>
@@ -403,7 +403,7 @@ function DyeLabelDetail({
       {dl.notes && (
         <div className="mt-2">
           <span className="text-xs font-medium text-foreground-muted">Notes:</span>
-          <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300">{dl.notes}</p>
+          <p className="mt-0.5 text-xs text-foreground-muted">{dl.notes}</p>
         </div>
       )}
     </div>
@@ -414,8 +414,8 @@ function DetailField({ label, value }: { label: string; value: string | null | u
   return (
     <div>
       <span className="text-foreground-muted">{label}: </span>
-      <span className="text-gray-800 dark:text-gray-200">
-        {value || <span className="italic text-gray-400">--</span>}
+      <span className="text-foreground">
+        {value || <span className="italic text-foreground-subtle">--</span>}
       </span>
     </div>
   )

@@ -45,7 +45,7 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
       <div className="flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          className="text-foreground-subtle hover:text-foreground-muted"
           aria-label={collapsed ? 'Expand laser' : 'Collapse laser'}
         >
           {collapsed ? '\u25B6' : '\u25BC'}
@@ -61,7 +61,7 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
             onChange({ ...laser, wavelength_nm: parseInt(e.target.value) || 0 })
           }
           placeholder="Wavelength"
-          className="w-20 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-20 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
           min={1}
         />
         <span className="text-xs text-foreground-subtle">nm</span>
@@ -70,14 +70,14 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
           value={laser.name}
           onChange={(e) => onChange({ ...laser, name: e.target.value })}
           placeholder="Laser name"
-          className="w-40 rounded border border-border-strong bg-white dark:bg-gray-700 px-2 py-1 text-sm dark:text-gray-100"
+          className="w-40 rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm"
         />
         <span className="ml-auto text-xs text-foreground-subtle">
           {laser.detectors.length} detector{laser.detectors.length !== 1 ? 's' : ''}
         </span>
         <button
           onClick={onRemove}
-          className="text-sm text-red-500 hover:text-red-700"
+          className="text-sm text-danger hover:opacity-80"
           aria-label="Remove laser"
         >
           Remove
@@ -85,7 +85,7 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
       </div>
 
       {!collapsed && (
-        <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-3 pt-2">
+        <div className="border-t border-border px-4 pb-3 pt-2">
           {laser.detectors.length === 0 && (
             <p className="py-1 text-xs text-foreground-subtle">No detectors yet.</p>
           )}
@@ -99,7 +99,7 @@ export default function LaserSection({ laser, onChange, onRemove }: LaserSection
           ))}
           <button
             onClick={addDetector}
-            className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            className="mt-2 text-sm text-accent hover:opacity-80"
           >
             + Add Detector
           </button>
