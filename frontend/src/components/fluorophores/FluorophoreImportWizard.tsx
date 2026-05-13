@@ -145,7 +145,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               <p className="mt-4 text-sm text-foreground-muted">Parsing file...</p>
             )}
             {uploadMutation.isError && (
-              <p className="mt-4 text-sm text-red-600">
+              <p className="mt-4 text-sm text-danger">
                 {uploadMutation.error?.message ?? 'Failed to parse file. Check the file format.'}
               </p>
             )}
@@ -172,7 +172,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               {preview.parse_errors.length > 0 && (
                 <>
                   ,{' '}
-                  <span className="text-red-600">
+                  <span className="text-danger">
                     {preview.parse_errors.length} errors
                   </span>
                 </>
@@ -187,10 +187,10 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
             {/* Parse errors */}
             {preview.parse_errors.length > 0 && (
               <details className="mb-3">
-                <summary className="cursor-pointer text-sm text-red-600 dark:text-red-400">
+                <summary className="cursor-pointer text-sm text-danger">
                   {preview.parse_errors.length} parse error(s)
                 </summary>
-                <ul className="mt-1 space-y-1 text-xs text-red-500 pl-4">
+                <ul className="mt-1 space-y-1 text-xs text-danger pl-4">
                   {preview.parse_errors.map((e) => (
                     <li key={e.row_number}>
                       Row {e.row_number}: {e.error}
@@ -246,7 +246,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
                           key={idx}
                           className={
                             hasWarnings
-                              ? 'bg-amber-50 dark:bg-amber-900/10'
+                              ? 'bg-warning-soft'
                               : 'even:bg-surface'
                           }
                         >
@@ -352,7 +352,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
             )}
 
             {confirmMutation.isError && (
-              <p className="mt-3 text-sm text-red-600">
+              <p className="mt-3 text-sm text-danger">
                 {confirmMutation.error?.message ?? 'Import failed.'}
               </p>
             )}
@@ -406,7 +406,7 @@ export default function FluorophoreImportWizard({ onClose }: FluorophoreImportWi
               {doneResult.skipped > 0 && `, ${doneResult.skipped} skipped`}
             </p>
             {doneResult.errors.length > 0 && (
-              <ul className="mt-3 space-y-1 text-xs text-red-500 text-left max-w-md">
+              <ul className="mt-3 space-y-1 text-xs text-danger text-left max-w-md">
                 {doneResult.errors.map((e, i) => (
                   <li key={i}>{e}</li>
                 ))}

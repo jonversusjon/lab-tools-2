@@ -155,7 +155,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
   const inputClass =
     'w-full rounded border border-border bg-elevated text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none'
   const missingClass =
-    'w-full rounded border border-amber-400 dark:border-amber-500 bg-warning-soft text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none'
+    'w-full rounded border border-warning bg-warning-soft text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none'
 
   return (
     <Modal isOpen onClose={onClose} title="Import Antibodies from CSV" wide>
@@ -214,7 +214,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
               <p className="mt-4 text-sm text-foreground-muted">Parsing CSV...</p>
             )}
             {uploadMutation.isError && (
-              <p className="mt-4 text-sm text-red-600">
+              <p className="mt-4 text-sm text-danger">
                 Failed to parse CSV. Check the file format.
               </p>
             )}
@@ -236,7 +236,7 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
               {importData.summary.errors > 0 && (
                 <>
                   ,{' '}
-                  <span className="text-red-600">
+                  <span className="text-danger">
                     {importData.summary.errors} errors
                   </span>
                 </>
@@ -245,10 +245,10 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
 
             {importData.parse_errors.length > 0 && (
               <details className="mb-4">
-                <summary className="cursor-pointer text-sm text-red-600">
+                <summary className="cursor-pointer text-sm text-danger">
                   {importData.parse_errors.length} parse error(s)
                 </summary>
-                <ul className="mt-1 space-y-1 text-xs text-red-500">
+                <ul className="mt-1 space-y-1 text-xs text-danger">
                   {importData.parse_errors.map((e) => (
                     <li key={e.csv_row_index}>
                       Row {e.csv_row_index + 1}: {e.error}
@@ -656,14 +656,14 @@ export default function ImportWizard({ onClose }: ImportWizardProps) {
             <p className="text-sm text-foreground-muted">
               Imported {importResult.imported} antibodies.
               {importResult.errors.length > 0 && (
-                <span className="text-red-600">
+                <span className="text-danger">
                   {' '}
                   {importResult.errors.length} error(s).
                 </span>
               )}
             </p>
             {importResult.errors.length > 0 && (
-              <ul className="mt-2 text-xs text-red-500">
+              <ul className="mt-2 text-xs text-danger">
                 {importResult.errors.map((err, i) => (
                   <li key={i}>
                     {err.name}: {err.error}
