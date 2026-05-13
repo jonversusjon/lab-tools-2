@@ -8,7 +8,7 @@ DAPI produces no channel selector for IF panel and it should
 
 tiptap blocks with placeholder text don't lose placeholder text (optional) nor show active cursor (required)
 
-the IF panel block should default to having an editable panel title with placeholder text, there should be a tiny hide title button on hover. the if panel blocks context menu should have both hide and show title included. hidden titles should just be hidden not erased or deleted
+the IF panel block should default to having an editable panel title with  placeholder text, there should be a tiny hide title button on hover. the if panel blocks context menu should have both hide and show title included. hidden titles should just be hidden not erased or deleted
 
 the undo stack needs to be overhauled to include every action, button, edit, move, reorder, delete, insert
 
@@ -17,3 +17,17 @@ experiment title on experiment page should be editable like a block, but not mov
 should loction list be shared across resources
 
 IN THE if panel spectral mode a blank channel box with no channels should not appear with no instrument selected. there needs to be an indication to the user that channel selection will become active once a microscope is selected. it could even be a link to select microscope from where the channel box appears after microscope is slected.
+
+in IF panel, allow to create empty target row without selecting antibody, just an empty row with active controls that can be dragged, reordred and fille dout in whatever order
+
+add toggles and heading toggles as basic block types
+
+restore full width / page width toggle
+
+move simple/spectral delete to block context menu in phase 9; microscope should only show when in spectral mode, when in spectral mode, the IF block context menu should also have show/hide options
+
+heading blocks context menu should have change to... which also reveals the current block type (heading 1, 2, 3, etc)
+
+we need to implement global duplicate block shortcut key and add duplicate to block context menu that duplicates block with all current values and properties
+
+slash menu needs to implement . option; the way this works is slash brings up menu, user type IF for IF panel, instead of hitting enter they hit . which then brings up a picker for IF templates that include an omni box along with a favorites and recents section (separated by horizontal line) that can be accessed with up and down arrow
