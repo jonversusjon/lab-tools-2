@@ -118,14 +118,14 @@ export default function BlockContextMenu({
         ref={menuRef}
         className="z-50 bg-elevated border border-border rounded-lg shadow-lg w-52 py-1"
       >
-        <div className="px-3 py-1 text-xs font-medium text-foreground-subtle border-b border-gray-100 dark:border-gray-700 mb-1">
+        <div className="px-3 py-1 text-xs font-medium text-foreground-subtle border-b border-border mb-1">
           {selectedBlocks!.length} blocks selected
         </div>
         {canBulkConvert && (
           <div className="group/convert relative">
-            <button className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between">
+            <button className="w-full px-3 py-1.5 text-left text-sm text-foreground-muted hover:bg-hover flex items-center justify-between">
               Convert all to
-              <span className="text-xs text-gray-400">▶</span>
+              <span className="text-xs text-foreground-subtle">▶</span>
             </button>
             <div className="absolute left-full top-0 ml-0.5 hidden group-hover/convert:block z-50 bg-elevated border border-border rounded-lg shadow-lg w-44 py-1">
               {BULK_CONVERT_OPTIONS.map((opt) => (
@@ -135,7 +135,7 @@ export default function BlockContextMenu({
                     onConvertAll!(opt.type)
                     onClose()
                   }}
-                  className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full px-3 py-1.5 text-left text-sm text-foreground-muted hover:bg-hover"
                 >
                   {opt.label}
                 </button>
@@ -146,7 +146,7 @@ export default function BlockContextMenu({
         <div className="border-t border-border my-1" />
         <button
           onClick={handleDelete}
-          className="w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          className="w-full px-3 py-1.5 text-left text-sm text-danger hover:bg-danger-soft"
         >
           Delete {selectedBlocks!.length} blocks
         </button>
@@ -164,15 +164,15 @@ export default function BlockContextMenu({
           onDuplicate()
           onClose()
         }}
-        className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="w-full px-3 py-1.5 text-left text-sm text-foreground-muted hover:bg-hover"
       >
         Duplicate
       </button>
       {canConvert && (
         <div className="group/convert relative">
-          <button className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between">
+          <button className="w-full px-3 py-1.5 text-left text-sm text-foreground-muted hover:bg-hover flex items-center justify-between">
             Convert to
-            <span className="text-xs text-gray-400">▶</span>
+            <span className="text-xs text-foreground-subtle">▶</span>
           </button>
           <div className="absolute left-full top-0 ml-0.5 hidden group-hover/convert:block z-50 bg-elevated border border-border rounded-lg shadow-lg w-40 py-1">
             {CONVERT_OPTIONS.filter((opt) => opt.type !== block.block_type).map(
@@ -183,7 +183,7 @@ export default function BlockContextMenu({
                     onConvertType(opt.type)
                     onClose()
                   }}
-                  className="w-full px-3 py-1.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full px-3 py-1.5 text-left text-sm text-foreground-muted hover:bg-hover"
                 >
                   {opt.label}
                 </button>
@@ -195,7 +195,7 @@ export default function BlockContextMenu({
       <div className="border-t border-border my-1" />
       <button
         onClick={handleDelete}
-        className="w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+        className="w-full px-3 py-1.5 text-left text-sm text-danger hover:bg-danger-soft"
       >
         Delete
       </button>

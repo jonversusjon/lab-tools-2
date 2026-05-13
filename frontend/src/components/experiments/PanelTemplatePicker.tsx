@@ -72,7 +72,7 @@ export default function PanelTemplatePicker({
           placeholder="Search templates..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-md border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm text-foreground placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-md border border-border-strong bg-elevated text-foreground px-3 py-2 text-sm placeholder-foreground-subtle focus:outline-none focus:ring-2 focus:ring-accent"
           autoFocus
         />
 
@@ -91,11 +91,11 @@ export default function PanelTemplatePicker({
             {/* Blank flow panel */}
             <button
               onClick={() => handleSelect('blank', 'flow')}
-              className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-left"
+              className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-hover cursor-pointer text-left"
             >
               <div className="flex items-center gap-2">
                 <span className="text-base">📋</span>
-                <span className="text-sm text-gray-700 dark:text-gray-300">Blank Flow Panel</span>
+                <span className="text-sm text-foreground-muted">Blank Flow Panel</span>
               </div>
               <span className="text-xs text-foreground-subtle italic">empty</span>
             </button>
@@ -113,11 +113,11 @@ export default function PanelTemplatePicker({
                   <button
                     key={p.id}
                     onClick={() => handleSelect(p.id, 'flow')}
-                    className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-left"
+                    className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-hover cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-foreground">{p.name}</span>
-                      <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                      <span className="inline-flex items-center rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-foreground-muted">
                         {p.target_count} target{p.target_count !== 1 ? 's' : ''}
                       </span>
                     </div>
@@ -140,11 +140,11 @@ export default function PanelTemplatePicker({
             {/* Blank IF panel */}
             <button
               onClick={() => handleSelect('blank', 'if')}
-              className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-left"
+              className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-hover cursor-pointer text-left"
             >
               <div className="flex items-center gap-2">
                 <span className="text-base">🔬</span>
-                <span className="text-sm text-gray-700 dark:text-gray-300">Blank IF Panel</span>
+                <span className="text-sm text-foreground-muted">Blank IF Panel</span>
               </div>
               <span className="text-xs text-foreground-subtle italic">empty</span>
             </button>
@@ -162,19 +162,19 @@ export default function PanelTemplatePicker({
                   <button
                     key={p.id}
                     onClick={() => handleSelect(p.id, 'if')}
-                    className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-left"
+                    className="w-full px-3 py-2.5 flex items-center justify-between rounded hover:bg-hover cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-foreground">{p.name}</span>
-                      <span className="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">
+                      <span className="inline-flex items-center rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-foreground-muted">
                         {p.target_count} target{p.target_count !== 1 ? 's' : ''}
                       </span>
                       <span
                         className={
                           'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ' +
                           (p.panel_type === 'IHC'
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300')
+                            ? 'bg-warning-soft text-warning-soft-foreground'
+                            : 'bg-accent-soft text-accent-soft-foreground')
                         }
                       >
                         {p.panel_type}

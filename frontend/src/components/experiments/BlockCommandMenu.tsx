@@ -186,10 +186,10 @@ export default function BlockCommandMenu({
                   className={
                     'w-full px-3 py-2 flex items-center gap-2 rounded text-left text-sm ' +
                     (item.disabled
-                      ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed '
-                      : 'text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ') +
+                      ? 'text-foreground-subtle/40 cursor-not-allowed '
+                      : 'text-foreground-muted cursor-pointer hover:bg-hover ') +
                     (isSelected && !item.disabled
-                      ? 'bg-gray-100 dark:bg-gray-700'
+                      ? 'bg-hover'
                       : '')
                   }
                 >

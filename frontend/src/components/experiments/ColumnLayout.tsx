@@ -80,7 +80,7 @@ export default function ColumnLayout({
         <div className="relative">
           <button
             onClick={() => setMenuColumnId(isOpen ? null : colId)}
-            className="w-full flex items-center justify-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="w-full flex items-center justify-center gap-1 text-xs text-foreground-subtle hover:text-foreground-muted py-2 rounded hover:bg-hover transition-colors"
           >
             <span className="text-lg leading-none">+</span>
             <span>Add a block</span>
@@ -94,7 +94,7 @@ export default function ColumnLayout({
         <div className="flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity pt-1">
           <button
             onClick={() => setMenuColumnId(isOpen ? null : colId)}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"
+            className="flex items-center gap-1 text-xs text-foreground-subtle hover:text-foreground-muted"
           >
             <span className="text-lg leading-none">+</span>
           </button>
@@ -124,7 +124,7 @@ export default function ColumnLayout({
                     {onDeleteColumnBlock && (
                       <button
                         onClick={() => onDeleteColumnBlock(child.id)}
-                        className="absolute -right-1 top-0.5 z-10 opacity-0 group-hover/col-block:opacity-100 transition-opacity text-gray-400 hover:text-red-500 dark:text-gray-600 dark:hover:text-red-400 text-sm leading-none select-none"
+                        className="absolute -right-1 top-0.5 z-10 opacity-0 group-hover/col-block:opacity-100 transition-opacity text-foreground-subtle hover:text-danger text-sm leading-none select-none"
                         title="Delete block"
                       >
                         ×
@@ -147,7 +147,7 @@ export default function ColumnLayout({
             key={'empty-' + String(i)}
             className="border border-dashed border-border rounded-lg p-3 min-h-[80px]"
           >
-            <p className="text-xs text-gray-400 dark:text-gray-600">
+            <p className="text-xs text-foreground-subtle">
               Empty column
             </p>
           </div>

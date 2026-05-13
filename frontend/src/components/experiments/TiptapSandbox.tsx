@@ -185,32 +185,32 @@ function statusLabel(status: string): { text: string; cls: string } {
     case 'idle':
       return {
         text: 'Saved',
-        cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+        cls: 'bg-surface text-foreground-muted',
       }
     case 'dirty':
       return {
         text: 'Unsaved changes',
-        cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200',
+        cls: 'bg-warning-soft text-warning-soft-foreground',
       }
     case 'saving':
       return {
         text: 'Saving...',
-        cls: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200',
+        cls: 'bg-accent-soft text-accent-soft-foreground',
       }
     case 'saved':
       return {
         text: 'Saved',
-        cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+        cls: 'bg-surface text-foreground-muted',
       }
     case 'error':
       return {
         text: 'Save error',
-        cls: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200',
+        cls: 'bg-danger-soft text-danger-soft-foreground',
       }
     default:
       return {
         text: status,
-        cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300',
+        cls: 'bg-surface text-foreground-muted',
       }
   }
 }
@@ -305,8 +305,8 @@ export default function TiptapSandbox() {
   if (loadState.kind === 'loading') {
     return (
       <div className="w-full px-[5vw] py-6">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Tiptap Sandbox</h1>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading sandbox...</p>
+        <h1 className="text-2xl font-bold text-foreground">Tiptap Sandbox</h1>
+        <p className="mt-4 text-foreground-muted">Loading sandbox...</p>
       </div>
     )
   }
@@ -314,8 +314,8 @@ export default function TiptapSandbox() {
   if (loadState.kind === 'error') {
     return (
       <div className="w-full px-[5vw] py-6">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Tiptap Sandbox</h1>
-        <p className="mt-4 text-red-600 dark:text-red-400">
+        <h1 className="text-2xl font-bold text-foreground">Tiptap Sandbox</h1>
+        <p className="mt-4 text-danger">
           Failed to load sandbox: {loadState.message}
         </p>
       </div>
@@ -327,7 +327,7 @@ export default function TiptapSandbox() {
   return (
     <div className="w-full px-[5vw] py-6 space-y-6">
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Tiptap Sandbox</h1>
+        <h1 className="text-2xl font-bold text-foreground">Tiptap Sandbox</h1>
         <span
           data-testid="save-status"
           className={
@@ -346,19 +346,19 @@ export default function TiptapSandbox() {
       <div className="flex gap-2 text-sm">
         <button
           onClick={() => insertColumnLayout(2)}
-          className="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+          className="px-3 py-1 rounded bg-surface text-foreground-muted hover:bg-hover"
         >
           Insert 2 columns
         </button>
         <button
           onClick={() => insertColumnLayout(3)}
-          className="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+          className="px-3 py-1 rounded bg-surface text-foreground-muted hover:bg-hover"
         >
           Insert 3 columns
         </button>
         <button
           onClick={() => insertColumnLayout(4)}
-          className="px-3 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+          className="px-3 py-1 rounded bg-surface text-foreground-muted hover:bg-hover"
         >
           Insert 4 columns
         </button>
@@ -378,7 +378,7 @@ export default function TiptapSandbox() {
           <button
             type="button"
             onClick={handleCopyJson}
-            className="px-2 py-1 text-xs border border-border rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="px-2 py-1 text-xs border border-border rounded hover:bg-hover"
           >
             {copied ? 'Copied!' : 'Copy JSON'}
           </button>
@@ -387,7 +387,7 @@ export default function TiptapSandbox() {
           <summary className="cursor-pointer text-sm text-foreground-muted">
             Editor JSON (debug)
           </summary>
-          <pre className="mt-2 text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded overflow-x-auto">
+          <pre className="mt-2 text-xs bg-surface p-3 rounded overflow-x-auto">
             {JSON.stringify(filteredJson, null, 2)}
           </pre>
         </details>

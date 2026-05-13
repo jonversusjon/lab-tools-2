@@ -61,7 +61,7 @@ export default function ExperimentList() {
   }
 
   if (isLoading) return <p className="text-foreground-muted">Loading experiments...</p>
-  if (error) return <p className="text-red-600">Failed to load experiments.</p>
+  if (error) return <p className="text-danger">Failed to load experiments.</p>
 
   const inputClass =
     'w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none'
@@ -69,7 +69,7 @@ export default function ExperimentList() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">Experiments</h1>
+        <h1 className="text-2xl font-bold text-foreground">Experiments</h1>
         <button
           onClick={() => setShowCreate(true)}
           className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
@@ -107,7 +107,7 @@ export default function ExperimentList() {
                 <HoverActionsRow
                   key={item.id}
                   as="tr"
-                  className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="border-b border-border hover:bg-hover"
                   onClick={() => navigate('/experiments/' + item.id)}
                   actions={{
                     onRename: () => {
@@ -119,12 +119,12 @@ export default function ExperimentList() {
                   }}
                 >
                   <td className="py-2 font-medium text-foreground">{item.name}</td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">
+                  <td className="py-2 text-foreground-muted">
                     {description ?? (
                       <span className="italic text-foreground-subtle">—</span>
                     )}
                   </td>
-                  <td className="py-2 text-gray-600 dark:text-gray-400">{item.block_count}</td>
+                  <td className="py-2 text-foreground-muted">{item.block_count}</td>
                   <td className="py-2 text-foreground-muted">{createdAt}</td>
                 </HoverActionsRow>
               )
@@ -144,7 +144,7 @@ export default function ExperimentList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="exp-name" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="exp-name" className="mb-1 block text-sm font-medium text-foreground-muted">
               Name
             </label>
             <input
@@ -160,8 +160,8 @@ export default function ExperimentList() {
             />
           </div>
           <div>
-            <label htmlFor="exp-description" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Description <span className="font-normal text-gray-400">(optional)</span>
+            <label htmlFor="exp-description" className="mb-1 block text-sm font-medium text-foreground-muted">
+              Description <span className="font-normal text-foreground-subtle">(optional)</span>
             </label>
             <textarea
               id="exp-description"
@@ -179,7 +179,7 @@ export default function ExperimentList() {
                 setNewName('')
                 setNewDescription('')
               }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>
@@ -203,7 +203,7 @@ export default function ExperimentList() {
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="rename-exp" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="rename-exp" className="mb-1 block text-sm font-medium text-foreground-muted">
               Name
             </label>
             <input
@@ -225,7 +225,7 @@ export default function ExperimentList() {
                 setEditingExperiment(null)
                 setRenameValue('')
               }}
-              className="rounded border border-border-strong px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="rounded border border-border-strong px-4 py-2 text-sm text-foreground-muted hover:bg-hover"
             >
               Cancel
             </button>

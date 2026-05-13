@@ -18,17 +18,17 @@ type LoadState =
 function statusLabel(status: string): { text: string; cls: string } {
   switch (status) {
     case 'idle':
-      return { text: 'Saved', cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
+      return { text: 'Saved', cls: 'bg-surface text-foreground-muted' }
     case 'saved':
-      return { text: 'Saved', cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
+      return { text: 'Saved', cls: 'bg-surface text-foreground-muted' }
     case 'dirty':
-      return { text: 'Unsaved changes', cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200' }
+      return { text: 'Unsaved changes', cls: 'bg-warning-soft text-warning-soft-foreground' }
     case 'saving':
-      return { text: 'Saving...', cls: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200' }
+      return { text: 'Saving...', cls: 'bg-accent-soft text-accent-soft-foreground' }
     case 'error':
-      return { text: 'Save error', cls: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200' }
+      return { text: 'Save error', cls: 'bg-danger-soft text-danger-soft-foreground' }
     default:
-      return { text: status, cls: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300' }
+      return { text: status, cls: 'bg-surface text-foreground-muted' }
   }
 }
 
@@ -96,8 +96,8 @@ export default function ExperimentPage() {
   if (loadState.kind === 'error') {
     return (
       <div className="p-8">
-        <h1 className="text-xl font-semibold dark:text-gray-100">Failed to load experiment</h1>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <h1 className="text-xl font-semibold text-foreground">Failed to load experiment</h1>
+        <p className="mt-2 text-sm text-foreground-muted">
           {loadState.message}
         </p>
       </div>
@@ -109,7 +109,7 @@ export default function ExperimentPage() {
   return (
     <div className="w-full px-[5vw] py-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold dark:text-gray-100">
+        <h1 className="text-2xl font-bold text-foreground">
           {loadState.experiment.name}
         </h1>
         <div className="flex items-center gap-3">
