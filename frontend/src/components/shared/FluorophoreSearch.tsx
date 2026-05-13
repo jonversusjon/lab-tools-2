@@ -41,7 +41,7 @@ export default function FluorophoreSearch({
         <button
           type="button"
           onClick={onClear}
-          className="text-xs text-gray-400 hover:text-red-500"
+          className="text-xs text-foreground-subtle hover:text-danger"
         >
           Clear
         </button>
@@ -63,11 +63,11 @@ export default function FluorophoreSearch({
         className="w-full rounded border border-border-strong bg-white dark:bg-gray-700 px-3 py-2 text-sm dark:text-gray-100 focus:border-blue-500 focus:outline-none"
       />
       {open && filtered.length > 0 && (
-        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-lg">
+        <ul className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded border border-border bg-elevated shadow-lg">
           {filtered.map((fl) => (
             <li
               key={fl.id}
-              className="cursor-pointer px-3 py-1.5 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:text-gray-100"
+              className="cursor-pointer px-3 py-1.5 text-sm text-foreground hover:bg-accent-soft"
               onClick={() => {
                 onSelect(fl.id, fl.name)
                 setQuery('')
@@ -76,7 +76,7 @@ export default function FluorophoreSearch({
             >
               <span className="font-medium">{fl.name}</span>
               {fl.ex_max_nm && fl.em_max_nm && (
-                <span className="ml-2 text-xs text-gray-400">
+                <span className="ml-2 text-xs text-foreground-subtle">
                   {fl.ex_max_nm}/{fl.em_max_nm}
                 </span>
               )}

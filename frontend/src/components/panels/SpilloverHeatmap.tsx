@@ -32,13 +32,13 @@ export default function SpilloverHeatmap({
 
   return (
     <div className="rounded border border-border bg-elevated p-4">
-      <h3 className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Spillover Matrix</h3>
+      <h3 className="mb-3 text-sm font-semibold text-foreground-muted">Spillover Matrix</h3>
 
       {/* Warning banner for fluorophores missing spectral data */}
       {missingSpectraWarnings.length > 0 && (
-        <div className="mb-3 rounded border border-yellow-300 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-2">
+        <div className="mb-3 rounded border border-warning bg-warning-soft px-3 py-2">
           {missingSpectraWarnings.map((name) => (
-            <p key={name} className="text-xs text-yellow-700 dark:text-yellow-400">
+            <p key={name} className="text-xs text-warning-soft-foreground">
               &#9888; <span className="font-medium">{name}</span> has no spectral data — spillover estimates are unavailable for this fluorophore.
             </p>
           ))}

@@ -214,8 +214,8 @@ export default function CellAssignmentPicker({
       className={
         'w-full px-3 py-2 text-left text-sm' +
         (idx === highlightIndex
-          ? ' bg-blue-50 dark:bg-blue-900/30'
-          : ' hover:bg-gray-50 dark:hover:bg-gray-700') +
+          ? ' bg-accent-soft'
+          : ' hover:bg-hover') +
         (currentSecondaryId === sec.id ? ' font-semibold' : '')
       }
     >
@@ -224,7 +224,7 @@ export default function CellAssignmentPicker({
         <span className="ml-2 text-teal-600 dark:text-teal-400">{sec.fluorophore_name}</span>
       )}
       {currentSecondaryId === sec.id && (
-        <span className="ml-2 text-xs text-blue-500">&#10003;</span>
+        <span className="ml-2 text-xs text-accent">&#10003;</span>
       )}
     </button>
   )
@@ -236,12 +236,12 @@ export default function CellAssignmentPicker({
       style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
     >
       {/* Header: detector context */}
-      <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-1.5 text-xs text-foreground-subtle">
+      <div className="border-b border-border px-3 py-1.5 text-xs text-foreground-subtle">
         {filterMidpoint}/{filterWidth} detector &middot; {laserWavelength}nm laser
       </div>
 
       {/* Search input */}
-      <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+      <div className="border-b border-border px-3 py-2">
         <input
           ref={inputRef}
           type="text"
@@ -260,7 +260,7 @@ export default function CellAssignmentPicker({
             e.preventDefault()
             onClear()
           }}
-          className="w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-b border-gray-100 dark:border-gray-700"
+          className="w-full px-3 py-2 text-left text-sm text-danger hover:bg-danger-soft border-b border-border"
         >
           Clear selection
         </button>
@@ -270,10 +270,10 @@ export default function CellAssignmentPicker({
         {/* Species-matched secondaries */}
         {speciesSecondaries.length > 0 && (
           <>
-            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-surface">
               Anti-{antibody?.host ?? 'Host'} Secondaries
               {antibody?.isotype && (
-                <span className="ml-1 font-normal text-gray-400">({antibody.isotype})</span>
+                <span className="ml-1 font-normal text-foreground-subtle">({antibody.isotype})</span>
               )}
             </div>
             {speciesSecondaries.map((sec) => {
@@ -288,7 +288,7 @@ export default function CellAssignmentPicker({
         {/* Conjugate reagents */}
         {conjugateSecondaries.length > 0 && (
           <>
-            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-surface">
               {detectionStrategy.type === 'both' || detectionStrategy.type === 'conjugate'
                 ? detectionStrategy.label
                 : 'Conjugate Reagents'}
@@ -305,7 +305,7 @@ export default function CellAssignmentPicker({
         {/* Direct fluorophores */}
         {compatibleFluorophores.length > 0 && (
           <>
-            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-3 py-1.5 text-xs font-semibold text-foreground-muted bg-surface">
               Fluorophores
             </div>
             {compatibleFluorophores.map((fl) => {
@@ -325,8 +325,8 @@ export default function CellAssignmentPicker({
                   className={
                     'w-full px-3 py-2 text-left text-sm' +
                     (idx === highlightIndex
-                      ? ' bg-blue-50 dark:bg-blue-900/30'
-                      : ' hover:bg-gray-50 dark:hover:bg-gray-700') +
+                      ? ' bg-accent-soft'
+                      : ' hover:bg-hover') +
                     (alreadyAssigned ? ' opacity-50' : '') +
                     (isCurrentFl ? ' font-semibold' : '')
                   }
@@ -338,7 +338,7 @@ export default function CellAssignmentPicker({
                     </span>
                   )}
                   {isCurrentFl && (
-                    <span className="ml-2 text-xs text-blue-500">&#10003;</span>
+                    <span className="ml-2 text-xs text-accent">&#10003;</span>
                   )}
                   {alreadyAssigned && (
                     <span className="ml-1 text-xs" title="Already assigned in this panel">&#9888;&#65039;</span>

@@ -125,24 +125,24 @@ export default function PanelSpectraByLaser({
           <div key={laser.id} className="rounded border border-border">
             <button
               onClick={() => toggleLaser(laser.id)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium hover:bg-hover"
             >
               <span
                 className="inline-block h-3 w-3 rounded-full"
                 style={{ backgroundColor: laserColor }}
               />
-              <span className="dark:text-gray-200">
+              <span className="text-foreground">
                 {laser.wavelength_nm}nm {laser.name}
               </span>
               <span className="text-xs text-foreground-subtle">
                 ({excitedCount} fluorophore{excitedCount !== 1 ? 's' : ''})
               </span>
-              <span className="ml-auto text-xs text-gray-400">
+              <span className="ml-auto text-xs text-foreground-subtle">
                 {isCollapsed ? '\u25B6' : '\u25BC'}
               </span>
             </button>
             {!isCollapsed && (
-              <div className="border-t border-gray-100 dark:border-gray-700 px-3 pb-3">
+              <div className="border-t border-border px-3 pb-3">
                 {excitedCount === 0 ? (
                   <p className="py-3 text-center text-xs text-foreground-subtle">
                     No assigned fluorophores excited by this laser

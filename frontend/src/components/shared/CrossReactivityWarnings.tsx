@@ -106,27 +106,27 @@ function ConflictBanner({
 
   const wrapperClass =
     variant === 'warning'
-      ? 'rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-600/50 dark:bg-amber-950/30 px-4 py-3'
+      ? 'rounded-lg border border-warning bg-warning-soft px-4 py-3'
       : 'rounded-lg border border-sky-200 bg-sky-50 dark:border-sky-700/40 dark:bg-sky-950/20 px-4 py-3'
 
   const iconColor =
     variant === 'warning'
-      ? 'text-amber-600 dark:text-amber-400'
+      ? 'text-warning-soft-foreground'
       : 'text-sky-500 dark:text-sky-400'
 
   const titleColor =
     variant === 'warning'
-      ? 'text-amber-800 dark:text-amber-300'
+      ? 'text-warning-soft-foreground'
       : 'text-sky-700 dark:text-sky-300'
 
   const bodyColor =
     variant === 'warning'
-      ? 'text-amber-700 dark:text-amber-300/80'
+      ? 'text-warning-soft-foreground'
       : 'text-sky-600 dark:text-sky-300/70'
 
   const detailColor =
     variant === 'warning'
-      ? 'text-amber-600/80 dark:text-amber-400/60'
+      ? 'text-warning-soft-foreground opacity-80'
       : 'text-sky-500/80 dark:text-sky-400/50'
 
   return (
@@ -177,7 +177,7 @@ function ConflictBanner({
                           className={
                             'underline decoration-dotted hover:decoration-solid ' +
                             (variant === 'warning'
-                              ? 'text-amber-700 dark:text-amber-300'
+                              ? 'text-warning-soft-foreground'
                               : 'text-sky-600 dark:text-sky-300')
                           }
                         >

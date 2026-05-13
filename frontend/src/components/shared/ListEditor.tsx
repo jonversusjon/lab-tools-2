@@ -109,14 +109,14 @@ export default function ListEditor({
   return (
     <div className={'relative ' + className}>
       <div className="mb-1 flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground-muted">
           {label}
-          {required && <span className="text-red-500"> *</span>}
+          {required && <span className="text-danger"> *</span>}
         </label>
         <button
           type="button"
           onClick={() => setEditorOpen(!editorOpen)}
-          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-xs text-accent hover:underline"
           title={'Edit ' + label + ' list'}
         >
           Edit list
@@ -155,16 +155,16 @@ export default function ListEditor({
       {editorOpen && (
         <div
           ref={popoverRef}
-          className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-gray-200 dark:border-gray-600 bg-elevated shadow-xl"
+          className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-elevated shadow-xl"
         >
-          <div className="border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+          <div className="border-b border-border px-3 py-2">
             <p className="text-xs font-medium text-foreground-muted uppercase tracking-wide">
               Manage {label}s
             </p>
           </div>
 
           {/* Add new */}
-          <div className="flex gap-1 border-b border-gray-100 dark:border-gray-700 px-3 py-2">
+          <div className="flex gap-1 border-b border-border px-3 py-2">
             <input
               type="text"
               value={newValue}
@@ -198,7 +198,7 @@ export default function ListEditor({
             {entries.map((entry) => (
               <li
                 key={entry.id}
-                className="group flex items-center gap-1 border-b border-gray-50 dark:border-gray-700 px-3 py-1.5"
+                className="group flex items-center gap-1 border-b border-border px-3 py-1.5"
               >
                 {editingId === entry.id ? (
                   <>
@@ -219,14 +219,14 @@ export default function ListEditor({
                     <button
                       type="button"
                       onClick={() => handleSaveEdit(entry)}
-                      className="text-xs text-green-600 hover:text-green-700"
+                      className="text-xs text-success hover:opacity-80"
                     >
                       Save
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="text-xs text-gray-400 hover:text-gray-600"
+                      className="text-xs text-foreground-subtle hover:text-foreground-muted"
                     >
                       Cancel
                     </button>
@@ -234,7 +234,7 @@ export default function ListEditor({
                 ) : (
                   <>
                     <span
-                      className="flex-1 cursor-pointer text-sm text-gray-800 dark:text-gray-200"
+                      className="flex-1 cursor-pointer text-sm text-foreground"
                       onClick={() => {
                         onChange(entry.value)
                         setEditorOpen(false)
@@ -249,7 +249,7 @@ export default function ListEditor({
                         setEditingId(entry.id)
                         setEditingValue(entry.value)
                       }}
-                      className="invisible text-xs text-gray-400 hover:text-blue-600 group-hover:visible"
+                      className="invisible text-xs text-foreground-subtle hover:text-accent group-hover:visible"
                       title="Edit"
                     >
                       Edit
@@ -257,7 +257,7 @@ export default function ListEditor({
                     <button
                       type="button"
                       onClick={() => handleDelete(entry)}
-                      className="invisible text-xs text-gray-400 hover:text-red-600 group-hover:visible"
+                      className="invisible text-xs text-foreground-subtle hover:text-danger group-hover:visible"
                       title="Delete"
                     >
                       Del
