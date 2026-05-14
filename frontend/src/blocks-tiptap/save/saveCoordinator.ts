@@ -98,6 +98,11 @@ export function useSaveCoordinator(
   // Refs persist across renders but don't cause re-renders.
   const baselineRowsRef = useRef<ExperimentBlock[]>(initialBlocks ?? [])
   const currentRowsRef = useRef<ExperimentBlock[]>(initialBlocks ?? [])
+  // Flips true the first time a non-null `initialBlocks` arrives. Subsequent
+  // reference changes (memoization, TanStack Query cache churn, parent
+  // re-renders) MUST NOT overwrite the baseline — that would discard
+  // unsynced edits. The hook owns baseline mutation after first load.
+  const loadedRef = useRef(initialBlocks != null)
   const localToServerRef = useRef<Map<string, string>>(new Map())
   const inFlightCreatesRef = useRef<Map<string, Promise<string>>>(new Map())
   const isFlushingRef = useRef(false)
@@ -126,12 +131,14 @@ export function useSaveCoordinator(
   experimentIdRef.current = experimentId
   debounceMsRef.current = debounceMs
 
-  // Keep baseline in sync when initial blocks change (e.g., experiment loads).
+  // Seed baseline from the first non-null `initialBlocks` only. See
+  // `loadedRef` declaration above for rationale.
   useEffect(() => {
-    if (initialBlocks) {
-      baselineRowsRef.current = initialBlocks
-      currentRowsRef.current = initialBlocks
-    }
+    if (loadedRef.current) return
+    if (initialBlocks == null) return
+    baselineRowsRef.current = initialBlocks
+    currentRowsRef.current = initialBlocks
+    loadedRef.current = true
   }, [initialBlocks])
 
   function translateId(localId: string): string {
