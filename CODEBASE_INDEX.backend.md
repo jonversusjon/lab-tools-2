@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-14T01:44:17Z
-Commit: 421aa30
+Generated: 2026-05-14T01:45:53Z
+Commit: 22bc1ac
 
 ---
 

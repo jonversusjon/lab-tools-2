@@ -208,11 +208,7 @@ export default function TiptapSandbox() {
 
   const initialEditorContent = useMemo(() => {
     if (loadState.kind !== 'ready') return null
-    const blocks = loadState.experiment.blocks
-    if (!blocks || blocks.length === 0) {
-      return INITIAL_CONTENT
-    }
-    return rowsToTiptapDoc(blocks)
+    return rowsToTiptapDoc(loadState.experiment.blocks ?? [])
   }, [loadState])
 
   const editor = useEditor(

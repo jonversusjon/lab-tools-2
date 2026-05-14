@@ -44,11 +44,7 @@ export default function ExperimentPage() {
 
   const initialEditorContent = useMemo(() => {
     if (loadState.kind !== 'ready') return null
-    const blocks = loadState.experiment.blocks
-    if (!blocks || blocks.length === 0) {
-      return { type: 'doc', content: [{ type: 'paragraph' }] }
-    }
-    return rowsToTiptapDoc(blocks)
+    return rowsToTiptapDoc(loadState.experiment.blocks ?? [])
   }, [loadState])
 
   const editor = useEditor(
