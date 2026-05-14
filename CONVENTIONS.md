@@ -21,6 +21,38 @@ TypeScript template literals by analogy.
 `'Heading ' + String(node.attrs.level)` as an over-extension of the Python
 rule. Caught in review.
 
+### `let T | null` + closure narrowing footgun
+
+After a null check on a `let` variable typed as `T | null`, TypeScript does
+NOT narrow the variable inside nested function declarations (closures), even
+in TypeScript 5.x. The variable can resolve to `never` in some code paths.
+
+Fix: re-assign to a `const` immediately after the null check, and use the
+`const` inside closures.
+
+```typescript
+// Wrong — narrowing lost inside onMouseMove
+let pos: number | null = getPos()
+if (pos == null) return
+const onMouseMove = (e: MouseEvent) => {
+  doStuff(pos)  // TypeScript: pos is `never`
+}
+
+// Right
+let pos: number | null = getPos()
+if (pos == null) return
+const stablePos: number = pos
+const onMouseMove = (e: MouseEvent) => {
+  doStuff(stablePos)  // narrowed correctly
+}
+```
+
+A ref-box (`{ current: null as T | null }`) is equivalent for state that
+needs to be updated through closures.
+
+**Origin:** Hit twice — Phase 9b drag handle (`dbcb2ba`), Phase 9c column
+resize (`743d4f5`).
+
 ---
 
 ## Documentation tense
