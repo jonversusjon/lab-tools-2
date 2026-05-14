@@ -209,7 +209,24 @@ export default function TiptapSandbox() {
 
   const initialEditorContent = useMemo(() => {
     if (loadState.kind !== 'ready') return null
-    return rowsToTiptapDoc(loadState.experiment.blocks ?? [])
+    const blocks = loadState.experiment.blocks ?? []
+    // A freshly-created sandbox has no blocks: start the editor from
+    // INITIAL_CONTENT against the save coordinator's empty baseline, so the
+    // first transaction persists every block through the normal save path.
+    // The trailing empty paragraph mirrors rowsToTiptapDoc's output —
+    // tiptapDocToRows skips it, so it is never persisted and edits at the
+    // doc end land on fresh nodes instead of mutating a seeded block.
+    // Subsequent loads have blocks and route through rowsToTiptapDoc.
+    if (blocks.length === 0) {
+      return {
+        ...INITIAL_CONTENT,
+        content: [
+          ...INITIAL_CONTENT.content,
+          { type: 'paragraph', attrs: { _rowId: null } },
+        ],
+      }
+    }
+    return rowsToTiptapDoc(blocks)
   }, [loadState])
 
   const editor = useEditor(
