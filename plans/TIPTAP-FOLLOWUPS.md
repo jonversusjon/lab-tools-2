@@ -568,12 +568,37 @@ Estimated cost: small. Sonnet default model. ~$10–15.
 
 **Phase 13b — Settings UI section**
 
+**Status:** COMPLETE — 2026-05-13
+
 Add the "Editor block frames" section to `Settings.tsx`. Per-block-type rows
 with 4-button toggle groups. Clean button disabled. Changes call the
 `useBlockFramesConfig` setter immediately. Handle save errors with an inline
 transient message.
 
 No rendering changes in the editor in this sub-phase.
+
+**What was built:**
+- `frontend/src/components/settings/BlockFramesSection.tsx` — new component.
+  Renders 11 rows (heading, paragraph, bulletList, orderedList,
+  horizontalRule, callout, column_list, column, flow_panel, if_panel, table);
+  `listItem` and `tableRow` are hidden per PM decision (defaulted to `never`).
+  Each row has a 4-button toggle group (Always / Empty / Clean / Never).
+  Clean is rendered disabled with `title="Available in a future version"`
+  per PM decision; will be activated in Phase 13d. Active mode highlighted
+  via `bg-accent text-accent-foreground` and `aria-pressed="true"`. Errors
+  are tracked per-row in a `Record<key, string | null>` state and rendered
+  inline under the toggle group via `role="alert"`.
+- `frontend/src/components/settings/Settings.tsx` — imports and renders
+  `<BlockFramesSection />` as the last section.
+- `frontend/src/components/settings/__tests__/BlockFramesSection.test.tsx` —
+  5 tests covering row count, active-mode highlighting, Clean disabled state,
+  setConfig invocation, and inline error scoping. Mocks the
+  `useBlockFramesConfig` hook at module level.
+
+**Lessons learned:** `@testing-library/user-event` is not installed in this
+codebase; tests use `fireEvent` from `@testing-library/react`. The async
+state update inside the click handler requires a `waitFor` even for the
+`toHaveBeenCalled` assertion to avoid act() warnings.
 
 Estimated cost: small-medium. Sonnet default model. ~$15–25.
 

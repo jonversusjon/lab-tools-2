@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-14T01:58:21Z
-Commit: bbc6d2c
+Generated: 2026-05-14T03:13:59Z
+Commit: a8ea12b
 
 ---
 
@@ -138,6 +138,7 @@ Commit: bbc6d2c
 | `App` | `` | `frontend/src/App.tsx` |
 | `BlockCommandMenu` | `BlockCommandMenuProps` | `frontend/src/components/experiments/BlockCommandMenu.tsx` |
 | `BlockContextMenu` | `BlockContextMenuProps` | `frontend/src/components/experiments/BlockContextMenu.tsx` |
+| `BlockFramesSection` | `` | `frontend/src/components/settings/BlockFramesSection.tsx` |
 | `BlockMenu` | `import("/home/jramirez2/proj/lab-tools-2/frontend/src/blocks-tiptap/dragHandle/BlockMenu").BlockMenuProps` | `frontend/src/blocks-tiptap/dragHandle/BlockMenu.tsx` |
 | `CalloutView` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tiptap/core/dist/index").NodeViewProps` | `frontend/src/blocks-tiptap/views/CalloutView.tsx` |
 | `CellAssignmentPicker` | `CellAssignmentPickerProps` | `frontend/src/components/panels/CellAssignmentPicker.tsx` |

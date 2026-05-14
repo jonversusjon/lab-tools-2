@@ -34,6 +34,7 @@ import {
   useDeleteConjugateChemistry,
 } from '@/hooks/useConjugateChemistries'
 import type { ConjugateChemistry } from '@/types'
+import BlockFramesSection from '@/components/settings/BlockFramesSection'
 
 export default function Settings() {
   const [minEx, setMinEx] = useState(5)
@@ -726,6 +727,8 @@ export default function Settings() {
           }}
         />
       )}
+
+      <BlockFramesSection />
     </div>
   )
 }
