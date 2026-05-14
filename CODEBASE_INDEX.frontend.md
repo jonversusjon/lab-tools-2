@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-14T01:48:45Z
-Commit: 3631dc1
+Generated: 2026-05-14T01:58:21Z
+Commit: bbc6d2c
 
 ---
 
@@ -19,6 +19,7 @@ Commit: 3631dc1
 | `useAssignTags` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useAntibodies.ts` |
 | `useBatchFetchFpbase` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
 | `useBatchSpectra` | `ids: string[]` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
+| `useBlockFramesConfig` | `` | `{ config: import("/home/jramirez2/proj/lab-tools-2/frontend/src/types/index").BlockFramesConfig; setConfig: (key: key...` | `frontend/src/hooks/useBlockFramesConfig.ts` |
 | `useCanUndo` | `` | `boolean` | `frontend/src/components/plate-maps/UndoContext.tsx` |
 | `useConfirmFluorophoreImport` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
 | `useConfirmImport` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useAntibodies.ts` |
@@ -249,6 +250,7 @@ Commit: 3631dc1
 | `['plate-maps', id]` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['plate-maps', variables.id]` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['plate-maps']` | `frontend/src/hooks/usePlateMaps.ts` |
+| `['preferences']` | `frontend/src/hooks/useBlockFramesConfig.ts` |
 | `['recentFluorophores']` | `frontend/src/hooks/useFluorophores.ts` |
 | `['secondary-antibodies', id]` | `frontend/src/hooks/useSecondaries.ts` |
 | `['secondary-antibodies', params]` | `frontend/src/hooks/useSecondaries.ts` |

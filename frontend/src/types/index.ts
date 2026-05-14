@@ -938,3 +938,41 @@ export interface DyeLabelCreate {
   icc_if_dilution?: string | null
   notes?: string | null
 }
+
+// ─── Editor block frames (Phase 13) ──────────────────────────────────────────
+
+export type FrameMode = 'always' | 'empty' | 'never' | 'clean'
+
+export interface BlockFramesConfig {
+  heading: FrameMode
+  paragraph: FrameMode
+  bulletList: FrameMode
+  orderedList: FrameMode
+  listItem: FrameMode
+  horizontalRule: FrameMode
+  callout: FrameMode
+  column_list: FrameMode
+  column: FrameMode
+  flow_panel: FrameMode
+  if_panel: FrameMode
+  table: FrameMode
+  tableRow: FrameMode
+}
+
+export const DEFAULT_BLOCK_FRAMES: BlockFramesConfig = {
+  heading: 'empty',
+  paragraph: 'empty',
+  bulletList: 'empty',
+  orderedList: 'empty',
+  listItem: 'never',
+  horizontalRule: 'always',
+  callout: 'empty',
+  column_list: 'never',
+  column: 'empty',
+  flow_panel: 'always',
+  if_panel: 'always',
+  table: 'never',
+  tableRow: 'never',
+}
+
+export const BLOCK_FRAMES_PREFERENCE_KEY = 'editor.block_frames'

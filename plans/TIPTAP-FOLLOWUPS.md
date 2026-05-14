@@ -538,6 +538,8 @@ the fourth is future work.
 
 **Phase 13a — Preference key and frontend reader**
 
+**Status:** COMPLETE — 2026-05-13
+
 Define the `editor.block_frames` preference key and its expected JSON shape
 (Section 4). Implement `useBlockFramesConfig` hook:
 - On mount, reads all preferences via `getPreferences()` (already called in
@@ -549,6 +551,18 @@ Define the `editor.block_frames` preference key and its expected JSON shape
 No UI changes in this sub-phase. Verification: the hook returns the default
 config when no preference is set; returns the stored config after a manual
 `PUT /api/v1/preferences/editor.block_frames` via curl.
+
+**What was built:**
+- `frontend/src/types/index.ts` — added `FrameMode`, `BlockFramesConfig`,
+  `DEFAULT_BLOCK_FRAMES`, and `BLOCK_FRAMES_PREFERENCE_KEY` exports.
+- `frontend/src/hooks/useBlockFramesConfig.ts` — new hook returning
+  `{ config, setConfig, isLoading }`. Reads preferences via TanStack Query
+  key `['preferences']` (new key — no existing usage in the codebase);
+  malformed JSON or absent key returns `DEFAULT_BLOCK_FRAMES`; partial JSON
+  is merged over defaults so missing keys fall back gracefully.
+- `frontend/src/hooks/__tests__/useBlockFramesConfig.test.ts` — 4 tests
+  covering default fallback, valid JSON parse, malformed JSON, and setter
+  writing correctly merged JSON.
 
 Estimated cost: small. Sonnet default model. ~$10–15.
 
