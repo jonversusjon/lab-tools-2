@@ -4,7 +4,7 @@ import { tiptapExtensions } from '@/blocks-tiptap/extensions'
 import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { filterJsonTree } from '@/utils/jsonFilter'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
-import { useSaveCoordinator } from '@/blocks-tiptap/save'
+import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
 import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
 import {
   listExperiments,
@@ -179,41 +179,6 @@ async function ensureSandboxExperiment(): Promise<Experiment> {
     sandboxExperimentPromise = null
   })
   return sandboxExperimentPromise
-}
-
-function statusLabel(status: string): { text: string; cls: string } {
-  switch (status) {
-    case 'idle':
-      return {
-        text: 'Saved',
-        cls: 'bg-surface text-foreground-muted',
-      }
-    case 'dirty':
-      return {
-        text: 'Unsaved changes',
-        cls: 'bg-warning-soft text-warning-soft-foreground',
-      }
-    case 'saving':
-      return {
-        text: 'Saving...',
-        cls: 'bg-accent-soft text-accent-soft-foreground',
-      }
-    case 'saved':
-      return {
-        text: 'Saved',
-        cls: 'bg-surface text-foreground-muted',
-      }
-    case 'error':
-      return {
-        text: 'Save error',
-        cls: 'bg-danger-soft text-danger-soft-foreground',
-      }
-    default:
-      return {
-        text: status,
-        cls: 'bg-surface text-foreground-muted',
-      }
-  }
 }
 
 export default function TiptapSandbox() {

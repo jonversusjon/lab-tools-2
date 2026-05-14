@@ -6,3 +6,5 @@ export type {
 } from './saveCoordinator'
 export { inspectTransaction } from './transactionInspector'
 export type { TransactionDiff } from './transactionInspector'
+export { statusLabel } from './statusLabel'
+export type { StatusLabel } from './statusLabel'

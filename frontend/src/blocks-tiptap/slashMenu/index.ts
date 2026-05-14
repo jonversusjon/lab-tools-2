@@ -5,7 +5,7 @@ import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion
 import { ReactRenderer } from '@tiptap/react'
 import SlashMenuList from './SlashMenuList'
 import { filterItems, type SlashMenuItem } from './items'
-import type { SlashMenuListRef } from './SlashMenuList'
+import type { SlashMenuListProps, SlashMenuListRef } from './SlashMenuList'
 import { positionPopup } from './positioning'
 
 export const SlashMenu = Extension.create({
@@ -29,13 +29,12 @@ export const SlashMenu = Extension.create({
           props.command(editor, range)
         },
         render: () => {
-          let component: ReactRenderer<SlashMenuListRef> | null = null
+          let component: ReactRenderer<SlashMenuListRef, SlashMenuListProps> | null = null
           let popup: HTMLElement | null = null
 
           return {
             onStart: (props: SuggestionProps<SlashMenuItem, SlashMenuItem>) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              component = new ReactRenderer<SlashMenuListRef>(SlashMenuList as any, {
+              component = new ReactRenderer<SlashMenuListRef, SlashMenuListProps>(SlashMenuList, {
                 props: props as unknown as Record<string, unknown>,
                 editor: props.editor,
               })

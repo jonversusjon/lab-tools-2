@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
 import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
-import { useSaveCoordinator } from '@/blocks-tiptap/save'
+import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
 import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
 import { getExperiment } from '@/api/experiments'
 import type { Experiment } from '@/types'
@@ -14,24 +14,6 @@ type LoadState =
   | { kind: 'ready'; experiment: Experiment }
   | { kind: 'not-found' }
   | { kind: 'error'; message: string }
-
-// TODO: extract to shared util alongside TiptapSandbox's copy
-function statusLabel(status: string): { text: string; cls: string } {
-  switch (status) {
-    case 'idle':
-      return { text: 'Saved', cls: 'bg-surface text-foreground-muted' }
-    case 'saved':
-      return { text: 'Saved', cls: 'bg-surface text-foreground-muted' }
-    case 'dirty':
-      return { text: 'Unsaved changes', cls: 'bg-warning-soft text-warning-soft-foreground' }
-    case 'saving':
-      return { text: 'Saving...', cls: 'bg-accent-soft text-accent-soft-foreground' }
-    case 'error':
-      return { text: 'Save error', cls: 'bg-danger-soft text-danger-soft-foreground' }
-    default:
-      return { text: status, cls: 'bg-surface text-foreground-muted' }
-  }
-}
 
 export default function ExperimentPage() {
   const { id } = useParams<{ id: string }>()

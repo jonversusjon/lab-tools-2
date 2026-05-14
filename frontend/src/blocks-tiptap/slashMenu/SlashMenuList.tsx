@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import type { SlashMenuItem } from './items'
 
-interface SlashMenuListProps {
+export interface SlashMenuListProps {
   items: SlashMenuItem[]
   command: (item: SlashMenuItem) => void
 }
