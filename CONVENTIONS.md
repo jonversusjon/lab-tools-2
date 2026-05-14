@@ -86,6 +86,19 @@ NOT add JavaScript-based overflow detection.
 
 **Origin:** Phase 9a-fix (commit `746aa62`).
 
+### Per-node Tiptap attributes that depend on external state use decorations, not `addGlobalAttributes`
+`addGlobalAttributes` cannot see the rendering node's type, so it can't map a
+node to type-specific external state. Use a ProseMirror node-decoration plugin
+(`addProseMirrorPlugins` + `Decoration.node`) instead — it walks the doc with
+full node-type context, and the attribute lands on the same DOM element as
+other node decorations (e.g. Placeholder's `.is-empty`). For rebuilds driven by
+external state, hold the state snapshot in plugin state and return the identical
+state object when nothing changed, so ProseMirror skips the decoration update
+and NodeViews are not disturbed. The `_rowId` global attribute is unaffected —
+it is intrinsic to the node, not externally derived.
+
+**Origin:** Phase 13c block frames (`data-frame` attribute).
+
 ---
 
 ## Python

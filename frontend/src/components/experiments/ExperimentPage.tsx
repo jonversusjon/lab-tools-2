@@ -6,6 +6,7 @@ import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
 import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
+import { BlockFramesProvider } from '@/blocks-tiptap/blockFramesProvider'
 import { getExperiment, ExperimentApiError } from '@/api/experiments'
 import type { Experiment } from '@/types'
 
@@ -86,6 +87,7 @@ export default function ExperimentPage() {
   const status = statusLabel(saveState.status)
 
   return (
+    <BlockFramesProvider>
     <div className="w-full px-[5vw] py-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">
@@ -112,5 +114,6 @@ export default function ExperimentPage() {
         <EditorContent editor={editor} />
       </div>
     </div>
+    </BlockFramesProvider>
   )
 }

@@ -6,6 +6,7 @@ import { filterJsonTree } from '@/utils/jsonFilter'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
 import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
+import { BlockFramesProvider } from '@/blocks-tiptap/blockFramesProvider'
 import {
   listExperiments,
   createExperiment,
@@ -287,6 +288,7 @@ export default function TiptapSandbox() {
   const indicator = statusLabel(saveState.status)
 
   return (
+    <BlockFramesProvider>
     <div className="w-full px-[5vw] py-6 space-y-6">
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-foreground">Tiptap Sandbox</h1>
@@ -356,5 +358,6 @@ export default function TiptapSandbox() {
         </details>
       </div>
     </div>
+    </BlockFramesProvider>
   )
 }

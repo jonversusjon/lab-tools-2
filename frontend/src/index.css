@@ -255,3 +255,32 @@
 .drag-handle[data-dragging='true'] {
   cursor: grabbing;
 }
+
+/* === block frames ===
+   The blockFrames extension writes a data-frame node decoration onto every
+   configurable block. `is-empty` is supplied by the Placeholder extension on
+   the same DOM element (both are ProseMirror node decorations). */
+[data-frame='always'] {
+  border: 1px solid rgb(229 231 235);
+  border-radius: 4px;
+}
+[data-frame='empty'].is-empty {
+  border: 1px solid rgb(229 231 235);
+  border-radius: 4px;
+}
+[data-frame='empty']:not(.is-empty) {
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+[data-frame='never'] {
+  border: none;
+}
+.dark [data-frame='always'],
+.dark [data-frame='empty'].is-empty {
+  border-color: rgb(55 65 81);
+}
+@media print {
+  [data-frame] {
+    border: none !important;
+  }
+}

@@ -604,6 +604,8 @@ Estimated cost: small-medium. Sonnet default model. ~$15–25.
 
 **Phase 13c — CSS and node attribute wiring**
 
+**Status:** COMPLETE — 2026-05-14
+
 Wire `data-frame` onto each block's rendered output:
 - Add a global Tiptap extension (parallel to `RowIdExtension`) that injects a
   `data-frame` attribute onto each node based on the block type's configured
@@ -614,7 +616,53 @@ Wire `data-frame` onto each block's rendered output:
 - Verify empty detection for each block type; patch any cases where Tiptap's
   `.is-empty` class is not applied as expected.
 
+**What was built:**
+- `frontend/src/blocks-tiptap/blockFramesProvider.tsx` — new. `BlockFramesProvider`
+  component plus a module-level `configRef` and `getCurrentBlockFramesConfig()`
+  getter. The provider reads `useBlockFramesConfig`, writes the latest config to
+  the ref, and fires a `block-frames-config-changed` window event on change.
+- `frontend/src/blocks-tiptap/nodes/blockFramesExtension.ts` — new
+  `BlockFramesExtension`. Uses a **ProseMirror decoration plugin** (not
+  `addGlobalAttributes`) to set `data-frame` node decorations. Plugin state holds
+  `{ decorations, config }`; `apply` rebuilds on `docChanged` or a
+  `block-frames-rebuild` meta, but returns the same state object when the config
+  is unchanged so redundant rebuilds never disturb NodeViews. `onCreate`
+  registers the window-event listener; `onDestroy` removes it.
+- `frontend/src/blocks-tiptap/extensions.ts` — registers `BlockFramesExtension`
+  next to `RowIdExtension`.
+- `frontend/src/components/experiments/ExperimentPage.tsx`,
+  `frontend/src/components/experiments/TiptapSandbox.tsx` — wrap the editor JSX
+  in `<BlockFramesProvider>`.
+- `frontend/src/index.css` — `/* block frames */` section: borders for
+  `[data-frame='always']` and `[data-frame='empty'].is-empty`, transparent
+  border for `[data-frame='empty']:not(.is-empty)`, dark-mode color overrides,
+  and an `@media print` suppression rule.
+- `frontend/src/blocks-tiptap/__tests__/blockFrames.test.tsx` — 4 tests.
+
+**Approach decision — decoration plugin over `addGlobalAttributes`:**
+`addGlobalAttributes` cannot see the node's type inside `renderHTML`, so it
+cannot map a node to its config key. A ProseMirror node-decoration plugin walks
+the doc and sets `data-frame` per node — and decorations land on the same DOM
+element as Placeholder's `.is-empty` class (also a node decoration), which the
+CSS relies on.
+
+**Lessons learned:**
+- Tiptap fires `onCreate` **asynchronously**, after React mount effects. A
+  provider that updates state in `useEffect` and fires a one-shot event can fire
+  it before the editor's listener is registered. This is a non-issue in
+  production: `configRef` is module-level and persistent, and the preferences
+  query resolving triggers a second provider effect (and event) once the editor
+  is mounted. It only bites synchronous-mock tests — those poll-dispatch the
+  event inside `waitFor` instead.
+- Dispatching a transaction during/just after `onCreate` interferes with
+  NodeView mounting. Avoid editor-driven rebuilds at create time; let the
+  config-change event drive rebuilds, and make no-op rebuilds return the
+  identical plugin-state object so ProseMirror skips the decoration update.
+
 Estimated cost: medium. Sonnet default model. ~$20–35.
+
+**Phase 13 (a–c) is complete.** Phase 13d (`clean` state tracking) remains
+deferred.
 
 **Phase 13d (future) — `clean` state tracking**
 
