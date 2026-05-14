@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act, waitFor } from '@testing-library/react'
 import { useEditor, type Editor } from '@tiptap/react'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
 import BlockMenu from '@/blocks-tiptap/dragHandle/BlockMenu'
+import { duplicateBlockAtPos } from '@/blocks-tiptap/dragHandle/duplicateBlock'
 import type { Node as PMNode } from '@tiptap/pm/model'
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -57,6 +58,18 @@ function countNodesOfType(editor: Editor, typeName: string): number {
     if (n.type.name === typeName) count += 1
   })
   return count
+}
+
+// Walks the whole document, collecting non-null `_rowId` values. When
+// `typeName` is given, only nodes of that type are collected.
+function collectRowIds(editor: Editor, typeName?: string): string[] {
+  const ids: string[] = []
+  editor.state.doc.descendants((node) => {
+    if (typeName && node.type.name !== typeName) return
+    const rid = node.attrs._rowId
+    if (rid != null) ids.push(rid as string)
+  })
+  return ids
 }
 
 // ────────────────────────────────────────────────────────────────────────────────
@@ -149,6 +162,55 @@ const populatedFlowPanelDoc = {
           dilution_source: 'flow',
         },
       },
+    },
+  ],
+}
+
+const bulletListDoc = {
+  type: 'doc',
+  content: [
+    {
+      type: 'bulletList',
+      content: [
+        {
+          type: 'listItem',
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'Item one' }] },
+          ],
+        },
+        {
+          type: 'listItem',
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'Item two' }] },
+          ],
+        },
+      ],
+    },
+  ],
+}
+
+const columnListDoc = {
+  type: 'doc',
+  content: [
+    {
+      type: 'column_list',
+      attrs: { column_count: 2 },
+      content: [
+        {
+          type: 'column',
+          attrs: { width_pct: 50 },
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'Left' }] },
+          ],
+        },
+        {
+          type: 'column',
+          attrs: { width_pct: 50 },
+          content: [
+            { type: 'paragraph', content: [{ type: 'text', text: 'Right' }] },
+          ],
+        },
+      ],
     },
   ],
 }
@@ -429,6 +491,49 @@ describe('BlockMenu', () => {
       dilution_source: 'flow',
     })
     expect(firstId).not.toBe(secondId)
+  })
+
+  it('duplicate bulletList — every listItem _rowId is distinct', async () => {
+    const editorBox: { current: Editor | null } = { current: null }
+    render(<EditorOnly docContent={bulletListDoc} editorBox={editorBox} />)
+    await waitFor(() => expect(editorBox.current).not.toBeNull())
+    const editor = editorBox.current as Editor
+
+    await act(async () => {
+      duplicateBlockAtPos(editor, 0)
+    })
+
+    await waitFor(() => {
+      expect(countNodesOfType(editor, 'bulletList')).toBe(2)
+    })
+
+    // 2 listItems per list × 2 lists = 4, all with distinct _rowIds.
+    const listItemIds = collectRowIds(editor, 'listItem')
+    expect(listItemIds).toHaveLength(4)
+    for (const id of listItemIds) expect(id).toBeTruthy()
+    expect(new Set(listItemIds).size).toBe(4)
+  })
+
+  it('duplicate column_list — descendant _rowIds are distinct', async () => {
+    const editorBox: { current: Editor | null } = { current: null }
+    render(<EditorOnly docContent={columnListDoc} editorBox={editorBox} />)
+    await waitFor(() => expect(editorBox.current).not.toBeNull())
+    const editor = editorBox.current as Editor
+
+    await act(async () => {
+      duplicateBlockAtPos(editor, 0)
+    })
+
+    await waitFor(() => {
+      expect(countNodesOfType(editor, 'column_list')).toBe(2)
+    })
+
+    // Every _rowId-bearing node in the whole tree (column_lists, columns,
+    // paragraphs) must be unique across the original and the duplicate.
+    const allIds = collectRowIds(editor)
+    expect(allIds.length).toBeGreaterThan(0)
+    for (const id of allIds) expect(id).toBeTruthy()
+    expect(new Set(allIds).size).toBe(allIds.length)
   })
 
   it('Convert-to is absent for flow_panel blocks', async () => {
