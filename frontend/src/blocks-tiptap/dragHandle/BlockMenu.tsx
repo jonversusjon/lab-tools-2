@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Editor } from '@tiptap/react'
 import type { Node as PMNode } from '@tiptap/pm/model'
+import { duplicateBlockAtPos } from './duplicateBlock'
 
 export interface BlockMenuProps {
   editor: Editor
@@ -112,14 +113,7 @@ export default function BlockMenu({
 
   function handleDuplicate() {
     if (currentNode === null) return
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const nodeJSON: any = currentNode.toJSON()
-    // Clear _rowId so RowIdExtension mints a fresh UUID for the copy
-    if (nodeJSON.attrs) {
-      delete nodeJSON.attrs._rowId
-    }
-    const insertPos = currentNodePos + currentNode.nodeSize
-    editor.chain().focus().insertContentAt(insertPos, nodeJSON).run()
+    duplicateBlockAtPos(editor, currentNodePos)
     closeMenu()
   }
 

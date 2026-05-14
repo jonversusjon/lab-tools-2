@@ -34,6 +34,31 @@ function EditorAndMenu({ docContent, nodeIndex = 0 }: WrapperProps) {
   )
 }
 
+// Creates a real editor and exposes it via `editorBox`. EditorContent is NOT
+// rendered — that keeps panel NodeViews (which need a QueryClient + many
+// mocked hooks) from mounting. Keyboard shortcuts are still exercised by
+// firing keydown on `editor.view.dom`, which is the real `.ProseMirror`
+// element ProseMirror's keymap listens on.
+function EditorOnly({
+  docContent,
+  editorBox,
+}: {
+  docContent: object
+  editorBox: { current: Editor | null }
+}) {
+  const editor = useEditor({ extensions: tiptapExtensions, content: docContent })
+  if (editor) editorBox.current = editor
+  return null
+}
+
+function countNodesOfType(editor: Editor, typeName: string): number {
+  let count = 0
+  editor.state.doc.forEach((n) => {
+    if (n.type.name === typeName) count += 1
+  })
+  return count
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // Minimal document fixtures
 // ────────────────────────────────────────────────────────────────────────────────
@@ -332,6 +357,78 @@ describe('BlockMenu', () => {
     expect(headingTwoOption).toBeDisabled()
     expect(screen.getByTestId('block-menu-convert-heading-1')).toBeEnabled()
     expect(screen.getByTestId('block-menu-convert-paragraph')).toBeEnabled()
+  })
+
+  it('Mod-Shift-D duplicates the current heading block', async () => {
+    const editorBox: { current: Editor | null } = { current: null }
+    render(
+      <EditorOnly docContent={headingLevel2Doc} editorBox={editorBox} />
+    )
+    await waitFor(() => expect(editorBox.current).not.toBeNull())
+    const editor = editorBox.current as Editor
+
+    act(() => {
+      editor.commands.setTextSelection(2)
+    })
+    await act(async () => {
+      fireEvent.keyDown(editor.view.dom, {
+        key: 'd',
+        code: 'KeyD',
+        ctrlKey: true,
+        shiftKey: true,
+      })
+    })
+
+    await waitFor(() => {
+      expect(countNodesOfType(editor, 'heading')).toBe(2)
+    })
+    expect(editor.state.doc.child(0).textContent).toBe('A heading')
+    expect(editor.state.doc.child(1).textContent).toBe('A heading')
+    const firstId = editor.state.doc.child(0).attrs._rowId
+    const secondId = editor.state.doc.child(1).attrs._rowId
+    expect(firstId).toBeTruthy()
+    expect(secondId).toBeTruthy()
+    expect(firstId).not.toBe(secondId)
+  })
+
+  it('Mod-Shift-D duplicates the current flow_panel block', async () => {
+    const editorBox: { current: Editor | null } = { current: null }
+    render(
+      <EditorOnly docContent={populatedFlowPanelDoc} editorBox={editorBox} />
+    )
+    await waitFor(() => expect(editorBox.current).not.toBeNull())
+    const editor = editorBox.current as Editor
+
+    act(() => {
+      editor.commands.setNodeSelection(0)
+    })
+    await act(async () => {
+      fireEvent.keyDown(editor.view.dom, {
+        key: 'd',
+        code: 'KeyD',
+        ctrlKey: true,
+        shiftKey: true,
+      })
+    })
+
+    await waitFor(() => {
+      expect(countNodesOfType(editor, 'flow_panel')).toBe(2)
+    })
+    const original = { ...editor.state.doc.child(0).attrs }
+    const copy = { ...editor.state.doc.child(1).attrs }
+    const firstId = original._rowId
+    const secondId = copy._rowId
+    delete original._rowId
+    delete copy._rowId
+    expect(copy).toEqual(original)
+    expect(copy.targets).toHaveLength(1)
+    expect(copy.volume_params).toEqual({
+      num_samples: 6,
+      volume_per_sample_ul: 250,
+      pipet_error_factor: 1.2,
+      dilution_source: 'flow',
+    })
+    expect(firstId).not.toBe(secondId)
   })
 
   it('Convert-to is absent for flow_panel blocks', async () => {

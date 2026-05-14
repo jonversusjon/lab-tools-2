@@ -9,6 +9,7 @@ import { IfPanel } from '@/blocks-tiptap/nodes/ifPanel'
 import { RowIdExtension } from '@/blocks-tiptap/nodes/rowIdExtension'
 import { BlockFramesExtension } from '@/blocks-tiptap/nodes/blockFramesExtension'
 import { SlashMenu } from '@/blocks-tiptap/slashMenu'
+import { DuplicateShortcut } from '@/blocks-tiptap/dragHandle/duplicateShortcut'
 
 export const tiptapExtensions = [
   StarterKit.configure({
@@ -31,6 +32,7 @@ export const tiptapExtensions = [
   FlowPanel,
   IfPanel,
   SlashMenu,
+  DuplicateShortcut,
   Placeholder.configure({
     placeholder: ({ node, hasAnchor }) => {
       switch (node.type.name) {
