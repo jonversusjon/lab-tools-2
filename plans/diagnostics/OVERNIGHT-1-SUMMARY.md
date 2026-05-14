@@ -67,7 +67,7 @@ Section B — drag-handle-panel.spec.ts:
   API-created experiment (column_list → 2 columns → flow_panel /
   if_panel) in the test body, torn down via a describe-level afterEach.
   The FDA1 and cK009 tests are untouched.
-- Commit: <SECTION_B_SHA>
+- Commit: 95a49ed
 
 === Project knowledge re-upload manifest ===
 REUPLOAD_REQUIRED:
