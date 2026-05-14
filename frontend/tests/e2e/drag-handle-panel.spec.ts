@@ -10,7 +10,38 @@ import { test, expect } from '@playwright/test'
 import { CK009_ID } from './db'
 
 const FDA1_ID = '36989faa-6d22-4601-8896-6b18fa65c560'
-const SANDBOX_ID = '2459272d-4f71-403b-82bf-39659a93a31a'
+
+const API_BASE = 'http://localhost:8000/api/v1'
+
+const FLOW_PANEL_CONTENT = {
+  source_panel_id: null,
+  name: 'Sandbox demo panel',
+  instrument: null,
+  targets: [],
+  assignments: [],
+  volume_params: {
+    num_samples: 1,
+    volume_per_sample_ul: 100,
+    pipet_error_factor: 1.1,
+    dilution_source: 'flow',
+  },
+}
+
+const IF_PANEL_CONTENT = {
+  source_panel_id: null,
+  name: 'Sandbox IF demo panel',
+  panel_type: 'IF',
+  microscope: null,
+  view_mode: 'simple',
+  targets: [],
+  assignments: [],
+  volume_params: {
+    num_samples: 1,
+    volume_per_sample_ul: 200,
+    pipet_error_factor: 1.1,
+    dilution_source: 'icc_if',
+  },
+}
 
 function attachListeners(page: import('@playwright/test').Page): string[] {
   const errors: string[] = []
@@ -57,6 +88,17 @@ async function getAllErrors(
 }
 
 test.describe('drag handle on panel blocks', () => {
+  // Set by the Sandbox test, which auto-creates its own experiment rather
+  // than depending on a hardcoded ID being present in the local DB.
+  let sandboxPanelExperimentId: string | null = null
+
+  test.afterEach(async ({ request }) => {
+    if (sandboxPanelExperimentId) {
+      await request.delete(API_BASE + '/experiments/' + sandboxPanelExperimentId)
+      sandboxPanelExperimentId = null
+    }
+  })
+
   test('FDA1 (3 if_panel) — capture any getBoundingClientRect errors', async ({
     page,
   }) => {
@@ -100,9 +142,81 @@ test.describe('drag handle on panel blocks', () => {
     expect(crashErrors).toEqual([])
   })
 
-  test('Sandbox (panels in columns) — capture any errors', async ({ page }) => {
+  test('Sandbox (panels in columns) — capture any errors', async ({
+    page,
+    request,
+  }) => {
+    // Auto-create an experiment with a flow_panel and an if_panel nested in
+    // sibling columns, mirroring the Tiptap sandbox seed topology.
+    const expRes = await request.post(API_BASE + '/experiments', {
+      data: {
+        name: 'Drag Handle Panel Test',
+        description: 'auto-created by e2e',
+      },
+    })
+    expect(expRes.ok()).toBeTruthy()
+    const experiment = await expRes.json()
+    sandboxPanelExperimentId = experiment.id
+
+    const clRes = await request.post(
+      API_BASE + '/experiments/' + experiment.id + '/blocks',
+      {
+        data: {
+          block_type: 'column_list',
+          content: { column_count: 2 },
+          sort_order: 0,
+          parent_id: null,
+        },
+      }
+    )
+    expect(clRes.ok()).toBeTruthy()
+    const columnList = await clRes.json()
+
+    const columnIds: string[] = []
+    for (let i = 0; i < 2; i++) {
+      const colRes = await request.post(
+        API_BASE + '/experiments/' + experiment.id + '/blocks',
+        {
+          data: {
+            block_type: 'column',
+            content: { width_pct: 50 },
+            sort_order: i,
+            parent_id: columnList.id,
+          },
+        }
+      )
+      expect(colRes.ok()).toBeTruthy()
+      columnIds.push((await colRes.json()).id)
+    }
+
+    const flowRes = await request.post(
+      API_BASE + '/experiments/' + experiment.id + '/blocks',
+      {
+        data: {
+          block_type: 'flow_panel',
+          content: FLOW_PANEL_CONTENT,
+          sort_order: 0,
+          parent_id: columnIds[0],
+        },
+      }
+    )
+    expect(flowRes.ok()).toBeTruthy()
+
+    const ifRes = await request.post(
+      API_BASE + '/experiments/' + experiment.id + '/blocks',
+      {
+        data: {
+          block_type: 'if_panel',
+          content: IF_PANEL_CONTENT,
+          sort_order: 0,
+          parent_id: columnIds[1],
+        },
+      }
+    )
+    expect(ifRes.ok()).toBeTruthy()
+
     const listenerErrors = attachListeners(page)
-    await page.goto('/experiments/' + SANDBOX_ID)
+    await page.goto('/experiments/' + experiment.id)
     await expect(page.locator('[data-testid="save-status"]')).toBeVisible({
       timeout: 30000,
     })
