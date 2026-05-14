@@ -829,14 +829,18 @@ become post-merge backlog.
   editing in production page, or accept the relocation. Estimate:
   small.
 
-- **A7 — Empty-experiment bootstrap inconsistency.** Both
+- ~~**A7 — Empty-experiment bootstrap inconsistency.** Both
   `ExperimentPage.tsx` and `TiptapSandbox.tsx` short-circuit
   `rowsToTiptapDoc` when `blocks.length === 0`, returning a
   hand-built doc that doesn't match the canonical trailing-paragraph
   contract. No bug today (`tiptapToDb` strips trailing empty
   paragraphs), but a footgun for future trailing-paragraph changes.
   Fix: route empty input through `rowsToTiptapDoc` in both call
-  sites. Estimate: tiny.
+  sites. Estimate: tiny.~~ — done in Post-merge cleanup #1
+  (`3631dc1`). Note: `TiptapSandbox` no longer seeds rich
+  `INITIAL_CONTENT` on first load; an empty sandbox renders an
+  empty paragraph. `INITIAL_CONTENT` remains for the loading-state
+  fallback only.
 
 - **A8 — Per-instance library data fetch in panel views.**
   `FlowPanelView` and `IfPanelView` call `useAntibodies`,
@@ -846,24 +850,33 @@ become post-merge backlog.
   instance still subscribes, re-rendering on cache changes. Lift to
   a context provider in `ExperimentPage`. Estimate: medium.
 
-- **A9 — 404 detection via string matching.** `ExperimentPage`
+- ~~**A9 — 404 detection via string matching.** `ExperimentPage`
   detects not-found by
   `message.includes('404') || message.toLowerCase().includes('not found')`.
   Brittle if the API error format changes. Fix: throw typed errors
-  with `.status` from `api/experiments.ts`. Estimate: small.
+  with `.status` from `api/experiments.ts`. Estimate: small.~~ —
+  done in Post-merge cleanup #1 (`406abeb`). All `api/experiments.ts`
+  fetch wrappers now throw `ExperimentApiError` with `.status` and
+  `.statusText`; `ExperimentPage` matches on `instanceof` + status.
 
-- **A10 — `saveCoordinator` initialBlocks reset on parent re-render.**
+- ~~**A10 — `saveCoordinator` initialBlocks reset on parent re-render.**
   The `useEffect([initialBlocks])` reset overwrites baseline if the
   parent ever passes a new array reference. Currently safe (parents
   use stable `useState`), but becomes load-bearing if anyone adds
   memoization or moves to TanStack Query. Fix: gate the effect to
   "first non-null `initialBlocks`" via a `loaded` boolean. Estimate:
-  tiny.
+  tiny.~~ — done in Post-merge cleanup #1 (`22bc1ac`). Reset effect
+  gated on `loadedRef`, which flips true on first non-null
+  `initialBlocks` and never fires again.
 
-- **A11 — Stale TODO and `as any`.** `ExperimentPage.tsx:17` TODO for
+- ~~**A11 — Stale TODO and `as any`.** `ExperimentPage.tsx:17` TODO for
   shared `statusLabel` utility (duplicated in `TiptapSandbox.tsx`).
   `slashMenu/index.ts:38` `as any` cast on Tiptap `ReactRenderer`.
-  Both minor. Estimate: tiny.
+  Both minor. Estimate: tiny.~~ — done in Post-merge cleanup #1
+  (`421aa30`). `statusLabel` extracted to
+  `blocks-tiptap/save/statusLabel.ts` and imported by both pages;
+  `as any` replaced by adding the second type param to
+  `ReactRenderer<SlashMenuListRef, SlashMenuListProps>`.
 
 - **heading_4 / `is_toggleable` restoration.** Phase 12-fix-2 updated
   `CLAUDE.md` to acknowledge that `heading_4` and `is_toggleable`
@@ -874,3 +887,34 @@ become post-merge backlog.
   `heading_toggleable` global attribute that round-trips
   `is_toggleable`. Update CLAUDE.md back when restored. Estimate:
   medium.
+
+---
+
+## Post-merge cleanup #1 — 2026-05-13
+
+Bundled four small post-merge follow-ups (A7, A9, A10, A11) into a
+single phase. Each fix landed as its own commit on `main`:
+
+1. `421aa30` — `refactor(experiments): extract shared statusLabel;
+   remove TODO and as any cast` (A11). Adds
+   `frontend/src/blocks-tiptap/save/statusLabel.ts`, re-exports from
+   `blocks-tiptap/save`. Removes duplicated `statusLabel` from
+   `ExperimentPage.tsx` and `TiptapSandbox.tsx`. Replaces `as any`
+   in `slashMenu/index.ts` by passing the second type parameter to
+   `ReactRenderer<SlashMenuListRef, SlashMenuListProps>` and
+   exporting `SlashMenuListProps` from `SlashMenuList.tsx`.
+2. `22bc1ac` — `fix(saveCoordinator): gate initialBlocks reset to
+   first non-null value` (A10). Adds `loadedRef` to
+   `useSaveCoordinator`; the baseline reset effect runs at most once.
+3. `3631dc1` — `fix(experiments): route empty-blocks through
+   rowsToTiptapDoc consistently` (A7). Removes the
+   `blocks.length === 0` short-circuit in both pages. Side effect:
+   `TiptapSandbox` no longer auto-seeds the rich `INITIAL_CONTENT`
+   demo on first load — an empty sandbox is just one paragraph now.
+4. `406abeb` — `refactor(api): typed ExperimentApiError replaces 404
+   string matching` (A9). New `ExperimentApiError` class with
+   `status` and `statusText`; every fetch wrapper in
+   `api/experiments.ts` throws it; `ExperimentPage` matches on
+   `err instanceof ExperimentApiError && err.status === 404`.
+
+No tests changed; existing 38 save tests still pass. tsc clean.
