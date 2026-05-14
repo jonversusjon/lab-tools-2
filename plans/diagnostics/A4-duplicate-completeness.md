@@ -102,7 +102,7 @@ lists and columns. Should be fixed as part of B2's utility extraction.
 
 ## Resolution
 
-**Fixed in commit `<pending>` (Fix-A4).**
+**Fixed in commit `110b09d` (Fix-A4).**
 
 `duplicateBlockAtPos` (`blocks-tiptap/dragHandle/duplicateBlock.ts`) now
 strips `_rowId` **recursively** from the serialized node JSON before
