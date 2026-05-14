@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Editor } from '@tiptap/react'
 import type { ExperimentBlock } from '@/types'
@@ -24,6 +24,7 @@ export interface SaveCoordinatorState {
   status: SaveStatus
   pendingCount: number
   lastError: string | null
+  flushNow: () => Promise<void>
 }
 
 const noop = () => {
@@ -95,6 +96,23 @@ export function useSaveCoordinator(
   const [pendingCount, setPendingCount] = useState(0)
   const [lastError, setLastError] = useState<string | null>(null)
 
+  // Set true in the unmount cleanup. Async work kicked off during unmount
+  // (flush-on-unmount) must not call setState on the dead component.
+  const isUnmountingRef = useRef(false)
+
+  function setStatusSafe(next: SaveStatus): void {
+    if (isUnmountingRef.current) return
+    setStatus(next)
+  }
+  function setPendingCountSafe(next: number): void {
+    if (isUnmountingRef.current) return
+    setPendingCount(next)
+  }
+  function setLastErrorSafe(next: string | null): void {
+    if (isUnmountingRef.current) return
+    setLastError(next)
+  }
+
   // Refs persist across renders but don't cause re-renders.
   const baselineRowsRef = useRef<ExperimentBlock[]>(initialBlocks ?? [])
   const currentRowsRef = useRef<ExperimentBlock[]>(initialBlocks ?? [])
@@ -159,13 +177,13 @@ export function useSaveCoordinator(
     const snapshot = currentRowsRef.current
     const diff = inspectTransaction(baseline, snapshot)
     if (totalDiffSize(diff) === 0) {
-      setStatus(deriveStatus())
-      setPendingCount(0)
+      setStatusSafe(deriveStatus())
+      setPendingCountSafe(0)
       return
     }
 
     isFlushingRef.current = true
-    setStatus(deriveStatus())
+    setStatusSafe(deriveStatus())
 
     try {
       // Wave 1: creates, in topological order. Sequential await so each
@@ -267,29 +285,44 @@ export function useSaveCoordinator(
       isFlushingRef.current = false
       lastErrorRef.current = null
       hasEverSavedRef.current = true
-      setLastError(null)
+      setLastErrorSafe(null)
 
       const newDiff = inspectTransaction(
         baselineRowsRef.current,
         currentRowsRef.current
       )
       const newPending = totalDiffSize(newDiff)
-      setPendingCount(newPending)
+      setPendingCountSafe(newPending)
       if (newPending > 0) {
         scheduleFlush()
       }
-      setStatus(deriveStatus())
+      setStatusSafe(deriveStatus())
     } catch (err) {
       isFlushingRef.current = false
       const message = err instanceof Error ? err.message : String(err)
       lastErrorRef.current = message
-      setLastError(message)
-      setStatus(deriveStatus())
+      setLastErrorSafe(message)
+      setStatusSafe(deriveStatus())
       queryClient.invalidateQueries({
         queryKey: ['experiments', expId],
       })
     }
   }
+
+  // Referentially-stable handle so external callers (unmount cleanups,
+  // navigation guards) can depend on it without re-running their effects
+  // every render. `flush` is re-created each render; read the latest one
+  // through a ref. flushNow never throws — fire-and-forget callers should
+  // not have to wrap in try/catch.
+  const flushImplRef = useRef(flush)
+  flushImplRef.current = flush
+  const flushNow = useCallback(async (): Promise<void> => {
+    try {
+      await flushImplRef.current()
+    } catch (err) {
+      console.error('[saveCoordinator] flushNow error:', err)
+    }
+  }, [])
 
   function scheduleFlush(): void {
     if (debounceTimerRef.current != null) {
@@ -347,11 +380,24 @@ export function useSaveCoordinator(
   }, [editor])
 
   useEffect(() => {
+    // Reset on (re)mount. StrictMode runs mount→unmount→mount on the same
+    // instance, so the cleanup below would otherwise leave the flag stuck
+    // true on the live component and silently swallow every setState.
+    isUnmountingRef.current = false
     return () => {
+      isUnmountingRef.current = true
       if (debounceTimerRef.current != null) {
         clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+      // Flush any pending edits before the component dies. Fire-and-forget:
+      // the mutations complete detached from the React lifecycle, and the
+      // setState calls inside `flush` are guarded by isUnmountingRef.
+      if (hasUnsynced()) {
+        void flushNow()
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Browser navigation guard — fire the "are you sure you want to leave?"
@@ -376,5 +422,5 @@ export function useSaveCoordinator(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return { status, pendingCount, lastError }
+  return { status, pendingCount, lastError, flushNow }
 }

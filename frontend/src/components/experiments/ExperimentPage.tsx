@@ -65,6 +65,15 @@ export default function ExperimentPage() {
     initialBlocks: loadState.kind === 'ready' ? loadState.experiment.blocks : undefined,
   })
 
+  // Flush pending edits when SPA-navigating away or switching experiments.
+  // beforeunload does not fire on React Router navigation; without this,
+  // edits made within the debounce window are silently lost.
+  useEffect(() => {
+    return () => {
+      void saveState.flushNow()
+    }
+  }, [id, saveState.flushNow])
+
   if (loadState.kind === 'loading') {
     return <div className="p-8 text-foreground-muted">Loading experiment...</div>
   }

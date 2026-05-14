@@ -402,6 +402,22 @@ Never build the transform string manually. Always import `CSS` from
 
 ---
 
+## React hooks
+
+### Async state writes in unmount cleanups must guard with an `isUnmountingRef`
+When an unmount cleanup kicks off async work that later calls `setState`
+(e.g. flush-on-unmount), React will warn — and in StrictMode error — on
+the post-unmount write. Pattern: a `useRef(false)` flag, checked before
+every `setState` inside the async path. **Critical:** reset the flag to
+`false` in the *effect body* (not just the cleanup). StrictMode runs
+mount→unmount→mount on the same instance with persistent refs, so a flag
+only ever set `true` stays stuck and silently swallows every later
+`setState` on the live component.
+
+**Origin:** Fix-A1, commit `<pending>`.
+
+---
+
 ## TanStack Query
 
 ### Mutations invalidate the list key on success

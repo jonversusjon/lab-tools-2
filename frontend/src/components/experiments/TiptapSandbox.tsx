@@ -233,6 +233,17 @@ export default function TiptapSandbox() {
       loadState.kind === 'ready' ? loadState.experiment.blocks : undefined,
   })
 
+  // Flush pending edits when SPA-navigating away. beforeunload does not
+  // fire on React Router navigation; without this, edits made within the
+  // debounce window are silently lost.
+  const sandboxExperimentId =
+    loadState.kind === 'ready' ? loadState.experiment.id : null
+  useEffect(() => {
+    return () => {
+      void saveState.flushNow()
+    }
+  }, [sandboxExperimentId, saveState.flushNow])
+
   // DEV-ONLY: expose editor instance for Playwright E2E paste tests.
   // Tree-shaken in production builds via import.meta.env.DEV guard.
   useEffect(() => {
