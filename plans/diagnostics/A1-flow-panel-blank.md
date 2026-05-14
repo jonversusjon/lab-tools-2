@@ -124,7 +124,7 @@ status `setState`s when unmounting.
 
 ## Resolution
 
-**Fixed in commit `<pending>` (Fix-A1).**
+**Fixed in commit `724cd61` (Fix-A1).**
 
 `useSaveCoordinator`'s unmount cleanup now flushes pending edits instead
 of only cancelling the debounce timer:

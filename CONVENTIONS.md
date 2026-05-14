@@ -414,7 +414,7 @@ mount→unmount→mount on the same instance with persistent refs, so a flag
 only ever set `true` stays stuck and silently swallows every later
 `setState` on the live component.
 
-**Origin:** Fix-A1, commit `<pending>`.
+**Origin:** Fix-A1, commit `724cd61`.
 
 ---
 
