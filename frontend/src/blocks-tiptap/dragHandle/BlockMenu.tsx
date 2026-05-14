@@ -172,15 +172,33 @@ export default function BlockMenu({
     closeMenu()
   }
 
-  const filteredConvertTargets = CONVERT_TARGETS.filter((t) => {
-    if (nodeType === 'paragraph' && t.label === 'Paragraph') return false
+  function isCurrentConvertTarget(t: ConvertTarget): boolean {
+    if (nodeType === 'paragraph') return t.label === 'Paragraph'
     if (nodeType === 'heading') {
-      if (t.label === 'Heading 1' && currentHeadingLevel === 1) return false
-      if (t.label === 'Heading 2' && currentHeadingLevel === 2) return false
-      if (t.label === 'Heading 3' && currentHeadingLevel === 3) return false
+      return (
+        (t.label === 'Heading 1' && currentHeadingLevel === 1) ||
+        (t.label === 'Heading 2' && currentHeadingLevel === 2) ||
+        (t.label === 'Heading 3' && currentHeadingLevel === 3)
+      )
     }
-    return true
-  })
+    return false
+  }
+
+  function humanizeType(type: string): string {
+    return type
+      .split('_')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ')
+  }
+
+  const currentTypeLabel =
+    nodeType === 'paragraph'
+      ? 'Paragraph'
+      : nodeType === 'heading'
+        ? 'Heading ' + String(currentHeadingLevel ?? '')
+        : nodeType !== null
+          ? humanizeType(nodeType)
+          : ''
 
   return (
     <div className="flex items-center gap-0.5 relative" ref={menuRef}>
@@ -228,22 +246,36 @@ export default function BlockMenu({
                 className="w-full px-3 py-2 flex items-center justify-between hover:bg-hover cursor-pointer text-sm text-foreground rounded"
                 data-testid="block-menu-convert"
               >
-                <span>Convert to</span>
+                <span>Change from {currentTypeLabel}</span>
                 <span className="text-xs text-foreground-subtle">▶</span>
               </button>
               {convertMenuOpen && (
                 <div className="absolute left-full top-0 ml-0.5 z-50 bg-elevated border border-border rounded-lg shadow-lg py-1 min-w-[140px]">
-                  {filteredConvertTargets.map((target) => (
-                    <button
-                      key={target.label}
-                      type="button"
-                      onClick={() => handleConvert(target)}
-                      className="w-full px-3 py-2 flex items-center gap-2 hover:bg-hover cursor-pointer text-sm text-foreground rounded"
-                      data-testid={'block-menu-convert-' + target.label.toLowerCase().replace(/\s+/g, '-')}
-                    >
-                      {target.label}
-                    </button>
-                  ))}
+                  {CONVERT_TARGETS.map((target) => {
+                    const isCurrent = isCurrentConvertTarget(target)
+                    return (
+                      <button
+                        key={target.label}
+                        type="button"
+                        disabled={isCurrent}
+                        onClick={() => handleConvert(target)}
+                        className={
+                          'w-full px-3 py-2 flex items-center gap-2 text-sm text-foreground rounded ' +
+                          (isCurrent
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'hover:bg-hover cursor-pointer')
+                        }
+                        data-testid={'block-menu-convert-' + target.label.toLowerCase().replace(/\s+/g, '-')}
+                      >
+                        <span>{target.label}</span>
+                        {isCurrent && (
+                          <span className="ml-auto text-xs text-foreground-subtle">
+                            current
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>

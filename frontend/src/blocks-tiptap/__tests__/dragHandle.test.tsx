@@ -53,6 +53,17 @@ const twoParagraphDoc = {
   ],
 }
 
+const headingLevel2Doc = {
+  type: 'doc',
+  content: [
+    {
+      type: 'heading',
+      attrs: { level: 2 },
+      content: [{ type: 'text', text: 'A heading' }],
+    },
+  ],
+}
+
 const flowPanelDoc = {
   type: 'doc',
   content: [
@@ -296,6 +307,31 @@ describe('BlockMenu', () => {
     expect(firstId).toBeTruthy()
     expect(secondId).toBeTruthy()
     expect(firstId).not.toBe(secondId)
+  })
+
+  it('Change-from submenu reveals current type and disables it', async () => {
+    render(<EditorAndMenu docContent={headingLevel2Doc} />)
+    await screen.findByTestId('drag-grip')
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('block-menu-trigger'))
+    })
+
+    // Trigger label reveals the current block type.
+    const convertTrigger = screen.getByTestId('block-menu-convert')
+    expect(convertTrigger).toHaveTextContent('Heading 2')
+
+    // Open the submenu.
+    await act(async () => {
+      fireEvent.click(convertTrigger)
+    })
+
+    // The current type (Heading 2) is present but disabled; other targets
+    // remain enabled.
+    const headingTwoOption = screen.getByTestId('block-menu-convert-heading-2')
+    expect(headingTwoOption).toBeDisabled()
+    expect(screen.getByTestId('block-menu-convert-heading-1')).toBeEnabled()
+    expect(screen.getByTestId('block-menu-convert-paragraph')).toBeEnabled()
   })
 
   it('Convert-to is absent for flow_panel blocks', async () => {
