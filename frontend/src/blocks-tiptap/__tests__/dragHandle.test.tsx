@@ -75,6 +75,48 @@ const flowPanelDoc = {
   ],
 }
 
+// flow_panel carrying non-default content: targets, assignments, and tweaked
+// volume params. Used to assert Duplicate deep-copies the whole content blob.
+const populatedFlowPanelDoc = {
+  type: 'doc',
+  content: [
+    {
+      type: 'flow_panel',
+      attrs: {
+        source_panel_id: 'template-uuid-123',
+        name: 'Populated Panel',
+        instrument: { id: 'inst-1', name: 'BD FACSAria III' },
+        targets: [
+          {
+            id: 'tgt-1',
+            antibody_id: 'ab-1',
+            antibody_name: 'CD3',
+            antibody_target: 'CD3',
+            staining_mode: 'direct',
+            sort_order: 0,
+          },
+        ],
+        assignments: [
+          {
+            id: 'asn-1',
+            antibody_id: 'ab-1',
+            fluorophore_id: 'af-488',
+            fluorophore_name: 'Alexa Fluor 488',
+            detector_id: 'det-1',
+            detector_name: '530/30',
+          },
+        ],
+        volume_params: {
+          num_samples: 6,
+          volume_per_sample_ul: 250,
+          pipet_error_factor: 1.2,
+          dilution_source: 'flow',
+        },
+      },
+    },
+  ],
+}
+
 // ────────────────────────────────────────────────────────────────────────────────
 // Tests
 // ────────────────────────────────────────────────────────────────────────────────
@@ -178,6 +220,79 @@ describe('BlockMenu', () => {
     // The two copies have different _rowId attrs (RowIdExtension auto-populates)
     const firstId = doc?.child(0).attrs._rowId
     const secondId = doc?.child(1).attrs._rowId
+    expect(firstId).toBeTruthy()
+    expect(secondId).toBeTruthy()
+    expect(firstId).not.toBe(secondId)
+  })
+
+  it('Duplicate deep-copies flow_panel content and assigns a fresh _rowId', async () => {
+    const editorBox: { current: Editor | null } = { current: null }
+
+    function CapturingWrapper() {
+      const editor = useEditor({
+        extensions: tiptapExtensions,
+        content: populatedFlowPanelDoc,
+      })
+      if (editor) editorBox.current = editor
+      if (!editor) return null
+      const node = editor.state.doc.maybeChild(0)
+      return (
+        <BlockMenu editor={editor} currentNode={node} currentNodePos={0} />
+      )
+    }
+
+    render(<CapturingWrapper />)
+    await screen.findByTestId('drag-grip')
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('block-menu-trigger'))
+    })
+    expect(screen.getByTestId('block-menu-dropdown')).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('block-menu-duplicate'))
+    })
+
+    // Both blocks exist, in document order, both flow_panel. (ProseMirror
+    // auto-appends a trailing paragraph, so the doc has 3 children.)
+    await waitFor(() => {
+      let count = 0
+      editorBox.current?.state.doc.forEach((n) => {
+        if (n.type.name === 'flow_panel') count += 1
+      })
+      expect(count).toBe(2)
+    })
+    const doc = editorBox.current?.state.doc
+    expect(doc?.child(0).type.name).toBe('flow_panel')
+    expect(doc?.child(1).type.name).toBe('flow_panel')
+
+    // Content attrs are deep-equal between original and duplicate.
+    const original = { ...doc?.child(0).attrs }
+    const copy = { ...doc?.child(1).attrs }
+    const firstId = original._rowId
+    const secondId = copy._rowId
+    delete original._rowId
+    delete copy._rowId
+    expect(copy).toEqual(original)
+    expect(copy.targets).toEqual([
+      {
+        id: 'tgt-1',
+        antibody_id: 'ab-1',
+        antibody_name: 'CD3',
+        antibody_target: 'CD3',
+        staining_mode: 'direct',
+        sort_order: 0,
+      },
+    ])
+    expect(copy.assignments).toHaveLength(1)
+    expect(copy.volume_params).toEqual({
+      num_samples: 6,
+      volume_per_sample_ul: 250,
+      pipet_error_factor: 1.2,
+      dilution_source: 'flow',
+    })
+
+    // Each block has a distinct, non-empty _rowId.
     expect(firstId).toBeTruthy()
     expect(secondId).toBeTruthy()
     expect(firstId).not.toBe(secondId)
