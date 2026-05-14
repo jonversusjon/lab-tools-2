@@ -13,12 +13,29 @@ import type {
 
 const BASE = '/api/v1/experiments'
 
+export class ExperimentApiError extends Error {
+  readonly status: number
+  readonly statusText: string
+
+  constructor(message: string, status: number, statusText: string) {
+    super(message)
+    this.name = 'ExperimentApiError'
+    this.status = status
+    this.statusText = statusText
+  }
+}
+
+function failed(action: string, res: Response): ExperimentApiError {
+  const message = 'Failed to ' + action + ': ' + String(res.status) + ' ' + res.statusText
+  return new ExperimentApiError(message, res.status, res.statusText)
+}
+
 export async function listExperiments(
   skip = 0,
   limit = 100
 ): Promise<PaginatedResponse<ExperimentListItem>> {
   const res = await fetch(`${BASE}?skip=${skip}&limit=${limit}`)
-  if (!res.ok) throw new Error('Failed to fetch experiments')
+  if (!res.ok) throw failed('fetch experiments', res)
   return res.json()
 }
 
@@ -30,13 +47,13 @@ export async function createExperiment(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to create experiment')
+  if (!res.ok) throw failed('create experiment', res)
   return res.json()
 }
 
 export async function getExperiment(id: string): Promise<Experiment> {
   const res = await fetch(`${BASE}/${id}`)
-  if (!res.ok) throw new Error('Failed to fetch experiment')
+  if (!res.ok) throw failed('fetch experiment', res)
   return res.json()
 }
 
@@ -49,13 +66,13 @@ export async function updateExperiment(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to update experiment')
+  if (!res.ok) throw failed('update experiment', res)
   return res.json()
 }
 
 export async function deleteExperiment(id: string): Promise<void> {
   const res = await fetch(`${BASE}/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error('Failed to delete experiment')
+  if (!res.ok) throw failed('delete experiment', res)
 }
 
 export async function createBlock(
@@ -67,7 +84,7 @@ export async function createBlock(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to create block')
+  if (!res.ok) throw failed('create block', res)
   return res.json()
 }
 
@@ -81,7 +98,7 @@ export async function updateBlock(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to update block')
+  if (!res.ok) throw failed('update block', res)
   return res.json()
 }
 
@@ -92,7 +109,7 @@ export async function deleteBlock(
   const res = await fetch(`${BASE}/${experimentId}/blocks/${blockId}`, {
     method: 'DELETE',
   })
-  if (!res.ok) throw new Error('Failed to delete block')
+  if (!res.ok) throw failed('delete block', res)
 }
 
 export async function reorderBlocks(
@@ -104,7 +121,7 @@ export async function reorderBlocks(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ blocks }),
   })
-  if (!res.ok) throw new Error('Failed to reorder blocks')
+  if (!res.ok) throw failed('reorder blocks', res)
   return res.json()
 }
 
@@ -117,6 +134,6 @@ export async function snapshotPanel(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to snapshot panel')
+  if (!res.ok) throw failed('snapshot panel', res)
   return res.json()
 }

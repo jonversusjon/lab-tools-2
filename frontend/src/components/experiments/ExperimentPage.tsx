@@ -6,7 +6,7 @@ import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
 import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
-import { getExperiment } from '@/api/experiments'
+import { getExperiment, ExperimentApiError } from '@/api/experiments'
 import type { Experiment } from '@/types'
 
 type LoadState =
@@ -32,12 +32,12 @@ export default function ExperimentPage() {
       })
       .catch((err) => {
         if (cancelled) return
-        const message = err instanceof Error ? err.message : String(err)
-        if (message.includes('404') || message.toLowerCase().includes('not found')) {
+        if (err instanceof ExperimentApiError && err.status === 404) {
           setLoadState({ kind: 'not-found' })
-        } else {
-          setLoadState({ kind: 'error', message })
+          return
         }
+        const message = err instanceof Error ? err.message : String(err)
+        setLoadState({ kind: 'error', message })
       })
     return () => { cancelled = true }
   }, [id])
