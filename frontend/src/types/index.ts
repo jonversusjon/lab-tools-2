@@ -728,6 +728,7 @@ export interface Experiment {
   id: string
   name: string
   description: string | null
+  is_full_width: boolean
   created_at: string | null
   updated_at: string | null
   blocks: ExperimentBlock[]
@@ -737,6 +738,7 @@ export interface ExperimentListItem {
   id: string
   name: string
   description: string | null
+  is_full_width: boolean
   created_at: string | null
   updated_at: string | null
   block_count: number
@@ -745,11 +747,13 @@ export interface ExperimentListItem {
 export interface ExperimentCreate {
   name: string
   description?: string | null
+  is_full_width?: boolean
 }
 
 export interface ExperimentUpdate {
   name?: string | null
   description?: string | null
+  is_full_width?: boolean
 }
 
 export interface ExperimentBlockCreate {
@@ -976,3 +980,5 @@ export const DEFAULT_BLOCK_FRAMES: BlockFramesConfig = {
 }
 
 export const BLOCK_FRAMES_PREFERENCE_KEY = 'editor.block_frames'
+
+export const EXPERIMENT_LAST_FULL_WIDTH_PREFERENCE_KEY = 'experiment_page.last_full_width'

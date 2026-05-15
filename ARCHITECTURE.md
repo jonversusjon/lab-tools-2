@@ -264,7 +264,10 @@ experiments
 ├── name            String, NOT NULL
 ├── description     Text, nullable
 ├── created_at      DateTime, server_default=now()
-└── updated_at      DateTime, server_default=now(), onupdate=now()
+├── updated_at      DateTime, server_default=now(), onupdate=now()
+└── is_full_width   Boolean, NOT NULL, default=False  (per-experiment layout width;
+                       paired with the 'experiment_page.last_full_width' UserPreference
+                       which seeds new experiments)
 
 experiment_blocks
 ├── id              String(36) PK, UUID

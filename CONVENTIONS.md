@@ -86,6 +86,18 @@ NOT add JavaScript-based overflow detection.
 
 **Origin:** Phase 9a-fix (commit `746aa62`).
 
+### Per-resource UI properties pair the resource column with a "last used" UserPreference
+When a per-resource UI property (e.g. layout width on an experiment page) should both persist on the resource AND seed reasonable defaults for newly-created resources, model it as a paired structure:
+
+1. A column on the resource itself (e.g. `Experiment.is_full_width`)
+2. A `UserPreference` key recording the last value the user picked (e.g. `experiment_page.last_full_width`)
+3. On toggle, write to both
+4. On create, read the preference and pass it in the create payload
+
+The frontend owns the "default for new resources" logic — the backend never reads the preference key. Backend treats the column as authoritative; preferences are a frontend-only seed.
+
+**Origin:** Phase 1 Fix-up (`Experiment.is_full_width`).
+
 ### Per-node Tiptap attributes that depend on external state use decorations, not `addGlobalAttributes`
 `addGlobalAttributes` cannot see the rendering node's type, so it can't map a
 node to type-specific external state. Use a ProseMirror node-decoration plugin

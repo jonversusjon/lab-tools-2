@@ -905,17 +905,20 @@ class ExperimentBlockReorder(BaseModel):
 class ExperimentCreate(BaseModel):
     name: str
     description: str | None = None
+    is_full_width: bool = False
 
 
 class ExperimentUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
+    is_full_width: bool | None = None
 
 
 class ExperimentRead(BaseModel):
     id: str
     name: str
     description: str | None
+    is_full_width: bool = False
     created_at: datetime | None = None
     updated_at: datetime | None = None
     blocks: list[ExperimentBlockRead] = []
@@ -927,6 +930,7 @@ class ExperimentListRead(BaseModel):
     id: str
     name: str
     description: str | None
+    is_full_width: bool = False
     created_at: datetime | None = None
     updated_at: datetime | None = None
     block_count: int = 0

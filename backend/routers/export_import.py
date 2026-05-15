@@ -1536,6 +1536,7 @@ def export_experiments(db: Session = Depends(get_db)):
         "records": [
             {
                 "id": e.id, "name": e.name, "description": e.description,
+                "is_full_width": e.is_full_width,
                 "blocks": [
                     {
                         "id": b.id, "block_type": b.block_type, "content": b.content,
@@ -1549,7 +1550,7 @@ def export_experiments(db: Session = Depends(get_db)):
     }, "experiments-export.json")
 
 
-_EXPERIMENT_FIELDS = ("id", "name", "description")
+_EXPERIMENT_FIELDS = ("id", "name", "description", "is_full_width")
 _BLOCK_FIELDS = ("id", "block_type", "content", "sort_order", "parent_id")
 _EXPERIMENT_PREVIEW_FIELDS = _EXPERIMENT_FIELDS + ("blocks",)
 
@@ -1559,6 +1560,7 @@ def _experiment_to_dict(e: Experiment) -> dict[str, Any]:
         "id": e.id,
         "name": e.name,
         "description": e.description,
+        "is_full_width": e.is_full_width,
         "blocks": [
             {
                 "id": b.id,

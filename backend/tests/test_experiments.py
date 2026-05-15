@@ -39,6 +39,43 @@ def test_create_experiment_no_description(client):
     assert exp["description"] is None
 
 
+def test_create_experiment_default_is_full_width_false(client):
+    exp = _create_experiment(client)
+    assert exp["is_full_width"] is False
+
+
+def test_create_experiment_is_full_width_round_trip(client):
+    resp = client.post(
+        "/api/v1/experiments",
+        json={"name": "Wide", "is_full_width": True},
+    )
+    assert resp.status_code == 201
+    exp = resp.json()
+    assert exp["is_full_width"] is True
+
+    fetched = client.get("/api/v1/experiments/%s" % exp["id"]).json()
+    assert fetched["is_full_width"] is True
+
+
+def test_update_experiment_toggles_is_full_width(client):
+    exp = _create_experiment(client)
+    assert exp["is_full_width"] is False
+
+    resp = client.put(
+        "/api/v1/experiments/%s" % exp["id"],
+        json={"is_full_width": True},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["is_full_width"] is True
+
+    resp = client.put(
+        "/api/v1/experiments/%s" % exp["id"],
+        json={"is_full_width": False},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["is_full_width"] is False
+
+
 def test_list_experiments(client):
     _create_experiment(client, "Exp A")
     _create_experiment(client, "Exp B")

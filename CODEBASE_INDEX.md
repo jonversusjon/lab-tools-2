@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-15T05:42:29Z
-Commit: 259d938
+Generated: 2026-05-15T05:51:09Z
+Commit: 21453e0
 
 ---
 
@@ -393,6 +393,7 @@ Commit: 259d938
 | `description` | `Text` | ✓ |  |  |  |  |  |
 | `created_at` | `DateTime` | ✓ |  |  |  |  |  |
 | `updated_at` | `DateTime` | ✓ |  |  |  |  |  |
+| `is_full_width` | `Boolean` |  |  |  |  |  | `False` |
 
 **Relationships:**
 - `blocks` → ExperimentBlock back_populates=experiment cascade=all, delete-orphan
@@ -1399,6 +1400,7 @@ Commit: 259d938
 |---|---|---|
 | `name` | `str` |  |
 | `description` | `str | None` | `None` |
+| `is_full_width` | `bool` | `False` |
 
 ### `ExperimentUpdate`
 
@@ -1406,6 +1408,7 @@ Commit: 259d938
 |---|---|---|
 | `name` | `str | None` | `None` |
 | `description` | `str | None` | `None` |
+| `is_full_width` | `bool | None` | `None` |
 
 ### `ExperimentRead`
 
@@ -1414,6 +1417,7 @@ Commit: 259d938
 | `id` | `str` |  |
 | `name` | `str` |  |
 | `description` | `str | None` |  |
+| `is_full_width` | `bool` | `False` |
 | `created_at` | `datetime | None` | `None` |
 | `updated_at` | `datetime | None` | `None` |
 | `blocks` | `list[ExperimentBlockRead]` | `[]` |
@@ -1425,6 +1429,7 @@ Commit: 259d938
 | `id` | `str` |  |
 | `name` | `str` |  |
 | `description` | `str | None` |  |
+| `is_full_width` | `bool` | `False` |
 | `created_at` | `datetime | None` | `None` |
 | `updated_at` | `datetime | None` | `None` |
 | `block_count` | `int` | `0` |
@@ -1536,8 +1541,8 @@ Commit: 259d938
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-15T05:42:32Z
-Commit: 259d938
+Generated: 2026-05-15T05:51:11Z
+Commit: 21453e0
 
 ---
 
@@ -1590,6 +1595,7 @@ Commit: 259d938
 | `useDyeLabel` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useDyeLabels.ts` |
 | `useDyeLabels` | `params: DyeLabelListParams = {}` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useDyeLabels.ts` |
 | `useExperiment` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperiments.ts` |
+| `useExperimentLastFullWidth` | `` | `{ lastFullWidth: boolean; setLastFullWidth: (value: boolean) => Promise<void>; isLoading: boolean; }` | `frontend/src/hooks/useExperimentLastFullWidth.ts` |
 | `useExperiments` | `skip = 0, limit = 100` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperiments.ts` |
 | `useFetchFromFpbase` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
 | `useFluorophoreCompatibility` | `instrumentId: string | null, minEx?: number, minDet?: number` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useInstruments.ts` |
@@ -1788,6 +1794,7 @@ Commit: 259d938
 | `['plate-maps', variables.id]` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['plate-maps']` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['preferences']` | `frontend/src/hooks/useBlockFramesConfig.ts` |
+| `['preferences']` | `frontend/src/hooks/useExperimentLastFullWidth.ts` |
 | `['recentFluorophores']` | `frontend/src/hooks/useFluorophores.ts` |
 | `['secondary-antibodies', id]` | `frontend/src/hooks/useSecondaries.ts` |
 | `['secondary-antibodies', params]` | `frontend/src/hooks/useSecondaries.ts` |

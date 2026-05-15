@@ -6,6 +6,7 @@ import {
   useDeleteExperiment,
   useUpdateExperiment,
 } from '@/hooks/useExperiments'
+import { useExperimentLastFullWidth } from '@/hooks/useExperimentLastFullWidth'
 import Modal from '@/components/layout/Modal'
 import HoverActionsRow from '@/components/layout/HoverActionsRow'
 
@@ -14,6 +15,7 @@ export default function ExperimentList() {
   const createMutation = useCreateExperiment()
   const deleteMutation = useDeleteExperiment()
   const updateMutation = useUpdateExperiment()
+  const { lastFullWidth } = useExperimentLastFullWidth()
   const navigate = useNavigate()
 
   const [showCreate, setShowCreate] = useState(false)
@@ -27,7 +29,11 @@ export default function ExperimentList() {
   const handleCreate = () => {
     if (!newName.trim()) return
     createMutation.mutate(
-      { name: newName.trim(), description: newDescription.trim() || null },
+      {
+        name: newName.trim(),
+        description: newDescription.trim() || null,
+        is_full_width: lastFullWidth,
+      },
       {
         onSuccess: (experiment) => {
           setShowCreate(false)

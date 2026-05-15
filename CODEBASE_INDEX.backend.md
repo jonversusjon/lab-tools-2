@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-15T05:42:29Z
-Commit: 259d938
+Generated: 2026-05-15T05:51:09Z
+Commit: 21453e0
 
 ---
 
@@ -390,6 +390,7 @@ Commit: 259d938
 | `description` | `Text` | ✓ |  |  |  |  |  |
 | `created_at` | `DateTime` | ✓ |  |  |  |  |  |
 | `updated_at` | `DateTime` | ✓ |  |  |  |  |  |
+| `is_full_width` | `Boolean` |  |  |  |  |  | `False` |
 
 **Relationships:**
 - `blocks` → ExperimentBlock back_populates=experiment cascade=all, delete-orphan
@@ -1396,6 +1397,7 @@ Commit: 259d938
 |---|---|---|
 | `name` | `str` |  |
 | `description` | `str | None` | `None` |
+| `is_full_width` | `bool` | `False` |
 
 ### `ExperimentUpdate`
 
@@ -1403,6 +1405,7 @@ Commit: 259d938
 |---|---|---|
 | `name` | `str | None` | `None` |
 | `description` | `str | None` | `None` |
+| `is_full_width` | `bool | None` | `None` |
 
 ### `ExperimentRead`
 
@@ -1411,6 +1414,7 @@ Commit: 259d938
 | `id` | `str` |  |
 | `name` | `str` |  |
 | `description` | `str | None` |  |
+| `is_full_width` | `bool` | `False` |
 | `created_at` | `datetime | None` | `None` |
 | `updated_at` | `datetime | None` | `None` |
 | `blocks` | `list[ExperimentBlockRead]` | `[]` |
@@ -1422,6 +1426,7 @@ Commit: 259d938
 | `id` | `str` |  |
 | `name` | `str` |  |
 | `description` | `str | None` |  |
+| `is_full_width` | `bool` | `False` |
 | `created_at` | `datetime | None` | `None` |
 | `updated_at` | `datetime | None` | `None` |
 | `block_count` | `int` | `0` |

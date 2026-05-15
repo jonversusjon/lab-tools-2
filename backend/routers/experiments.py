@@ -114,6 +114,7 @@ def _experiment_to_read(exp: Experiment) -> dict:
         "id": exp.id,
         "name": exp.name,
         "description": exp.description,
+        "is_full_width": exp.is_full_width,
         "created_at": exp.created_at,
         "updated_at": exp.updated_at,
         "blocks": [
@@ -156,6 +157,7 @@ def list_experiments(
             "id": exp.id,
             "name": exp.name,
             "description": exp.description,
+            "is_full_width": exp.is_full_width,
             "created_at": exp.created_at,
             "updated_at": exp.updated_at,
             "block_count": len(exp.blocks),
@@ -168,7 +170,11 @@ def create_experiment(
     data: ExperimentCreate,
     db: Session = Depends(get_db),
 ):
-    experiment = Experiment(name=data.name, description=data.description)
+    experiment = Experiment(
+        name=data.name,
+        description=data.description,
+        is_full_width=data.is_full_width,
+    )
     db.add(experiment)
     db.commit()
     return _experiment_to_read(_load_experiment(db, experiment.id))
@@ -191,6 +197,8 @@ def update_experiment(
         experiment.name = data.name
     if "description" in fields_set:
         experiment.description = data.description
+    if "is_full_width" in fields_set and data.is_full_width is not None:
+        experiment.is_full_width = data.is_full_width
     db.commit()
     return _experiment_to_read(_load_experiment(db, id))
 
