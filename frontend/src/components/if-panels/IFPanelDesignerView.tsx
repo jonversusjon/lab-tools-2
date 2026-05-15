@@ -425,8 +425,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   className={
                     'px-3 py-1.5 ' +
                     (state.viewMode === 'simple'
-                      // theme-exempt: inverted toggle — dark bg in light mode, light bg in dark mode by design
-                      ? 'bg-foreground text-canvas font-medium'
+                      ? 'bg-surface text-foreground font-medium shadow-inner'
                       : 'bg-elevated text-foreground-muted hover:bg-hover')
                   }
                 >
@@ -437,8 +436,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   className={
                     'px-3 py-1.5 border-l border-border ' +
                     (state.viewMode === 'spectral'
-                      // theme-exempt: inverted toggle — dark bg in light mode, light bg in dark mode by design
-                      ? 'bg-foreground text-canvas font-medium'
+                      ? 'bg-surface text-foreground font-medium shadow-inner'
                       : 'bg-elevated text-foreground-muted hover:bg-hover')
                   }
                 >
