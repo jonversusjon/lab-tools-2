@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-15T03:37:53Z
-Commit: 3cb826b
+Generated: 2026-05-15T04:29:30Z
+Commit: 7f84ccb
 
 ---
 
@@ -1536,8 +1536,8 @@ Commit: 3cb826b
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-15T03:37:57Z
-Commit: 3cb826b
+Generated: 2026-05-15T04:29:32Z
+Commit: 7f84ccb
 
 ---
 
@@ -1605,6 +1605,7 @@ Commit: 3cb826b
 | `useInstrument` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useInstruments.ts` |
 | `useInstrumentCompatibility` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
 | `useInstruments` | `skip = 0, limit = 100` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useInstruments.ts` |
+| `useLayoutWidth` | `` | `{ fullWidth: boolean; setFullWidth: (value: boolean) => Promise<void>; isLoading: boolean; }` | `frontend/src/hooks/useLayoutWidth.ts` |
 | `useListEntries` | `listType: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useListEntries.ts` |
 | `useMicroscope` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useMicroscopes.ts` |
 | `useMicroscopeCompatibility` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
@@ -1709,6 +1710,7 @@ Commit: 3cb826b
 | `InstrumentEditor` | `` | `frontend/src/components/instruments/InstrumentEditor.tsx` |
 | `InstrumentList` | `` | `frontend/src/components/instruments/InstrumentList.tsx` |
 | `LaserSection` | `LaserSectionProps` | `frontend/src/components/instruments/LaserSection.tsx` |
+| `LayoutWidthToggle` | `` | `frontend/src/components/layout/LayoutWidthToggle.tsx` |
 | `ListEditor` | `ListEditorProps` | `frontend/src/components/shared/ListEditor.tsx` |
 | `LocationInput` | `LocationInputProps` | `frontend/src/components/shared/LocationInput.tsx` |
 | `MicroscopeEditor` | `` | `frontend/src/components/microscopes/MicroscopeEditor.tsx` |
@@ -1788,6 +1790,7 @@ Commit: 3cb826b
 | `['plate-maps', variables.id]` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['plate-maps']` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['preferences']` | `frontend/src/hooks/useBlockFramesConfig.ts` |
+| `['preferences']` | `frontend/src/hooks/useLayoutWidth.ts` |
 | `['recentFluorophores']` | `frontend/src/hooks/useFluorophores.ts` |
 | `['secondary-antibodies', id]` | `frontend/src/hooks/useSecondaries.ts` |
 | `['secondary-antibodies', params]` | `frontend/src/hooks/useSecondaries.ts` |

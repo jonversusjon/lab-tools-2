@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import DarkModeToggle from './DarkModeToggle'
+import LayoutWidthToggle from './LayoutWidthToggle'
 
 export default function PreferencesMenu() {
   const [open, setOpen] = useState(false)
@@ -31,6 +32,7 @@ export default function PreferencesMenu() {
       {open && (
         <div className="mt-1 space-y-2 px-3 py-2">
           <DarkModeToggle />
+          <LayoutWidthToggle />
         </div>
       )}
     </div>

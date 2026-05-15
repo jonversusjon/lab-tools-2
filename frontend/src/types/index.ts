@@ -976,3 +976,5 @@ export const DEFAULT_BLOCK_FRAMES: BlockFramesConfig = {
 }
 
 export const BLOCK_FRAMES_PREFERENCE_KEY = 'editor.block_frames'
+
+export const LAYOUT_FULL_WIDTH_PREFERENCE_KEY = 'layout.full_width'
