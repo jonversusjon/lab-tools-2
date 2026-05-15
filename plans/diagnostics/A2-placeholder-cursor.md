@@ -115,7 +115,7 @@ visually confirm.
 
 ## Resolution
 
-**Fixed in commit `<pending>` (Fast-Wins #5).**
+**Fixed in commit `35e20e5` (Fast-Wins #5).**
 
 `frontend/src/index.css` now positions the placeholder `::before` with
 `position: absolute; left: 0; top: 0` instead of `float: left; height: 0`.
