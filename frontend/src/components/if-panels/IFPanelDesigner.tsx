@@ -24,6 +24,7 @@ import IFPanelDesignerView from './IFPanelDesignerView'
 import type { IFPanelDesignerViewHandlers, IFPanelDesignerViewConfig } from './IFPanelDesignerView'
 import type { TargetSelection } from '@/components/panels/TargetOmnibox'
 import type { Antibody, IFPanelAssignment, IFPanelTarget } from '@/types'
+import { computeAutoAssignPayload } from '@/utils/ifPanelAutoAssign'
 
 export default function IFPanelDesigner() {
   const { id } = useParams<{ id: string }>()
@@ -325,9 +326,31 @@ export default function IFPanelDesigner() {
       updateMutation.mutate(
         { id, data: { microscope_id: newId } },
         {
-          onSuccess: () => {
+          onSuccess: async () => {
             clearAssignments()
-            refetchPanel()
+            const result = await refetchPanel()
+            const freshPanel = result.data
+            // Backend wipes ALL assignments on microscope change. Re-create
+            // assignments for targets whose fluorophore is determined by data
+            // (dye-labels with seeded fluorophore, pre-conjugated antibodies)
+            // so the spectral channel selector remains usable without making
+            // the user re-pick fluorophores. Bug #4: DAPI dye-label rows lost
+            // their assignment on microscope change and the channel column
+            // collapsed to "—".
+            if (!freshPanel || !newId) return
+            for (const target of freshPanel.targets) {
+              const payload = computeAutoAssignPayload(target, antibodies)
+              if (!payload) continue
+              try {
+                const real = await addAssignmentMutation.mutateAsync({
+                  panelId: id,
+                  data: payload,
+                })
+                dispatch({ type: 'ADD_ASSIGNMENT', assignment: real })
+              } catch {
+                // Skip individual failures; the user can re-assign manually
+              }
+            }
           },
         }
       )
@@ -344,7 +367,7 @@ export default function IFPanelDesigner() {
        addTargetMutation, removeTargetMutation, updateTargetMutation, addAssignmentMutation,
        removeAssignmentMutation, reorderTargetsMutation, updateMutation, deleteMutation,
        addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode,
-       secondaries, refetchPanel, navigate, notesMap])
+       secondaries, antibodies, refetchPanel, navigate, notesMap])
 
   const viewConfig: IFPanelDesignerViewConfig = {
     showBackButton: true,
