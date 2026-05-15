@@ -35,3 +35,7 @@ heading blocks context menu should have change to... which also reveals the curr
 we need to implement global duplicate block shortcut key and add duplicate to block context menu that duplicates block with all current values and properties
 
 slash menu needs to implement . option; the way this works is slash brings up menu, user type IF for IF panel, instead of hitting enter they hit . which then brings up a picker for IF templates that include an omni box along with a favorites and recents section (separated by horizontal line) that can be accessed with up and down arrow
+
+in flow panel adding a biotinylated antibody places biotin in the conjugate cell which is correct, but prevents selection of a fluorophore, biotin primaries require a streptavidin-fluorophore conjugate the logic should be to put the biotin as part of the host cell in the table and then follow all the same rules for the secondary selection but instead of just offering anti-host options, strep options should be present in the top of the dropdown menu
+
+2
