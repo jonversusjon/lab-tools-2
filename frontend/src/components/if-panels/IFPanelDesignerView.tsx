@@ -120,6 +120,16 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   const [editingName, setEditingName] = useState(false)
   const [nameValue, setNameValue] = useState('')
   const nameInputRef = useRef<HTMLInputElement>(null)
+  const microscopeSelectRef = useRef<HTMLSelectElement>(null)
+
+  const focusMicroscopePicker = useCallback(() => {
+    const el = microscopeSelectRef.current
+    if (!el) return
+    if (typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    el.focus()
+  }, [])
 
   useEffect(() => {
     if (state.panel) setNameValue(state.panel.name)
@@ -466,6 +476,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
             </label>
             <select
               id="microscope-select"
+              ref={microscopeSelectRef}
               value={state.panel!.microscope_id ?? ''}
               onChange={(e) => handlers.onMicroscopeChange!(e.target.value)}
               className="rounded border border-border-strong bg-elevated px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
@@ -532,6 +543,27 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                 </tr>
               </thead>
               <tbody>
+                {showSpectral && !state.microscope && state.targets.length > 0 && (
+                  <tr data-testid="if-no-microscope-banner" className="bg-warning-soft border-b border-border">
+                    <td
+                      colSpan={totalCols}
+                      className="px-3 py-3 text-center"
+                    >
+                      <span className="text-sm text-warning-soft-foreground mr-3">
+                        Channel selection requires a microscope.
+                      </span>
+                      {config.showMicroscopeSelector && handlers.onMicroscopeChange && (
+                        <button
+                          type="button"
+                          onClick={focusMicroscopePicker}
+                          className="rounded border border-accent bg-elevated px-3 py-1 text-xs font-medium text-accent hover:bg-accent-soft"
+                        >
+                          Choose microscope
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {state.targets.length === 0 && pendingRows.length === 0 ? (
                   <tr>
                     <td
@@ -722,7 +754,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                             {showSpectral && (
                               <td className="px-3 py-2" style={{ minWidth: 160 }}>
                                 {!state.microscope ? (
-                                  <span className="text-xs italic text-foreground-subtle">Select a microscope above</span>
+                                  <span className="text-xs italic text-foreground-subtle">&mdash;</span>
                                 ) : assignment ? (
                                   <select
                                     value={assignment.filter_id ?? ''}
