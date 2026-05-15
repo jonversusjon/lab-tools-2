@@ -95,3 +95,21 @@ def test_readd_after_delete(client):
     resp = client.post("/api/v1/list-entries/host", json={"value": "Donkey"})
     assert resp.status_code == 201
     assert resp.json()["id"] != entry_id
+
+
+def test_locations_list_type_accepted(client):
+    resp = client.post("/api/v1/list-entries/locations", json={"value": "Lab A"})
+    assert resp.status_code == 201
+    assert resp.json()["list_type"] == "locations"
+
+    resp = client.get("/api/v1/list-entries/locations")
+    assert resp.status_code == 200
+    assert any(e["value"] == "Lab A" for e in resp.json())
+
+
+def test_old_location_list_types_rejected(client):
+    for legacy in ("instrument_location", "microscope_location"):
+        resp = client.post(
+            "/api/v1/list-entries/" + legacy, json={"value": "Lab A"}
+        )
+        assert resp.status_code == 400, legacy
