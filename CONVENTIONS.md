@@ -340,6 +340,16 @@ in `alembic/env.py`, future migrations that touch existing columns will
 fail at apply time. The setting is in both online and offline migration
 paths.
 
+### Model column order matches Alembic `batch_alter_table` append behavior
+`op.batch_alter_table.add_column` always appends the new column at the
+end of the SQLite table. If a new column is placed mid-class in the
+model file, `Base.metadata.create_all()` produces a different column
+order than Alembic, and `test_alembic_baseline_matches_create_all`
+fails. When adding a column to a model with a corresponding Alembic
+migration, place the column at the end of the class.
+
+**Origin:** Phase 1 Fix-up anomaly, commit `708768d`.
+
 ### `fileConfig(disable_existing_loggers=False)` in `alembic/env.py`
 The default wipes pytest's caplog handlers when env.py runs under
 tests, breaking unrelated log-assertion tests. Always pass

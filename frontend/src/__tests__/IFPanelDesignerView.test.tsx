@@ -594,20 +594,23 @@ describe('IFPanelDesignerView', () => {
       expect(screen.queryByText('Channel')).not.toBeInTheDocument()
     })
 
-    it('shows "Select a microscope above" hint in channel cells when no microscope is selected', () => {
+    it('shows the no-microscope banner in spectral mode when no microscope is selected', () => {
       renderView({ viewMode: 'spectral', microscope: null, targets: [makeTarget('t1', AB1_ID, 'CD3')] })
-      expect(screen.getAllByText('Select a microscope above').length).toBeGreaterThan(0)
+      expect(screen.getByTestId('if-no-microscope-banner')).toBeInTheDocument()
       expect(screen.queryByRole('group')).not.toBeInTheDocument()
+      // Per-row "Select a microscope above" was replaced with a single
+      // banner above the target rows (#6 fix).
+      expect(screen.queryByText(/select a microscope above/i)).not.toBeInTheDocument()
     })
 
-    it('does not show no-microscope hint when microscope is selected', () => {
+    it('does not show no-microscope banner when microscope is selected', () => {
       const target = makeTarget('t1', AB1_ID, 'CD3')
       const assignment = {
         id: 'a1', panel_id: PANEL_ID, antibody_id: AB1_ID, dye_label_id: null,
         fluorophore_id: 'fl-1', filter_id: 'f1', notes: null,
       }
       renderView({ viewMode: 'spectral', microscope: mockMicroscope1, targets: [target], assignments: [assignment] })
-      expect(screen.queryByText('Select a microscope above')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('if-no-microscope-banner')).not.toBeInTheDocument()
       expect(screen.getAllByRole('group').length).toBeGreaterThan(0)
     })
 
