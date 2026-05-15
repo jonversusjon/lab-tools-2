@@ -33,7 +33,13 @@ import {
   useUpdateConjugateChemistry,
   useDeleteConjugateChemistry,
 } from '@/hooks/useConjugateChemistries'
-import type { ConjugateChemistry } from '@/types'
+import {
+  useListEntries,
+  useCreateListEntry,
+  useUpdateListEntry,
+  useDeleteListEntry,
+} from '@/hooks/useListEntries'
+import type { ConjugateChemistry, ListEntry } from '@/types'
 import BlockFramesSection from '@/components/settings/BlockFramesSection'
 
 export default function Settings() {
@@ -136,6 +142,65 @@ export default function Settings() {
       onSuccess: () => {
         setChemMessage(`Removed "${name}"`)
         setTimeout(() => setChemMessage(''), 3000)
+      },
+    })
+  }
+
+  // Locations management
+  const { data: locations = [], isLoading: locationsLoading } =
+    useListEntries('locations')
+  const createLocationMut = useCreateListEntry('locations')
+  const updateLocationMut = useUpdateListEntry('locations')
+  const deleteLocationMut = useDeleteListEntry('locations')
+  const [newLocation, setNewLocation] = useState('')
+  const [editingLocationId, setEditingLocationId] = useState<string | null>(null)
+  const [editingLocationValue, setEditingLocationValue] = useState('')
+  const [locationMessage, setLocationMessage] = useState('')
+
+  const handleAddLocation = () => {
+    const trimmed = newLocation.trim()
+    if (!trimmed) return
+    createLocationMut.mutate(trimmed, {
+      onSuccess: () => {
+        setNewLocation('')
+        setLocationMessage('Added: ' + trimmed)
+        setTimeout(() => setLocationMessage(''), 3000)
+      },
+      onError: (err) => {
+        setLocationMessage(err.message)
+        setTimeout(() => setLocationMessage(''), 5000)
+      },
+    })
+  }
+
+  const handleSaveLocation = (entry: ListEntry) => {
+    const trimmed = editingLocationValue.trim()
+    if (!trimmed || trimmed === entry.value) {
+      setEditingLocationId(null)
+      return
+    }
+    updateLocationMut.mutate(
+      { id: entry.id, value: trimmed },
+      {
+        onSuccess: () => {
+          setEditingLocationId(null)
+          setLocationMessage('Renamed to: ' + trimmed)
+          setTimeout(() => setLocationMessage(''), 3000)
+        },
+        onError: (err) => {
+          setLocationMessage(err.message)
+          setTimeout(() => setLocationMessage(''), 5000)
+        },
+      },
+    )
+  }
+
+  const handleDeleteLocation = (entry: ListEntry) => {
+    if (!confirm('Remove "' + entry.value + '" from locations?')) return
+    deleteLocationMut.mutate(entry.id, {
+      onSuccess: () => {
+        setLocationMessage('Removed "' + entry.value + '"')
+        setTimeout(() => setLocationMessage(''), 3000)
       },
     })
   }
@@ -564,6 +629,136 @@ export default function Settings() {
             }`}
           >
             {chemMessage}
+          </p>
+        )}
+      </div>
+
+      {/* Locations */}
+      <div className="mt-6 space-y-4 rounded-lg border border-border bg-elevated p-6 shadow-sm">
+        <div>
+          <h2 className="text-lg font-medium text-foreground">Locations</h2>
+          <p className="mt-1 text-sm text-foreground-muted">
+            Shared location list used by instruments and microscopes. New
+            locations added inline from the instrument or microscope editors
+            also appear here.
+          </p>
+        </div>
+
+        {/* Add new location */}
+        <div className="flex gap-2 items-end border-b border-border pb-4">
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-foreground-muted mb-1">
+              Location Name
+            </label>
+            <input
+              type="text"
+              value={newLocation}
+              onChange={(e) => setNewLocation(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddLocation()
+              }}
+              placeholder="e.g. Tissue Culture Room"
+              className="w-full rounded border border-border-strong bg-elevated text-foreground px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={handleAddLocation}
+            disabled={!newLocation.trim() || createLocationMut.isPending}
+            className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-3 py-1.5 text-sm font-medium disabled:opacity-50"
+          >
+            Add
+          </button>
+        </div>
+
+        {locationsLoading ? (
+          <div className="py-4 text-center text-sm text-foreground-subtle">Loading...</div>
+        ) : locations.length === 0 ? (
+          <div className="py-4 text-center text-sm text-foreground-subtle">
+            No locations defined yet.
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-foreground-muted">
+                <th className="py-2">Location</th>
+                <th className="py-2 w-28 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {locations.map((entry) => (
+                <tr key={entry.id} className="border-b border-border group">
+                  {editingLocationId === entry.id ? (
+                    <>
+                      <td className="py-2 pr-2">
+                        <input
+                          type="text"
+                          value={editingLocationValue}
+                          onChange={(e) => setEditingLocationValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveLocation(entry)
+                            if (e.key === 'Escape') setEditingLocationId(null)
+                          }}
+                          className="w-full rounded border border-border-strong bg-elevated text-foreground px-2 py-1 text-sm focus:border-blue-500 focus:outline-none"
+                          autoFocus
+                        />
+                      </td>
+                      <td className="py-2 text-right">
+                        <button
+                          onClick={() => handleSaveLocation(entry)}
+                          disabled={!editingLocationValue.trim()}
+                          className="text-xs text-success hover:opacity-80 mr-2 disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => setEditingLocationId(null)}
+                          className="text-xs text-foreground-subtle hover:text-foreground-muted"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="py-2 text-foreground font-medium">
+                        {entry.value}
+                      </td>
+                      <td className="py-2 text-right">
+                        <button
+                          onClick={() => {
+                            setEditingLocationId(entry.id)
+                            setEditingLocationValue(entry.value)
+                          }}
+                          className="invisible text-xs text-foreground-subtle hover:text-accent group-hover:visible mr-2"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteLocation(entry)}
+                          className="invisible text-xs text-foreground-subtle hover:text-danger group-hover:visible"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {locationMessage && (
+          <p
+            className={`text-sm ${
+              locationMessage.includes('Removed') ||
+              locationMessage.includes('Renamed') ||
+              locationMessage.includes('Added')
+                ? 'text-success'
+                : 'text-danger'
+            }`}
+          >
+            {locationMessage}
           </p>
         )}
       </div>

@@ -8,7 +8,7 @@ import {
 } from '@/hooks/useInstruments'
 import { exportInstrument } from '@/api/instruments'
 import LaserSection from './LaserSection'
-import ListEditor from '@/components/shared/ListEditor'
+import LocationInput from '@/components/shared/LocationInput'
 import type { LaserFormData } from './LaserSection'
 
 interface InstrumentFormState {
@@ -288,13 +288,13 @@ export default function InstrumentEditor() {
       </div>
 
       <div className="mb-6">
-        <ListEditor
-          listType="instrument_location"
-          label="Location"
+        <label className="mb-1 block text-sm font-medium text-foreground-muted">
+          Location
+        </label>
+        <LocationInput
           value={form.location}
           onChange={(val) => updateForm({ ...form, location: val })}
-          placeholder="Select location..."
-          selectOnly
+          placeholder="Select or add location..."
         />
       </div>
 

@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-14T18:47:02Z
-Commit: 5fdb497
+Generated: 2026-05-15T03:37:53Z
+Commit: 3cb826b
 
 ---
 
@@ -1536,8 +1536,8 @@ Commit: 5fdb497
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-14T18:47:06Z
-Commit: 5fdb497
+Generated: 2026-05-15T03:37:57Z
+Commit: 3cb826b
 
 ---
 
@@ -1710,6 +1710,7 @@ Commit: 5fdb497
 | `InstrumentList` | `` | `frontend/src/components/instruments/InstrumentList.tsx` |
 | `LaserSection` | `LaserSectionProps` | `frontend/src/components/instruments/LaserSection.tsx` |
 | `ListEditor` | `ListEditorProps` | `frontend/src/components/shared/ListEditor.tsx` |
+| `LocationInput` | `LocationInputProps` | `frontend/src/components/shared/LocationInput.tsx` |
 | `MicroscopeEditor` | `` | `frontend/src/components/microscopes/MicroscopeEditor.tsx` |
 | `MicroscopeLaserSection` | `MicroscopeLaserSectionProps` | `frontend/src/components/microscopes/MicroscopeLaserSection.tsx` |
 | `MicroscopeList` | `` | `frontend/src/components/microscopes/MicroscopeList.tsx` |

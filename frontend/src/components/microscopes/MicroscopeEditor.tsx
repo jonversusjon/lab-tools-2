@@ -8,7 +8,7 @@ import {
 } from '@/hooks/useMicroscopes'
 import { exportMicroscope } from '@/api/microscopes'
 import MicroscopeLaserSection from './MicroscopeLaserSection'
-import ListEditor from '@/components/shared/ListEditor'
+import LocationInput from '@/components/shared/LocationInput'
 import type { MicroscopeLaserFormData } from './MicroscopeLaserSection'
 
 interface MicroscopeFormState {
@@ -293,13 +293,13 @@ export default function MicroscopeEditor() {
       </div>
 
       <div className="mb-6">
-        <ListEditor
-          listType="microscope_location"
-          label="Location"
+        <label className="mb-1 block text-sm font-medium text-foreground-muted">
+          Location
+        </label>
+        <LocationInput
           value={form.location}
           onChange={(val) => updateForm({ ...form, location: val })}
-          placeholder="Select location..."
-          selectOnly
+          placeholder="Select or add location..."
         />
       </div>
 
