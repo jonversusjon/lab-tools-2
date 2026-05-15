@@ -9,6 +9,7 @@ import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
 import { BlockFramesProvider } from '@/blocks-tiptap/blockFramesProvider'
 import { getExperiment, ExperimentApiError, updateExperiment } from '@/api/experiments'
 import { useExperimentLastFullWidth } from '@/hooks/useExperimentLastFullWidth'
+import { PageWidthToggle } from './PageWidthToggle'
 import type { Experiment } from '@/types'
 
 type LoadState =
@@ -138,43 +139,7 @@ export default function ExperimentPage() {
               {String(saveState.pendingCount)} pending
             </span>
           )}
-          <button
-            type="button"
-            onClick={toggleFullWidth}
-            title={isFullWidth ? 'Collapse to page width' : 'Expand to full width'}
-            aria-label={isFullWidth ? 'Collapse to page width' : 'Expand to full width'}
-            className="rounded p-1 text-foreground-muted hover:bg-hover hover:text-foreground"
-          >
-            {isFullWidth ? (
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 9V5H5m14 4V5h-4M5 15v4h4m6 0h4v-4"
-                />
-              </svg>
-            ) : (
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 8V4h4M20 8V4h-4M4 16v4h4m12-4v4h-4"
-                />
-              </svg>
-            )}
-          </button>
+          <PageWidthToggle isFullWidth={isFullWidth} onToggle={toggleFullWidth} />
         </div>
       </div>
 

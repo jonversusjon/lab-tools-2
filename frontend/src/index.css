@@ -138,6 +138,9 @@
 }
 
 /* === Tiptap block margin spacing === */
+.ProseMirror {
+  outline: none;
+}
 .ProseMirror > * + * {
   margin-top: 0.75rem;
 }
