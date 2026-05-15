@@ -1,6 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { computeAutoAssignPayload } from '@/utils/ifPanelAutoAssign'
-import type { Antibody, IFPanelTarget } from '@/types'
+import { computeAutoAssignPayload, buildFluorophoreSwapPayload } from '@/utils/ifPanelAutoAssign'
+import type { Antibody, IFPanelAssignment, IFPanelTarget } from '@/types'
+
+function makeAssignment(overrides: Partial<IFPanelAssignment> = {}): IFPanelAssignment {
+  return {
+    id: 'as-1',
+    panel_id: 'p-1',
+    antibody_id: 'ab-1',
+    dye_label_id: null,
+    fluorophore_id: 'fl-old',
+    filter_id: null,
+    notes: null,
+    ...overrides,
+  }
+}
 
 function makeTarget(overrides: Partial<IFPanelTarget> = {}): IFPanelTarget {
   return {
@@ -115,5 +128,86 @@ describe('computeAutoAssignPayload (#4 DAPI selector regression)', () => {
       fluorophore_id: 'dapi-fl',
       filter_id: null,
     })
+  })
+})
+
+describe('buildFluorophoreSwapPayload (#3 secondary swap preserves channel)', () => {
+  it('preserves filter_id from existing antibody assignment', () => {
+    const existing = makeAssignment({
+      antibody_id: 'ab-1',
+      fluorophore_id: 'fl-old',
+      filter_id: 'filt-450-50',
+    })
+    const payload = buildFluorophoreSwapPayload(
+      { antibody_id: 'ab-1' },
+      'fl-new',
+      existing,
+    )
+    expect(payload).toEqual({
+      antibody_id: 'ab-1',
+      fluorophore_id: 'fl-new',
+      filter_id: 'filt-450-50',
+    })
+  })
+
+  it('preserves filter_id from existing dye-label assignment', () => {
+    const existing = makeAssignment({
+      antibody_id: null,
+      dye_label_id: 'dl-1',
+      fluorophore_id: 'fl-old',
+      filter_id: 'filt-405',
+    })
+    const payload = buildFluorophoreSwapPayload(
+      { dye_label_id: 'dl-1' },
+      'fl-new',
+      existing,
+    )
+    expect(payload).toEqual({
+      dye_label_id: 'dl-1',
+      fluorophore_id: 'fl-new',
+      filter_id: 'filt-405',
+    })
+  })
+
+  it('returns filter_id=null when no existing assignment', () => {
+    const payload = buildFluorophoreSwapPayload(
+      { antibody_id: 'ab-1' },
+      'fl-new',
+      undefined,
+    )
+    expect(payload).toEqual({
+      antibody_id: 'ab-1',
+      fluorophore_id: 'fl-new',
+      filter_id: null,
+    })
+  })
+
+  it('returns filter_id=null when existing has no filter_id set', () => {
+    const existing = makeAssignment({ filter_id: null })
+    const payload = buildFluorophoreSwapPayload(
+      { antibody_id: 'ab-1' },
+      'fl-new',
+      existing,
+    )
+    expect(payload.filter_id).toBeNull()
+  })
+
+  it('includes notes when provided', () => {
+    const payload = buildFluorophoreSwapPayload(
+      { antibody_id: 'ab-1' },
+      'fl-new',
+      undefined,
+      'note text',
+    )
+    expect(payload.notes).toBe('note text')
+  })
+
+  it('omits notes when null/undefined', () => {
+    const payload = buildFluorophoreSwapPayload(
+      { dye_label_id: 'dl-1' },
+      'fl-new',
+      undefined,
+    )
+    expect(payload).not.toHaveProperty('notes')
   })
 })

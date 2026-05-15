@@ -24,7 +24,7 @@ import IFPanelDesignerView from './IFPanelDesignerView'
 import type { IFPanelDesignerViewHandlers, IFPanelDesignerViewConfig } from './IFPanelDesignerView'
 import type { TargetSelection } from '@/components/panels/TargetOmnibox'
 import type { Antibody, IFPanelAssignment, IFPanelTarget } from '@/types'
-import { computeAutoAssignPayload } from '@/utils/ifPanelAutoAssign'
+import { computeAutoAssignPayload, buildFluorophoreSwapPayload } from '@/utils/ifPanelAutoAssign'
 
 export default function IFPanelDesigner() {
   const { id } = useParams<{ id: string }>()
@@ -73,6 +73,11 @@ export default function IFPanelDesigner() {
 
       if (existing && existing.fluorophore_id === fluorophoreId) return
 
+      // Preserve filter_id across fluorophore swaps (e.g. user picks a new
+      // secondary). The user-selected channel survives the swap; only the
+      // efficiency scores change. Bug #3.
+      const preservedFilterId = existing?.filter_id ?? null
+
       const optimisticId = 'optimistic-' + Date.now()
       const optimistic: IFPanelAssignment = {
         id: optimisticId,
@@ -80,7 +85,7 @@ export default function IFPanelDesigner() {
         antibody_id: antibodyId,
         dye_label_id: null,
         fluorophore_id: fluorophoreId,
-        filter_id: null,
+        filter_id: preservedFilterId,
         notes: notesMap.get(antibodyId) ?? null,
       }
 
@@ -98,12 +103,12 @@ export default function IFPanelDesigner() {
       try {
         const real = await addAssignmentMutation.mutateAsync({
           panelId: id,
-          data: {
-            antibody_id: antibodyId,
-            fluorophore_id: fluorophoreId,
-            filter_id: null,
-            notes: notesMap.get(antibodyId) ?? null,
-          },
+          data: buildFluorophoreSwapPayload(
+            { antibody_id: antibodyId },
+            fluorophoreId,
+            existing,
+            notesMap.get(antibodyId) ?? null,
+          ),
         })
         dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: optimisticId, newId: real.id })
       } catch (err: unknown) {
@@ -123,6 +128,9 @@ export default function IFPanelDesigner() {
 
       if (existing && existing.fluorophore_id === fluorophoreId) return
 
+      // Preserve filter_id across fluorophore swaps. Bug #3.
+      const preservedFilterId = existing?.filter_id ?? null
+
       const optimisticId = 'optimistic-' + Date.now()
       const optimistic: IFPanelAssignment = {
         id: optimisticId,
@@ -130,7 +138,7 @@ export default function IFPanelDesigner() {
         antibody_id: null,
         dye_label_id: dyeLabelId,
         fluorophore_id: fluorophoreId,
-        filter_id: null,
+        filter_id: preservedFilterId,
         notes: null,
       }
 
@@ -148,11 +156,11 @@ export default function IFPanelDesigner() {
       try {
         const real = await addAssignmentMutation.mutateAsync({
           panelId: id,
-          data: {
-            dye_label_id: dyeLabelId,
-            fluorophore_id: fluorophoreId,
-            filter_id: null,
-          },
+          data: buildFluorophoreSwapPayload(
+            { dye_label_id: dyeLabelId },
+            fluorophoreId,
+            existing,
+          ),
         })
         dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: optimisticId, newId: real.id })
       } catch {

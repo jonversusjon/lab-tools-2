@@ -1,4 +1,9 @@
-import type { Antibody, IFPanelTarget, IFPanelAssignmentCreate } from '@/types'
+import type {
+  Antibody,
+  IFPanelTarget,
+  IFPanelAssignment,
+  IFPanelAssignmentCreate,
+} from '@/types'
 
 /**
  * For an IF panel target, compute the assignment payload that should be
@@ -35,3 +40,30 @@ export function computeAutoAssignPayload(
   }
   return null
 }
+
+/**
+ * For a fluorophore swap on an existing target (e.g. user picked a new
+ * secondary), build the payload for the replacement assignment.
+ * Preserves filter_id so the user-selected channel survives the swap;
+ * only the efficiency scores change. Bug #3.
+ *
+ * `target` is either `{ antibody_id }` or `{ dye_label_id }` (mutually
+ * exclusive) matching the IFPanelAssignmentCreate shape.
+ */
+export function buildFluorophoreSwapPayload(
+  target: { antibody_id: string } | { dye_label_id: string },
+  fluorophoreId: string,
+  existing: IFPanelAssignment | undefined,
+  notes?: string | null,
+): IFPanelAssignmentCreate {
+  const payload: IFPanelAssignmentCreate = {
+    ...target,
+    fluorophore_id: fluorophoreId,
+    filter_id: existing?.filter_id ?? null,
+  }
+  if (notes !== undefined && notes !== null) {
+    payload.notes = notes
+  }
+  return payload
+}
+
