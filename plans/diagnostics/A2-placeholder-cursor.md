@@ -112,3 +112,22 @@ browser, since automated caret-visibility checks are unreliable):
 they are), but the editor is still functional (typing works, confirmed in
 the A1c harness). Not data-affecting. The fix is small but needs a human to
 visually confirm.
+
+## Resolution
+
+**Fixed in commit `<pending>` (Fast-Wins #5).**
+
+`frontend/src/index.css` now positions the placeholder `::before` with
+`position: absolute; left: 0; top: 0` instead of `float: left; height: 0`.
+The parent `.is-empty` selectors gained `position: relative` so the
+absolute placeholder anchors to the block. The placeholder no longer
+shares horizontal flow with the native text caret, so the caret renders
+unobscured at the start of empty paragraphs, headings, and list items.
+
+The no-op `caret-color: currentColor` rule on `.ProseMirror h1..h6` was
+deleted in the same commit — `currentColor` was already the default value
+of `caret-color`, so the rule was misleading future readers without doing
+anything.
+
+Manual browser verification required (caret blink cannot be reliably
+captured by automated tools).

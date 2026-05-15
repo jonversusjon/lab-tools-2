@@ -88,17 +88,24 @@
   }
 }
 
-/* Tiptap editor: ensure cursor is visible in heading blocks. */
-.ProseMirror h1,
-.ProseMirror h2,
-.ProseMirror h3,
-.ProseMirror h4,
-.ProseMirror h5,
-.ProseMirror h6 {
-  caret-color: currentColor;
+/* Tiptap Placeholder extension styles.
+ *
+ * The placeholder is rendered as a ::before pseudo-element on the empty
+ * block. It must be taken out of normal flow so that the native text caret
+ * (a ~1px vertical line at x=0 of the empty block) is not visually overlapped
+ * by the first glyph of the placeholder text. Absolute positioning achieves
+ * that without consuming caret real estate. The parent block gets
+ * position:relative so the ::before anchors to it.
+ */
+.ProseMirror p.is-editor-empty:first-child,
+.ProseMirror p.is-empty,
+.ProseMirror h1.is-empty,
+.ProseMirror h2.is-empty,
+.ProseMirror h3.is-empty,
+.ProseMirror li.is-empty {
+  position: relative;
 }
 
-/* Tiptap Placeholder extension styles. */
 .ProseMirror p.is-editor-empty:first-child::before,
 .ProseMirror p.is-empty::before,
 .ProseMirror h1.is-empty::before,
@@ -106,10 +113,11 @@
 .ProseMirror h3.is-empty::before,
 .ProseMirror li.is-empty::before {
   content: attr(data-placeholder);
-  float: left;
+  position: absolute;
+  left: 0;
+  top: 0;
   color: var(--foreground-subtle);
   pointer-events: none;
-  height: 0;
 }
 
 /* Hide scrollbars while keeping scroll functionality. */
