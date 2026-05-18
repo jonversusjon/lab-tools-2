@@ -46,7 +46,13 @@ export interface IFPanelDesignerViewHandlers {
   onSelectSecondary: (targetId: string, secondaryId: string) => Promise<void>
   onSelectFluorophoreFromSecondary: (targetId: string, fluorophoreId: string) => Promise<void>
   onClearSecondary: (targetId: string) => Promise<void>
-  onUpdateChannel: (rowId: string, isDyeLabel: boolean, oldAssignment: IFPanelAssignment, newFilterId: string | null) => Promise<void>
+  onUpdateChannel: (
+    rowId: string,
+    isDyeLabel: boolean,
+    oldAssignment: IFPanelAssignment | null,
+    newFilterId: string | null,
+    fluorophoreId: string,
+  ) => Promise<void>
   onSaveDilution: (targetId: string, dilutionOverride: string | null) => void
   onSaveName: (name: string) => void
   onViewModeToggle?: (mode: 'simple' | 'spectral') => void
@@ -793,37 +799,70 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               )
                             })()}
 
-                            {/* Channel (spectral mode only) */}
+                            {/* Channel (spectral mode only). Any-order entry:
+                                whenever a microscope is selected, the
+                                dropdown renders with every filter listed,
+                                regardless of whether an assignment exists
+                                yet. Em-dash only when no microscope is
+                                selected (a banner above the table handles
+                                that case more visibly). When a fluorophore
+                                isn't yet determinable for the row, the
+                                widget is disabled with a placeholder so the
+                                user knows what's missing \u2014 the dependency
+                                is named, not hidden. */}
                             {showSpectral && (
                               <td className="px-3 py-2" style={{ minWidth: 160 }}>
-                                {!state.microscope ? (
-                                  <span className="text-xs italic text-foreground-subtle">&mdash;</span>
-                                ) : assignment ? (
-                                  <select
-                                    value={assignment.filter_id ?? ''}
-                                    onChange={(e) => {
-                                      const newFilterId = e.target.value || null
-                                      const rowId = isDyeLabelRow ? t.dye_label_id! : t.antibody_id!
-                                      handlers.onUpdateChannel(rowId, isDyeLabelRow, assignment, newFilterId)
-                                    }}
-                                    className="w-full rounded border border-border-strong bg-elevated px-2 py-0.5 text-xs text-foreground focus:border-accent focus:outline-none"
-                                  >
-                                    <option value="">None</option>
-                                    {[...state.microscope.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm).map((laser) => (
-                                      <optgroup
-                                        key={laser.id}
-                                        label={`${laser.wavelength_nm}nm${laser.name ? ' \u2014 ' + laser.name : ''}`}
-                                        style={{ color: getLaserColor(laser.wavelength_nm) }}
-                                      >
-                                        {laser.filters.map((filt) => (
-                                          <option key={filt.id} value={filt.id}>
-                                            {laser.wavelength_nm}nm &rarr; {filt.name ?? `${filt.filter_midpoint}/${filt.filter_width}`}
-                                          </option>
-                                        ))}
-                                      </optgroup>
-                                    ))}
-                                  </select>
-                                ) : (
+                                {state.microscope ? (() => {
+                                  // Fluorophore the assignment will hold:
+                                  // - existing assignment (any source)
+                                  // - dye-label seeded fluorophore
+                                  // - pre-conjugated antibody
+                                  const derivedFluorId =
+                                    assignment?.fluorophore_id ??
+                                    (isDyeLabelRow
+                                      ? (t.dye_label_fluorophore_id ?? null)
+                                      : (ab?.fluorophore_id ?? null))
+                                  const placeholder = derivedFluorId
+                                    ? 'None'
+                                    : 'Pick fluorophore first'
+                                  return (
+                                    <select
+                                      value={assignment?.filter_id ?? ''}
+                                      disabled={!derivedFluorId}
+                                      onChange={(e) => {
+                                        const newFilterId = e.target.value || null
+                                        const rowId = isDyeLabelRow ? t.dye_label_id! : t.antibody_id!
+                                        if (!derivedFluorId) return
+                                        handlers.onUpdateChannel(
+                                          rowId,
+                                          isDyeLabelRow,
+                                          assignment ?? null,
+                                          newFilterId,
+                                          derivedFluorId,
+                                        )
+                                      }}
+                                      className={
+                                        'w-full rounded border border-border-strong bg-elevated px-2 py-0.5 text-xs text-foreground focus:border-accent focus:outline-none' +
+                                        (derivedFluorId ? '' : ' opacity-60 cursor-not-allowed')
+                                      }
+                                    >
+                                      <option value="">{placeholder}</option>
+                                      {[...state.microscope.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm).map((laser) => (
+                                        <optgroup
+                                          key={laser.id}
+                                          label={`${laser.wavelength_nm}nm${laser.name ? ' \u2014 ' + laser.name : ''}`}
+                                          style={{ color: getLaserColor(laser.wavelength_nm) }}
+                                        >
+                                          {laser.filters.map((filt) => (
+                                            <option key={filt.id} value={filt.id}>
+                                              {laser.wavelength_nm}nm &rarr; {filt.name ?? `${filt.filter_midpoint}/${filt.filter_width}`}
+                                            </option>
+                                          ))}
+                                        </optgroup>
+                                      ))}
+                                    </select>
+                                  )
+                                })() : (
                                   <span className="text-xs italic text-foreground-subtle">&mdash;</span>
                                 )}
                               </td>

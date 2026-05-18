@@ -267,8 +267,49 @@ export default function IFPanelDesigner() {
       })
       dispatch({ type: 'UPDATE_TARGET', target: updated })
     },
-    onUpdateChannel: async (rowId: string, isDyeLabel: boolean, oldAssignment: IFPanelAssignment, newFilterId: string | null) => {
+    onUpdateChannel: async (
+      rowId: string,
+      isDyeLabel: boolean,
+      oldAssignment: IFPanelAssignment | null,
+      newFilterId: string | null,
+      fluorophoreId: string,
+    ) => {
       if (!id) return
+      const targetId = isDyeLabel ? { dye_label_id: rowId } : { antibody_id: rowId }
+
+      // No existing assignment: this is a create. Happens when the user
+      // picks a channel for a row whose fluorophore is data-determinable
+      // (dye-label or pre-conjugated antibody) but no assignment has been
+      // materialized yet (e.g. after a microscope swap that wiped them).
+      if (!oldAssignment) {
+        const optimisticId = 'optimistic-' + Date.now()
+        const optimistic: IFPanelAssignment = {
+          id: optimisticId,
+          panel_id: id,
+          antibody_id: isDyeLabel ? null : rowId,
+          dye_label_id: isDyeLabel ? rowId : null,
+          fluorophore_id: fluorophoreId,
+          filter_id: newFilterId,
+          notes: null,
+        }
+        dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
+        try {
+          const real = await addAssignmentMutation.mutateAsync({
+            panelId: id,
+            data: {
+              ...targetId,
+              fluorophore_id: fluorophoreId,
+              filter_id: newFilterId,
+            },
+          })
+          dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: optimisticId, newId: real.id })
+        } catch {
+          dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
+        }
+        return
+      }
+
+      // Existing assignment: remove + re-add with the new filter_id.
       dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: oldAssignment.id })
       try {
         await removeAssignmentMutation.mutateAsync({ panelId: id, assignmentId: oldAssignment.id })
@@ -283,7 +324,6 @@ export default function IFPanelDesigner() {
         filter_id: newFilterId,
       }
       dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
-      const targetId = isDyeLabel ? { dye_label_id: rowId } : { antibody_id: rowId }
       try {
         const real = await addAssignmentMutation.mutateAsync({
           panelId: id,
@@ -297,7 +337,6 @@ export default function IFPanelDesigner() {
         dispatch({ type: 'UPDATE_ASSIGNMENT_ID', oldId: optimisticId, newId: real.id })
       } catch {
         dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: optimisticId })
-        // Restore old assignment
         try {
           const restored = await addAssignmentMutation.mutateAsync({
             panelId: id,

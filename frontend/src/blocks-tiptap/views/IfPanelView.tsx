@@ -374,17 +374,26 @@ function IfPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewPro
         hookOutput.dispatch({ type: 'UPDATE_TARGET', target: updatedTarget })
       },
 
-      onUpdateChannel: async (rowId: string, isDyeLabel: boolean, oldAssignment: IFPanelAssignment, newFilterId: string | null) => {
-        hookOutput.dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: oldAssignment.id })
+      onUpdateChannel: async (
+        rowId: string,
+        isDyeLabel: boolean,
+        oldAssignment: IFPanelAssignment | null,
+        newFilterId: string | null,
+        fluorophoreId: string,
+      ) => {
+        if (oldAssignment) {
+          hookOutput.dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: oldAssignment.id })
+        }
         const optimistic: IFPanelAssignment = {
-          ...oldAssignment,
           id: 'instance-assignment-' + Date.now(),
+          panel_id: oldAssignment?.panel_id ?? '',
+          antibody_id: isDyeLabel ? null : rowId,
+          dye_label_id: isDyeLabel ? rowId : null,
+          fluorophore_id: oldAssignment?.fluorophore_id ?? fluorophoreId,
           filter_id: newFilterId,
+          notes: oldAssignment?.notes ?? null,
         }
         hookOutput.dispatch({ type: 'ADD_ASSIGNMENT', assignment: optimistic })
-        // Suppress unused-variable warning for isDyeLabel — present in handler signature
-        void isDyeLabel
-        void rowId
       },
 
       onSaveDilution: (targetId: string, dilutionOverride: string | null) => {
