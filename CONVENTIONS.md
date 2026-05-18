@@ -142,7 +142,7 @@ collapsing.
 **Origin:** Phase 2 fix-up. The previous Phase 2 #4 fix attempted to
 force auto-suggest results via re-assignment-on-microscope-change, which
 violated this principle. Replaced by always-render dropdown in commit
-`<SHA-PENDING>`.
+`f2012b8`.
 
 **Enforcement audit:** A separate future phase will audit the full app for
 any-order compliance. Until then, every new multi-input form must follow
