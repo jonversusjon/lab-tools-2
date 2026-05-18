@@ -638,6 +638,18 @@ describe('PanelDesignerView', () => {
       expect(screen.getByTestId(`cell-${AB1_ID}-${DET_D2}`)).toHaveAttribute('data-state', 'row-assigned')
       expect(screen.getByTestId(`cell-${AB1_ID}-${DET_D3}`)).toHaveAttribute('data-state', 'row-assigned')
     })
+
+    it('no-spectra cell shows data-state="no-spectra" and a NoSpectraChip when the row fluorophore lacks spectra', () => {
+      // CD8 (AB3) is pre-conjugated to FITC (FL1), which the test fixture
+      // creates with spectra: null. rowFluorophoreMap inherits FL1 from the
+      // antibody; rankChannels returns { kind: 'no_spectra' }; unassigned
+      // detector cells render the NoSpectraChip affordance instead of a
+      // fabricated efficiency number.
+      renderView({ targets: [makeTarget('t1', AB3_ID)] })
+      const cell = screen.getByTestId(`cell-${AB3_ID}-${DET_D1}`)
+      expect(cell).toHaveAttribute('data-state', 'no-spectra')
+      expect(cell.querySelector('[data-testid="no-spectra-chip"]')).not.toBeNull()
+    })
   })
 
   // ── Panel Spectra section ──────────────────────────────────────────────────

@@ -21,6 +21,7 @@ import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@
 import type { DetectionStrategy } from '@/utils/conjugates'
 import { rankChannels } from '@/utils/spectra'
 import type { RankChannelsResult } from '@/utils/spectra'
+import NoSpectraChip from '@/components/spectra/NoSpectraChip'
 import type { SpilloverInput } from '@/utils/spillover'
 import TargetOmnibox from './TargetOmnibox'
 import type { TargetSelection } from './TargetOmnibox'
@@ -1187,6 +1188,21 @@ export default function PanelDesignerView({
                           }
 
                           const channelResult = rowChannelScores.get(rowId)
+                          if (channelResult?.kind === 'no_spectra') {
+                            return (
+                              <td
+                                key={det.id}
+                                className="cursor-pointer px-2 py-2 text-center hover:bg-hover"
+                                data-testid={'cell-' + rowId + '-' + det.id}
+                                data-state="no-spectra"
+                                onClick={(e) =>
+                                  handleCellClick(e, t.id, rowId, det.id, g.laser.wavelength_nm, det.filter_midpoint, det.filter_width, isDyeLabelRow)
+                                }
+                              >
+                                <NoSpectraChip fluorophoreId={knownFlId} />
+                              </td>
+                            )
+                          }
                           const ranking = channelResult?.kind === 'computed'
                             ? channelResult.rankings.find((r) => r.detectorId === det.id)
                             : undefined
