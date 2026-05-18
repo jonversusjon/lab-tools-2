@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-05-18T17:13:12Z
-Commit: 07dbfd2
+Generated: 2026-05-18T19:08:48Z
+Commit: 94f17dc
 
 ---
 
@@ -1541,8 +1541,8 @@ Commit: 07dbfd2
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-05-18T17:13:15Z
-Commit: 07dbfd2
+Generated: 2026-05-18T19:08:52Z
+Commit: 94f17dc
 
 ---
 
@@ -1616,6 +1616,7 @@ Commit: 07dbfd2
 | `useMicroscopeCompatibility` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useFluorophores.ts` |
 | `useMicroscopeFluorophoreCompatibility` | `microscopeId: string | null, minEx?: number, minDet?: number` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useMicroscopes.ts` |
 | `useMicroscopes` | `skip = 0, limit = 100` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useMicroscopes.ts` |
+| `useModal` | `` | `ModalContextValue` | `frontend/src/components/layout/ModalContext.tsx` |
 | `usePanel` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/usePanels.ts` |
 | `usePanelDesigner` | `panel: Panel | null, instrument: Instrument | null` | `{ dispatch: React.Dispatch<import("/home/jramirez2/proj/lab-tools-2/frontend/src/hooks/usePanelDesigner").PanelDesign...` | `frontend/src/hooks/usePanelDesigner.ts` |
 | `usePanelDesignerInstance` | `initialState: PanelDesignerState, onChange: (state: PanelDesignerState) => void` | `{ state: import("/home/jramirez2/proj/lab-tools-2/frontend/src/hooks/usePanelDesigner").PanelDesignerState; dispatch:...` | `frontend/src/hooks/usePanelDesigner.ts` |
@@ -1721,6 +1722,7 @@ Commit: 07dbfd2
 | `MicroscopeLaserSection` | `MicroscopeLaserSectionProps` | `frontend/src/components/microscopes/MicroscopeLaserSection.tsx` |
 | `MicroscopeList` | `` | `frontend/src/components/microscopes/MicroscopeList.tsx` |
 | `Modal` | `ModalProps` | `frontend/src/components/layout/Modal.tsx` |
+| `ModalRoot` | `` | `frontend/src/components/layout/ModalRoot.tsx` |
 | `NestedImportDiffModal` | `Props` | `frontend/src/components/shared/NestedImportDiffModal.tsx` |
 | `PanelDesigner` | `` | `frontend/src/components/panels/PanelDesigner.tsx` |
 | `PanelDesignerView` | `import("/home/jramirez2/proj/lab-tools-2/frontend/src/components/panels/PanelDesignerView").PanelDesignerViewProps` | `frontend/src/components/panels/PanelDesignerView.tsx` |

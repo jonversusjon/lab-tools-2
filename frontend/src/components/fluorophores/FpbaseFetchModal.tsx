@@ -4,6 +4,12 @@ import type { BatchFetchFpbaseResult } from '@/types'
 
 interface FpbaseFetchModalProps {
   onClose: () => void
+  /**
+   * If provided, the modal opens with this fluorophore pre-selected for
+   * fetch. Looked up against the local fluorophore list to resolve the
+   * FPbase name to pre-select.
+   */
+  prefillFluorophoreId?: string
 }
 
 function fuzzyMatch(query: string, name: string): boolean {
@@ -14,12 +20,13 @@ function fuzzyMatch(query: string, name: string): boolean {
 
 type ModalState = 'browse' | 'fetching' | 'done'
 
-export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
+export default function FpbaseFetchModal({ onClose, prefillFluorophoreId }: FpbaseFetchModalProps) {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<string[]>([])
   const [modalState, setModalState] = useState<ModalState>('browse')
   const [result, setResult] = useState<BatchFetchFpbaseResult | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const prefillApplied = useRef(false)
 
   const catalogQuery = useFpbaseCatalog()
   const fluorophoresQuery = useFluorophores({ skip: 0, limit: 5000 })
@@ -29,6 +36,16 @@ export default function FpbaseFetchModal({ onClose }: FpbaseFetchModalProps) {
     if (!fluorophoresQuery.data) return new Set<string>()
     return new Set(fluorophoresQuery.data.items.map((f) => f.name))
   }, [fluorophoresQuery.data])
+
+  useEffect(() => {
+    if (prefillApplied.current) return
+    if (!prefillFluorophoreId) return
+    const item = fluorophoresQuery.data?.items.find((f) => f.id === prefillFluorophoreId)
+    if (!item) return
+    setSelected((prev) => (prev.includes(item.name) ? prev : [...prev, item.name]))
+    setSearch(item.name)
+    prefillApplied.current = true
+  }, [prefillFluorophoreId, fluorophoresQuery.data])
 
   const filtered = useMemo(() => {
     if (!catalogQuery.data) return []
