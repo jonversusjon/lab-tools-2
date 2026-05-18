@@ -12,8 +12,8 @@ import { useRecentInstruments, useRecordInstrumentView } from '@/hooks/useInstru
 import { useRecentMicroscopes, useRecordMicroscopeView } from '@/hooks/useMicroscopes'
 import { tokenSearch } from '@/utils/search'
 import SpectraViewer from '@/components/spectra/SpectraViewer'
-import FpbaseFetchModal from './FpbaseFetchModal'
 import FluorophoreImportWizard from './FluorophoreImportWizard'
+import { useModal } from '@/components/layout/ModalContext'
 import FavoriteButton from '@/components/antibodies/FavoriteButton'
 import type { Fluorophore, InstrumentCompatibility, MicroscopeCompatibility, SpectraData } from '@/types'
 
@@ -29,8 +29,8 @@ export default function FluorophoreBrowser() {
   // Map of fluorophore id → name for all items currently in the overlay
   const [overlayMap, setOverlayMap] = useState<Map<string, string>>(new Map())
   const toggleFavorite = useToggleFluorophoreFavorite()
-  const [showFpbaseModal, setShowFpbaseModal] = useState(false)
   const [showImportWizard, setShowImportWizard] = useState(false)
+  const { open: openModal } = useModal()
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -98,7 +98,7 @@ export default function FluorophoreBrowser() {
               Import CSV / JSON
             </button>
             <button
-              onClick={() => setShowFpbaseModal(true)}
+              onClick={() => openModal({ kind: 'fpbase_fetch' })}
               className="rounded bg-accent hover:bg-accent-hover text-accent-foreground px-4 py-2 text-sm font-medium"
             >
               Fetch from FPbase
@@ -279,7 +279,6 @@ export default function FluorophoreBrowser() {
         </div>
       )}
 
-      {showFpbaseModal && <FpbaseFetchModal onClose={() => setShowFpbaseModal(false)} />}
       {showImportWizard && (
         <FluorophoreImportWizard onClose={() => setShowImportWizard(false)} />
       )}
