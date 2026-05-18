@@ -13,9 +13,9 @@ import {
   useRemoveIFAssignment,
   useReorderIFTargets,
 } from '@/hooks/useIFPanels'
-import { useMicroscopes, useMicroscope, useMicroscopeFluorophoreCompatibility } from '@/hooks/useMicroscopes'
+import { useMicroscopes, useMicroscope } from '@/hooks/useMicroscopes'
 import { useAntibodies } from '@/hooks/useAntibodies'
-import { useFluorophores } from '@/hooks/useFluorophores'
+import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import { useDyeLabels } from '@/hooks/useDyeLabels'
@@ -48,7 +48,6 @@ export default function IFPanelDesigner() {
 
   const microscopeId = panel?.microscope_id ?? null
   const { data: microscope } = useMicroscope(microscopeId ?? '')
-  const { data: compatibilityData } = useMicroscopeFluorophoreCompatibility(microscopeId)
 
   const { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode } =
     useIFPanelDesigner(panel ?? null, microscope ?? null)
@@ -59,6 +58,16 @@ export default function IFPanelDesigner() {
   const secondaries = secondariesData?.items ?? []
   const { data: dyeLabelsData } = useDyeLabels({ limit: 2000 })
   const dyeLabels = dyeLabelsData?.items ?? []
+
+  // Batch-fetch spectra for every fluorophore that could appear in a row.
+  // The chip display reads from this cache to compute Ex %/Det %
+  // frontend-side, decoupling display from the threshold-gated compat
+  // endpoint (which now serves auto-suggest consumers only).
+  const allFluorophoreIds = useMemo(
+    () => fluorophores.map((f) => f.id),
+    [fluorophores],
+  )
+  const { data: spectraCache } = useBatchSpectra(allFluorophoreIds)
 
   // Notes local state for optimistic assignment creation
   const [notesMap] = useState<Map<string, string>>(new Map())
@@ -400,7 +409,7 @@ export default function IFPanelDesigner() {
       secondaries={secondaries}
       conjugateChemistries={conjugateChemistries}
       microscopes={microscopes}
-      compatibilityData={compatibilityData}
+      spectraCache={spectraCache}
     />
   )
 }

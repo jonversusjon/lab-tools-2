@@ -32,7 +32,9 @@ import type {
   Microscope,
   IFPanelAssignment,
   DetectorCompatibilityResponse,
+  SpectraData,
 } from '@/types'
+import { excitationEfficiency, detectionEfficiency } from '@/utils/efficiencyScore'
 
 export interface IFPanelDesignerViewHandlers {
   onAddTarget: (selection: TargetSelection) => Promise<unknown>
@@ -72,6 +74,13 @@ export interface IFPanelDesignerViewProps {
   conjugateChemistries: ConjugateChemistry[]
   microscopes?: Microscope[]
   compatibilityData?: DetectorCompatibilityResponse | null
+  /**
+   * Cached spectra by fluorophore_id. Used to compute Ex %/Det % chip
+   * values frontend-side, decoupled from the threshold-gated compat
+   * endpoint (see `utils/efficiencyScore.ts`). When omitted or missing
+   * a fluorophore, the chip renders an em-dash for that row.
+   */
+  spectraCache?: Record<string, SpectraData> | null
 }
 
 function SortableRow({
@@ -111,8 +120,11 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     secondaries,
     conjugateChemistries,
     microscopes,
-    compatibilityData,
+    spectraCache,
   } = props
+  // compatibilityData (passed by legacy callers) is intentionally ignored:
+  // chip Ex %/Det % values now come from spectraCache via efficiencyScore,
+  // which decouples display from the threshold-gated compat endpoint.
   const conjugateSet = useMemo(() => buildConjugateSet(conjugateChemistries), [conjugateChemistries])
   const bindingPartners = useMemo(() => buildBindingPartners(conjugateChemistries), [conjugateChemistries])
 
@@ -377,6 +389,37 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     for (const dl of dyeLabels) map.set(dl.id, dl)
     return map
   }, [dyeLabels])
+
+  // Index filters by id so the chip cells can locate the parent laser
+  // (needed for laser_wavelength_nm, excitation_type, ex_filter_width).
+  const filterById = useMemo(() => {
+    type FilterWithLaser = {
+      filter: { id: string; filter_midpoint: number; filter_width: number }
+      laser: { wavelength_nm: number; excitation_type: 'laser' | 'arc'; ex_filter_width: number | null }
+    }
+    const map = new Map<string, FilterWithLaser>()
+    if (state.microscope) {
+      for (const laser of state.microscope.lasers) {
+        for (const filt of laser.filters) {
+          map.set(filt.id, {
+            filter: filt,
+            laser: {
+              wavelength_nm: laser.wavelength_nm,
+              excitation_type: laser.excitation_type,
+              ex_filter_width: laser.ex_filter_width,
+            },
+          })
+        }
+      }
+    }
+    return map
+  }, [state.microscope])
+
+  const fluorophoreById = useMemo(() => {
+    const map = new Map<string, Fluorophore>()
+    for (const fl of fluorophores) map.set(fl.id, fl)
+    return map
+  }, [fluorophores])
 
   const showSpectral = state.viewMode === 'spectral'
   const showCompatCols = showSpectral && state.microscope != null
@@ -786,37 +829,49 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               </td>
                             )}
 
-                            {/* Ex % (spectral mode with microscope only) */}
+                            {/* Ex % and Det % (spectral mode with microscope only).
+                                Computed frontend-side from cached spectra via
+                                efficiencyScore, matching backend math. Em-dash
+                                only when assignment is incomplete or spectra
+                                are genuinely unavailable. */}
                             {showCompatCols && (() => {
                               const filterId = assignment?.filter_id ?? null
                               const fluorId = assignment?.fluorophore_id ?? null
-                              let exPct: string = '\u2014'
-                              if (filterId && fluorId && compatibilityData) {
-                                const entries = compatibilityData.compatibility[filterId]
-                                const match = entries?.find((e) => e.fluorophore_id === fluorId)
-                                if (match) exPct = Math.round(match.excitation_efficiency * 100) + '%'
+                              let exPct = '\u2014'
+                              let detPct = '\u2014'
+                              if (filterId && fluorId) {
+                                const filterEntry = filterById.get(filterId)
+                                const fl = fluorophoreById.get(fluorId)
+                                const spectra = spectraCache?.[fluorId] ?? null
+                                if (filterEntry && fl) {
+                                  const exEff = excitationEfficiency(
+                                    spectra?.EX ?? spectra?.AB ?? null,
+                                    fl.ex_max_nm ?? null,
+                                    {
+                                      laser_wavelength_nm: filterEntry.laser.wavelength_nm,
+                                      excitation_type: filterEntry.laser.excitation_type,
+                                      ex_filter_width: filterEntry.laser.ex_filter_width,
+                                    },
+                                  )
+                                  const detEff = detectionEfficiency(
+                                    spectra?.EM ?? null,
+                                    fl.em_max_nm ?? null,
+                                    filterEntry.filter.filter_midpoint,
+                                    filterEntry.filter.filter_width,
+                                  )
+                                  exPct = Math.round(exEff * 100) + '%'
+                                  detPct = Math.round(detEff * 100) + '%'
+                                }
                               }
                               return (
-                                <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
-                                  {exPct}
-                                </td>
-                              )
-                            })()}
-
-                            {/* Det % (spectral mode with microscope only) */}
-                            {showCompatCols && (() => {
-                              const filterId = assignment?.filter_id ?? null
-                              const fluorId = assignment?.fluorophore_id ?? null
-                              let detPct: string = '\u2014'
-                              if (filterId && fluorId && compatibilityData) {
-                                const entries = compatibilityData.compatibility[filterId]
-                                const match = entries?.find((e) => e.fluorophore_id === fluorId)
-                                if (match) detPct = Math.round(match.detection_efficiency * 100) + '%'
-                              }
-                              return (
-                                <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
-                                  {detPct}
-                                </td>
+                                <>
+                                  <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
+                                    {exPct}
+                                  </td>
+                                  <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
+                                    {detPct}
+                                  </td>
+                                </>
                               )
                             })()}
 
