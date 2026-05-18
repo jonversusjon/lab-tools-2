@@ -155,3 +155,77 @@ Localized frontend change. Does NOT require new state or endpoints.
 
 Per the phase prompt's STOP-during-diagnosis condition, surfacing this
 to the PM rather than guessing at #2 and #4.
+
+---
+
+## Phase 2 fix-up addendum (2026-05-18)
+
+The user clarified two things that re-frame the previous diagnoses.
+
+### Threshold semantics (#2)
+
+`min_excitation_pct` / `min_detection_pct` (params to
+`/api/v1/microscopes/{id}/fluorophore-compatibility`) gate
+**auto-suggest**, not display. They were never meant to affect whether
+Ex %/Det % chips on existing assignments render numbers vs. em-dashes.
+
+The previous Phase 2 patch (commit `def5e04`, since reverted upstream)
+overrode both thresholds to 0 so every (filter, fluorophore) pair got
+an entry. That fed the display path but conflated two distinct
+consumers of the endpoint:
+
+1. **Auto-suggest** — wants threshold-gated results so it only
+   pre-suggests usable combos.
+2. **Chip display** — wants raw efficiency numbers for whatever
+   (fluorophore, filter) the user actually picked.
+
+**Real fix (this phase):** compute Ex %/Det % frontend-side from
+spectra via a new `utils/efficiencyScore.ts` that mirrors backend
+math, including arc-lamp bandpass integration and the ±40nm /
+±filter_width fallbacks. Display path becomes independent of the
+compat endpoint. Verified within ±0.001 of the backend on fixture
+inputs.
+
+Code-audit note: the IF panel designer does NOT currently have a
+`rankChannels`-style auto-suggest path that consumes the compat
+endpoint. The only consumer of `compatibilityData` was the chip
+rendering at IFPanelDesignerView.tsx:794, 811 — so this phase also
+drops the now-dead `useMicroscopeFluorophoreCompatibility` call in
+IFPanelDesigner. The flow panel designer uses its own client-side
+`rankChannels` from `utils/spectra.ts` and is not affected.
+
+### Any-order data entry (#4)
+
+> Multi-input forms must allow users to make selections in any order.
+> When an option list is derived from a prior selection, the dependent
+> input remains visually present but inert, with placeholder text
+> explaining the dependency.
+
+The channel cell rendering an em-dash whenever the assignment doesn't
+exist violates this principle. The dropdown should always be available
+when a microscope is selected, even when an assignment hasn't yet been
+created (e.g. immediately after a microscope swap wipes assignments).
+Auto-suggest's role is to *pre-fill* the dropdown when it has a good
+guess — never to gate whether the dropdown renders.
+
+**Real fix (this phase):** the channel `<select>` renders unconditionally
+when a microscope is selected. When a fluorophore is determinable for the
+row (existing assignment, dye-label seed, or pre-conjugated antibody),
+the select is enabled; picking a filter creates the assignment in one
+shot via the widened `onUpdateChannel(rowId, isDyeLabel, oldAssignment
+| null, newFilterId, fluorophoreId)`. When the fluorophore is not yet
+known, the select renders disabled with a "Pick fluorophore first"
+placeholder — the dependency is named, not hidden.
+
+The previous workaround at commit `68942a8` (re-creating assignments
+inside `onMicroscopeChange.onSuccess`) is now redundant for its
+stated purpose but harmless and was left in place for this fix-up.
+Future cleanup can drop it once any-order coverage is broader.
+
+### Real root causes (post-clarification)
+
+| Bug | Root cause | Real fix |
+|---|---|---|
+| #2 | Display path read from a thresholded endpoint; default 5%/10% gate ate low-efficiency combos and produced em-dashes. The threshold=0 patch was the wrong mechanism — it coupled display to a knob meant for auto-suggest. | Compute Ex %/Det % frontend-side from spectra (`utils/efficiencyScore.ts`) matching backend math. Decouples display from the compat endpoint. |
+| #4 | Channel cell hid the `<select>` when no assignment existed. After microscope change (or any path leaving a row unassigned) the cell collapsed to em-dash. | Always render the dropdown when a microscope is selected; widen `onUpdateChannel` to support create-from-null using a derived fluorophore_id. Codified under the "Any-order data entry" convention. |
+

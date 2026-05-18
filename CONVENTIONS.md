@@ -111,6 +111,43 @@ it is intrinsic to the node, not externally derived.
 
 **Origin:** Phase 13c block frames (`data-frame` attribute).
 
+### Any-order data entry
+
+Multi-input forms (panel designers especially) must allow users to make
+selections in any order. A user may pick a dye before a channel, a channel
+before a dye, a microscope last, etc. — order is the user's choice, not the
+system's.
+
+The single exception: when an option list is derived from a prior selection
+(e.g., channel options come from microscope specs). In those cases the
+dependent input remains visually present but inert, with placeholder text
+explaining the dependency — e.g. "Select microscope first" — and becomes
+active once the upstream selection is made. The placeholder is part of the
+contract: it sets user expectations about the one place ordering is enforced.
+
+Selecting items in any "natural" order is never required; auto-suggestions
+are convenience features, not order enforcement. Em-dashes, blank cells, or
+missing widgets should NOT be used to signal "the system couldn't auto-fill
+this for you" — that's order enforcement disguised as UX.
+
+**Canonical example:** IF panel designer channel cells. When no microscope
+is selected, a banner above the table prompts the user to pick one and the
+per-row cell stays empty (the exception). When a microscope IS selected but
+no auto-suggest fired for a particular dye, the channel `<select>` still
+renders, fully interactive, with all filters as options. The user picks
+manually. When the row's fluorophore isn't yet determinable, the widget
+renders disabled with a "Pick fluorophore first" placeholder rather than
+collapsing.
+
+**Origin:** Phase 2 fix-up. The previous Phase 2 #4 fix attempted to
+force auto-suggest results via re-assignment-on-microscope-change, which
+violated this principle. Replaced by always-render dropdown in commit
+`<SHA-PENDING>`.
+
+**Enforcement audit:** A separate future phase will audit the full app for
+any-order compliance. Until then, every new multi-input form must follow
+this rule from the start.
+
 ---
 
 ## Python
