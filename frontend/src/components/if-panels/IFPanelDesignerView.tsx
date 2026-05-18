@@ -141,7 +141,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   const microscopeSelectRef = useRef<HTMLSelectElement>(null)
 
   // When the user picks a microscope via the inline banner duplicate
-  // select, flash the upstream picker for 20s so they know where to
+  // select, flash the upstream picker briefly so they know where to
   // make future changes once the banner disappears.
   const [flashMicroscopePicker, setFlashMicroscopePicker] = useState(false)
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -151,7 +151,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     flashTimerRef.current = setTimeout(() => {
       setFlashMicroscopePicker(false)
       flashTimerRef.current = null
-    }, 20000)
+    }, 2000)
     const el = microscopeSelectRef.current
     if (el && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })

@@ -47,7 +47,12 @@ export default function IFPanelDesigner() {
   const reorderTargetsMutation = useReorderIFTargets()
 
   const microscopeId = panel?.microscope_id ?? null
-  const { data: microscope } = useMicroscope(microscopeId ?? '')
+  // Pass undefined query id when no microscope is selected so the hook
+  // gates correctly; the cached prior microscope must not leak through
+  // as state.microscope after the user picks "None", or the no-
+  // microscope banner won't appear.
+  const { data: microscopeFromQuery } = useMicroscope(microscopeId ?? '')
+  const microscope = microscopeId ? microscopeFromQuery : null
 
   const { state, dispatch, addTarget, removeTarget, reorderTargets, clearAssignments, setViewMode } =
     useIFPanelDesigner(panel ?? null, microscope ?? null)
