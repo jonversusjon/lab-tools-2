@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   excitationEfficiency,
   detectionEfficiency,
+  channelEfficiency,
   type SpectrumPoints,
 } from '@/utils/efficiencyScore'
 
@@ -165,5 +166,62 @@ describe('detectionEfficiency', () => {
   it('empty spectrum + missing em_max returns 0', () => {
     const eff = detectionEfficiency([], null, 530, 30)
     expect(eff).toBe(0)
+  })
+})
+
+describe('channelEfficiency', () => {
+  it('returns computed values when both spectra are present', () => {
+    const result = channelEfficiency(
+      REF_EX,
+      REF_EM,
+      495,
+      519,
+      { laser_wavelength_nm: 495 },
+      530,
+      30,
+    )
+    expect(result.kind).toBe('computed')
+    if (result.kind !== 'computed') return
+    expect(result.excitationEff).toBeCloseTo(1.0, 6)
+    expect(result.detectionEff).toBeCloseTo(BACKEND_FILTER_530_30, 3)
+  })
+
+  it('signals no_spectra when ex spectrum is missing (even with ex_max_nm metadata)', () => {
+    const result = channelEfficiency(
+      null,
+      REF_EM,
+      495,
+      519,
+      { laser_wavelength_nm: 488 },
+      530,
+      30,
+    )
+    expect(result).toEqual({ kind: 'no_spectra' })
+  })
+
+  it('signals no_spectra when em spectrum is missing (even with em_max_nm metadata)', () => {
+    const result = channelEfficiency(
+      REF_EX,
+      null,
+      495,
+      519,
+      { laser_wavelength_nm: 488 },
+      530,
+      30,
+    )
+    expect(result).toEqual({ kind: 'no_spectra' })
+  })
+
+  it('signals no_spectra when both spectra are empty arrays', () => {
+    const result = channelEfficiency(
+      [],
+      [],
+      null,
+      null,
+      { laser_wavelength_nm: 488 },
+      530,
+      30,
+    )
+    expect(result).toEqual({ kind: 'no_spectra' })
   })
 })

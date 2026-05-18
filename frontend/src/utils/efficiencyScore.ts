@@ -125,6 +125,46 @@ export function detectionEfficiency(
 }
 
 /**
+ * Combined per-(fluorophore, channel) efficiency that distinguishes
+ * "no raw data" from "real low value". Returns kind: 'no_spectra' when
+ * either excitation or emission spectrum is missing — even if metadata
+ * (ex_max_nm / em_max_nm) is present. Callers must surface that as a
+ * distinct missing-data affordance (e.g. NoSpectraChip) rather than
+ * render the coarse metadata-fallback values that the underlying
+ * excitationEfficiency / detectionEfficiency functions return.
+ *
+ * When both spectra are present, returns raw integral-based values
+ * identical to excitationEfficiency + detectionEfficiency.
+ *
+ * Use the underlying excitationEfficiency / detectionEfficiency
+ * functions directly only where the metadata fallback is wanted —
+ * e.g. backend-mirroring auto-suggest / compat consumers that have
+ * other thresholding upstream.
+ */
+export type ChannelEfficiency =
+  | { kind: 'computed'; excitationEff: number; detectionEff: number }
+  | { kind: 'no_spectra' }
+
+export function channelEfficiency(
+  ex_spectrum: SpectrumPoints | null | undefined,
+  em_spectrum: SpectrumPoints | null | undefined,
+  ex_max_nm: number | null | undefined,
+  em_max_nm: number | null | undefined,
+  source: ExcitationSource,
+  filter_midpoint: number,
+  filter_width: number,
+): ChannelEfficiency {
+  const hasEx = !!ex_spectrum && ex_spectrum.length > 0
+  const hasEm = !!em_spectrum && em_spectrum.length > 0
+  if (!hasEx || !hasEm) return { kind: 'no_spectra' }
+  return {
+    kind: 'computed',
+    excitationEff: excitationEfficiency(ex_spectrum, ex_max_nm, source),
+    detectionEff: detectionEfficiency(em_spectrum, em_max_nm, filter_midpoint, filter_width),
+  }
+}
+
+/**
  * Numerical integration at 1nm steps. Mirrors backend
  * `services/spectra.py::integrate_bandpass`. The loop starts at
  * `low` (not Math.round(low)) so the step boundaries align exactly

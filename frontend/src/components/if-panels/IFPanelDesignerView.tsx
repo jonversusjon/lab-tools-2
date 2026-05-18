@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -34,7 +34,8 @@ import type {
   DetectorCompatibilityResponse,
   SpectraData,
 } from '@/types'
-import { excitationEfficiency, detectionEfficiency } from '@/utils/efficiencyScore'
+import { channelEfficiency } from '@/utils/efficiencyScore'
+import NoSpectraChip from '@/components/spectra/NoSpectraChip'
 
 export interface IFPanelDesignerViewHandlers {
   onAddTarget: (selection: TargetSelection) => Promise<unknown>
@@ -900,45 +901,49 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
                             {/* Ex % and Det % (spectral mode with microscope only).
                                 Computed frontend-side from cached spectra via
-                                efficiencyScore, matching backend math. Em-dash
-                                only when assignment is incomplete or spectra
-                                are genuinely unavailable. */}
+                                channelEfficiency. When spectra are missing for
+                                the assigned fluorophore, both cells render a
+                                NoSpectraChip with an inline 'Upload now' link
+                                rather than the metadata-fallback values. */}
                             {showCompatCols && (() => {
                               const filterId = assignment?.filter_id ?? null
                               const fluorId = assignment?.fluorophore_id ?? null
-                              let exPct = '\u2014'
-                              let detPct = '\u2014'
+                              let exContent: React.ReactNode = '\u2014'
+                              let detContent: React.ReactNode = '\u2014'
                               if (filterId && fluorId) {
                                 const filterEntry = filterById.get(filterId)
                                 const fl = fluorophoreById.get(fluorId)
                                 const spectra = spectraCache?.[fluorId] ?? null
                                 if (filterEntry && fl) {
-                                  const exEff = excitationEfficiency(
+                                  const result = channelEfficiency(
                                     spectra?.EX ?? spectra?.AB ?? null,
+                                    spectra?.EM ?? null,
                                     fl.ex_max_nm ?? null,
+                                    fl.em_max_nm ?? null,
                                     {
                                       laser_wavelength_nm: filterEntry.laser.wavelength_nm,
                                       excitation_type: filterEntry.laser.excitation_type,
                                       ex_filter_width: filterEntry.laser.ex_filter_width,
                                     },
-                                  )
-                                  const detEff = detectionEfficiency(
-                                    spectra?.EM ?? null,
-                                    fl.em_max_nm ?? null,
                                     filterEntry.filter.filter_midpoint,
                                     filterEntry.filter.filter_width,
                                   )
-                                  exPct = Math.round(exEff * 100) + '%'
-                                  detPct = Math.round(detEff * 100) + '%'
+                                  if (result.kind === 'no_spectra') {
+                                    exContent = <NoSpectraChip fluorophoreId={fluorId} />
+                                    detContent = <NoSpectraChip fluorophoreId={fluorId} />
+                                  } else {
+                                    exContent = Math.round(result.excitationEff * 100) + '%'
+                                    detContent = Math.round(result.detectionEff * 100) + '%'
+                                  }
                                 }
                               }
                               return (
                                 <>
                                   <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
-                                    {exPct}
+                                    {exContent}
                                   </td>
                                   <td className="px-3 py-2 text-xs text-center text-foreground-muted tabular-nums" style={{ width: 60 }}>
-                                    {detPct}
+                                    {detContent}
                                   </td>
                                 </>
                               )
