@@ -49,7 +49,17 @@ export default function PanelDesigner() {
   const reorderTargetsMutation = useReorderTargets()
 
   const instrumentId = panel?.instrument_id ?? null
-  const { data: instrument } = useInstrument(instrumentId ?? '')
+  // Coerce to null when no instrument is selected so cached prior
+  // instrument data can't leak through. useInstrument('') is gated by
+  // `enabled: !!id`, but TanStack Query retains the previously-loaded
+  // data; without this, state.instrument would stay populated with the
+  // old instrument after the user picks "None" and the grid would
+  // keep rendering the old laser/detector columns alongside the
+  // "Select an instrument" banner. See CONVENTIONS.md "TanStack Query
+  // — Hooks gated by `enabled: false` must be null-coalesced at the
+  // call site."
+  const { data: instrumentFromQuery } = useInstrument(instrumentId ?? '')
+  const instrument = instrumentId ? instrumentFromQuery : null
 
   const { state, dispatch, addTarget, removeTarget, clearAssignments, undo, redo, canUndo, canRedo, reorderTargets, forceRefresh } = usePanelDesigner(
     panel ?? null,
