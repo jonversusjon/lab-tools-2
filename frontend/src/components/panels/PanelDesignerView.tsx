@@ -20,7 +20,7 @@ import { computeSpilloverMatrix } from '@/utils/spillover'
 import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
 import type { DetectionStrategy } from '@/utils/conjugates'
 import { rankChannels } from '@/utils/spectra'
-import type { ChannelRanking } from '@/utils/spectra'
+import type { RankChannelsResult } from '@/utils/spectra'
 import type { SpilloverInput } from '@/utils/spillover'
 import TargetOmnibox from './TargetOmnibox'
 import type { TargetSelection } from './TargetOmnibox'
@@ -341,8 +341,8 @@ export default function PanelDesignerView({
   }, [state.targets, antibodyMap, assignmentByAntibody, assignmentByDyeLabel, secondaries, rawFluorophoreOverrides])
 
   const rowChannelScores = useMemo(() => {
-    if (!state.instrument) return new Map<string, ChannelRanking[]>()
-    const map = new Map<string, ChannelRanking[]>()
+    if (!state.instrument) return new Map<string, RankChannelsResult>()
+    const map = new Map<string, RankChannelsResult>()
     for (const [antibodyId, flId] of rowFluorophoreMap) {
       const fl = allFluorophoresForScoring.find((f) => f.id === flId)
       if (!fl) continue
@@ -458,9 +458,9 @@ export default function PanelDesignerView({
     }
     const active = new Set(assignedIds)
     for (const t of unassignedTargets) {
-      const rankings = rowChannelScores.get(t.id)
-      if (!rankings) continue
-      for (const r of rankings) {
+      const channelResult = rowChannelScores.get(t.id)
+      if (!channelResult || channelResult.kind !== 'computed') continue
+      for (const r of channelResult.rankings) {
         if (r.score >= 0.01 && !assignedIds.has(r.detectorId)) {
           active.add(r.detectorId)
         }
@@ -597,13 +597,14 @@ export default function PanelDesignerView({
     const fl = allFluorophoresForScoring.find((f) => f.id === fluorophoreId)
     if (!fl) return
 
-    const rankings = rankChannels(fl, state.instrument)
+    const result = rankChannels(fl, state.instrument)
+    if (result.kind === 'no_spectra') return
     const occupiedByOthers = new Set<string>()
     for (const a of state.assignments) {
       const aRowId = isDyeLabel ? a.dye_label_id : a.antibody_id
       if (aRowId !== rowId) occupiedByOthers.add(a.detector_id)
     }
-    const candidates = rankings.filter((r) => r.score >= handlers.minThreshold && !occupiedByOthers.has(r.detectorId))
+    const candidates = result.rankings.filter((r) => r.score >= handlers.minThreshold && !occupiedByOthers.has(r.detectorId))
     if (candidates.length === 0) return
 
     await handlers.onDirectAssign(rowId, fluorophoreId, candidates[0].detectorId, isDyeLabel)
@@ -1185,8 +1186,10 @@ export default function PanelDesignerView({
                             )
                           }
 
-                          const rankings = rowChannelScores.get(rowId)
-                          const ranking = rankings?.find((r) => r.detectorId === det.id)
+                          const channelResult = rowChannelScores.get(rowId)
+                          const ranking = channelResult?.kind === 'computed'
+                            ? channelResult.rankings.find((r) => r.detectorId === det.id)
+                            : undefined
                           const score = ranking?.score ?? 0
 
                           if (score < 0.01) {

@@ -189,18 +189,21 @@ describe('excitationEfficiency', () => {
     expect(excitationEfficiency(fl, 637)).toBeLessThan(0.01)
   })
 
-  it('Gaussian fallback: PE excited well by 561nm (peak-only)', () => {
-    const pe = makeFluorophore({
-      id: 'pe',
-      name: 'PE',
-      ex_max_nm: 565,
-      em_max_nm: 578,
-      spectra: null,
+  it('returns sub-5% values unmodified (no noise floor)', () => {
+    // Excitation spectrum where 488 sits at ~3% of peak (vibronic shoulder).
+    const shoulderEx: number[][] = [
+      [400, 0],
+      [488, 0.03],
+      [600, 1.0],
+      [700, 0.5],
+    ]
+    const fl = makeFluorophore({
+      spectra: { EX: shoulderEx, EM: fitcEmission },
     })
-    expect(excitationEfficiency(pe, 561)).toBeGreaterThan(0.9)
+    expect(excitationEfficiency(fl, 488)).toBeCloseTo(0.03, 5)
   })
 
-  it('Gaussian fallback: PE poorly excited by 405nm', () => {
+  it('returns 0 when ex spectrum is missing (no Gaussian fallback)', () => {
     const pe = makeFluorophore({
       id: 'pe',
       name: 'PE',
@@ -208,7 +211,8 @@ describe('excitationEfficiency', () => {
       em_max_nm: 578,
       spectra: null,
     })
-    expect(excitationEfficiency(pe, 405)).toBeLessThan(0.01)
+    expect(excitationEfficiency(pe, 561)).toBe(0)
+    expect(excitationEfficiency(pe, 405)).toBe(0)
   })
 
   it('clamps to [0, 1] when spectra data has artifacts producing ratio > 1', () => {
@@ -245,7 +249,7 @@ describe('detectionEfficiency', () => {
     expect(detectionEfficiency(fl, 780, 60)).toBeLessThan(0.01)
   })
 
-  it('Gaussian fallback: PE detected by 585/15 bandpass', () => {
+  it('returns 0 when em spectrum is missing (no Gaussian fallback)', () => {
     const pe = makeFluorophore({
       id: 'pe',
       name: 'PE',
@@ -253,7 +257,7 @@ describe('detectionEfficiency', () => {
       em_max_nm: 578,
       spectra: null,
     })
-    expect(detectionEfficiency(pe, 585, 15)).toBeGreaterThan(0.1)
+    expect(detectionEfficiency(pe, 585, 15)).toBe(0)
   })
 })
 
@@ -265,7 +269,7 @@ describe('channelScore', () => {
     expect(channelScore(fl, 488, 530, 30)).toBeGreaterThan(0.05)
   })
 
-  it('PE on 561/585/15 scores well (Gaussian fallback)', () => {
+  it('returns 0 for spectra-less fluorophore (no Gaussian fallback)', () => {
     const pe = makeFluorophore({
       id: 'pe',
       name: 'PE',
@@ -273,7 +277,7 @@ describe('channelScore', () => {
       em_max_nm: 578,
       spectra: null,
     })
-    expect(channelScore(pe, 561, 585, 15)).toBeGreaterThan(0.05)
+    expect(channelScore(pe, 561, 585, 15)).toBe(0)
   })
 
   it('mismatch laser+detector scores near 0', () => {
@@ -309,13 +313,15 @@ describe('rankChannels', () => {
     const fl = makeFluorophore({
       spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
-    const rankings = rankChannels(fl, instrument)
-    expect(rankings.length).toBeGreaterThan(0)
-    expect(rankings[0].detectorId).toBe('d1')
-    expect(rankings[0].laserWavelength).toBe(488)
+    const result = rankChannels(fl, instrument)
+    expect(result.kind).toBe('computed')
+    if (result.kind !== 'computed') return
+    expect(result.rankings.length).toBeGreaterThan(0)
+    expect(result.rankings[0].detectorId).toBe('d1')
+    expect(result.rankings[0].laserWavelength).toBe(488)
   })
 
-  it('works with peak-only fluorophores (Gaussian fallback)', () => {
+  it('signals no_spectra when both ex and em spectra are missing', () => {
     const pe = makeFluorophore({
       id: 'pe',
       name: 'PE',
@@ -323,18 +329,53 @@ describe('rankChannels', () => {
       em_max_nm: 578,
       spectra: null,
     })
-    const rankings = rankChannels(pe, instrument)
-    // PE should have some rankings via Gaussian fallback
-    expect(rankings.length).toBeGreaterThanOrEqual(0)
+    const result = rankChannels(pe, instrument)
+    expect(result).toEqual({ kind: 'no_spectra' })
+  })
+
+  it('signals no_spectra when only ex spectrum is present', () => {
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation },
+    })
+    expect(rankChannels(fl, instrument)).toEqual({ kind: 'no_spectra' })
+  })
+
+  it('signals no_spectra when only em spectrum is present', () => {
+    const fl = makeFluorophore({
+      spectra: { EM: fitcEmission },
+    })
+    expect(rankChannels(fl, instrument)).toEqual({ kind: 'no_spectra' })
+  })
+
+  it('accepts AB as a substitute for EX', () => {
+    const fl = makeFluorophore({
+      spectra: { AB: fitcExcitation, EM: fitcEmission },
+    })
+    const result = rankChannels(fl, instrument)
+    expect(result.kind).toBe('computed')
   })
 
   it('returns results sorted by score descending', () => {
     const fl = makeFluorophore({
       spectra: { EX: fitcExcitation, EM: fitcEmission },
     })
-    const rankings = rankChannels(fl, instrument)
-    for (let i = 1; i < rankings.length; i++) {
-      expect(rankings[i - 1].score).toBeGreaterThanOrEqual(rankings[i].score)
+    const result = rankChannels(fl, instrument)
+    if (result.kind !== 'computed') throw new Error('expected computed')
+    for (let i = 1; i < result.rankings.length; i++) {
+      expect(result.rankings[i - 1].score).toBeGreaterThanOrEqual(result.rankings[i].score)
     }
+  })
+
+  it('includes sub-5% rankings unmodified (no noise floor)', () => {
+    // Construct a fluorophore where the 637/d3 channel gives a real low score
+    const fl = makeFluorophore({
+      spectra: { EX: fitcExcitation, EM: fitcEmission },
+    })
+    const result = rankChannels(fl, instrument)
+    if (result.kind !== 'computed') throw new Error('expected computed')
+    const d3 = result.rankings.find((r) => r.detectorId === 'd3')
+    expect(d3).toBeDefined()
+    expect(d3!.score).toBeGreaterThanOrEqual(0)
+    expect(d3!.score).toBeLessThan(0.01)
   })
 })
