@@ -488,6 +488,28 @@ in `onSuccess`.
 Assignment/target mutations on panels invalidate `['panels', panelId]`
 with `refetchType: 'none'` to avoid disruptive mid-edit refetches.
 
+### Hooks gated by `enabled: false` must be null-coalesced at the call site
+
+TanStack Query retains the previously fetched data in cache when
+`enabled` flips false; the hook does NOT return `undefined`. Callers
+that need the data to reflect the gate must explicitly read the gate
+and null out:
+
+```ts
+const { data: microscopeFromQuery } = useMicroscope(microscopeId ?? '')
+const microscope = microscopeId ? microscopeFromQuery : null
+```
+
+Without this, downstream logic that branches on `!microscope` won't
+fire when the user clears the upstream selection, because the hook
+keeps serving the previous selection from cache.
+
+**Origin:** Phase 2 Fix-up follow-up, commit `235bfd0`. The
+no-microscope banner failed to appear after setting microscope to
+"None" because stale cached data leaked through. The audit sweep
+(commit `b77627b`) found 1 additional site with the same pattern
+(the flow panel's `useInstrument` call).
+
 ### `SET_PANEL` reducer guard
 `SET_PANEL` in panel reducers should use a `useRef` guard to fire only on
 genuine panel ID change, not on background refetches.
