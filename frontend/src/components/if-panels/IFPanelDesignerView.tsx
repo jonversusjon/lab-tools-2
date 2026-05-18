@@ -140,13 +140,27 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   const nameInputRef = useRef<HTMLInputElement>(null)
   const microscopeSelectRef = useRef<HTMLSelectElement>(null)
 
-  const focusMicroscopePicker = useCallback(() => {
+  // When the user picks a microscope via the inline banner duplicate
+  // select, flash the upstream picker for 20s so they know where to
+  // make future changes once the banner disappears.
+  const [flashMicroscopePicker, setFlashMicroscopePicker] = useState(false)
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const triggerMicroscopeFlash = useCallback(() => {
+    setFlashMicroscopePicker(true)
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
+    flashTimerRef.current = setTimeout(() => {
+      setFlashMicroscopePicker(false)
+      flashTimerRef.current = null
+    }, 20000)
     const el = microscopeSelectRef.current
-    if (!el) return
-    if (typeof el.scrollIntoView === 'function') {
+    if (el && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
-    el.focus()
+  }, [])
+  useEffect(() => {
+    return () => {
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -528,7 +542,12 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
               ref={microscopeSelectRef}
               value={state.panel!.microscope_id ?? ''}
               onChange={(e) => handlers.onMicroscopeChange!(e.target.value)}
-              className="rounded border border-border-strong bg-elevated px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
+              className={
+                'rounded border bg-elevated px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none' +
+                (flashMicroscopePicker
+                  ? ' border-accent ring-2 ring-accent animate-pulse'
+                  : ' border-border-strong')
+              }
             >
               <option value="">None</option>
               {microscopes.map((m) => (
@@ -601,14 +620,25 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                       <span className="text-sm text-warning-soft-foreground mr-3">
                         Channel selection requires a microscope.
                       </span>
-                      {config.showMicroscopeSelector && handlers.onMicroscopeChange && (
-                        <button
-                          type="button"
-                          onClick={focusMicroscopePicker}
-                          className="rounded border border-accent bg-elevated px-3 py-1 text-xs font-medium text-accent hover:bg-accent-soft"
+                      {config.showMicroscopeSelector && handlers.onMicroscopeChange && microscopes && (
+                        <select
+                          data-testid="if-no-microscope-banner-select"
+                          value=""
+                          onChange={(e) => {
+                            const val = e.target.value
+                            if (!val) return
+                            handlers.onMicroscopeChange!(val)
+                            triggerMicroscopeFlash()
+                          }}
+                          className="rounded border border-accent bg-elevated px-3 py-1 text-xs font-medium text-foreground focus:border-accent focus:outline-none"
                         >
-                          Choose microscope
-                        </button>
+                          <option value="">Choose microscope…</option>
+                          {microscopes.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name}
+                            </option>
+                          ))}
+                        </select>
                       )}
                     </td>
                   </tr>

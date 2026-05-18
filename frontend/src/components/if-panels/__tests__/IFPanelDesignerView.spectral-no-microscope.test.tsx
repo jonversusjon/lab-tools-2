@@ -106,8 +106,13 @@ describe('IFPanelDesignerView spectral mode without microscope (#6)', () => {
     const banner = screen.getByTestId('if-no-microscope-banner')
     expect(banner).toBeInTheDocument()
     expect(banner.textContent).toContain('Channel selection requires a microscope')
-    const button = screen.getByRole('button', { name: /choose microscope/i })
-    expect(button).toBeInTheDocument()
+    // The banner now embeds a duplicate microscope <select> rather than
+    // a button that focuses the upstream picker. The "Choose microscope…"
+    // placeholder option is the dropdown's empty-state label.
+    const bannerSelect = screen.getByTestId('if-no-microscope-banner-select')
+    expect(bannerSelect).toBeInTheDocument()
+    expect(bannerSelect.tagName).toBe('SELECT')
+    expect(bannerSelect.textContent).toContain('Choose microscope')
 
     // Per-row "Select a microscope above" text should NOT be repeated
     expect(screen.queryByText(/select a microscope above/i)).not.toBeInTheDocument()
@@ -165,7 +170,32 @@ describe('IFPanelDesignerView spectral mode without microscope (#6)', () => {
     expect(screen.queryByTestId('if-no-microscope-banner')).not.toBeInTheDocument()
   })
 
-  it('"Choose microscope" button focuses the microscope picker', () => {
+  it('banner duplicate dropdown fires onMicroscopeChange with the picked id', () => {
+    const onMicroscopeChange = vi.fn()
+    const state = makeState({ targets: [makeTarget()] })
+
+    render(
+      <IFPanelDesignerView
+        state={state}
+        dispatch={vi.fn()}
+        handlers={{ ...noopHandlers, onMicroscopeChange }}
+        config={baseConfig}
+        antibodies={[]}
+        dyeLabels={[]}
+        fluorophores={[]}
+        secondaries={[]}
+        conjugateChemistries={[]}
+        microscopes={[{ id: 'm1', name: 'Test Scope', is_favorite: false, location: null, lasers: [] }]}
+      />,
+    )
+
+    const bannerSelect = screen.getByTestId('if-no-microscope-banner-select') as HTMLSelectElement
+    fireEvent.change(bannerSelect, { target: { value: 'm1' } })
+
+    expect(onMicroscopeChange).toHaveBeenCalledWith('m1')
+  })
+
+  it('picking via the banner adds a flash style to the upstream microscope select', () => {
     const state = makeState({ targets: [makeTarget()] })
 
     render(
@@ -183,11 +213,14 @@ describe('IFPanelDesignerView spectral mode without microscope (#6)', () => {
       />,
     )
 
-    const button = screen.getByRole('button', { name: /choose microscope/i })
-    fireEvent.click(button)
+    const upstreamSelect = document.getElementById('microscope-select') as HTMLSelectElement
+    expect(upstreamSelect.className).not.toContain('animate-pulse')
 
-    const select = document.getElementById('microscope-select') as HTMLSelectElement
-    expect(select).toBeInTheDocument()
-    expect(document.activeElement).toBe(select)
+    const bannerSelect = screen.getByTestId('if-no-microscope-banner-select') as HTMLSelectElement
+    fireEvent.change(bannerSelect, { target: { value: 'm1' } })
+
+    // Re-query because className changed after state update
+    const afterSelect = document.getElementById('microscope-select') as HTMLSelectElement
+    expect(afterSelect.className).toContain('animate-pulse')
   })
 })
