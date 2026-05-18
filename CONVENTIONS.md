@@ -516,6 +516,32 @@ genuine panel ID change, not on background refetches.
 
 ---
 
+## User-visible computed values
+
+### Display paths must reflect raw underlying data
+
+Display paths must NOT apply thresholds, noise floors, ranking
+scores, or other transformations that hide low values from the user.
+The user makes their own assessment based on raw numbers.
+Auto-suggest and ranking paths may apply thresholds to gate
+recommendations, but those code paths must be separate from display.
+
+Missing-data cases must be signaled with a distinct affordance (e.g.
+`NoSpectraChip`) rather than hidden behind a fallback approximation
+(e.g. Gaussian approximation, default value, or "0%" indistinguishable
+from a real low value). The user should know data is missing and have
+a clear path to provide it.
+
+**Origin:** Phase 2 Fix-up (commit `614236d`, IF panel chip display
+decoupled from thresholded compat endpoint); no-spectra phase (commits
+`e905449`, `aae07e6`, `69cb25f`) — removed the 5% noise floor and
+Gaussian fallback from `rankChannels`, added `channelEfficiency` to
+`efficiencyScore.ts`, and introduced `NoSpectraChip` plus a global
+modal portal (`ModalContext` / `ModalRoot`) so the chip's "Upload now"
+link can open FPbase fetch over the current page without navigation.
+
+---
+
 ## How to add to this file
 
 When CC's report contains "Decisions made under discretion" entries, web
