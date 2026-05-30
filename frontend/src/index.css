@@ -267,6 +267,17 @@
   cursor: grabbing;
 }
 
+/* Reserve a left gutter INSIDE the editor for the drag handle. The
+   DragHandle extension positions the handle at each block's left edge and
+   hides it on the editor's `mouseleave`. Without an in-editor gutter the
+   handle sits in the outer container's padding, so moving the cursor from
+   the block toward the handle leaves .ProseMirror and the handle vanishes
+   before it can be grabbed. Padding .ProseMirror keeps the handle within
+   the editor's hover region so the cursor never crosses out to reach it. */
+.prose .ProseMirror {
+  padding-left: 2.25rem;
+}
+
 /* === block frames ===
    The blockFrames extension writes a data-frame node decoration onto every
    configurable block. `is-empty` is supplied by the Placeholder extension on
