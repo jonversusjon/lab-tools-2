@@ -1,9 +1,15 @@
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import type { SlashMenuItem } from './items'
+import { getProviderForItem } from './templateProviders'
 
 export interface SlashMenuListProps {
   items: SlashMenuItem[]
   command: (item: SlashMenuItem) => void
+  /**
+   * Called when `.` is pressed while an item that has a registered template
+   * provider is highlighted. The container uses this to enter omnibox mode.
+   */
+  onDotTrigger?: (item: SlashMenuItem) => void
 }
 
 export interface SlashMenuListRef {
@@ -11,7 +17,7 @@ export interface SlashMenuListRef {
 }
 
 const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
-  ({ items, command }, ref) => {
+  ({ items, command, onDotTrigger }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0)
 
     useEffect(() => setSelectedIndex(0), [items])
@@ -28,6 +34,16 @@ const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
         }
         if (event.key === 'Enter') {
           if (items[selectedIndex]) command(items[selectedIndex])
+          return true
+        }
+        if (event.key === '.') {
+          // Dot is reserved as the template-trigger key whenever the slash
+          // menu is open: swallow it unconditionally so it never reaches the
+          // editor. Only items with a registered provider switch to omnibox.
+          const highlighted = items[selectedIndex]
+          if (highlighted && getProviderForItem(highlighted.title)) {
+            onDotTrigger?.(highlighted)
+          }
           return true
         }
         return false

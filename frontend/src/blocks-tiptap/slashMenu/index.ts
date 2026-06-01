@@ -4,9 +4,12 @@ import type { QueryClient } from '@tanstack/react-query'
 import Suggestion from '@tiptap/suggestion'
 import type { SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion'
 import { ReactRenderer } from '@tiptap/react'
-import SlashMenuList from './SlashMenuList'
+import SlashPopupContainer from './SlashPopupContainer'
 import { filterItems, type SlashMenuItem } from './items'
-import type { SlashMenuListProps, SlashMenuListRef } from './SlashMenuList'
+import type {
+  SlashPopupContainerProps,
+  SlashPopupContainerRef,
+} from './SlashPopupContainer'
 import { positionPopup } from './positioning'
 import { getProviderForItem } from './templateProviders'
 
@@ -35,17 +38,58 @@ function prefetchProviders(items: SlashMenuItem[], queryClient: QueryClient | nu
 
 function createRenderer(queryClient: QueryClient | null) {
   return () => {
-    let component: ReactRenderer<SlashMenuListRef, SlashMenuListProps> | null = null
+    let component: ReactRenderer<SlashPopupContainerRef, SlashPopupContainerProps> | null =
+      null
     let popup: HTMLElement | null = null
+    let currentProps: SuggestionProps<SlashMenuItem, SlashMenuItem> | null = null
+    // While the omnibox owns the popup, the Suggestion plugin has deactivated
+    // (the expanded "/<title>" query no longer matches) and onExit fires — the
+    // omnibox, not the suggestion, is now responsible for teardown.
+    let omniboxActive = false
+
+    const destroy = () => {
+      popup?.remove()
+      popup = null
+      component?.destroy()
+      component = null
+      omniboxActive = false
+    }
+
+    // Replace the slash query text with "/<title>" in place, leaving the cursor
+    // at the end. Reads the latest range/editor from currentProps.
+    const expandQueryToTitle = (title: string) => {
+      if (!currentProps) return
+      const { editor, range } = currentProps
+      editor.chain().focus().insertContentAt(range, '/' + title).run()
+    }
+
+    const buildProps = (
+      props: SuggestionProps<SlashMenuItem, SlashMenuItem>,
+    ): Record<string, unknown> => ({
+      items: props.items,
+      command: props.command,
+      editor: props.editor,
+      range: props.range,
+      queryClient,
+      expandQueryToTitle,
+      onActivateOmnibox: () => {
+        omniboxActive = true
+      },
+      onClose: destroy,
+    })
 
     return {
       onStart: (props: SuggestionProps<SlashMenuItem, SlashMenuItem>) => {
+        currentProps = props
         prefetchProviders(props.items, queryClient)
 
-        component = new ReactRenderer<SlashMenuListRef, SlashMenuListProps>(SlashMenuList, {
-          props: props as unknown as Record<string, unknown>,
-          editor: props.editor,
-        })
+        component = new ReactRenderer<SlashPopupContainerRef, SlashPopupContainerProps>(
+          SlashPopupContainer,
+          {
+            props: buildProps(props),
+            editor: props.editor,
+          },
+        )
 
         if (!props.clientRect) return
         const rect = props.clientRect()
@@ -66,7 +110,8 @@ function createRenderer(queryClient: QueryClient | null) {
       },
 
       onUpdate: (props: SuggestionProps<SlashMenuItem, SlashMenuItem>) => {
-        component?.updateProps(props as unknown as Record<string, unknown>)
+        currentProps = props
+        component?.updateProps(buildProps(props))
 
         if (!props.clientRect || !popup) return
         const rect = props.clientRect()
@@ -78,20 +123,16 @@ function createRenderer(queryClient: QueryClient | null) {
 
       onKeyDown: (props: SuggestionKeyDownProps) => {
         if (props.event.key === 'Escape') {
-          popup?.remove()
-          popup = null
-          component?.destroy()
-          component = null
+          destroy()
           return true
         }
         return component?.ref?.onKeyDown(props.event) ?? false
       },
 
       onExit: () => {
-        popup?.remove()
-        popup = null
-        component?.destroy()
-        component = null
+        // Keep the popup alive when the omnibox has taken over.
+        if (omniboxActive) return
+        destroy()
       },
     }
   }
