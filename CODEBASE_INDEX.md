@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-06-01T11:10:57Z
-Commit: abcff1b
+Generated: 2026-06-01T11:18:05Z
+Commit: 2714c0b
 
 ---
 
@@ -505,6 +505,7 @@ Commit: abcff1b
 | `PUT` | `/api/v1/if-panels/{id}` | `if_panels.update_if_panel` | `IFPanelRead` |  |
 | `POST` | `/api/v1/if-panels/{id}/assignments` | `if_panels.add_assignment` | `IFPanelAssignmentRead` | 201 |
 | `DELETE` | `/api/v1/if-panels/{id}/assignments/{assignment_id}` | `if_panels.remove_assignment` | `` | 204 |
+| `GET` | `/api/v1/if-panels/{id}/snapshot-preview` | `if_panels.get_if_panel_snapshot_preview` | `PanelSnapshotPreview` |  |
 | `POST` | `/api/v1/if-panels/{id}/targets` | `if_panels.add_target` | `IFPanelTargetRead` | 201 |
 | `PUT` | `/api/v1/if-panels/{id}/targets/reorder` | `if_panels.reorder_targets` | `list[IFPanelTargetRead]` |  |
 | `DELETE` | `/api/v1/if-panels/{id}/targets/{target_id}` | `if_panels.remove_target` | `` | 204 |
@@ -577,6 +578,7 @@ Commit: abcff1b
 | `PUT` | `/api/v1/panels/{id}` | `panels.update_panel` | `PanelRead` |  |
 | `POST` | `/api/v1/panels/{id}/assignments` | `panels.add_assignment` | `PanelAssignmentRead` | 201 |
 | `DELETE` | `/api/v1/panels/{id}/assignments/{assignment_id}` | `panels.remove_assignment` | `` | 204 |
+| `GET` | `/api/v1/panels/{id}/snapshot-preview` | `panels.get_panel_snapshot_preview` | `PanelSnapshotPreview` |  |
 | `POST` | `/api/v1/panels/{id}/targets` | `panels.add_target` | `PanelTargetRead` | 201 |
 | `PUT` | `/api/v1/panels/{id}/targets/reorder` | `panels.reorder_targets` | `list[PanelTargetRead]` |  |
 | `DELETE` | `/api/v1/panels/{id}/targets/{target_id}` | `panels.remove_target` | `` | 204 |
@@ -1305,6 +1307,13 @@ Commit: abcff1b
 | `microscope_id` | `str | None` | `None` |
 | `view_mode` | `str | None` | `None` |
 
+### `PanelSnapshotPreview`
+
+| Field | Type | Default |
+|---|---|---|
+| `type` | `str` |  |
+| `attrs` | `dict` |  |
+
 ### `PlateMapCreate`
 
 | Field | Type | Default |
@@ -1541,8 +1550,8 @@ Commit: abcff1b
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-06-01T11:10:59Z
-Commit: abcff1b
+Generated: 2026-06-01T11:18:08Z
+Commit: 2714c0b
 
 ---
 

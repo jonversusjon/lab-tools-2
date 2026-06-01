@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 
 from database import get_db
+from services.panel_snapshot import build_if_panel_snapshot
 from models import Antibody
 from models import DyeLabel
 from models import Fluorophore
@@ -22,6 +23,7 @@ from models import MicroscopeLaser
 from models import SecondaryAntibody
 from schemas import IFPanelAssignmentCreate
 from schemas import IFPanelAssignmentRead
+from schemas import PanelSnapshotPreview
 from schemas import IFPanelCreate
 from schemas import IFPanelListRead
 from schemas import IFPanelRead
@@ -171,6 +173,16 @@ def create_if_panel(
 @router.get("/{id}", response_model=IFPanelRead)
 def get_if_panel(id: str, db: Session = Depends(get_db)):
     return _panel_to_read(_load_if_panel(db, id))
+
+
+@router.get("/{id}/snapshot-preview", response_model=PanelSnapshotPreview)
+def get_if_panel_snapshot_preview(id: str, db: Session = Depends(get_db)):
+    """Read-only Tiptap if_panel node for this template. No DB writes.
+
+    Shares its serializer with POST /experiments/{id}/snapshot-panel so the
+    insertion path and the persistence path emit identical content.
+    """
+    return build_if_panel_snapshot(id, db)
 
 
 @router.put("/{id}", response_model=IFPanelRead)

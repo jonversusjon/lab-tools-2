@@ -809,6 +809,20 @@ class IFPanelRead(IFPanelBase):
     model_config = {"from_attributes": True}
 
 
+# --- Panel snapshot preview ---
+
+class PanelSnapshotPreview(BaseModel):
+    """Read-only Tiptap node JSON for a panel template.
+
+    Mirrors what POST /experiments/{id}/snapshot-panel embeds into an
+    ExperimentBlock, without persisting anything. ``type`` is
+    "flow_panel" | "if_panel"; ``attrs`` is the node attribute blob.
+    """
+
+    type: str
+    attrs: dict
+
+
 # --- Plate Map ---
 
 class PlateMapCreate(BaseModel):

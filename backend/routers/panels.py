@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import selectinload
 
 from database import get_db
+from services.panel_snapshot import build_flow_panel_snapshot
 from models import Antibody
 from models import Detector
 from models import DyeLabel
@@ -21,6 +22,7 @@ from models import PanelAssignment
 from models import PanelTarget
 from models import SecondaryAntibody
 from schemas import PaginatedResponse
+from schemas import PanelSnapshotPreview
 from schemas import PanelAssignmentCreate
 from schemas import PanelAssignmentRead
 from schemas import PanelCreate
@@ -160,6 +162,16 @@ def create_panel(
 @router.get("/{id}", response_model=PanelRead)
 def get_panel(id: str, db: Session = Depends(get_db)):
     return _panel_to_read(_load_panel(db, id))
+
+
+@router.get("/{id}/snapshot-preview", response_model=PanelSnapshotPreview)
+def get_panel_snapshot_preview(id: str, db: Session = Depends(get_db)):
+    """Read-only Tiptap flow_panel node for this template. No DB writes.
+
+    Shares its serializer with POST /experiments/{id}/snapshot-panel so the
+    insertion path and the persistence path emit identical content.
+    """
+    return build_flow_panel_snapshot(id, db)
 
 
 @router.put("/{id}", response_model=PanelRead)
