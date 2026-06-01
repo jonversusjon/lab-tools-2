@@ -21,7 +21,7 @@ import { useIFPanelDesignerInstance } from '@/hooks/useIFPanelDesigner'
 import type { IFPanelDesignerState } from '@/hooks/useIFPanelDesigner'
 
 import { useAntibodies } from '@/hooks/useAntibodies'
-import { useFluorophores } from '@/hooks/useFluorophores'
+import { useFluorophores, useBatchSpectra } from '@/hooks/useFluorophores'
 import { useSecondaries } from '@/hooks/useSecondaries'
 import { useConjugateChemistries } from '@/hooks/useConjugateChemistries'
 import { useMicroscopes } from '@/hooks/useMicroscopes'
@@ -146,6 +146,17 @@ function IfPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewPro
   const fluorophores = fluorophoreData?.items ?? []
   const secondaries = secondariesData?.items ?? []
   const dyeLabels = dyeLabelsData?.items ?? []
+
+  // Batch-fetch spectra so the spectral-view Ex %/Det % chips can compute
+  // efficiency frontend-side. Without this the chips have no cache and every
+  // (fluorophore, channel) pair falls back to NoSpectraChip ("?"). Mirrors
+  // IFPanelDesigner; the query is keyed on sorted ids so it shares the cache
+  // with the standalone designer.
+  const allFluorophoreIds = useMemo(
+    () => fluorophores.map((f) => f.id),
+    [fluorophores],
+  )
+  const { data: spectraCache } = useBatchSpectra(allFluorophoreIds)
 
   // ─── Lookup maps ────────────────────────────────────────────────────────────
 
@@ -482,6 +493,7 @@ function IfPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewPro
         conjugateChemistries={conjugateChemistries}
         microscopes={microscopesData?.items ?? []}
         compatibilityData={null}
+        spectraCache={spectraCache}
       />
     </NodeViewWrapper>
   )
