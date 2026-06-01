@@ -25,6 +25,19 @@ export async function getPanel(id: string): Promise<Panel> {
   return res.json()
 }
 
+export interface PanelSnapshotPreview {
+  type: string
+  attrs: Record<string, unknown>
+}
+
+export async function getPanelSnapshotPreview(
+  id: string
+): Promise<PanelSnapshotPreview> {
+  const res = await fetch(`/api/v1/panels/${id}/snapshot-preview`)
+  if (!res.ok) throw new Error('Failed to fetch panel snapshot preview')
+  return res.json()
+}
+
 export async function createPanel(data: PanelCreate): Promise<Panel> {
   const res = await fetch('/api/v1/panels', {
     method: 'POST',

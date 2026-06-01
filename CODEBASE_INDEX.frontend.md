@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-06-01T11:21:42Z
-Commit: 89cad31
+Generated: 2026-06-01T11:25:45Z
+Commit: 08578e2
 
 ---
 
@@ -238,6 +238,7 @@ Commit: 89cad31
 | `['fpbase-catalog']` | `frontend/src/hooks/useFluorophores.ts` |
 | `['if-panels', { skip, limit }]` | `frontend/src/hooks/useIFPanels.ts` |
 | `['if-panels', id]` | `frontend/src/hooks/useIFPanels.ts` |
+| `['if-panels', templateId, 'snapshot-preview']` | `frontend/src/blocks-tiptap/slashMenu/templateProviders/ifProvider.ts` |
 | `['if-panels']` | `frontend/src/hooks/useIFPanels.ts` |
 | `['instruments', 'recent']` | `frontend/src/hooks/useInstruments.ts` |
 | `['instruments', { skip, limit }]` | `frontend/src/hooks/useInstruments.ts` |
@@ -251,6 +252,7 @@ Commit: 89cad31
 | `['microscopes']` | `frontend/src/hooks/useMicroscopes.ts` |
 | `['panels', { skip, limit }]` | `frontend/src/hooks/usePanels.ts` |
 | `['panels', id]` | `frontend/src/hooks/usePanels.ts` |
+| `['panels', templateId, 'snapshot-preview']` | `frontend/src/blocks-tiptap/slashMenu/templateProviders/flowProvider.ts` |
 | `['panels']` | `frontend/src/hooks/usePanels.ts` |
 | `['plate-maps', { skip, limit }]` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['plate-maps', id]` | `frontend/src/hooks/usePlateMaps.ts` |

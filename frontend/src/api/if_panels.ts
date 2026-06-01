@@ -26,6 +26,19 @@ export async function getIFPanel(id: string): Promise<IFPanel> {
   return res.json()
 }
 
+export interface IFPanelSnapshotPreview {
+  type: string
+  attrs: Record<string, unknown>
+}
+
+export async function getIFPanelSnapshotPreview(
+  id: string
+): Promise<IFPanelSnapshotPreview> {
+  const res = await fetch(`/api/v1/if-panels/${id}/snapshot-preview`)
+  if (!res.ok) throw new Error('Failed to fetch IF panel snapshot preview')
+  return res.json()
+}
+
 export async function createIFPanel(data: IFPanelCreate): Promise<IFPanel> {
   const res = await fetch('/api/v1/if-panels', {
     method: 'POST',
