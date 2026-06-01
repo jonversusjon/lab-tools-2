@@ -162,6 +162,75 @@ Panels can have `instrument_id = null`. The panel designer must handle this:
 - Button danger: `bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded`
 - Button secondary: `bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded`
 
+## Editor Extensibility — Template Providers
+
+The Tiptap slash menu inserts blank blocks by default. Block types that have a
+reusable template library (flow panels, IF panels — and in future qPCR primer
+panels, plate layouts, microscope presets) expose a **template-aware insertion
+path** through a registry, with zero changes to the slash menu plumbing
+(`SlashMenuList`, `SlashPopupContainer`, the suggestion plugin).
+
+### The `.` dot trigger
+
+With the slash menu open and an item highlighted, pressing `.`:
+- is **always swallowed** (never reaches the editor doc), and
+- if the highlighted item has a registered provider, autocompletes the query to
+  the full title (`/Flow panel`) and swaps the popup into the searchable
+  `TemplateOmnibox`. Arrow + Enter (or click) inserts a fully-populated node.
+
+Items without a provider (Heading 1, Divider, …) swallow the dot and do nothing.
+
+### `TemplateProvider` registry
+
+Providers live in `blocks-tiptap/slashMenu/templateProviders/` and are keyed by
+slash item title in `TEMPLATE_PROVIDERS`. Resolve with
+`getProviderForItem(title)`. The interface:
+
+```typescript
+interface TemplateProvider {
+  slashItemTitle: string                 // must match the SlashMenuItem title exactly
+  listQueryKey: QueryKey                  // TanStack list cache, e.g. ['panels', { skip: 0, limit: 500 }]
+  prefetchList(qc: QueryClient): Promise<void>
+  readList(qc: QueryClient): TemplateListItem[]
+  isListLoading(qc: QueryClient): boolean
+  buildNodeJSON(templateId: string, qc: QueryClient): Promise<{ type: string; attrs: object }>
+  onInserted?(): void
+}
+```
+
+To add a templated block type: implement the interface, register it under the
+slash item title. No other file changes.
+
+### Snapshot-preview convention (backend contract)
+
+**Any block type with templates MUST expose a `GET /…/snapshot-preview`
+endpoint that shares its serializer with the persistence path.** The provider's
+`buildNodeJSON` is a single `fetch()` to that endpoint — no client-side field
+gathering, no multi-cache reconciliation.
+
+The serializer is the single source of truth: one function (e.g.
+`services/panel_snapshot.py::build_flow_panel_snapshot`) is called by **both**
+the read-only preview endpoint and the persistence route
+(`snapshot_panel`), so inserted and persisted content are byte-identical by
+construction. A round-trip pytest asserts this equality. Do not reimplement the
+serializer client-side — that reintroduces the drift the endpoint exists to
+prevent.
+
+### Threading `QueryClient` into the slash menu
+
+The shared `tiptapExtensions` array is imported widely, so it stays a plain
+array. The `SlashMenu` extension declares a nullable `queryClient` option; the
+two live editor mounts inject a configured copy:
+
+```typescript
+const queryClient = useQueryClient()
+const extensions = tiptapExtensions.map((ext) =>
+  ext === SlashMenu ? SlashMenu.configure({ queryClient }) : ext,
+)
+```
+
+Tests that never open the omnibox import `tiptapExtensions` untouched.
+
 ## Testing Patterns
 - Use `@testing-library/react` with `vitest`.
 - Mock API hooks at module level, not individual fetch calls.

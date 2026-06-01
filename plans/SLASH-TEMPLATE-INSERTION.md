@@ -1,6 +1,6 @@
 # Slash menu — template-aware insertion via `.` dot trigger
 
-Status: **in progress**
+Status: **complete**
 
 ## Design intent
 
@@ -86,4 +86,43 @@ gathering, no multi-cache reconciliation.
 
 ## Lessons learned
 
-_(to be filled at completion)_
+- **The prompt's premise was wrong, and finding that out early saved the most
+  time.** The phase prompt assumed a reusable client-side panel-snapshot
+  transform already existed behind `PanelTemplatePicker` and forbade touching
+  the `snapshot-panel` backend. Investigation showed no such client transform
+  existed — the server-side `snapshot_panel` route was the only live transform.
+  Surfacing this before writing code (rather than reimplementing the serializer
+  client-side and silently drifting from the backend) is what made Option 3a
+  possible. Validate the "ground truth" section of a prompt against the actual
+  code before building on it.
+
+- **QueryClient threading: configure-time injection over a factory.** The shared
+  `tiptapExtensions` array is imported by 15+ test files and two live editor
+  sites. Rather than convert it to a factory `makeExtensions(queryClient)` (which
+  would have rippled into every importer), the extension declares a
+  `queryClient: QueryClient | null` option defaulting to `null`, and the two live
+  sites (`ExperimentPage`, `TiptapSandbox`) swap in a configured copy via
+  `extensions.map(ext => ext === SlashMenu ? SlashMenu.configure({ queryClient }) : ext)`.
+  Tests that never open the omnibox keep importing the array untouched. Trade-off:
+  the option is nullable, so the suggestion plugin must tolerate a null client
+  (prefetch is skipped) — acceptable because the omnibox can't be reached without
+  a real editor mount anyway.
+
+- **The space in `/Flow panel` is load-bearing and nearly broke teardown.**
+  `@tiptap/suggestion` with `allowSpaces: false` deactivates the moment the query
+  contains a space, firing `onExit`. Autocompleting the query to `/Flow panel`
+  therefore tears the popup down right as we want to swap it to the omnibox. The
+  fix is ordering: `onActivateOmnibox()` sets an `omniboxActive` closure flag
+  *before* `expandQueryToTitle()` inserts the spaced title, and `onExit` early-
+  returns while that flag is set. The omnibox then owns its own lifecycle (focused
+  input owns keys; teardown via `onClose`). Any future trigger that autocompletes
+  to a multi-word title must set the guard before mutating the doc.
+
+- **One server-side serializer is the whole point.** Extracting
+  `build_flow_panel_snapshot` / `build_if_panel_snapshot` into
+  `services/panel_snapshot.py` and having both the persistence route and the
+  preview endpoints call them means the insertion path and the persistence path
+  are byte-identical by construction — verified by a pytest that strips the random
+  per-row instance ids and asserts equality. The client `buildNodeJSON` collapses
+  to a single `fetch()`. This is the pattern any future templated block type
+  should copy.
