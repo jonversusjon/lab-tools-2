@@ -38,4 +38,4 @@ slash menu needs to implement . option; the way this works is slash brings up me
 
 in flow panel adding a biotinylated antibody places biotin in the conjugate cell which is correct, but prevents selection of a fluorophore, biotin primaries require a streptavidin-fluorophore conjugate the logic should be to put the biotin as part of the host cell in the table and then follow all the same rules for the secondary selection but instead of just offering anti-host options, strep options should be present in the top of the dropdown menu
 
-2
+create template insert selection for all blocks with templates (IF, flow, qpcr, etc.). implement dot for template selections. if the user is using the / command menu and types enough letters to make a definite selection, if they click that selection or hit enter it inputs a blank of that block type. however if instead the user presses . then it autofills the reamining block title and pulls up a searchable dropdown omnibox with all the templates for that block type. a user can up arrow/down arrow to select template or click on template then it inserts that block with the template data prefilled.
