@@ -1,6 +1,8 @@
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useState, useMemo, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
+import { SlashMenu } from '@/blocks-tiptap/slashMenu'
 import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { filterJsonTree } from '@/utils/jsonFilter'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
@@ -229,9 +231,21 @@ export default function TiptapSandbox() {
     return rowsToTiptapDoc(blocks)
   }, [loadState])
 
+  const queryClient = useQueryClient()
+
+  // Inject the QueryClient into the slash menu so its dot-trigger template
+  // omnibox can prefetch template lists and build panel node JSON.
+  const extensions = useMemo(
+    () =>
+      tiptapExtensions.map((ext) =>
+        ext === SlashMenu ? SlashMenu.configure({ queryClient }) : ext,
+      ),
+    [queryClient],
+  )
+
   const editor = useEditor(
     {
-      extensions: tiptapExtensions,
+      extensions,
       content: initialEditorContent ?? INITIAL_CONTENT,
       onUpdate: ({ editor }) => setJson(editor.getJSON()),
       editorProps: {

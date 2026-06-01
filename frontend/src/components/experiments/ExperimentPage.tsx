@@ -1,7 +1,9 @@
 import { useParams, Navigate } from 'react-router-dom'
 import { EditorContent, useEditor } from '@tiptap/react'
 import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { tiptapExtensions } from '@/blocks-tiptap/extensions'
+import { SlashMenu } from '@/blocks-tiptap/slashMenu'
 import { stripRowIdsFromSlice } from '@/blocks-tiptap/paste'
 import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
@@ -23,6 +25,17 @@ export default function ExperimentPage() {
   const [loadState, setLoadState] = useState<LoadState>({ kind: 'loading' })
   const [isFullWidth, setIsFullWidth] = useState<boolean>(false)
   const { setLastFullWidth } = useExperimentLastFullWidth()
+  const queryClient = useQueryClient()
+
+  // Inject the QueryClient into the slash menu so its dot-trigger template
+  // omnibox can prefetch template lists and build panel node JSON.
+  const extensions = useMemo(
+    () =>
+      tiptapExtensions.map((ext) =>
+        ext === SlashMenu ? SlashMenu.configure({ queryClient }) : ext,
+      ),
+    [queryClient],
+  )
 
   useEffect(() => {
     if (!id) {
@@ -60,7 +73,7 @@ export default function ExperimentPage() {
 
   const editor = useEditor(
     {
-      extensions: tiptapExtensions,
+      extensions,
       content: initialEditorContent ?? { type: 'doc', content: [] },
       editorProps: {
         transformPasted: (slice) => stripRowIdsFromSlice(slice),
