@@ -1,24 +1,24 @@
 # Calculations Sidebar — Architecture (Phase 1)
 
-**Status:** Drafted, pre-build. Grounds the phased CC prompts that follow.
-**Recon basis:** `plans/research/calc-sidebar-recon.md` @ commit `47d71a8`.
-**Supersedes:** the per-block `VolumeCalculator` (EXPERIMENT-PAGE-ARCHITECTURE.md Phase 5) and the modal mastermix detector (Phase 6). Those two sections of the experiment-page arch doc are now **deprecated** — see §11.
+**Status:** Drafted, pre-build. Corrected against the full recon (`plans/research/calc-sidebar-recon.md` @ `e30d395`). Replaces the prior committed draft (`b711c6a`).
+**Supersedes:** EXPERIMENT-PAGE-ARCHITECTURE.md Phase 5 (per-block `VolumeCalculator`) and Phase 6 (modal mastermix detector) — see §11.
 
 ---
 
 ## 1. TL;DR (upside triangle)
 
-A page-level **right rail** on the experiment page. Collapses to a thin labeled strip with a single arrow (distinct from the left nav's emoji-collapse). When expanded, one **accordion section per panel block** on the current page, each showing that panel's volume breakdown. A **cross-panel mastermix callout** sits at the top.
+A page-level **right rail** on the experiment page. Collapses to a thin labeled strip with a single arrow. When expanded, one **accordion section per panel block** on the current page, each showing that panel's cocktail/volume breakdown. A **cross-panel mastermix callout** sits at the top.
 
-The five facts that shape everything:
+The facts that shape everything (from the full recon):
 
-- **The rail is a pure computed view.** All inputs live in the panel blocks. The rail reads and computes; it stores nothing of its own except its own open/closed preference.
-- **Observation is live, via the editor doc.** A new `EditorContext` exposes the Tiptap instance to the sibling rail. The rail subscribes to transactions and re-walks the doc for panel nodes. Edits to dilutions/sample-counts are Tiptap transactions, so the rail updates immediately — no 1.5s TanStack save lag.
-- **`volume_params` inputs get added to the panel blocks** (flow + IF), since no edit UI exists today. Defaults: `pipet_error = 1.05`, `num_samples = 1`, `volume_per_sample = 50` µL.
-- **The calculator is cocktail-based and pluggable.** Each block type registers a calculator that emits a list of *cocktails* (mixes the user pipettes). Phase 1: flow emits 1 cocktail, IF emits 2 (primary + secondary). This abstraction is what lets the deferred **controls** feature slot in later as additional cocktails without reworking the rail.
-- **Volume/mastermix code is built from scratch.** Nothing exists today.
+- **The rail is a pure computed view.** All inputs live in the panel blocks. It reads + computes; it persists only its own open/closed flag.
+- **Observation is live, via the editor doc.** The rail gets the `editor` instance (prop + a thin `EditorContext`), subscribes to `editor.on('transaction', …)`, and walks `editor.state.doc` for panel nodes. Edits to dilutions/params are `updateAttributes` → `docChanged` transactions → seen immediately. TanStack lags ~1500 ms (save debounce), and `ExperimentPage` doesn't even subscribe to it, so live doc-walk is the only correct path.
+- **The calculator reuses the app's existing staining-mode logic; it does not reinvent it.** Direct vs indirect is already inferred from whether the primary antibody has a fluorophore conjugate (conjugated → direct, conjugate auto-fills the dye/secondary column, uneditable; unconjugated or chemical-only e.g. biotin → indirect, the column activates for compatible-secondary selection). The calculator keys off the *output* of that logic — whether `target.secondary_antibody_id` is set. Each panel emits a **primary cocktail** (a draw per *antibody* primary, conjugated or not), a **secondary cocktail** for any target with a secondary assigned, and a **separate single-reagent cocktail per dye** (dyes are stained in their own steps with unique incubation times — never in the antibody mixes). Flow and IF differ only in which primary dilution field is read, which `volume_params.dilution_source` already encodes. Controls slot in later as additional cocktails.
+- **`volume_params` has no edit UI today** (recon J2) — the attr exists but nothing writes it. Phase 1 adds the three inputs (samples, µL/sample, excess ×) to both panel views.
+- **No migration.** Secondary dilution becomes a per-instance numbers-only `secondary_dilution_factor` field inside the `targets` attr (block-content JSON), not a DB column. Templates carry dilutions, so no library-default field is needed on `SecondaryAntibody`/`Antibody`.
+- **Volume/mastermix code is built from scratch** (recon D) — nothing exists.
 
-Phase 1 ships volume calc + mastermix **detection** (display only). Mastermix **action** (persisting a "combine these" selection) and the **controls selectors** are explicitly out of Phase 1 — see §9 and §11.
+Phase 1 ships volume calc + mastermix **detection** (display only). Mastermix **action**/persistence and the **controls** selectors are out of Phase 1 (§9, §12).
 
 ---
 
@@ -26,273 +26,257 @@ Phase 1 ships volume calc + mastermix **detection** (display only). Mastermix **
 
 | # | Decision | Choice |
 |---|----------|--------|
-| 1 | Observation mechanism | Live doc-walk via new `EditorContext` + transaction subscription |
-| 2 | Sidebar open/closed persistence | `UserPreference` global key `editor.calc_sidebar_open` |
-| 3 | Mastermix selection persistence | **Deferred.** Phase 1 is detection-only (derived, no storage) |
-| 4 | Volume params location | In each flow/IF block (instance node attrs). Rail reads them |
-| 5 | Calculator registry shape | Cocktail-emitting, per-block-type registry (this doc, §5) |
-| 6 | Print/export | Suppress in `@media print`; explicitly out of scope for Notion export |
-| 7 | Volume param defaults | `pipet_error = 1.05`, `num_samples = 1`, `volume_per_sample = 50` µL |
+| 1 | Observation | Live doc-walk: `editor` via prop + thin `EditorContext`; `editor.on('transaction')` subscription |
+| 2 | Sidebar open/closed persistence | `UserPreference` key `experiment_page.calc_sidebar_open`, modeled on `useExperimentLastFullWidth` (NOT the left nav's `localStorage`) |
+| 3 | Mastermix selection persistence | **Deferred.** Phase 1 = detection-only, derived, no storage |
+| 4 | Volume params location | Per-block, in node attrs (already there). Phase 1 adds the edit inputs to the panel views |
+| 5 | Calculator shape | Uniform; secondary draw keyed off `secondary_antibody_id` (the existing conjugate-inference logic's output — not re-derived); per-block-type only via `dilution_source` (§5) |
+| 6 | Print/export | Suppress in `@media print`; out of scope for Notion export (none exists in code) |
+| 7 | Volume param defaults | Keep code's existing: `num_samples 1`, `volume_per_sample_ul 100 (flow) / 200 (IF)`, `pipet_error_factor 1.1`. Templates + on-the-fly editing carry real values |
+| 8 | Secondary dilution | New per-instance numbers-only `secondary_dilution_factor` on BOTH target interfaces. No migration, no DB default (templates carry it) |
+| 9 | Phase 0 | **Cancelled.** Templates obviate library default dilutions |
 
 ---
 
 ## 3. Data model
 
-### 3.1 `volume_params` on panel nodes
+### 3.1 Confirmed current shapes (recon §A, verbatim field names)
 
-The recon confirmed `volume_params` already exists in the `flow_panel` / `if_panel` node attrs but has **no edit UI**. Phase 1:
+`VolumeParams` (`types/index.ts:904`): `num_samples`, `volume_per_sample_ul`, `pipet_error_factor`, `dilution_source: 'flow' | 'icc_if'`. Node defaults at `flowPanel.ts:37` / `ifPanel.ts:42` (also slash-menu + view fallback — three sync points each; the build keeps them consistent if it touches defaults, but per decision #7 we don't change the values).
 
-- **Verify the current attr default** in the node specs. If it differs from `{ pipet_error: 1.05, num_samples: 1, volume_per_sample: 50 }`, reconcile to these values. (The mockup used `1.1`; we're standardizing on `1.05`.)
-- **Add edit inputs** to `FlowPanelView` and `IfPanelView`: three numeric fields (samples, µL/sample, excess ×). Editing calls `updateAttributes` on the panel node → fires a transaction → rail recomputes. Match the existing panel-view styling and the semantic design tokens (no raw gray).
-- Field names: use whatever the existing attr schema calls them (confirm in node spec). This doc assumes `num_samples`, `volume_per_sample`, `pipet_error`; the build reconciles to actual names.
+`FlowPanelInstanceTarget` (`types/index.ts:843`): `antibody_*`, `dye_label_*`, `staining_mode: string`, `secondary_antibody_id/name`, `flow_dilution_factor: number|null`, `icc_if_dilution_factor: number|null`. (No `secondary_fluorophore_*` — irrelevant to volume math.)
 
-### 3.2 No new persistence in Phase 1
+`IFPanelInstanceTarget` (`types/index.ts:873`): `antibody_*`, `dye_label_*`, `staining_mode: string`, `secondary_antibody_id/name`, `secondary_fluorophore_id/name`, `dilution_override: string|null`, `icc_if_dilution_factor: number|null`.
 
-Mastermix detection is a derived view recomputed from the doc on every relevant transaction. **No new table, column, or block type.** This sidesteps an Alembic migration until the mastermix *action* phase, when we'll most likely add a per-experiment JSON column (mastermix selection is experiment-scoped). Decision deferred to that phase.
+### 3.2 New field (no migration)
 
-### 3.3 The secondary-dilution gap (IF only)
+Add `secondary_dilution_factor: number | null` to **both** `FlowPanelInstanceTarget` and `IFPanelInstanceTarget`. It lives inside each target object in the `targets` attr array (block-content JSON), so it round-trips through the existing adapter with no Alembic migration. Defaults to `null`. Populated by the user (numbers-only input) or pre-filled when a template carrying it is inserted. Never writes back to any library record (there is no library dilution field — by design).
 
-The recon found IF instance targets carry `secondary_antibody_id` but **no secondary dilution factor**. The IF secondary cocktail needs that dilution. Phase 1 resolves it at the **data layer, not the calculator**: the rail collects all `secondary_antibody_id`s referenced by IF panels on the page, batch-fetches the `SecondaryAntibody` records via TanStack Query, and passes a resolved `{ id → dilution }` map into the IF calculator as a dependency. The calculator stays a pure synchronous function (§5.3).
+Touch points (target-object level, not a new node): `types/index.ts` interfaces; wherever targets are constructed/edited in the panel designers (new targets default the field to `null`); the panel views' target editor (the numbers-only input, shown only when the **existing** dye/conjugate logic has activated the secondary column for that row — reuse that condition, do not write a new direct/indirect check). The adapter round-trips `targets` wholesale, so no per-field adapter change is expected — the build verifies (§13.2).
 
-> **Follow-up flagged, not fixed here:** the instance snapshot not capturing secondary dilution means the IF calc has a data dependency the flow calc doesn't, and the panel block isn't self-contained. A future fix could snapshot secondary dilution into the instance target so the calc needs no external fetch. Out of Phase 1 scope; noted in §12.
+### 3.3 Secondary dilution model (was the §3.3 "design hole")
+
+Stamp-free, library-free: `secondary_dilution_factor` is a plain editable per-instance number. Empty on a bare insert → the calc renders that secondary draw as a **no-data state** (the no-spectra-chip convention — never fabricate a number). Templates pre-fill it. On-the-fly edits stay local to the instance. This is option (c) from the design discussion; templates replace any DB-sourced default.
+
+### 3.4 No new persistence in Phase 1
+
+Mastermix detection is derived from the doc on every relevant transaction. No table, column, or block type added. The mastermix *action* phase (later) will most likely add a per-experiment JSON column on `Experiment` (recon D4 confirms none exists); deferred to that phase.
 
 ---
 
-## 4. Editor exposure — `EditorContext`
+## 4. Editor exposure & observation
 
-The recon confirmed the editor is a local variable in `ExperimentPage.tsx` with no context. A sibling rail can't see it. Phase 1 adds a minimal context, modeled on the existing `BlockFramesProvider` precedent (which already reaches into the editor).
+Editor is local to `ExperimentPage` (recon C1–C2); no context exists. Phase 1 adds a thin context and mounts the rail as a sibling inside `ExperimentPage`.
 
 ```tsx
-// frontend/src/blocks-tiptap/EditorContext.tsx  (location: match BlockFramesProvider)
+// blocks-tiptap/EditorContext.tsx
 const EditorContext = createContext<Editor | null>(null)
-
-export function EditorProvider({ editor, children }: {
-  editor: Editor | null
-  children: React.ReactNode
-}) {
-  return <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
-}
-
-export function useEditorInstance(): Editor | null {
-  return useContext(EditorContext)
-}
+export const EditorProvider = ({ editor, children }) =>
+  <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
+export const useEditorInstance = () => useContext(EditorContext)
 ```
 
-`ExperimentPage` wraps its editor region in `<EditorProvider editor={editor}>`. The rail is mounted as a sibling **inside** that provider so it can call `useEditorInstance()`.
-
-### 4.1 Observation hook
+Observation hook (subscription pattern mirrors `saveCoordinator.ts:370`):
 
 ```tsx
-// useExperimentPanels.ts — subscribes to the doc, returns parsed panel data
 function useExperimentPanels(): PanelBlockData[] {
   const editor = useEditorInstance()
   const [panels, setPanels] = useState<PanelBlockData[]>([])
-
   useEffect(() => {
     if (!editor) return
     const recompute = () => setPanels(walkPanelNodes(editor.state.doc))
-    recompute() // initial
-    const handler = ({ transaction }: { transaction: Transaction }) => {
-      if (transaction.docChanged) recompute()
-    }
+    recompute()
+    const handler = ({ transaction }) => { if (transaction.docChanged) recompute() }
     editor.on('transaction', handler)
     return () => { editor.off('transaction', handler) }
   }, [editor])
-
   return panels
 }
 ```
 
-`walkPanelNodes` descends the doc, collects every `flow_panel` / `if_panel` node, and returns `{ rowId, blockType, content, volumeParams }` per panel in document order.
+`walkPanelNodes` uses `doc.descendants` filtered to `flow_panel`/`if_panel` (recon C3 canonical pattern), returning `{ rowId, blockType, name, targets, volumeParams }` in document order.
 
-**Efficiency note:** recompute fires on any `docChanged`, including edits to unrelated text blocks. Volume math is cheap and panels are few, so Phase 1 does the simple thing. If profiling later shows cost (cf. the BlockFrames "50 walks per keystroke" lesson), gate `recompute` on whether the transaction's steps touched a panel node. Deferred optimization, noted inline.
+**Efficiency note:** recompute fires on any `docChanged`. Volume math is cheap and panels are few — Phase 1 does the simple thing. If profiling warrants (cf. BlockFrames "50 walks per keystroke"), gate on whether the transaction touched a panel node. Deferred (§12).
 
 ---
 
-## 5. Calculator registry
+## 5. Calculator
 
-The pluggable seam. The unit is a **cocktail**: a mix the user prepares and pipettes. The rail asks each panel's calculator for its cocktails, then renders and aggregates them.
+The pluggable unit is a **cocktail** (a mix the user pipettes). The structure is shared; only dilution-field selection is per-block-type, via `dilution_source`.
 
 ### 5.1 Types
 
 ```ts
 type ReagentKind = 'antibody' | 'secondary' | 'dye'
+type DrawState = 'computed' | 'no_dilution'   // no fabricated numbers
 
 interface ReagentDraw {
-  reagentId: string        // antibody_id, secondary_antibody_id, or dye id
+  reagentId: string
   name: string
   kind: ReagentKind
-  dilutionFactor: number   // the "1:N" → N
-  volume: number           // µL drawn into this cocktail
+  state: DrawState
+  dilutionFactor: number | null
+  volume: number | null            // null when state === 'no_dilution'
 }
-
 interface Cocktail {
-  id: string               // stable within a panel (e.g. `${rowId}:primary`)
-  label: string            // "Stain cocktail", "Primary cocktail", "Secondary cocktail"
+  id: string                       // `${rowId}:primary` | `${rowId}:secondary`
+  label: string                    // "Stain cocktail" if sole; else "Primary"/"Secondary"
   draws: ReagentDraw[]
-  totalVolume: number      // num_samples × volume_per_sample × pipet_error
-  bufferVolume: number     // totalVolume − Σ draw.volume
-}
-
-interface CalcDeps {
-  // resolved external data the calculator can't read from the node
-  secondaryDilutions: Record<string, number>  // secondary_antibody_id → dilution
-}
-
-interface PanelCalculator {
-  blockType: 'flow_panel' | 'if_panel'
-  computeCocktails(panel: PanelBlockData, deps: CalcDeps): Cocktail[]
-}
-
-const CALCULATORS: Record<string, PanelCalculator> = {
-  flow_panel: flowCalculator,
-  if_panel: ifCalculator,
-  // add a third block type's calculator here — that's the whole extension
+  totalVolume: number              // num_samples × volume_per_sample_ul × pipet_error_factor
+  bufferVolume: number             // totalVolume − Σ computed draw volumes
 }
 ```
 
-Calculators are **pure functions** of node content + params + resolved deps. No fetching, no editor access — those live in the rail. This keeps them trivially unit-testable.
-
-### 5.2 Flow calculator (Phase 1: 1 cocktail)
+### 5.2 Algorithm (one function, both block types)
 
 ```
-totalVolume = num_samples × volume_per_sample × pipet_error
-for each target:
-  draw.volume = totalVolume / target.flow_dilution_factor
-bufferVolume = totalVolume − Σ draw.volume
-→ [ { label: "Stain cocktail", draws, totalVolume, bufferVolume } ]
+vp = panel.volume_params
+totalVolume = vp.num_samples × vp.volume_per_sample_ul × vp.pipet_error_factor
+
+primaryDraws   = []   // antibody primaries (conjugated + unconjugated) — one primary incubation
+secondaryDraws = []   // secondaries for targets with a secondary assigned — one secondary incubation
+dyeCocktails   = []   // each dye is its OWN step (unique incubation times); never in primary/secondary
+
+for target in panel.targets:
+  dilution =
+    vp.dilution_source === 'flow'
+      ? target.flow_dilution_factor                                    // number | null
+      : parseDilution(target.dilution_override) ?? target.icc_if_dilution_factor
+
+  if target.antibody_id:
+    primaryDraws.push(makeDraw(antibodyReagentOf(target), dilution, totalVolume))
+    // secondary draw iff a secondary antibody is assigned — the OUTPUT of the app's
+    // existing conjugate-inference logic (unconjugated / chemical-only primary →
+    // secondary column activates → user picks a compatible secondary → secondary_antibody_id
+    // set). The calculator does NOT re-derive staining mode.
+    if target.secondary_antibody_id:
+      secondaryDraws.push(
+        makeDraw(secondaryReagentOf(target), target.secondary_dilution_factor, totalVolume))
+  else if target.dye_label_id:
+    // dyes stained separately, each its own incubation — one single-draw cocktail per dye
+    dyeCocktails.push(
+      cocktail(`dye:${target.id}`, dyeLabelNameOf(target),
+               [ makeDraw(dyeReagentOf(target), dilution, totalVolume) ], totalVolume))
+
+cocktails = []
+if primaryDraws.length:   cocktails.push(cocktail('primary',   primaryDraws,   totalVolume))
+if secondaryDraws.length: cocktails.push(cocktail('secondary', secondaryDraws, totalVolume))
+cocktails.push(...dyeCocktails)
+return cocktails
 ```
 
-Flow targets are direct conjugates (the recon's drift note confirms flow instance targets lack secondary fields). One cocktail. `dye`-kind targets (DAPI etc.) with no dilution are excluded from draws but may be listed as "no dilution / added separately" — UX detail for the build.
+- `makeDraw`: `dilution == null || dilution <= 0` → `state: 'no_dilution', volume: null`; else `volume = totalVolume / dilution`.
+- `parseDilution(str)`: `"1:500"` → 500, `"500"` → 500, blank/garbage → `null`. (IF `dilution_override` is a string; flow `flow_dilution_factor` is already a number — no parse.)
+- `antibodyReagentOf` / `secondaryReagentOf` / `dyeReagentOf`: read the relevant name/id off the target. A target is an antibody target if `antibody_id` is set, else a dye target if `dye_label_id` is set.
+- **Dyes are never folded into the primary or secondary cocktail.** Each dye target becomes its own single-draw cocktail (separate incubation, unique timing). A panel with only dyes emits only dye cocktails; a panel with no dyes emits none. Dye steps use the same `totalVolume` formula (per-sample volume assumed equal — confirm if a dye step differs).
+- No `staining_mode` string-matching: the secondary draw is gated purely on `secondary_antibody_id` being set. `staining_mode` is the existing UI's derived label; the actionable signal (a secondary was assigned) is what the calculator reads, so the conjugate-inference logic is reused via its output rather than duplicated.
+- `bufferVolume` ignores `no_dilution` draws (can't subtract an unknown).
+- Cocktail label: the antibody cocktail is "Stain cocktail" when there's no secondary cocktail, "Primary cocktail" when there is; the secondary is "Secondary cocktail"; each dye cocktail is labelled by the dye's name.
 
-### 5.3 IF calculator (Phase 1: 2 cocktails)
+### 5.3 Registry
 
-```
-totalVolume = num_samples × volume_per_sample × pipet_error
-
-primary cocktail:
-  for each target with a primary antibody:
-    dilution = target.dilution_override ?? target.icc_if_dilution_factor
-    draw.volume = totalVolume / dilution
-  bufferVolume = totalVolume − Σ draw.volume
-
-secondary cocktail:
-  for each target with a secondary_antibody_id:
-    dilution = deps.secondaryDilutions[secondary_antibody_id]   // from §3.3 fetch
-    draw.volume = totalVolume / dilution
-  bufferVolume = totalVolume − Σ draw.volume
-
-→ [ primaryCocktail, secondaryCocktail ]
+```ts
+// the per-block-type seam is just dilution-source selection today;
+// kept as a registry so a future block type with different field shapes plugs in cleanly
+const CALCULATORS: Record<string, (p: PanelBlockData) => Cocktail[]> = {
+  flow_panel: computeCocktails,   // same fn; reads vp.dilution_source === 'flow'
+  if_panel:   computeCocktails,   // same fn; reads vp.dilution_source === 'icc_if'
+  // add a third block type here
+}
 ```
 
-If a secondary dilution is missing from `deps` (fetch pending or record absent), that draw renders as a no-data state in the rail (parallel to the no-spectra chip pattern — don't fabricate a number). Build detail.
-
-### 5.4 Math reference
-
-Per-reagent volume and buffer match EXPERIMENT-PAGE-ARCHITECTURE.md's "Per-antibody primary volume" / "cocktail buffer" formulas, verified against the mockup. Single source of truth is this doc going forward.
+Calculators are pure functions of node content + params. No fetching, no editor access — the §3.2 change means there's no secondary fetch either. Trivially unit-testable.
 
 ---
 
-## 6. Sidebar component architecture
+## 6. Sidebar component
 
-### 6.1 Layout integration
+### 6.1 Layout integration (recon §G)
 
-`ExperimentPage` becomes a flex row: editor region (flex-1, retains its centering/max-width) + the rail (fixed width when open, thin strip when collapsed). The rail must not break the editor's existing width/centering — the recon's §G findings govern exactly where it slots.
+`ExperimentPage`'s container is a flex column with no rail slot. Refactor: wrap the editor region and the rail in a flex **row** — editor `flex-1` (retaining its `prose`/centering and the full-width vs `max-w-7xl` toggle), rail in a fixed-width column when open / thin strip when collapsed. The rail lives inside `ExperimentPage` (not `Shell`). Must not break `PageWidthToggle` behavior.
 
 ### 6.2 Collapse / expand
 
-- Open: fixed width (~320px), header "Calculations" + a `→` collapse arrow.
-- Collapsed: thin strip (~36px), a `←` reopen arrow + vertical "Calculations" label. Deliberately single-arrow, not emoji — distinct from the left nav per the recon's §F notes.
-- State persists via `UserPreference` key `editor.calc_sidebar_open`, read/written through the existing `getPreferences()` / `updatePreference()` API and a `useCalcSidebarOpen()` hook modeled on `useBlockFramesConfig`.
+Open ~320px: header "Calculations" + `→` collapse arrow. Collapsed ~36px: `←` reopen + vertical "Calculations" label. Single-arrow, deliberately unlike the left nav's icon strip. State via `UserPreference` `experiment_page.calc_sidebar_open`, read/written through `getPreferences()`/`updatePreference()` with a `useCalcSidebarOpen()` hook modeled on `useExperimentLastFullWidth`.
 
 ### 6.3 Accordion sections
 
-One collapsible section per panel block (from `useExperimentPanels()`), in document order. Header: panel name + total cocktail volume. Body: one table per cocktail (flow → 1, IF → 2), each row a `ReagentDraw` (reagent name, 1:N, µL) plus a buffer row. Section open/closed state is **local UI state** (not persisted) — defaults open for the first panel, collapsed for the rest (matches the mockup).
+One collapsible section per panel (from `useExperimentPanels()`), document order. Header: panel name + summed cocktail volume. Body: one table per cocktail (primary, optional secondary, and one per dye), rows = `ReagentDraw` (name, 1:N, µL) + a buffer row; `no_dilution` draws render the no-data affordance, not 0. Section open state is local UI state (not persisted); first panel open, rest collapsed.
 
-### 6.4 Mastermix detection callout
+### 6.4 Volume-params inputs
 
-Top of the rail, above the sections. Pure derived view:
+Phase 1 adds three numbers-only inputs (samples, µL/sample, excess ×) to `FlowPanelView` and `IfPanelView` — *in the blocks, not the rail* (decision #4). Editing calls `updateAttributes` on `volume_params` → transaction → rail recomputes. The secondary-dilution numbers-only input (§3.2) is added to the target editor in the same views, shown whenever the existing dye/conjugate logic has activated the secondary column for that row (reuse that condition; do not write a new direct/indirect check).
 
-1. Flatten all `ReagentDraw`s across **same-type** panels (flow↔flow, IF↔IF — never cross-type).
-2. Group by `(reagentId, dilutionFactor)`.
-3. A group with draws from **>1 panel** is a mastermix opportunity → show reagent name, dilution, panel count, summed volume.
-4. A reagent that appears in >1 panel at **different dilutions** is a **mismatch** → show a warning ("CD3 is 1:100 in Panel A but 1:200 in Panel B — not combinable"), not an opportunity.
+### 6.5 Mastermix detection callout
 
-No "combine" action in Phase 1 — detection and display only. The action (and its persistence) is a later phase (§9).
+Top of the rail. Derived: flatten all draws across **same-block-type** panels (flow↔flow, IF↔IF, never cross-type); group by `(reagentId, dilutionFactor)`; a group spanning >1 panel = opportunity (reagent, dilution, panel count, summed volume); a reagent in >1 panel at **different** dilutions = mismatch warning ("not combinable"), not an opportunity. No combine *action* in Phase 1.
 
 ---
 
 ## 7. Print / export
 
-`@media print` hides the rail entirely (it's a live interactive tool). The recon found no real Notion-export implementation in code, so the rail is explicitly **out of scope** for export; revisit when/if export is built. Low-stakes, easy to revisit.
+Add `@media print { display: none }` for the rail (recon G3 shows only the frame-border suppression rule exists today). Notion export has no code (recon G3) — rail explicitly out of scope for export; revisit if/when export is built.
 
 ---
 
-## 8. Conventions & guards
+## 8. Conventions & guards (recon §H)
 
-The build prompt must enforce, per recon §H:
-
-- Semantic design tokens only (no raw gray utilities) — the rail is new UI under the active design-token system.
-- TanStack Query rules: the stale-cache coerce rule (the secondary-antibody fetch must null-coalesce if its gate flips), `refetchType: 'none'` on mid-edit refetches.
-- Missing-data affordance rule (no fabricated numbers — missing secondary dilution renders a no-data state, not a 0 or a guess).
-- CLAUDE.md "NEVER FORGET" checklist (tests, index regen, etc.).
+- Semantic design tokens only (`text-foreground`, `bg-surface`, `border-border`) — no raw gray.
+- TanStack: stale-cache coerce rule (any gated hook), `refetchType: 'none'` on mid-edit refetches, mutations invalidate list key.
+- Missing-data affordance: `no_dilution` draws show a distinct state, never a fabricated 0 (raw-display rule).
+- `@/` alias in tsconfig + vite + vitest; loading/error/empty states on any data-dependent component; async unmount writes guard with `isUnmountingRef`.
+- Dropdowns (if any) need `z-50`.
 
 ---
 
 ## 9. Controls phase — the seam (design pending, NOT in Phase 1)
 
-The controls selectors (built-in vocabulary, in the panel blocks) are a separate design track. Phase 1 is built so they slot in without rework:
+Built-in control vocabulary, selectors in the panel blocks (flow + IF each get their own vocab). Phase 1 is built so they slot in:
 
-- Controls selection lives in **node attrs** (like `volume_params`) — a new `controls` field on the flow/IF node. The editor-observation path already picks up attr changes; no new plumbing.
-- A selected control = the calculator emits **additional cocktails**. Examples: a single-stain comp control → a 1-draw cocktail (that one antibody); an FMO-minus-X → a cocktail with all draws except X; unstained → a 0-draw cocktail (buffer only). The `Cocktail[]` return type already expresses all of these.
-- Mastermix detection already operates on flattened draws across cocktails, so control-tube draws participate automatically once emitted.
-- The rail's "controls accordion" aggregated view is then a second rail section that reads the same computed cocktails, filtered to control-origin ones.
+- Controls selection → a `controls` node attr (like `volume_params`); the observation path already picks up attr changes.
+- A selected control = the calculator emits **additional cocktails**: single-stain comp → 1-draw cocktail; FMO-minus-X → all primary draws except X; unstained → buffer-only. The `Cocktail[]` return type already expresses all of these — no interface change.
+- Mastermix detection already flattens across cocktails, so control draws participate automatically.
+- The rail's "controls accordion" is a second section reading the same computed cocktails, filtered to control-origin ones.
 
-**Open for the controls design conversation:** the exact flow vocabulary (unstained / single-stain / FMO / viability / isotype / comp-beads) and whether IF gets its own vocabulary (secondary-only / autofluorescence / single-channel) or flow ships first. The `flow-cytometry-controls` domain logic is a useful reference for the math (FMO = all-but-one, single-stain = one-each).
+Open for that conversation: exact flow vs IF control vocabularies. Domain reference: the `flow-cytometry-controls` skill (FMO = all-but-one, single-stain = one-each).
 
 ---
 
-## 10. Phasing (Phase 1 build → CC prompts)
+## 10. Phase 1 build phasing (approved 7-commit / ~2-session split)
 
-Proposed commit breakdown for the Phase 1 build prompt (to be written from this doc):
+1. `EditorContext` + provider wiring + rail mount point (layout row refactor). Tests: sibling reads editor; layout preserves width toggle.
+2. `volume_params` edit inputs + `secondary_dilution_factor` field + its input, in both panel views. Tests: editing fires `updateAttributes`; new targets default the field to null.
+3. Calculator (pure fn + registry, `parseDilution`, staining-mode routing). Tests: cocktail math vs hand-checked fixtures incl. direct-only (1 cocktail), indirect (2), mixed, and `no_dilution` paths.
+4. `useExperimentPanels` observation hook. Tests: doc-walk returns panels; transaction triggers recompute.
+5. Sidebar shell (layout, collapse/expand, `UserPreference`). Tests: collapse round-trips.
+6. Accordion sections + mastermix detection callout. Tests: cocktails render; mastermix groups + flags mismatches.
+7. Print suppression + CONVENTIONS/doc updates.
 
-1. **`EditorContext` + provider wiring** in `ExperimentPage`. Tests: sibling can read the editor.
-2. **`volume_params` edit UI** in `FlowPanelView` / `IfPanelView` + default reconciliation. Tests: editing fires `updateAttributes`.
-3. **Calculator registry + flow + IF calculators** (pure functions). Tests: cocktail math against hand-checked fixtures, including the missing-secondary-dilution no-data path.
-4. **`useExperimentPanels` observation hook + secondary-dilution batch fetch.** Tests: doc-walk returns panels; transaction triggers recompute.
-5. **Sidebar shell** (layout integration, collapse/expand, `UserPreference` persistence). Tests: collapse state round-trips.
-6. **Accordion sections + mastermix detection callout.** Tests: section renders cocktails; mastermix groups + flags mismatches.
-7. **Print suppression + CONVENTIONS/doc updates.**
-
-Likely split across two CC sessions (1–4 backend-adjacent/logic, 5–7 UI) with an intermediate report. To be finalized when the prompt is drafted.
+Logic 1–4, UI 5–7, intermediate report between sessions. Finalized in the build prompt.
 
 ---
 
 ## 11. Deprecations
 
-This design replaces two sections of `EXPERIMENT-PAGE-ARCHITECTURE.md`:
-
-- **Phase 5 (per-block `VolumeCalculator`)** — superseded. Volume math now lives in the page-level rail, not inside each block. The block only gains the three `volume_params` inputs.
-- **Phase 6 (modal mastermix detector)** — superseded. Mastermix is a rail callout, not a modal, and detection is live/derived rather than a triggered scan.
-
-When this doc is accepted, mark those two phases deprecated in `EXPERIMENT-PAGE-ARCHITECTURE.md` (pointer to this doc) rather than deleting them, to preserve history.
+Mark deprecated in `EXPERIMENT-PAGE-ARCHITECTURE.md` (pointer here, don't delete):
+- Phase 5 (per-block `VolumeCalculator`) — volume math now in the page rail; blocks only gain the `volume_params` inputs.
+- Phase 6 (modal mastermix detector) — now a live derived rail callout, not a modal scan.
 
 ---
 
 ## 12. Deferred / follow-ups
 
-- **Mastermix action + persistence** (combine-selection storage; likely per-experiment JSON column).
-- **Controls selectors** (separate design track, §9).
-- **Secondary dilution in the instance snapshot** so the IF calc needs no external fetch (§3.3).
-- **Recompute optimization** — gate on panel-touching transactions if profiling warrants (§4.1).
-- **Notion export of the rail's computed tables** (§7).
-- **`sort_order` float compaction** — unrelated, but the same experiment-page surface; noted in TIPTAP-FOLLOWUPS.
+- Mastermix action + persistence (likely per-experiment JSON column).
+- Controls selectors (separate design track, §9).
+- Recompute optimization — gate on panel-touching transactions if profiling warrants (§4).
+- Notion export of the rail's tables (§7).
+- Primary/secondary dilution model unification — primary uses a snapshotted number + string override; secondary (new) is a single editable number. Cleaner; unify someday. Out of scope.
+- Flow `secondary_fluorophore_id/name` absence (recon J1) — irrelevant to volume math, but a gap for any future flow indirect spectral display.
 
 ---
 
-## 13. Open items before the build prompt
+## 13. Open items before/within the build prompt
 
-1. **Field-name reconciliation:** confirm the actual `volume_params` attr field names in the node spec (this doc assumed `num_samples` / `volume_per_sample` / `pipet_error`).
-2. **`volume_per_sample` default of 50 µL** — confirm or set a house number.
-3. **IF controls in scope for the controls track, or flow-first** (non-blocking for Phase 1).
-4. **Commit split / session boundary** for the Phase 1 build prompt (§10).
+1. **Reuse the existing conjugate-inference logic; don't reinvent it.** The build must (a) locate where the dye/conjugate UI decides the secondary column is active vs auto-filled, and reuse that exact condition to gate the secondary-dilution input; (b) confirm `primaryReagentOf` — specifically whether a *conjugated* antibody target leaves `dye_label_*` empty (conjugate intrinsic to the antibody) or populates it, since that determines whether the primary draw reads the antibody or a dye. The secondary-draw trigger is settled: `secondary_antibody_id` presence. Folded into commits 2–3.
+2. **`secondary_dilution_factor` adapter round-trip** — verify the `targets` adapter serializes the new field without per-field changes (expected, since `targets` round-trips wholesale). Confirm in commit 2.
+3. Commit split / session boundary — §10, approved.
