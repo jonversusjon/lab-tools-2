@@ -45,6 +45,11 @@ interface PanelSpectraByLaserProps {
   activeTargets: ActiveTarget[]
   allFluorophoresForScoring: FluorophoreWithSpectra[]
   activeDetectors: Set<string>
+  /**
+   * Render for the narrow experiment rail: taller (square/portrait) charts and
+   * slightly smaller text so the curves read well in a portrait footprint.
+   */
+  compact?: boolean
 }
 
 export default function PanelSpectraByLaser({
@@ -52,6 +57,7 @@ export default function PanelSpectraByLaser({
   activeTargets,
   allFluorophoresForScoring,
   activeDetectors,
+  compact = false,
 }: PanelSpectraByLaserProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -125,10 +131,13 @@ export default function PanelSpectraByLaser({
           <div key={laser.id} className="rounded border border-border">
             <button
               onClick={() => toggleLaser(laser.id)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium hover:bg-hover"
+              className={
+                'flex w-full items-center gap-2 text-left font-medium hover:bg-hover ' +
+                (compact ? 'px-2 py-1.5 text-xs' : 'px-3 py-2 text-sm')
+              }
             >
               <span
-                className="inline-block h-3 w-3 rounded-full"
+                className="inline-block h-3 w-3 shrink-0 rounded-full"
                 style={{ backgroundColor: laserColor }}
               />
               <span className="text-foreground">
@@ -142,7 +151,7 @@ export default function PanelSpectraByLaser({
               </span>
             </button>
             {!isCollapsed && (
-              <div className="border-t border-border px-3 pb-3">
+              <div className={'border-t border-border pb-3 ' + (compact ? 'px-2' : 'px-3')}>
                 {excitedCount === 0 ? (
                   <p className="py-3 text-center text-xs text-foreground-subtle">
                     No assigned fluorophores excited by this laser
@@ -156,6 +165,7 @@ export default function PanelSpectraByLaser({
                     fluorophoreColorMap={fluorophoreColorMap}
                     isDark={isDark}
                     activeDetectors={activeDetectors}
+                    compact={compact}
                   />
                 )}
               </div>
@@ -179,6 +189,7 @@ interface LaserSpectraChartProps {
   fluorophoreColorMap: Map<string, string>
   isDark: boolean
   activeDetectors: Set<string>
+  compact: boolean
 }
 
 function LaserSpectraChart({
@@ -189,10 +200,13 @@ function LaserSpectraChart({
   fluorophoreColorMap,
   isDark,
   activeDetectors,
+  compact,
 }: LaserSpectraChartProps) {
   const tickColor = isDark ? '#9CA3AF' : '#374151'
   const gridColor = isDark ? '#374151' : '#E5E7EB'
   const legendColor = isDark ? '#D1D5DB' : '#374151'
+  const axisFontSize = compact ? 9 : 11
+  const legendFontSize = compact ? 10 : 12
 
   // Build datasets
   const datasets: Array<{

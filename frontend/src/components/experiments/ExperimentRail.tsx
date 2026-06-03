@@ -11,7 +11,8 @@
  * active panel's node attrs and recomputes; it never writes panel state.
  */
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useEditorInstance } from '@/blocks-tiptap/EditorContext'
 import { useActivePanelBlock } from '@/hooks/useActivePanelBlock'
 import type { ActivePanelBlock } from '@/hooks/useActivePanelBlock'
@@ -52,57 +53,158 @@ function SpectrumIcon({ className }: { className?: string }) {
   )
 }
 
+function SpilloverIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="1" />
+      <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+    </svg>
+  )
+}
+
+/**
+ * Open/close toggle, positioned at the top of the rail symmetric to the left
+ * sidebar's collapse chevron. The chevron rotates 180° between states with the
+ * same 200ms ease-in-out transition the sidebar uses, so the two rails feel
+ * identical. Points right (›) when expanded — collapse toward the edge — and
+ * rotates to point left (‹) when collapsed — pull the rail back open.
+ */
+function RailToggle({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      title={expanded ? 'Collapse spectra rail' : 'Expand spectra rail'}
+      aria-label={expanded ? 'Collapse spectra rail' : 'Expand spectra rail'}
+      aria-expanded={expanded}
+      className="flex shrink-0 items-center justify-center rounded p-1 text-foreground-muted hover:bg-hover hover:text-foreground transition-colors duration-150"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+        style={{
+          transform: expanded ? 'rotate(0deg)' : 'rotate(180deg)',
+          transition: 'transform 200ms ease-in-out',
+        }}
+        aria-hidden="true"
+      >
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+  )
+}
+
 export default function ExperimentRail() {
   const editor = useEditorInstance()
   const active = useActivePanelBlock(editor)
   const { isOpen, setOpen } = useSpectralRailOpen()
 
+  // Render into the Shell's right-rail slot so the rail is a sibling of the
+  // sidebar and stretches full height. Resolved after mount (Shell renders
+  // first, so the node exists by the time this effect runs).
+  const [slot, setSlot] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    setSlot(document.getElementById('right-rail-slot'))
+  }, [])
+
   // IF panels render no spectra/spillover yet — flow panels only for now.
   const isSpectralPanel = active?.blockType === 'flow_panel'
   const expanded = isOpen && isSpectralPanel
 
-  if (expanded && active) {
-    return (
-      <aside className="flex w-[360px] shrink-0 flex-col border-l border-border bg-surface print:hidden">
-        <SpectralRailContent active={active} onCollapse={() => setOpen(false)} />
-      </aside>
+  // Same width-slide animation the left sidebar uses (transition-all duration-200
+  // ease-in-out). overflow-hidden clips the wider content while the rail collapses.
+  // h-full fills the slot, which stretches top-to-bottom like the sidebar.
+  const baseClass =
+    'flex h-full shrink-0 flex-col ' +
+    'overflow-hidden border-l border-border bg-surface ' +
+    'transition-all duration-200 ease-in-out print:hidden '
+
+  if (!slot) return null
+
+  // No spectral panel active: a thin, empty spine (nothing to toggle yet).
+  if (!isSpectralPanel || !active) {
+    return createPortal(
+      <aside className={baseClass + 'w-11'} aria-hidden="true" />,
+      slot,
     )
   }
 
-  return (
-    <aside className="flex w-11 shrink-0 flex-col items-center border-l border-border bg-surface py-3 print:hidden">
-      {isSpectralPanel && (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          title="Show panel spectra & spillover"
-          aria-label="Show panel spectra and spillover"
-          className="flex flex-col items-center gap-2 rounded p-2 text-foreground-muted hover:bg-hover hover:text-foreground"
-        >
-          <SpectrumIcon />
-          <span
-            className="text-[10px] font-medium uppercase tracking-wide text-foreground-subtle"
-            style={{ writingMode: 'vertical-rl' }}
+  const panelName = (active.attrs.name as string | undefined)?.trim()
+
+  return createPortal(
+    <aside className={baseClass + (expanded ? 'w-[360px]' : 'w-11')}>
+      {/* Toggle header — the open/close arrow sits at the top, symmetric to the
+          left sidebar's collapse chevron (arrow on the edge adjacent to the page
+          content; title on the outer edge). */}
+      <div
+        className={
+          'flex items-center border-b border-border ' +
+          (expanded ? 'justify-between gap-2 px-2 py-2' : 'justify-center px-2 py-2')
+        }
+      >
+        <RailToggle expanded={expanded} onToggle={() => setOpen(!expanded)} />
+        {expanded && (
+          <div className="min-w-0 flex-1 text-right">
+            <div className="text-[10px] font-medium uppercase tracking-wide text-foreground-subtle">
+              Panel spectra
+            </div>
+            <div className="truncate text-sm font-semibold text-foreground" title={panelName || undefined}>
+              {panelName || 'Untitled panel'}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {expanded ? (
+        <SpectralRailContent active={active} />
+      ) : (
+        /* Relevant sections symbolized as icons while collapsed. */
+        <div className="flex flex-col items-center gap-1 py-3">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            title="Panel spectra"
+            aria-label="Show panel spectra and spillover"
+            className="flex items-center justify-center rounded p-2 text-foreground-muted hover:bg-hover hover:text-foreground"
           >
-            Spectra
-          </span>
-        </button>
+            <SpectrumIcon />
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            title="Spillover matrix"
+            aria-label="Show spillover matrix"
+            className="flex items-center justify-center rounded p-2 text-foreground-muted hover:bg-hover hover:text-foreground"
+          >
+            <SpilloverIcon />
+          </button>
+        </div>
       )}
-    </aside>
+    </aside>,
+    slot,
   )
 }
 
-function SpectralRailContent({
-  active,
-  onCollapse,
-}: {
-  active: ActivePanelBlock
-  onCollapse: () => void
-}) {
+function SpectralRailContent({ active }: { active: ActivePanelBlock }) {
   const targets = (active.attrs.targets as PanelTarget[] | undefined) ?? []
   const assignments =
     (active.attrs.assignments as PanelAssignment[] | undefined) ?? []
-  const panelName = (active.attrs.name as string | undefined)?.trim()
 
   const instrumentAttr = active.attrs.instrument as { id?: string } | null | undefined
   const instrumentId = instrumentAttr?.id ?? null
@@ -175,30 +277,7 @@ function SpectralRailContent({
   )
 
   return (
-    <>
-      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <div className="min-w-0">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-foreground-subtle">
-            Panel spectra
-          </div>
-          <div className="truncate text-sm font-semibold text-foreground" title={panelName || undefined}>
-            {panelName || 'Untitled panel'}
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={onCollapse}
-          title="Collapse"
-          aria-label="Collapse spectra rail"
-          className="rounded p-1 text-foreground-muted hover:bg-hover hover:text-foreground"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
+    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
         {!instrument ? (
           <p className="text-sm text-foreground-muted">
             Select an instrument on this panel to see its spectra and spillover.
@@ -226,7 +305,6 @@ function SpectralRailContent({
             />
           </>
         )}
-      </div>
-    </>
+    </div>
   )
 }

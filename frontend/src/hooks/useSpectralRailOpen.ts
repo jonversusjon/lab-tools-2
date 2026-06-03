@@ -22,12 +22,21 @@ export function useSpectralRailOpen() {
 
   const isOpen = parseBool(query.data?.[SPECTRAL_RAIL_OPEN_PREFERENCE_KEY])
 
-  const setOpen = async (value: boolean) => {
-    await updatePreference(
-      SPECTRAL_RAIL_OPEN_PREFERENCE_KEY,
-      value ? 'true' : 'false',
+  // Optimistic: flip the cached preference synchronously so the rail's
+  // collapse/expand animation fires on click. Persistence happens in the
+  // background; a failed write reverts by refetching the real value.
+  const setOpen = (value: boolean) => {
+    const raw = value ? 'true' : 'false'
+    qc.setQueryData(
+      ['preferences'],
+      (old: Record<string, string> | undefined) => ({
+        ...(old ?? {}),
+        [SPECTRAL_RAIL_OPEN_PREFERENCE_KEY]: raw,
+      }),
     )
-    qc.invalidateQueries({ queryKey: ['preferences'] })
+    updatePreference(SPECTRAL_RAIL_OPEN_PREFERENCE_KEY, raw).catch(() => {
+      qc.invalidateQueries({ queryKey: ['preferences'] })
+    })
   }
 
   return {

@@ -137,8 +137,7 @@ export default function ExperimentPage() {
   return (
     <BlockFramesProvider>
     <EditorProvider editor={editor}>
-    <div className="flex items-stretch">
-      <div className={containerClass + ' min-w-0 flex-1'}>
+      <div className={containerClass}>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">
             {loadState.experiment.name}
@@ -167,7 +166,6 @@ export default function ExperimentPage() {
       </div>
 
       <ExperimentRail />
-    </div>
     </EditorProvider>
     </BlockFramesProvider>
   )

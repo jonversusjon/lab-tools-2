@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi } from 'vitest'
 import ExperimentRail from '@/components/experiments/ExperimentRail'
@@ -49,10 +49,19 @@ function flowPanel(name = 'My Panel') {
   }
 }
 
+// The rail portals into the Shell's #right-rail-slot; provide it in isolation.
+let slot: HTMLElement
 beforeEach(() => {
   h.active = null
   h.isOpen = false
   h.setOpen = vi.fn()
+  slot = document.createElement('div')
+  slot.id = 'right-rail-slot'
+  document.body.appendChild(slot)
+})
+
+afterEach(() => {
+  slot.remove()
 })
 
 describe('ExperimentRail', () => {
@@ -70,6 +79,30 @@ describe('ExperimentRail', () => {
     render(<ExperimentRail />)
     fireEvent.click(screen.getByLabelText('Show panel spectra and spillover'))
     expect(h.setOpen).toHaveBeenCalledWith(true)
+  })
+
+  it('collapsed spine shows an expand toggle and a spillover icon, both opening the rail', () => {
+    h.active = flowPanel()
+    h.isOpen = false
+    render(<ExperimentRail />)
+
+    const expand = screen.getByLabelText('Expand spectra rail')
+    const spillover = screen.getByLabelText('Show spillover matrix')
+    expect(expand).toBeInTheDocument()
+    expect(spillover).toBeInTheDocument()
+
+    fireEvent.click(expand)
+    fireEvent.click(spillover)
+    expect(h.setOpen).toHaveBeenNthCalledWith(1, true)
+    expect(h.setOpen).toHaveBeenNthCalledWith(2, true)
+  })
+
+  it('open header exposes a collapse toggle that closes the rail', () => {
+    h.active = flowPanel('T Cell Panel')
+    h.isOpen = true
+    render(<ExperimentRail />)
+    fireEvent.click(screen.getByLabelText('Collapse spectra rail'))
+    expect(h.setOpen).toHaveBeenCalledWith(false)
   })
 
   it('renders the active panel spectra + spillover when open', () => {

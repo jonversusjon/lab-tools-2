@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-06-03T15:53:52Z
-Commit: 3545ea9
+Generated: 2026-06-03T16:24:27Z
+Commit: 0a6a1c9
 
 ---
 
@@ -102,7 +102,7 @@ Commit: 3545ea9
 | `useSecondaries` | `params: SecondaryListParams = {}` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useSecondaries.ts` |
 | `useSecondary` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useSecondaries.ts` |
 | `useSnapshotPanel` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperimentBlocks.ts` |
-| `useSpectralRailOpen` | `` | `{ isOpen: boolean; setOpen: (value: boolean) => Promise<void>; isLoading: boolean; }` | `frontend/src/hooks/useSpectralRailOpen.ts` |
+| `useSpectralRailOpen` | `` | `{ isOpen: boolean; setOpen: (value: boolean) => void; isLoading: boolean; }` | `frontend/src/hooks/useSpectralRailOpen.ts` |
 | `useTags` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useTags.ts` |
 | `useTheme` | `` | `ThemeContextValue` | `frontend/src/components/layout/ThemeContext.tsx` |
 | `useToast` | `` | `ToastContextValue` | `frontend/src/components/layout/Toast.tsx` |
