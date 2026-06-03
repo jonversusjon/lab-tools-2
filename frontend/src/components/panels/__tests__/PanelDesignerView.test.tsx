@@ -193,8 +193,8 @@ describe('PanelDesignerView — instance-mode compatibility', () => {
       />
     )
 
-    // Each target row has exactly one "Remove target" button
-    expect(screen.getAllByLabelText('Remove target')).toHaveLength(2)
+    // Each target row has exactly one select checkbox
+    expect(screen.getAllByLabelText('Select row')).toHaveLength(2)
   })
 
   // ── Test 3 ────────────────────────────────────────────────────────────────
@@ -224,7 +224,8 @@ describe('PanelDesignerView — instance-mode compatibility', () => {
     )
 
     await act(async () => {
-      fireEvent.click(screen.getByLabelText('Remove target'))
+      fireEvent.click(screen.getByLabelText('Select row'))
+      fireEvent.click(screen.getByLabelText('Delete selected'))
     })
 
     expect(onRemoveTarget).toHaveBeenCalledOnce()

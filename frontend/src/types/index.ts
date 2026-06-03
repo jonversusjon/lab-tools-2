@@ -982,3 +982,5 @@ export const DEFAULT_BLOCK_FRAMES: BlockFramesConfig = {
 export const BLOCK_FRAMES_PREFERENCE_KEY = 'editor.block_frames'
 
 export const EXPERIMENT_LAST_FULL_WIDTH_PREFERENCE_KEY = 'experiment_page.last_full_width'
+
+export const SPECTRAL_RAIL_OPEN_PREFERENCE_KEY = 'experiment_page.spectral_rail_open'

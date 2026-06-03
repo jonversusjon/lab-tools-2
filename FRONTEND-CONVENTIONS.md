@@ -155,7 +155,7 @@ Panels can have `instrument_id = null`. The panel designer must handle this:
 - In assigned cells: show lock icon (🔒) for pre-conjugated assignments.
 
 ### Tailwind Conventions
-- Max width for content areas: `max-w-7xl mx-auto`
+- Max width for content areas: `mx-auto`
 - Card: `bg-white rounded-lg shadow p-6`
 - Table: `min-w-full divide-y divide-gray-200`
 - Button primary: `bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded`

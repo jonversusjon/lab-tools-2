@@ -397,16 +397,37 @@ describe('IFPanelDesignerView', () => {
       expect(screen.queryByText(/No targets added yet/)).not.toBeInTheDocument()
     })
 
-    it('renders a Remove target button for each target row', () => {
+    it('renders a select checkbox for each target row', () => {
       renderView({ targets })
-      expect(screen.getAllByLabelText('Remove target')).toHaveLength(2)
+      expect(screen.getAllByLabelText('Select row')).toHaveLength(2)
     })
 
-    it('clicking Remove target calls onRemoveTarget with targetId and antibodyId', () => {
+    it('selecting a row and clicking Delete calls onRemoveTarget with targetId and antibodyId', () => {
       const onRemoveTarget = vi.fn().mockResolvedValue(undefined)
       renderView({ targets }, { onRemoveTarget })
-      fireEvent.click(screen.getAllByLabelText('Remove target')[0])
+      fireEvent.click(screen.getAllByLabelText('Select row')[0])
+      fireEvent.click(screen.getByLabelText('Delete selected'))
       expect(onRemoveTarget).toHaveBeenCalledWith(T1_ID, AB1_ID)
+    })
+
+    it('shows a "Clear primary" option in the edit dropdown when onClearTarget is provided', () => {
+      renderView({ targets: [makeTarget(T1_ID, AB1_ID, 'MAP2')] }, { onClearTarget: vi.fn() })
+      fireEvent.click(screen.getByTitle('Click to replace target'))
+      expect(screen.getByLabelText('Clear primary')).toBeInTheDocument()
+    })
+
+    it('does not show "Clear primary" when onClearTarget is not provided', () => {
+      renderView({ targets: [makeTarget(T1_ID, AB1_ID, 'MAP2')] })
+      fireEvent.click(screen.getByTitle('Click to replace target'))
+      expect(screen.queryByLabelText('Clear primary')).not.toBeInTheDocument()
+    })
+
+    it('clicking "Clear primary" calls onClearTarget with the target id', () => {
+      const onClearTarget = vi.fn()
+      renderView({ targets: [makeTarget(T1_ID, AB1_ID, 'MAP2')] }, { onClearTarget })
+      fireEvent.click(screen.getByTitle('Click to replace target'))
+      fireEvent.mouseDown(screen.getByLabelText('Clear primary'))
+      expect(onClearTarget).toHaveBeenCalledWith(T1_ID)
     })
 
     it('renders a dilution input for each antibody target row', () => {

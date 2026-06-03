@@ -1,8 +1,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-06-01T16:27:10Z
-Commit: 02d7ec5
+Generated: 2026-06-03T15:53:52Z
+Commit: 3545ea9
 
 ---
 
@@ -10,6 +10,7 @@ Commit: 02d7ec5
 
 | Hook | Params | Returns | File |
 |---|---|---|---|
+| `useActivePanelBlock` | `editor: Editor | null` | `import("/home/jramirez2/proj/lab-tools-2/frontend/src/hooks/useActivePanelBlock").ActivePanelBlock | null` | `frontend/src/hooks/useActivePanelBlock.ts` |
 | `useAddAssignment` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/usePanels.ts` |
 | `useAddIFAssignment` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useIFPanels.ts` |
 | `useAddIFTarget` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useIFPanels.ts` |
@@ -54,6 +55,7 @@ Commit: 02d7ec5
 | `useDeleteTag` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useTags.ts` |
 | `useDyeLabel` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useDyeLabels.ts` |
 | `useDyeLabels` | `params: DyeLabelListParams = {}` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useDyeLabels.ts` |
+| `useEditorInstance` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tiptap/core/dist/index").Editor | null` | `frontend/src/blocks-tiptap/EditorContext.tsx` |
 | `useExperiment` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperiments.ts` |
 | `useExperimentLastFullWidth` | `` | `{ lastFullWidth: boolean; setLastFullWidth: (value: boolean) => Promise<void>; isLoading: boolean; }` | `frontend/src/hooks/useExperimentLastFullWidth.ts` |
 | `useExperiments` | `skip = 0, limit = 100` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperiments.ts` |
@@ -100,6 +102,7 @@ Commit: 02d7ec5
 | `useSecondaries` | `params: SecondaryListParams = {}` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useSecondaries.ts` |
 | `useSecondary` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useSecondaries.ts` |
 | `useSnapshotPanel` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperimentBlocks.ts` |
+| `useSpectralRailOpen` | `` | `{ isOpen: boolean; setOpen: (value: boolean) => Promise<void>; isLoading: boolean; }` | `frontend/src/hooks/useSpectralRailOpen.ts` |
 | `useTags` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useTags.ts` |
 | `useTheme` | `` | `ThemeContextValue` | `frontend/src/components/layout/ThemeContext.tsx` |
 | `useToast` | `` | `ToastContextValue` | `frontend/src/components/layout/Toast.tsx` |
@@ -157,6 +160,7 @@ Commit: 02d7ec5
 | `DyeLabelList` | `` | `frontend/src/components/dye-labels/DyeLabelList.tsx` |
 | `ExperimentList` | `` | `frontend/src/components/experiments/ExperimentList.tsx` |
 | `ExperimentPage` | `` | `frontend/src/components/experiments/ExperimentPage.tsx` |
+| `ExperimentRail` | `` | `frontend/src/components/experiments/ExperimentRail.tsx` |
 | `FavoriteButton` | `FavoriteButtonProps` | `frontend/src/components/antibodies/FavoriteButton.tsx` |
 | `FluorophoreBrowser` | `` | `frontend/src/components/fluorophores/FluorophoreBrowser.tsx` |
 | `FluorophoreImportWizard` | `FluorophoreImportWizardProps` | `frontend/src/components/fluorophores/FluorophoreImportWizard.tsx` |
@@ -260,6 +264,7 @@ Commit: 02d7ec5
 | `['plate-maps']` | `frontend/src/hooks/usePlateMaps.ts` |
 | `['preferences']` | `frontend/src/hooks/useBlockFramesConfig.ts` |
 | `['preferences']` | `frontend/src/hooks/useExperimentLastFullWidth.ts` |
+| `['preferences']` | `frontend/src/hooks/useSpectralRailOpen.ts` |
 | `['recentFluorophores']` | `frontend/src/hooks/useFluorophores.ts` |
 | `['secondary-antibodies', id]` | `frontend/src/hooks/useSecondaries.ts` |
 | `['secondary-antibodies', params]` | `frontend/src/hooks/useSecondaries.ts` |

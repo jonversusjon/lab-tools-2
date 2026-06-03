@@ -16,13 +16,11 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { getLaserColor } from '@/utils/colors'
-import { computeSpilloverMatrix } from '@/utils/spillover'
 import { getDetectionStrategy, buildConjugateSet, buildBindingPartners } from '@/utils/conjugates'
 import type { DetectionStrategy } from '@/utils/conjugates'
 import { rankChannels } from '@/utils/spectra'
-import type { RankChannelsResult } from '@/utils/spectra'
+import { buildRowFluorophoreMap, buildPanelSpectralModel } from '@/utils/panelSpectralModel'
 import NoSpectraChip from '@/components/spectra/NoSpectraChip'
-import type { SpilloverInput } from '@/utils/spillover'
 import TargetOmnibox from './TargetOmnibox'
 import type { TargetSelection } from './TargetOmnibox'
 import SecondaryOmnibox from './SecondaryOmnibox'
@@ -56,12 +54,19 @@ export interface PanelDesignerViewConfig {
   /** When false, hides undo/redo buttons and keyboard shortcuts.
    *  Defaults to true for backward compatibility. */
   showUndoRedo?: boolean
+  /** When false, the inline Panel Spectra + Spillover Matrix sections are not
+   *  rendered. Used by the experiment-page panel block, where this content is
+   *  surfaced in the page's spectral rail instead. Defaults to true. */
+  renderSpectra?: boolean
 }
 
 export interface PanelDesignerViewHandlers {
   onAddTarget: (selection: TargetSelection) => Promise<unknown>
   onRemoveTarget: (targetId: string, antibodyId: string | null) => Promise<void>
   onReplaceTargetAntibody: (targetId: string, newAntibody: Antibody) => Promise<void>
+  /** Clears the primary (antibody + related fields) from a row without
+   *  deleting the row. Optional — only wired in panel instance blocks. */
+  onClearTarget?: (targetId: string) => void | Promise<void>
   onReorderTargets: (event: DragEndEvent) => void
   onSetSecondary: (targetId: string, secondaryId: string) => Promise<void>
   onClearSecondary: (targetId: string) => Promise<void>
@@ -171,6 +176,7 @@ export default function PanelDesignerView({
   // --- Local UI state ---
 
   const [editingTargetId, setEditingTargetId] = useState<string | null>(null)
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
   const [editingName, setEditingName] = useState(false)
   const [nameValue, setNameValue] = useState('')
   const nameInputRef = useRef<HTMLInputElement>(null)
@@ -309,48 +315,44 @@ export default function PanelDesignerView({
     [laserGroups]
   )
 
-  const rowFluorophoreMap = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const t of state.targets) {
-      if (t.dye_label_id) {
-        const existing = assignmentByDyeLabel.get(t.dye_label_id)
-        if (existing) {
-          map.set(t.dye_label_id, existing.fluorophore_id)
-        } else if (t.dye_label_fluorophore_id) {
-          map.set(t.dye_label_id, t.dye_label_fluorophore_id)
-        }
-        continue
-      }
-      if (!t.antibody_id) continue
-      const ab = antibodyMap.get(t.antibody_id)
-      if (!ab) continue
-      const existing = assignmentByAntibody.get(t.antibody_id)
-      if (existing) {
-        map.set(t.antibody_id, existing.fluorophore_id)
-      } else if (t.secondary_antibody_id) {
-        const sec = secondaries.find((s) => s.id === t.secondary_antibody_id)
-        if (sec?.fluorophore_id) {
-          map.set(t.antibody_id, sec.fluorophore_id)
-        }
-      } else if (rawFluorophoreOverrides.has(t.antibody_id)) {
-        map.set(t.antibody_id, rawFluorophoreOverrides.get(t.antibody_id)!)
-      } else if (ab.fluorophore_id) {
-        map.set(t.antibody_id, ab.fluorophore_id)
-      }
-    }
-    return map
-  }, [state.targets, antibodyMap, assignmentByAntibody, assignmentByDyeLabel, secondaries, rawFluorophoreOverrides])
+  const rowFluorophoreMap = useMemo(
+    () =>
+      buildRowFluorophoreMap({
+        targets: state.targets,
+        assignments: state.assignments,
+        antibodyMap,
+        secondaries,
+        overrides: rawFluorophoreOverrides,
+      }),
+    [state.targets, state.assignments, antibodyMap, secondaries, rawFluorophoreOverrides]
+  )
 
-  const rowChannelScores = useMemo(() => {
-    if (!state.instrument) return new Map<string, RankChannelsResult>()
-    const map = new Map<string, RankChannelsResult>()
-    for (const [antibodyId, flId] of rowFluorophoreMap) {
-      const fl = allFluorophoresForScoring.find((f) => f.id === flId)
-      if (!fl) continue
-      map.set(antibodyId, rankChannels(fl, state.instrument))
-    }
-    return map
-  }, [rowFluorophoreMap, state.instrument, allFluorophoresForScoring])
+  // activeTargets / activeDetectors / spillover / per-row channel scores are
+  // derived in one shared pure pass (also used by the experiment-page spectral
+  // rail) so both surfaces stay in sync. See utils/panelSpectralModel.ts.
+  const spectralModel = useMemo(
+    () =>
+      buildPanelSpectralModel({
+        instrument: state.instrument,
+        targets: state.targets,
+        assignments: state.assignments,
+        allFluorophoresForScoring,
+        rowFluorophoreMap,
+        spectraReady: !(!spectraCache && fluorophoresWithSpectra.length > 0),
+      }),
+    [
+      state.instrument,
+      state.targets,
+      state.assignments,
+      allFluorophoresForScoring,
+      rowFluorophoreMap,
+      spectraCache,
+      fluorophoresWithSpectra,
+    ]
+  )
+
+  const { rowChannelScores, activeTargets, activeDetectors, spillover, missingSpectraWarnings } =
+    spectralModel
 
   const hostSpeciesConflicts = useMemo(() => {
     const hostMap = new Map<string, { names: string[]; hasIndirect: boolean }>()
@@ -380,95 +382,6 @@ export default function PanelDesignerView({
     }
     return set
   }, [state.targets, antibodyMap, hostSpeciesConflicts])
-
-  const detectorMap = useMemo(() => {
-    const map = new Map<string, { midpoint: number; width: number; laserWavelength: number }>()
-    if (!state.instrument) return map
-    for (const laser of state.instrument.lasers) {
-      for (const det of laser.detectors) {
-        map.set(det.id, {
-          midpoint: det.filter_midpoint,
-          width: det.filter_width,
-          laserWavelength: laser.wavelength_nm,
-        })
-      }
-    }
-    return map
-  }, [state.instrument])
-
-  const { spillover, missingSpectraWarnings } = useMemo(() => {
-    if (state.assignments.length === 0) {
-      return { spillover: { labels: [], matrix: [] }, missingSpectraWarnings: [] }
-    }
-    if (allFluorophoresForScoring.length === 0) {
-      return { spillover: { labels: [], matrix: [] }, missingSpectraWarnings: [] }
-    }
-    if (!spectraCache && fluorophoresWithSpectra.length > 0) {
-      return { spillover: { labels: [], matrix: [] }, missingSpectraWarnings: [] }
-    }
-    const inputs: SpilloverInput[] = []
-    const warnings: string[] = []
-    for (const a of state.assignments) {
-      const fl = allFluorophoresForScoring.find((f) => f.id === a.fluorophore_id)
-      const det = detectorMap.get(a.detector_id)
-      if (!fl || !det) continue
-      if (!fl.has_spectra || !fl.spectra?.EM?.length) {
-        warnings.push(fl.name)
-      }
-      inputs.push({
-        fluorophoreId: fl.id,
-        fluorophoreName: fl.name,
-        emissionSpectra: fl.spectra?.EM ?? [],
-        detectorMidpoint: det.midpoint,
-        detectorWidth: det.width,
-      })
-    }
-    return { spillover: computeSpilloverMatrix(inputs), missingSpectraWarnings: warnings }
-  }, [state.assignments, allFluorophoresForScoring, fluorophoresWithSpectra, detectorMap, spectraCache])
-
-  const activeTargets = useMemo(() => {
-    const list: { id: string, fluorophore_id: string, detector_id: string | null }[] = []
-    for (const t of state.targets) {
-      if (t.dye_label_id) {
-        const flId = rowFluorophoreMap.get(t.dye_label_id)
-        if (flId) {
-          const assignment = assignmentByDyeLabel.get(t.dye_label_id)
-          list.push({ id: t.dye_label_id, fluorophore_id: flId, detector_id: assignment?.detector_id ?? null })
-        }
-        continue
-      }
-      if (!t.antibody_id) continue
-      const flId = rowFluorophoreMap.get(t.antibody_id)
-      if (flId) {
-        const assignment = assignmentByAntibody.get(t.antibody_id)
-        list.push({
-          id: t.antibody_id,
-          fluorophore_id: flId,
-          detector_id: assignment?.detector_id ?? null
-        })
-      }
-    }
-    return list
-  }, [state.targets, rowFluorophoreMap, assignmentByAntibody, assignmentByDyeLabel])
-
-  const activeDetectors = useMemo(() => {
-    const assignedIds = new Set(Array.from(assignmentByDetector.keys()))
-    const unassignedTargets = activeTargets.filter((t) => !t.detector_id)
-    if (unassignedTargets.length === 0) {
-      return assignedIds
-    }
-    const active = new Set(assignedIds)
-    for (const t of unassignedTargets) {
-      const channelResult = rowChannelScores.get(t.id)
-      if (!channelResult || channelResult.kind !== 'computed') continue
-      for (const r of channelResult.rankings) {
-        if (r.score >= 0.01 && !assignedIds.has(r.detectorId)) {
-          active.add(r.detectorId)
-        }
-      }
-    }
-    return active
-  }, [activeTargets, assignmentByDetector, rowChannelScores])
 
   // --- Local event handlers (delegate to props.handlers) ---
 
@@ -567,6 +480,21 @@ export default function PanelDesignerView({
     } catch {
       // Target may have already been removed
     }
+  }
+
+  const toggleRowSelected = (targetId: string) => {
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(targetId)) next.delete(targetId)
+      else next.add(targetId)
+      return next
+    })
+  }
+
+  const deleteSelectedRows = () => {
+    const toDelete = state.targets.filter((t) => selectedRowIds.has(t.id))
+    setSelectedRowIds(new Set())
+    for (const t of toDelete) handleRemoveTarget(t.id, t.antibody_id)
   }
 
   const handleReplaceTargetAntibody = async (targetId: string, newAntibody: Antibody) => {
@@ -724,6 +652,28 @@ export default function PanelDesignerView({
 
   return (
     <div className="space-y-6">
+      {selectedRowIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-elevated px-4 py-2 shadow-lg">
+            <span className="text-sm text-foreground-muted">
+              {selectedRowIds.size} selected
+            </span>
+            <button
+              onClick={deleteSelectedRows}
+              aria-label="Delete selected"
+              className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700" // theme-exempt: danger button — white text on red bg
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => setSelectedRowIds(new Set())}
+              className="text-sm text-foreground-muted hover:text-foreground"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
       {/* Section A: Panel Header */}
       <div className="space-y-3">
         <div className="flex items-center gap-3">
@@ -862,7 +812,7 @@ export default function PanelDesignerView({
               {/* Laser group header row */}
               {state.instrument && (
                 <tr className="border-b border-border">
-                  <th className="bg-surface w-6 px-1 py-2" />
+                  <th className="bg-surface w-12 px-1 py-2" />
                   <th className="sticky left-0 z-10 bg-surface px-3 py-2" />
                   <th className="bg-surface px-3 py-2" />
                   <th className="bg-surface px-3 py-2" />
@@ -876,12 +826,11 @@ export default function PanelDesignerView({
                       {g.laser.wavelength_nm}nm {g.laser.name}
                     </th>
                   ))}
-                  <th className="bg-surface px-3 py-2" />
                 </tr>
               )}
               {/* Detector sub-header row */}
               <tr className="border-b border-border bg-surface text-foreground-muted">
-                <th className="bg-surface w-6 px-1 py-2" />
+                <th className="bg-surface w-12 px-1 py-2" />
                 <th className="sticky left-0 z-10 bg-surface px-3 py-2 font-medium">
                   Target
                 </th>
@@ -907,14 +856,13 @@ export default function PanelDesignerView({
                     )
                   })
                 )}
-                <th className="bg-surface px-3 py-2" />
               </tr>
             </thead>
             <tbody>
               {state.targets.length === 0 && pendingRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={4 + totalDetectors + 1}
+                    colSpan={4 + totalDetectors}
                     className="px-3 py-6 text-center text-foreground-subtle"
                   >
                     No targets added yet. Click &ldquo;+ Add Target&rdquo; below to begin.
@@ -937,23 +885,37 @@ export default function PanelDesignerView({
                       key={t.id}
                       id={t.id}
                       className={
-                        'border-b border-border' +
+                        'border-b border-border group' +
                         (hasAssignment ? ' bg-accent-soft/40' : ' hover:bg-hover')
                       }
                       data-assigned={hasAssignment ? 'true' : undefined}
                     >
                       {(listeners) => (
                         <>
-                          <td
-                            {...listeners}
-                            className="w-6 px-1 py-2 cursor-grab text-foreground-subtle hover:text-foreground active:cursor-grabbing select-none"
-                            title="Drag to reorder"
-                          >
-                            <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto"><path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z"/></svg>
+                          <td className="w-12 px-1 py-2 text-foreground-subtle select-none">
+                            <div className="flex items-center justify-center gap-1">
+                              <span
+                                {...listeners}
+                                className="-translate-x-1.5 cursor-grab active:cursor-grabbing hover:text-foreground"
+                                title="Drag to reorder"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current">
+                                  <path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z"/>
+                                </svg>
+                              </span>
+                              <input
+                                type="checkbox"
+                                checked={selectedRowIds.has(t.id)}
+                                onChange={() => toggleRowSelected(t.id)}
+                                onPointerDown={(e) => e.stopPropagation()}
+                                aria-label="Select row"
+                                className="h-2.5 w-2.5 cursor-pointer accent-accent dark:[color-scheme:dark]"
+                              />
+                            </div>
                           </td>
                           <td
                             className="sticky left-0 z-10 px-3 py-2 font-medium text-foreground cursor-pointer"
-                            style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined, minWidth: '200px' }}
+                            style={{ backgroundColor: hasAssignment ? 'rgb(239 246 255 / 0.4)' : undefined, minWidth: '140px' }}
                             onClick={() => {
                               if (editingTargetId !== t.id) setEditingTargetId(t.id)
                             }}
@@ -982,6 +944,14 @@ export default function PanelDesignerView({
                                     }
                                   }}
                                   onCancel={() => setEditingTargetId(null)}
+                                  onClear={
+                                    handlers.onClearTarget
+                                      ? () => {
+                                          handlers.onClearTarget!(t.id)
+                                          setEditingTargetId(null)
+                                        }
+                                      : undefined
+                                  }
                                   autoFocus
                                 />
                               ) : t.dye_label_id ? (
@@ -1242,15 +1212,6 @@ export default function PanelDesignerView({
                           )
                         })
                       )}
-                      <td className="px-3 py-2 text-center">
-                        <button
-                          onClick={() => handleRemoveTarget(t.id, t.antibody_id)}
-                          className="text-danger hover:opacity-80"
-                          aria-label="Remove target"
-                        >
-                          &times;
-                        </button>
-                      </td>
                         </>
                       )}
                     </SortableRow>
@@ -1260,10 +1221,18 @@ export default function PanelDesignerView({
               {pendingRows.map((pendingId) => (
                 <tr
                   key={pendingId}
-                  className="border-b border-border hover:bg-hover"
+                  className="border-b border-border hover:bg-hover group"
                 >
-                  <td className="w-6 px-1 py-2" />
-                  <td className="sticky left-0 z-10 px-3 py-2" style={{ minWidth: '200px' }}>
+                  <td className="relative w-6 px-1 py-2">
+                    <button
+                      onClick={() => handleRemovePendingRow(pendingId)}
+                      className="absolute inset-0 flex items-center justify-center text-foreground-subtle hover:text-danger invisible group-hover:visible"
+                      aria-label="Remove pending row"
+                    >
+                      &times;
+                    </button>
+                  </td>
+                  <td className="sticky left-0 z-10 px-3 py-2" style={{ minWidth: '140px' }}>
                     <TargetOmnibox
                       antibodies={antibodies}
                       dyeLabels={dyeLabels}
@@ -1281,19 +1250,10 @@ export default function PanelDesignerView({
                       <td key={det.id} className="px-2 py-2" />
                     ))
                   )}
-                  <td className="px-3 py-2 text-center">
-                    <button
-                      onClick={() => handleRemovePendingRow(pendingId)}
-                      className="text-danger hover:opacity-80"
-                      aria-label="Remove pending row"
-                    >
-                      &times;
-                    </button>
-                  </td>
                 </tr>
               ))}
               <tr>
-                <td colSpan={4 + totalDetectors + 1} className="px-3 py-2">
+                <td colSpan={4 + totalDetectors} className="px-3 py-2">
                   <button
                     onClick={handleAddRowClick}
                     className="flex items-center gap-1 text-sm text-accent hover:opacity-80"
@@ -1354,7 +1314,7 @@ export default function PanelDesignerView({
       })()}
 
       {/* Section C: Panel Spectra (Per-Laser) */}
-      {state.instrument && (
+      {config.renderSpectra !== false && state.instrument && (
         <div className="rounded border border-border bg-elevated">
           <button
             onClick={() => setSpectraCollapsed(!spectraCollapsed)}
@@ -1380,7 +1340,9 @@ export default function PanelDesignerView({
       )}
 
       {/* Section D: Spillover Matrix */}
-      <SpilloverHeatmap labels={spillover.labels} matrix={spillover.matrix} missingSpectraWarnings={missingSpectraWarnings} />
+      {config.renderSpectra !== false && (
+        <SpilloverHeatmap labels={spillover.labels} matrix={spillover.matrix} missingSpectraWarnings={missingSpectraWarnings} />
+      )}
 
       {/* Instrument Change Modal */}
       {instrumentChangeModal && handlers.onInstrumentChange && (

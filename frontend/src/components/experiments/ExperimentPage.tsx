@@ -9,9 +9,11 @@ import { rowsToTiptapDoc } from '@/blocks-tiptap/adapter/dbToTiptap'
 import { useSaveCoordinator, statusLabel } from '@/blocks-tiptap/save'
 import { DragHandleWrapper } from '@/blocks-tiptap/dragHandle'
 import { BlockFramesProvider } from '@/blocks-tiptap/blockFramesProvider'
+import { EditorProvider } from '@/blocks-tiptap/EditorContext'
 import { getExperiment, ExperimentApiError, updateExperiment } from '@/api/experiments'
 import { useExperimentLastFullWidth } from '@/hooks/useExperimentLastFullWidth'
 import { PageWidthToggle } from './PageWidthToggle'
+import ExperimentRail from './ExperimentRail'
 import type { Experiment } from '@/types'
 
 type LoadState =
@@ -129,38 +131,44 @@ export default function ExperimentPage() {
   }
 
   const containerClass = isFullWidth
-    ? 'w-full px-[5vw] py-6 space-y-6'
+    ? 'w-full px-4 py-6 space-y-6'
     : 'mx-auto max-w-7xl px-4 py-6 space-y-6'
 
   return (
     <BlockFramesProvider>
-    <div className={containerClass}>
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">
-          {loadState.experiment.name}
-        </h1>
-        <div className="flex items-center gap-3">
-          <span
-            data-testid="save-status"
-            className={'px-2 py-0.5 rounded text-xs font-medium ' + status.cls}
-            title={saveState.lastError ?? undefined}
-          >
-            {status.text}
-          </span>
-          {saveState.pendingCount > 0 && saveState.status !== 'saving' && (
-            <span className="text-xs text-foreground-muted">
-              {String(saveState.pendingCount)} pending
+    <EditorProvider editor={editor}>
+    <div className="flex items-stretch">
+      <div className={containerClass + ' min-w-0 flex-1'}>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-foreground">
+            {loadState.experiment.name}
+          </h1>
+          <div className="flex items-center gap-3">
+            <span
+              data-testid="save-status"
+              className={'px-2 py-0.5 rounded text-xs font-medium ' + status.cls}
+              title={saveState.lastError ?? undefined}
+            >
+              {status.text}
             </span>
-          )}
-          <PageWidthToggle isFullWidth={isFullWidth} onToggle={toggleFullWidth} />
+            {saveState.pendingCount > 0 && saveState.status !== 'saving' && (
+              <span className="text-xs text-foreground-muted">
+                {String(saveState.pendingCount)} pending
+              </span>
+            )}
+            <PageWidthToggle isFullWidth={isFullWidth} onToggle={toggleFullWidth} />
+          </div>
+        </div>
+
+        <div className="prose dark:prose-invert max-w-none border border-border rounded p-4">
+          {editor && <DragHandleWrapper editor={editor} />}
+          <EditorContent editor={editor} />
         </div>
       </div>
 
-      <div className="prose dark:prose-invert max-w-none border border-border rounded p-4">
-        {editor && <DragHandleWrapper editor={editor} />}
-        <EditorContent editor={editor} />
-      </div>
+      <ExperimentRail />
     </div>
+    </EditorProvider>
     </BlockFramesProvider>
   )
 }

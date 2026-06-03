@@ -240,6 +240,38 @@ function FlowPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewP
         hookOutput.removeTarget(targetId, _antibodyId)
       },
 
+      onClearTarget: (targetId: string) => {
+        const target = hookOutput.state.targets.find((t) => t.id === targetId)
+        if (!target) return
+        // Drop any assignment tied to this row's primary (antibody or dye label).
+        const existing = target.antibody_id
+          ? assignmentByAntibody.get(target.antibody_id)
+          : target.dye_label_id
+            ? assignmentByDyeLabel.get(target.dye_label_id)
+            : undefined
+        if (existing) {
+          hookOutput.dispatch({ type: 'REMOVE_ASSIGNMENT', assignmentId: existing.id })
+        }
+        // Empty the row in place — keep id/panel_id/sort_order so it stays a placeholder.
+        const cleared: PanelTarget = {
+          ...target,
+          antibody_id: null,
+          antibody_name: null,
+          antibody_target: null,
+          dye_label_id: null,
+          dye_label_name: null,
+          dye_label_target: null,
+          dye_label_fluorophore_id: null,
+          dye_label_fluorophore_name: null,
+          staining_mode: 'direct',
+          secondary_antibody_id: null,
+          secondary_antibody_name: null,
+          secondary_fluorophore_id: null,
+          secondary_fluorophore_name: null,
+        }
+        hookOutput.dispatch({ type: 'UPDATE_TARGET', target: cleared })
+      },
+
       onReplaceTargetAntibody: async (targetId: string, newAntibody: Antibody) => {
         const target = hookOutput.state.targets.find((t) => t.id === targetId)
         if (!target || !target.antibody_id) return
@@ -472,12 +504,19 @@ function FlowPanelViewImpl({ node, editor, getPos, updateAttributes }: NodeViewP
       showAutoAssign: true,
       showDelete: true,
       showUndoRedo: false,
+      // Inline spectra + spillover are surfaced in the experiment page's
+      // spectral rail instead of inside the block (reclaims vertical space).
+      renderSpectra: false,
     }),
     [instrumentsData]
   )
 
   return (
-    <NodeViewWrapper className="flow-panel-instance my-4 border border-border rounded-md p-4">
+    <NodeViewWrapper
+      className="flow-panel-instance my-4 border border-border rounded-md p-4"
+      data-panel-block="flow_panel"
+      data-panel-row-id={(node.attrs._rowId as string | undefined) ?? undefined}
+    >
       <PanelDesignerView
         state={hookOutput.state}
         dispatch={hookOutput.dispatch}

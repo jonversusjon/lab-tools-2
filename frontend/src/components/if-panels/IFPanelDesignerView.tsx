@@ -41,6 +41,9 @@ export interface IFPanelDesignerViewHandlers {
   onAddTarget: (selection: TargetSelection) => Promise<unknown>
   onRemoveTarget: (targetId: string, antibodyId: string | null) => Promise<void>
   onReplaceTargetAntibody: (targetId: string, newAntibody: Antibody) => Promise<void>
+  /** Clears the primary (antibody + related fields) from a row without
+   *  deleting the row. Optional — only wired in panel instance blocks. */
+  onClearTarget?: (targetId: string) => void | Promise<void>
   onReorderTargets: (event: DragEndEvent) => void
   onAssignFluorophore: (antibodyId: string, fluorophoreId: string) => Promise<void>
   onClearFluorophore: (antibodyId: string) => Promise<void>
@@ -186,6 +189,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
   // --- Delete ---
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  // --- Row selection (bulk delete) ---
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
+
   // --- Pre-conjugated override (client-side unlock) ---
   const [overriddenRows, setOverriddenRows] = useState<Set<string>>(new Set())
 
@@ -218,6 +224,21 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
     } catch {
       // Target may already be removed
     }
+  }
+
+  const toggleRowSelected = (targetId: string) => {
+    setSelectedRowIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(targetId)) next.delete(targetId)
+      else next.add(targetId)
+      return next
+    })
+  }
+
+  const deleteSelectedRows = () => {
+    const toDelete = state.targets.filter((t) => selectedRowIds.has(t.id))
+    setSelectedRowIds(new Set())
+    for (const t of toDelete) handleRemoveTarget(t.id, t.antibody_id)
   }
 
   const handleReplaceTargetAntibody = async (targetId: string, newAntibody: Antibody) => {
@@ -444,7 +465,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
   const showSpectral = state.viewMode === 'spectral'
   const showCompatCols = showSpectral && state.microscope != null
-  const totalCols = 7 + (showSpectral ? 1 : 0) + (showCompatCols ? 2 : 0)
+  const totalCols = 6 + (showSpectral ? 1 : 0) + (showCompatCols ? 2 : 0)
 
   if (!state.panel) {
     return <p className="text-foreground-muted">Loading panel...</p>
@@ -452,6 +473,28 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
 
   return (
     <div className="space-y-6">
+      {selectedRowIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-elevated px-4 py-2 shadow-lg">
+            <span className="text-sm text-foreground-muted">
+              {selectedRowIds.size} selected
+            </span>
+            <button
+              onClick={deleteSelectedRows}
+              aria-label="Delete selected"
+              className="rounded bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700" /* theme-exempt: danger button — white text on red bg */
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => setSelectedRowIds(new Set())}
+              className="text-sm text-foreground-muted hover:text-foreground"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
@@ -593,8 +636,8 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
             <table className="w-full border-collapse text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface text-foreground-muted">
-                  <th className="w-7 px-1 py-2" />
-                  <th className="px-3 py-2 font-medium" style={{ minWidth: 160 }}>Target</th>
+                  <th className="w-12 px-1 py-2" />
+                  <th className="px-3 py-2 font-medium" style={{ minWidth: 110 }}>Target</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Primary Ab</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 180 }}>Secondary / Fluorophore</th>
                   {showSpectral && (
@@ -608,7 +651,6 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                   )}
                   <th className="px-3 py-2 font-medium" style={{ width: 90 }}>IF Dilution</th>
                   <th className="px-3 py-2 font-medium" style={{ minWidth: 120 }}>Notes</th>
-                  <th className="w-7 px-1 py-2" />
                 </tr>
               </thead>
               <tbody>
@@ -677,7 +719,7 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                         key={t.id}
                         id={t.id}
                         className={
-                          'border-b border-border' +
+                          'border-b border-border group' +
                           (hasAssignment
                             ? ' bg-emerald-50/30 dark:bg-emerald-900/10'
                             : ' hover:bg-hover')
@@ -685,21 +727,33 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                       >
                         {(listeners) => (
                           <>
-                            {/* Drag handle */}
-                            <td
-                              {...listeners}
-                              className="w-7 px-1 py-2 cursor-grab text-foreground-subtle hover:text-foreground-muted active:cursor-grabbing select-none"
-                              title="Drag to reorder"
-                            >
-                              <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current mx-auto">
-                                <path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z" />
-                              </svg>
+                            {/* Drag handle / row menu */}
+                            <td className="w-12 px-1 py-2 text-foreground-subtle select-none">
+                              <div className="flex items-center justify-center gap-1">
+                                <span
+                                  {...listeners}
+                                  className="-translate-x-1.5 cursor-grab active:cursor-grabbing hover:text-foreground-muted"
+                                  title="Drag to reorder"
+                                >
+                                  <svg width="12" height="12" viewBox="0 0 12 12" className="fill-current">
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M10 3a1 1 0 010 2H2a1 1 0 110-2h8zm0 4a1 1 0 010 2H2a1 1 0 110-2h8z" />
+                                  </svg>
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRowIds.has(t.id)}
+                                  onChange={() => toggleRowSelected(t.id)}
+                                  onPointerDown={(e) => e.stopPropagation()}
+                                  aria-label="Select row"
+                                  className="h-2.5 w-2.5 cursor-pointer accent-accent dark:[color-scheme:dark]"
+                                />
+                              </div>
                             </td>
 
                             {/* Target (antibody_target or dye_label_target) */}
                             <td
                               className="px-3 py-2 font-medium text-foreground cursor-pointer"
-                              style={{ minWidth: 160 }}
+                              style={{ minWidth: 110 }}
                               onClick={() => {
                                 if (editingTargetId !== t.id) setEditingTargetId(t.id)
                               }}
@@ -728,6 +782,14 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                                     }
                                   }}
                                   onCancel={() => setEditingTargetId(null)}
+                                  onClear={
+                                    handlers.onClearTarget
+                                      ? () => {
+                                          handlers.onClearTarget!(t.id)
+                                          setEditingTargetId(null)
+                                        }
+                                      : undefined
+                                  }
                                   autoFocus
                                 />
                               ) : isDyeLabelRow ? (
@@ -1011,16 +1073,6 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                               })()}
                             </td>
 
-                            {/* Remove */}
-                            <td className="w-7 px-1 py-2 text-center">
-                              <button
-                                onClick={() => handleRemoveTarget(t.id, t.antibody_id)}
-                                className="text-foreground-subtle hover:text-danger"
-                                aria-label="Remove target"
-                              >
-                                &times;
-                              </button>
-                            </td>
                           </>
                         )}
                       </SortableRow>
@@ -1032,9 +1084,17 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                 {pendingRows.map((pendingId) => (
                   <tr
                     key={pendingId}
-                    className="border-b border-border hover:bg-hover"
+                    className="border-b border-border hover:bg-hover group"
                   >
-                    <td className="w-7 px-1 py-2" />
+                    <td className="relative w-7 px-1 py-2">
+                      <button
+                        onClick={() => handleRemovePendingRow(pendingId)}
+                        className="absolute inset-0 flex items-center justify-center text-foreground-subtle hover:text-danger invisible group-hover:visible"
+                        aria-label="Remove pending row"
+                      >
+                        &times;
+                      </button>
+                    </td>
                     <td className="px-3 py-2" style={{ minWidth: 160 }}>
                       <TargetOmnibox
                         antibodies={antibodies}
@@ -1049,19 +1109,9 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
                     <td className="px-3 py-2" />
-                    <td className="px-3 py-2" />
                     {showSpectral && <td className="px-3 py-2" />}
                     {showCompatCols && <td className="px-3 py-2" />}
                     {showCompatCols && <td className="px-3 py-2" />}
-                    <td className="w-7 px-1 py-2 text-center">
-                      <button
-                        onClick={() => handleRemovePendingRow(pendingId)}
-                        className="text-foreground-subtle hover:text-danger"
-                        aria-label="Remove pending row"
-                      >
-                        &times;
-                      </button>
-                    </td>
                   </tr>
                 ))}
 

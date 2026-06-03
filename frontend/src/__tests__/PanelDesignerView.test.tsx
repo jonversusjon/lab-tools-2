@@ -511,24 +511,72 @@ describe('PanelDesignerView', () => {
     })
   })
 
-  // ── Remove target ──────────────────────────────────────────────────────────
+  // ── Remove target (checkbox + bulk delete) ─────────────────────────────────
   describe('remove target', () => {
-    it('each target row has a Remove target button', () => {
+    it('each target row has a select checkbox', () => {
       renderView({ targets: [makeTarget('t1', AB1_ID)] })
-      expect(screen.getByLabelText('Remove target')).toBeInTheDocument()
+      expect(screen.getByLabelText('Select row')).toBeInTheDocument()
     })
 
-    it('clicking Remove target calls onRemoveTarget with targetId and antibodyId', () => {
+    it('the delete bar is hidden until a row is selected', () => {
+      renderView({ targets: [makeTarget('t1', AB1_ID)] })
+      expect(screen.queryByLabelText('Delete selected')).not.toBeInTheDocument()
+    })
+
+    it('selecting a row reveals the delete bar', () => {
+      renderView({ targets: [makeTarget('t1', AB1_ID)] })
+      fireEvent.click(screen.getByLabelText('Select row'))
+      expect(screen.getByLabelText('Delete selected')).toBeInTheDocument()
+    })
+
+    it('selecting a row and clicking Delete calls onRemoveTarget with targetId and antibodyId', () => {
       const onRemoveTarget = vi.fn().mockResolvedValue(undefined)
       renderView({ targets: [makeTarget('t1', AB1_ID)] }, { onRemoveTarget })
-      fireEvent.click(screen.getByLabelText('Remove target'))
+      fireEvent.click(screen.getByLabelText('Select row'))
+      fireEvent.click(screen.getByLabelText('Delete selected'))
       expect(onRemoveTarget).toHaveBeenCalledWith('t1', AB1_ID)
     })
 
-    it('multiple targets each get their own Remove button', () => {
+    it('selecting multiple rows and clicking Delete removes each selected row', () => {
+      const onRemoveTarget = vi.fn().mockResolvedValue(undefined)
+      const targets = [makeTarget('t1', AB1_ID, 0), makeTarget('t2', AB2_ID, 1)]
+      renderView({ targets }, { onRemoveTarget })
+      const boxes = screen.getAllByLabelText('Select row')
+      fireEvent.click(boxes[0])
+      fireEvent.click(boxes[1])
+      fireEvent.click(screen.getByLabelText('Delete selected'))
+      expect(onRemoveTarget).toHaveBeenCalledTimes(2)
+      expect(onRemoveTarget).toHaveBeenCalledWith('t1', AB1_ID)
+      expect(onRemoveTarget).toHaveBeenCalledWith('t2', AB2_ID)
+    })
+
+    it('multiple targets each get their own select checkbox', () => {
       const targets = [makeTarget('t1', AB1_ID, 0), makeTarget('t2', AB2_ID, 1)]
       renderView({ targets })
-      expect(screen.getAllByLabelText('Remove target')).toHaveLength(2)
+      expect(screen.getAllByLabelText('Select row')).toHaveLength(2)
+    })
+  })
+
+  // ── Clear primary (does not delete row) ────────────────────────────────────
+  describe('clear primary', () => {
+    it('shows a "Clear primary" option in the edit dropdown when onClearTarget is provided', () => {
+      renderView({ targets: [makeTarget('t1', AB1_ID)] }, { onClearTarget: vi.fn() })
+      fireEvent.click(screen.getByTitle('Click to replace antibody'))
+      expect(screen.getByLabelText('Clear primary')).toBeInTheDocument()
+    })
+
+    it('does not show "Clear primary" when onClearTarget is not provided', () => {
+      renderView({ targets: [makeTarget('t1', AB1_ID)] })
+      fireEvent.click(screen.getByTitle('Click to replace antibody'))
+      expect(screen.queryByLabelText('Clear primary')).not.toBeInTheDocument()
+    })
+
+    it('clicking "Clear primary" calls onClearTarget with the target id', () => {
+      const onClearTarget = vi.fn()
+      renderView({ targets: [makeTarget('t1', AB1_ID)] }, { onClearTarget })
+      fireEvent.click(screen.getByTitle('Click to replace antibody'))
+      fireEvent.mouseDown(screen.getByLabelText('Clear primary'))
+      expect(onClearTarget).toHaveBeenCalledWith('t1')
     })
   })
 
@@ -690,6 +738,12 @@ describe('PanelDesignerView', () => {
       renderView({ targets: [] })
       // 0 active targets → "(0 fluorophores)"
       expect(screen.getByText(/0 fluorophore/)).toBeInTheDocument()
+    })
+
+    it('hides Panel Spectra + Spillover when config.renderSpectra is false', () => {
+      renderView({}, {}, { renderSpectra: false })
+      expect(screen.queryByText(/Panel Spectra/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Spillover/)).not.toBeInTheDocument()
     })
   })
 })

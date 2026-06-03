@@ -14,6 +14,9 @@ interface TargetOmniboxProps {
   excludeDyeLabelIds: Set<string>
   onSelect: (selection: TargetSelection) => void
   onCancel: () => void
+  /** When provided, the dropdown shows a "Clear" option that empties the
+   *  current primary (antibody + related fields) without deleting the row. */
+  onClear?: () => void
   autoFocus?: boolean
 }
 
@@ -28,6 +31,7 @@ export default function TargetOmnibox({
   excludeDyeLabelIds,
   onSelect,
   onCancel,
+  onClear,
   autoFocus,
 }: TargetOmniboxProps) {
   const [search, setSearch] = useState('')
@@ -137,8 +141,11 @@ export default function TargetOmnibox({
     }
   }
 
+  const hasItems = filtered.length > 0
+  const showNoMatch = !hasItems && search.trim().length > 0
+
   const dropdown =
-    dropdownPos && filtered.length > 0
+    dropdownPos && (onClear || hasItems || showNoMatch)
       ? createPortal(
           <div
             ref={dropdownRef}
@@ -150,6 +157,20 @@ export default function TargetOmnibox({
               zIndex: 9999,
             }}
           >
+            {onClear && (
+              <button
+                type="button"
+                aria-label="Clear primary"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  onClear()
+                }}
+                className="flex w-full items-center gap-2 border-b border-border px-3 py-2 text-left text-sm text-foreground-muted hover:bg-hover"
+              >
+                <span aria-hidden="true" className="text-base leading-none">&times;</span>
+                Clear primary
+              </button>
+            )}
             {filtered.map((entry, i) => (
               <button
                 key={entry.kind + '-' + entry.id}
@@ -218,28 +239,15 @@ export default function TargetOmnibox({
                 )}
               </button>
             ))}
-          </div>,
-          document.body
-        )
-      : dropdownPos && search.trim() && filtered.length === 0
-        ? createPortal(
-            <div
-              ref={dropdownRef}
-              className="w-96 rounded border border-border bg-elevated shadow-lg"
-              style={{
-                position: 'fixed',
-                top: dropdownPos.top,
-                left: dropdownPos.left,
-                zIndex: 9999,
-              }}
-            >
+            {showNoMatch && (
               <div className="px-3 py-3 text-sm text-foreground-subtle">
                 No matches for &ldquo;{search}&rdquo;
               </div>
-            </div>,
-            document.body
-          )
-        : null
+            )}
+          </div>,
+          document.body
+        )
+      : null
 
   return (
     <>

@@ -265,8 +265,8 @@ describe('Panel Workflow Integration', () => {
 
     renderDesigner()
 
-    const removeBtn = screen.getByLabelText('Remove target')
-    fireEvent.click(removeBtn)
+    fireEvent.click(screen.getByLabelText('Select row'))
+    fireEvent.click(screen.getByLabelText('Delete selected'))
 
     expect(mockRemoveTargetMutateAsync).toHaveBeenCalledWith({
       panelId: 'p1',
