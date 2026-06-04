@@ -4,8 +4,8 @@
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Backend
 
-Generated: 2026-06-04T00:29:35Z
-Commit: 52e3abc
+Generated: 2026-06-04T04:56:12Z
+Commit: c113dae
 
 ---
 
@@ -1550,8 +1550,8 @@ Commit: 52e3abc
 <!-- AUTO-GENERATED. Do not edit. Regenerate via `make index`. -->
 # Codebase Index — Frontend
 
-Generated: 2026-06-04T00:29:38Z
-Commit: 52e3abc
+Generated: 2026-06-04T04:56:15Z
+Commit: c113dae
 
 ---
 
@@ -1652,6 +1652,7 @@ Commit: 52e3abc
 | `useSecondary` | `id: string` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useSecondaries.ts` |
 | `useSnapshotPanel` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useExperimentBlocks.ts` |
 | `useSpectralRailOpen` | `` | `{ isOpen: boolean; setOpen: (value: boolean) => void; isLoading: boolean; }` | `frontend/src/hooks/useSpectralRailOpen.ts` |
+| `useSpectralRailWidth` | `` | `{ width: number; setWidth: (value: number) => void; isLoading: boolean; }` | `frontend/src/hooks/useSpectralRailWidth.ts` |
 | `useTags` | `` | `import("/home/jramirez2/proj/lab-tools-2/frontend/node_modules/@tanstack/react-query/build/modern/_tsup-dts-rollup")....` | `frontend/src/hooks/useTags.ts` |
 | `useTheme` | `` | `ThemeContextValue` | `frontend/src/components/layout/ThemeContext.tsx` |
 | `useToast` | `` | `ToastContextValue` | `frontend/src/components/layout/Toast.tsx` |
@@ -1814,6 +1815,7 @@ Commit: 52e3abc
 | `['preferences']` | `frontend/src/hooks/useBlockFramesConfig.ts` |
 | `['preferences']` | `frontend/src/hooks/useExperimentLastFullWidth.ts` |
 | `['preferences']` | `frontend/src/hooks/useSpectralRailOpen.ts` |
+| `['preferences']` | `frontend/src/hooks/useSpectralRailWidth.ts` |
 | `['recentFluorophores']` | `frontend/src/hooks/useFluorophores.ts` |
 | `['secondary-antibodies', id]` | `frontend/src/hooks/useSecondaries.ts` |
 | `['secondary-antibodies', params]` | `frontend/src/hooks/useSecondaries.ts` |

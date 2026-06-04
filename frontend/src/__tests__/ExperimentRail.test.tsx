@@ -19,6 +19,13 @@ vi.mock('@/hooks/useActivePanelBlock', () => ({
 vi.mock('@/hooks/useSpectralRailOpen', () => ({
   useSpectralRailOpen: () => ({ isOpen: h.isOpen, setOpen: h.setOpen, isLoading: false }),
 }))
+vi.mock('@/hooks/useSpectralRailWidth', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks/useSpectralRailWidth')>()
+  return {
+    ...actual,
+    useSpectralRailWidth: () => ({ width: 360, setWidth: vi.fn(), isLoading: false }),
+  }
+})
 
 // Data hooks used only by the expanded content
 vi.mock('@/hooks/useInstruments', () => ({
@@ -112,6 +119,17 @@ describe('ExperimentRail', () => {
     expect(screen.getByText('T Cell Panel')).toBeInTheDocument()
     expect(screen.getByTestId('spectra-chart')).toBeInTheDocument()
     expect(screen.getByTestId('spillover')).toBeInTheDocument()
+  })
+
+  it('exposes a resize handle only when expanded', () => {
+    h.active = flowPanel('T Cell Panel')
+    h.isOpen = true
+    const { rerender } = render(<ExperimentRail />)
+    expect(screen.getByLabelText('Resize spectra rail')).toBeInTheDocument()
+
+    h.isOpen = false
+    rerender(<ExperimentRail />)
+    expect(screen.queryByLabelText('Resize spectra rail')).not.toBeInTheDocument()
   })
 
   it('auto-hides (no icon, no content) when no panel is active', () => {

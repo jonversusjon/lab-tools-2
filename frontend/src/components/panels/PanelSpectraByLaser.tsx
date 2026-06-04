@@ -40,6 +40,39 @@ const PALETTE = [
   '#44AA99', '#AA4499',
 ]
 
+// Which spectrum types to render — mirrors the TypeToggle in the fluorophore
+// overlay sidebar (FluorophoreBrowser).
+type VisibleTypes = 'EX' | 'EM' | 'both'
+
+function TypeToggle({
+  value,
+  onChange,
+  compact,
+}: {
+  value: VisibleTypes
+  onChange: (v: VisibleTypes) => void
+  compact: boolean
+}) {
+  return (
+    <div className="flex overflow-hidden rounded border border-border-strong text-xs">
+      {(['EX', 'EM', 'both'] as VisibleTypes[]).map((t) => (
+        <button
+          key={t}
+          onClick={() => onChange(t)}
+          className={
+            (compact ? 'px-1.5 py-0.5 ' : 'px-2 py-0.5 ') +
+            (value === t
+              ? 'bg-accent text-accent-foreground'
+              : 'bg-elevated text-foreground-muted hover:bg-hover')
+          }
+        >
+          {t === 'both' ? 'Both' : t}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 interface PanelSpectraByLaserProps {
   instrument: Instrument
   activeTargets: ActiveTarget[]
@@ -100,6 +133,9 @@ export default function PanelSpectraByLaser({
     })
   }
 
+  // Excitation / emission visibility, shared across all per-laser charts.
+  const [visibleTypes, setVisibleTypes] = useState<VisibleTypes>('EM')
+
   if (activeTargets.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-foreground-subtle">
@@ -110,6 +146,10 @@ export default function PanelSpectraByLaser({
 
   return (
     <div className="space-y-3 pt-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-foreground-subtle">Spectra</span>
+        <TypeToggle value={visibleTypes} onChange={setVisibleTypes} compact={compact} />
+      </div>
       {[...instrument.lasers].sort((a, b) => a.wavelength_nm - b.wavelength_nm).map((laser) => {
         const laserColor = getLaserColor(laser.wavelength_nm)
         const isCollapsed = collapsedLasers.has(laser.id)
@@ -166,6 +206,7 @@ export default function PanelSpectraByLaser({
                     isDark={isDark}
                     activeDetectors={activeDetectors}
                     compact={compact}
+                    visibleTypes={visibleTypes}
                   />
                 )}
               </div>
@@ -190,6 +231,7 @@ interface LaserSpectraChartProps {
   isDark: boolean
   activeDetectors: Set<string>
   compact: boolean
+  visibleTypes: VisibleTypes
 }
 
 function LaserSpectraChart({
@@ -201,6 +243,7 @@ function LaserSpectraChart({
   isDark,
   activeDetectors,
   compact,
+  visibleTypes,
 }: LaserSpectraChartProps) {
   const tickColor = isDark ? '#9CA3AF' : '#374151'
   const gridColor = isDark ? '#374151' : '#E5E7EB'
@@ -221,45 +264,66 @@ function LaserSpectraChart({
     pointRadius: number
   }> = []
 
-  // TODO: LaserSpectraChart currently only renders emission (EM) curves — it
-  // needs excitation (Ex) curves added as well, and both should be individually
-  // toggleable (on/off) via controls on the chart header, consistent with the
-  // TypeToggle ('EX' | 'EM' | 'both') already used in the fluorophore overlay
-  // sidebar. Excitation curves should be dashed (as in SpectraViewer single
-  // mode) and scaled by excitation efficiency the same way the EM curve is.
-  for (const { fl, target, excEff } of excitedFluorophores) {
-    const em = fl.spectra?.EM
-    if (!em || em.length === 0) continue
+  const showEx = visibleTypes === 'EX' || visibleTypes === 'both'
+  const showEm = visibleTypes === 'EM' || visibleTypes === 'both'
 
+  for (const { fl, target, excEff } of excitedFluorophores) {
     const color = fluorophoreColorMap.get(fl.id) ?? '#888888'
     // Is this fluorophore assigned to a detector on THIS laser?
     const assignedLaserId = target.detector_id ? detectorToLaser.get(target.detector_id) : null
     const isOnTarget = assignedLaserId === laser.id
 
-    let label = fl.name
+    let status = ''
     if (!target.detector_id) {
-      label += ' (unassigned)'
+      status = ' (unassigned)'
     } else if (!isOnTarget) {
-      label += ' (spillover)'
+      status = ' (spillover)'
     }
 
-    const downsampled = downsampleSpectra(em, 2)
-    const scaledData = downsampled.map(([wl, intensity]) => ({
-      x: wl,
-      y: intensity * excEff,
-    }))
+    // Both curves are scaled by this laser's excitation efficiency so a poorly
+    // excited fluorophore reads as a fainter contribution on this laser.
+    if (showEm) {
+      const em = fl.spectra?.EM
+      if (em && em.length > 0) {
+        const scaledData = downsampleSpectra(em, 2).map(([wl, intensity]) => ({
+          x: wl,
+          y: intensity * excEff,
+        }))
+        datasets.push({
+          label: fl.name + ' Em' + status,
+          data: scaledData,
+          borderColor: color,
+          backgroundColor: color + (isOnTarget ? '30' : '12'),
+          borderDash: isOnTarget ? undefined : [6, 3],
+          borderWidth: isOnTarget ? 1.5 : 1,
+          fill: true,
+          tension: 0.1,
+          pointRadius: 0,
+        })
+      }
+    }
 
-    datasets.push({
-      label,
-      data: scaledData,
-      borderColor: color,
-      backgroundColor: color + (isOnTarget ? '30' : '12'),
-      borderDash: isOnTarget ? undefined : [6, 3],
-      borderWidth: isOnTarget ? 1.5 : 1,
-      fill: true,
-      tension: 0.1,
-      pointRadius: 0,
-    })
+    if (showEx) {
+      // Excitation curves are dashed and unfilled (matching SpectraViewer).
+      const ex = fl.spectra?.EX ?? fl.spectra?.AB
+      if (ex && ex.length > 0) {
+        const scaledData = downsampleSpectra(ex, 2).map(([wl, intensity]) => ({
+          x: wl,
+          y: intensity * excEff,
+        }))
+        datasets.push({
+          label: fl.name + ' Ex' + status,
+          data: scaledData,
+          borderColor: color,
+          backgroundColor: 'transparent',
+          borderDash: [2, 2],
+          borderWidth: isOnTarget ? 1.5 : 1,
+          fill: false,
+          tension: 0.1,
+          pointRadius: 0,
+        })
+      }
+    }
   }
 
   // Build detector bandpass annotations
@@ -272,8 +336,10 @@ function LaserSpectraChart({
       type: 'box' as const,
       xMin: low,
       xMax: high,
-      backgroundColor: laserColor + '18',
-      borderColor: laserColor + '40',
+      // Faint fills wash out against the dark canvas, so use stronger alpha in
+      // dark mode to keep the emission-collection windows legible.
+      backgroundColor: laserColor + (isDark ? '33' : '18'),
+      borderColor: laserColor + (isDark ? '99' : '40'),
       borderWidth: 1,
     }
   }
@@ -291,7 +357,11 @@ function LaserSpectraChart({
       content: laser.wavelength_nm + 'nm',
       position: 'start' as const,
       font: { size: 10 },
-      color: tickColor,
+      // The plugin's default label background is dark (rgba(0,0,0,0.8)), so a
+      // dark tick color was invisible in light mode. Pin both the background
+      // and text to theme-appropriate, mutually contrasting values.
+      color: isDark ? '#E5E7EB' : '#1F2937',
+      backgroundColor: isDark ? 'rgba(17,24,39,0.85)' : 'rgba(255,255,255,0.9)',
     },
   }
 
@@ -329,7 +399,11 @@ function LaserSpectraChart({
           color: legendColor,
           usePointStyle: true,
           font: { size: legendFontSize },
-          boxWidth: compact ? 8 : 40,
+          // With usePointStyle the marker radius is boxHeight * √2/2 (capped at
+          // fontSize) — boxWidth has no effect on circle size. Constrain
+          // boxHeight to shrink the color circles in both themes.
+          boxWidth: compact ? 8 : 12,
+          boxHeight: compact ? 5 : 6,
           padding: compact ? 6 : 10,
         },
       },

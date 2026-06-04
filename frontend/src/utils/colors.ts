@@ -55,20 +55,31 @@ function sampleGradient(stops: {t: number, c: RGB}[], value: number): string {
   return rgbToHex(...stops[stops.length - 1].c)
 }
 
+// Light-mode scale: a warm sequential "YlOrRd"-style ramp (white → gold →
+// orange → red → wine). Sequential by luminance and hue, so magnitude reads
+// at a glance. Text legibility on the dark end is handled by readableTextColor.
 const LIGHT_STOPS: {t: number, c: RGB}[] = [
   { t: 0.00, c: [255, 255, 255] }, // white
-  { t: 0.15, c: [255, 220,  50] }, // yellow
-  { t: 0.40, c: [255, 100,   0] }, // orange
-  { t: 0.70, c: [200,   0,   0] }, // red
-  { t: 1.00, c: [160,   0,   0] }, // deep red
+  { t: 0.10, c: [255, 241, 160] }, // pale yellow
+  { t: 0.15, c: [255, 214,  53] }, // gold
+  { t: 0.30, c: [251, 146,  60] }, // light orange
+  { t: 0.40, c: [249, 115,  22] }, // orange
+  { t: 0.55, c: [220,  55,  40] }, // red-orange
+  { t: 0.70, c: [200,  30,  30] }, // red
+  { t: 1.00, c: [136,  19,  55] }, // deep wine
 ]
 
+// Dark-mode scale: an inferno/magma-style ramp (slate → plum → magenta →
+// crimson → orange → amber). Perceptually ordered and brightness-increasing so
+// it pops against the dark UI, with every step clearly separated from the next.
 const DARK_STOPS: {t: number, c: RGB}[] = [
-  { t: 0.00, c: [31, 41, 55] },    // gray-800
-  { t: 0.25, c: [30, 58, 138] },   // blue-900
-  { t: 0.50, c: [126, 34, 206] },  // purple-700
-  { t: 0.75, c: [190, 18, 60] },   // rose-700
-  { t: 1.00, c: [159, 18, 57] }    // rose-800
+  { t: 0.00, c: [ 31,  41,  55] }, // gray-800 (blends with empty cells)
+  { t: 0.12, c: [ 59,  28,  71] }, // dark plum
+  { t: 0.28, c: [114,  30,  79] }, // deep magenta
+  { t: 0.45, c: [183,  42,  76] }, // crimson
+  { t: 0.65, c: [232,  80,  53] }, // red-orange
+  { t: 0.83, c: [246, 140,  52] }, // orange
+  { t: 1.00, c: [252, 196,  90] }, // hot amber
 ]
 
 /**
@@ -76,7 +87,7 @@ const DARK_STOPS: {t: number, c: RGB}[] = [
  */
 export function heatmapColor(value: number): string {
   if (value <= 0) return '#ffffff'
-  if (value >= 1) return '#b40000'
+  if (value >= 1) return '#881337' // deep wine
   return sampleGradient(LIGHT_STOPS, value)
 }
 
@@ -85,9 +96,27 @@ export function heatmapColor(value: number): string {
  */
 export function heatmapColorDark(value: number): string {
   if (value <= 0) return '#1f2937' // gray-800
-  if (value >= 1) return '#9f1239' // rose-800
+  if (value >= 1) return '#fcc45a' // hot amber
 
-  // Non-linear scaling: quiet the low values, accentuate the peaks (exponent 1.5)
-  const nonLinearValue = Math.pow(value, 1.5)
+  // Sub-linear scaling (exponent 0.7) lifts the low end so the small spillover
+  // values that dominate a real matrix spread across distinct colors instead of
+  // collapsing into one dark smear.
+  const nonLinearValue = Math.pow(value, 0.7)
   return sampleGradient(DARK_STOPS, nonLinearValue)
+}
+
+/**
+ * Picks a legible text color (near-black or near-white) for a background hex,
+ * based on perceived luminance. Keeps spillover values readable on every cell —
+ * dark text on pale/gold cells, light text on saturated/deep cells — in both
+ * light and dark mode, replacing the old fixed per-theme text color.
+ */
+export function readableTextColor(backgroundHex: string): string {
+  const hex = backgroundHex.replace('#', '')
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+  // Perceived luminance (ITU-R BT.601 weights).
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b
+  return luminance > 140 ? '#1A1A1A' : '#F8FAFC'
 }

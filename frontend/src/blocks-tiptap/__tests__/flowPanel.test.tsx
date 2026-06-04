@@ -241,4 +241,32 @@ describe('FlowPanelView', () => {
       expect(hasFlowPanel).toBeFalsy()
     })
   })
+
+  it('Test 6 — empty name renders a clickable "Untitled panel" placeholder that is editable', async () => {
+    // Blank-inserted panels (via the plain slash item) have name: ''. The
+    // header must still show a visible, clickable affordance — an empty <h1>
+    // collapses to zero size, leaving no way to see or edit the name.
+    render(<EditorCapture doc={makeFlowPanelDoc({ name: '' })} />)
+
+    const placeholder = await screen.findByText('Untitled panel')
+    expect(placeholder).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(placeholder)
+    })
+
+    // Clicking the placeholder enters edit mode with an empty input
+    const input = screen.getByDisplayValue('')
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Named Panel' } })
+    })
+    await act(async () => {
+      fireEvent.blur(input)
+    })
+
+    await waitFor(() => {
+      const json = capturedEditor?.getJSON()
+      expect(json?.content?.[0]?.attrs?.name).toBe('Named Panel')
+    })
+  })
 })

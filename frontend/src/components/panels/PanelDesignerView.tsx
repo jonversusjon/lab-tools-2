@@ -695,11 +695,14 @@ export default function PanelDesignerView({
             />
           ) : (
             <h1
-              className="cursor-pointer text-2xl font-bold text-foreground hover:text-accent"
+              className={
+                'cursor-pointer text-2xl font-bold hover:text-accent ' +
+                (panel.name ? 'text-foreground' : 'italic text-foreground-muted')
+              }
               onClick={() => setEditingName(true)}
               title="Click to edit name"
             >
-              {panel.name}
+              {panel.name || 'Untitled panel'}
             </h1>
           )}
           {config.showUndoRedo !== false && (

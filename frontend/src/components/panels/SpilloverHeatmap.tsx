@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { heatmapColor, heatmapColorDark } from '@/utils/colors'
+import { heatmapColor, heatmapColorDark, readableTextColor } from '@/utils/colors'
 import { useTheme } from '@/components/layout/ThemeContext'
 
 const STORAGE_KEY = 'spillover-matrix-collapsed'
@@ -87,7 +87,16 @@ export default function SpilloverHeatmap({
   const diagonalBg = isDark ? '#374151' : '#F3F4F6'
   const zeroBg = isDark ? '#1F2937' : '#FFFFFF'
   const colorFn = isDark ? heatmapColorDark : heatmapColor
-  const cellTextColor = isDark ? '#E5E7EB' : undefined
+
+  // Gradient legend: sample the active scale at even steps so the bar matches
+  // exactly what the cells render (including the dark-mode lift).
+  const legendGradient =
+    'linear-gradient(to right, ' +
+    Array.from({ length: 11 }, (_, k) => {
+      const t = k / 10
+      return colorFn(t) + ' ' + String(t * 100) + '%'
+    }).join(', ') +
+    ')'
 
   return (
     <div className="rounded border border-border bg-elevated">
@@ -152,7 +161,7 @@ export default function SpilloverHeatmap({
                     </div>
                     <div
                       className="flex items-center justify-center text-xs"
-                      style={{ height: cellSize, width: cellSize, backgroundColor: diagonalBg, color: cellTextColor }}
+                      style={{ height: cellSize, width: cellSize, backgroundColor: diagonalBg, color: readableTextColor(diagonalBg) }}
                     >
                       1.00
                     </div>
@@ -203,7 +212,7 @@ export default function SpilloverHeatmap({
                             <div
                               key={'cell-' + i + '-' + j}
                               className={'flex items-center justify-center text-xs ' + cellSizeClass}
-                              style={{ backgroundColor: bg, color: cellTextColor }}
+                              style={{ backgroundColor: bg, color: readableTextColor(bg) }}
                               data-testid={'heatmap-cell-' + i + '-' + j}
                             >
                               <span className={isBold ? 'font-bold' : ''}>
@@ -214,6 +223,21 @@ export default function SpilloverHeatmap({
                         })}
                       </Fragment>
                     ))}
+                  </div>
+
+                  {/* Gradient legend: orients the reader on what the colors mean. */}
+                  <div className="mt-3 max-w-md">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] tabular-nums text-foreground-subtle">0.0</span>
+                      <div
+                        className="h-2 flex-1 rounded-full border border-border"
+                        style={{ background: legendGradient }}
+                      />
+                      <span className="text-[10px] tabular-nums text-foreground-subtle">1.0</span>
+                    </div>
+                    <p className="mt-1.5 text-[10px] leading-snug text-foreground-subtle">
+                      Fraction of a fluorophore&apos;s signal collected by another channel. Higher is worse; <span className="font-bold text-foreground-muted">bold</span> marks ≥ 0.25.
+                    </p>
                   </div>
                 </div>
               )}

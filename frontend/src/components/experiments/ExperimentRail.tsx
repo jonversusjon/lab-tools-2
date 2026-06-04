@@ -11,12 +11,13 @@
  * active panel's node attrs and recomputes; it never writes panel state.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useEditorInstance } from '@/blocks-tiptap/EditorContext'
 import { useActivePanelBlock } from '@/hooks/useActivePanelBlock'
 import type { ActivePanelBlock } from '@/hooks/useActivePanelBlock'
 import { useSpectralRailOpen } from '@/hooks/useSpectralRailOpen'
+import { useSpectralRailWidth, clampSpectralRailWidth } from '@/hooks/useSpectralRailWidth'
 import { useInstruments } from '@/hooks/useInstruments'
 import { useAntibodies } from '@/hooks/useAntibodies'
 import { useSecondaries } from '@/hooks/useSecondaries'
@@ -110,10 +111,79 @@ function RailToggle({ expanded, onToggle }: { expanded: boolean; onToggle: () =>
   )
 }
 
+/**
+ * Drag-to-resize grip on the rail's left border. The rail is anchored to the
+ * right edge of the viewport, so the new width is simply the distance from the
+ * pointer to the rail's (fixed) right edge. Pointer capture keeps the drag alive
+ * even when the cursor outruns the thin handle.
+ */
+function ResizeHandle({
+  asideRef,
+  onResize,
+  onCommit,
+}: {
+  asideRef: React.RefObject<HTMLElement>
+  onResize: (width: number) => void
+  onCommit: (width: number) => void
+}) {
+  const rightEdgeRef = useRef(0)
+  const latestRef = useRef(0)
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = asideRef.current?.getBoundingClientRect()
+    if (!rect) return
+    rightEdgeRef.current = rect.right
+    e.currentTarget.setPointerCapture(e.pointerId)
+    e.preventDefault()
+  }
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+    const width = clampSpectralRailWidth(rightEdgeRef.current - e.clientX)
+    latestRef.current = width
+    onResize(width)
+  }
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+    e.currentTarget.releasePointerCapture(e.pointerId)
+    onCommit(latestRef.current || rightEdgeRef.current - e.clientX)
+  }
+
+  return (
+    <div
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize spectra rail"
+      title="Drag to resize"
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      className="group absolute left-0 top-0 z-10 h-full w-1.5 -translate-x-1/2 cursor-col-resize touch-none"
+    >
+      {/* Visible hairline that brightens on hover/drag, like a window splitter. */}
+      <div className="mx-auto h-full w-px bg-transparent transition-colors duration-150 group-hover:bg-blue-500/60" />
+    </div>
+  )
+}
+
 export default function ExperimentRail() {
   const editor = useEditorInstance()
   const active = useActivePanelBlock(editor)
   const { isOpen, setOpen } = useSpectralRailOpen()
+  const { width: persistedWidth, setWidth } = useSpectralRailWidth()
+
+  const asideRef = useRef<HTMLElement>(null)
+  // Live width during a drag; null when not dragging (use the persisted value).
+  const [dragWidth, setDragWidth] = useState<number | null>(null)
+  const commitWidth = useCallback(
+    (width: number) => {
+      setWidth(width)
+      setDragWidth(null)
+    },
+    [setWidth],
+  )
+  const railWidth = dragWidth ?? persistedWidth
 
   // Render into the Shell's right-rail slot so the rail is a sibling of the
   // sidebar and stretches full height. Resolved after mount (Shell renders
@@ -130,10 +200,14 @@ export default function ExperimentRail() {
   // Same width-slide animation the left sidebar uses (transition-all duration-200
   // ease-in-out). overflow-hidden clips the wider content while the rail collapses.
   // h-full fills the slot, which stretches top-to-bottom like the sidebar.
+  // While dragging, drop the width transition so the rail tracks the pointer
+  // 1:1 instead of easing toward each frame.
+  const dragging = dragWidth != null
   const baseClass =
-    'flex h-full shrink-0 flex-col ' +
+    'relative flex h-full shrink-0 flex-col ' +
     'overflow-hidden border-l border-border bg-surface ' +
-    'transition-all duration-200 ease-in-out print:hidden '
+    (dragging ? '' : 'transition-all duration-200 ease-in-out ') +
+    'print:hidden '
 
   if (!slot) return null
 
@@ -148,7 +222,15 @@ export default function ExperimentRail() {
   const panelName = (active.attrs.name as string | undefined)?.trim()
 
   return createPortal(
-    <aside className={baseClass + (expanded ? 'w-[360px]' : 'w-11')}>
+    <aside
+      ref={asideRef}
+      className={baseClass + (expanded ? '' : 'w-11')}
+      style={expanded ? { width: railWidth } : undefined}
+    >
+      {/* Resizable only when expanded — the collapsed spine has a fixed width. */}
+      {expanded && (
+        <ResizeHandle asideRef={asideRef} onResize={setDragWidth} onCommit={commitWidth} />
+      )}
       {/* Toggle header — the open/close arrow sits at the top, symmetric to the
           left sidebar's collapse chevron (arrow on the edge adjacent to the page
           content; title on the outer edge). */}

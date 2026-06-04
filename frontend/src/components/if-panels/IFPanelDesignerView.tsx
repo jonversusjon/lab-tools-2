@@ -525,11 +525,14 @@ export default function IFPanelDesignerView(props: IFPanelDesignerViewProps) {
             />
           ) : (
             <h1
-              className="cursor-pointer text-2xl font-bold text-foreground hover:text-accent"
+              className={
+                'cursor-pointer text-2xl font-bold hover:text-accent ' +
+                (state.panel!.name ? 'text-foreground' : 'italic text-foreground-muted')
+              }
               onClick={() => setEditingName(true)}
               title="Click to edit name"
             >
-              {state.panel!.name}
+              {state.panel!.name || 'Untitled panel'}
             </h1>
           )}
 
