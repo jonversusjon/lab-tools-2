@@ -13,20 +13,66 @@ function getInitialCollapsed(): boolean {
   }
 }
 
+/**
+ * Diagonal (45°) column header. Fluorophore names are too long to fit a
+ * matrix cell's width horizontally, so they're rotated and anchored at the
+ * bottom of a tall header row. `whitespace-nowrap` keeps them from wrapping or
+ * truncating; the row height gives the angled text room.
+ */
+function ColumnHeader({
+  label,
+  heightClass,
+  textClass,
+}: {
+  label: string
+  heightClass: string
+  textClass: string
+}) {
+  return (
+    <div className={'relative ' + heightClass} title={label}>
+      <span
+        className={
+          'absolute bottom-1 left-1/2 origin-bottom-left -rotate-45 whitespace-nowrap font-medium text-foreground-muted ' +
+          textClass
+        }
+      >
+        {label}
+      </span>
+    </div>
+  )
+}
+
 interface SpilloverHeatmapProps {
   labels: string[]
   matrix: (number | null)[][]
   missingSpectraWarnings?: string[]
+  /**
+   * Render for the narrow experiment rail: smaller cells, tighter padding and
+   * slightly smaller text so the matrix fits a portrait footprint.
+   */
+  compact?: boolean
 }
 
 export default function SpilloverHeatmap({
   labels,
   matrix,
   missingSpectraWarnings = [],
+  compact = false,
 }: SpilloverHeatmapProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const n = labels.length
+
+  // Cell sizing shrinks in compact (rail) mode so the matrix fits the portrait
+  // footprint without forcing horizontal scroll for typical panels.
+  const cellPx = compact ? 38 : 50
+  const cellSize = String(cellPx) + 'px'
+  const cellSizeClass = compact ? 'h-[38px]' : 'h-[50px]'
+
+  // Angled column headers need a tall row so long fluorophore names aren't cut
+  // off. Slightly shorter + smaller text in the compact rail.
+  const headerHeightClass = compact ? 'h-24' : 'h-28'
+  const headerTextClass = compact ? 'text-[10px]' : 'text-xs'
 
   const [collapsed, setCollapsed] = useState(getInitialCollapsed)
 
@@ -47,11 +93,16 @@ export default function SpilloverHeatmap({
     <div className="rounded border border-border bg-elevated">
       <button
         type="button"
-        className="flex w-full items-center justify-between px-4 py-3 text-left"
+        className={
+          'flex w-full items-center justify-between text-left ' +
+          (compact ? 'px-3 py-2' : 'px-4 py-3')
+        }
         onClick={toggleCollapsed}
         aria-expanded={!collapsed}
       >
-        <h3 className="text-sm font-semibold text-foreground-muted">Spillover Matrix</h3>
+        <h3 className={'font-semibold text-foreground-muted ' + (compact ? 'text-xs' : 'text-sm')}>
+          Spillover Matrix
+        </h3>
         <svg
           className={'h-4 w-4 text-foreground-muted transition-transform duration-200' + (collapsed ? '' : ' rotate-180')}
           viewBox="0 0 24 24"
@@ -66,7 +117,7 @@ export default function SpilloverHeatmap({
       </button>
 
       {!collapsed && (
-        <div className="px-4 pb-4">
+        <div className={compact ? 'px-3 pb-3' : 'px-4 pb-4'}>
           {n === 0 ? (
             <p className="py-4 text-center text-sm text-foreground-subtle">
               Add fluorophore assignments to see spillover matrix
@@ -86,14 +137,13 @@ export default function SpilloverHeatmap({
 
               {n === 1 ? (
                 <div>
-                  <div className="inline-grid" style={{ gridTemplateColumns: 'auto 50px' }}>
+                  <div className="inline-grid pr-12" style={{ gridTemplateColumns: 'auto ' + cellSize }}>
                     <div />
-                    <div
-                      className="px-1 py-1 text-center text-xs font-medium text-foreground-muted truncate"
-                      title={labels[0]}
-                    >
-                      {labels[0]}
-                    </div>
+                    <ColumnHeader
+                      label={labels[0]}
+                      heightClass={headerHeightClass}
+                      textClass={headerTextClass}
+                    />
                     <div
                       className="px-2 py-1 text-xs font-medium text-foreground-muted truncate"
                       title={labels[0]}
@@ -101,8 +151,8 @@ export default function SpilloverHeatmap({
                       {labels[0]}
                     </div>
                     <div
-                      className="flex h-[50px] w-[50px] items-center justify-center text-xs"
-                      style={{ backgroundColor: diagonalBg, color: cellTextColor }}
+                      className="flex items-center justify-center text-xs"
+                      style={{ height: cellSize, width: cellSize, backgroundColor: diagonalBg, color: cellTextColor }}
                     >
                       1.00
                     </div>
@@ -114,21 +164,20 @@ export default function SpilloverHeatmap({
               ) : (
                 <div className="overflow-x-auto">
                   <div
-                    className="inline-grid"
+                    className="inline-grid pr-12"
                     style={{
-                      gridTemplateColumns: `auto repeat(${n}, minmax(50px, 1fr))`,
+                      gridTemplateColumns: `auto repeat(${n}, minmax(${cellSize}, 1fr))`,
                     }}
                   >
-                    {/* Header row: empty corner + column labels */}
+                    {/* Header row: empty corner + angled column labels */}
                     <div />
                     {labels.map((label, j) => (
-                      <div
+                      <ColumnHeader
                         key={'col-' + j}
-                        className="px-1 py-1 text-center text-xs font-medium text-foreground-muted truncate"
-                        title={label}
-                      >
-                        {label}
-                      </div>
+                        label={label}
+                        heightClass={headerHeightClass}
+                        textClass={headerTextClass}
+                      />
                     ))}
 
                     {/* Data rows */}
@@ -153,7 +202,7 @@ export default function SpilloverHeatmap({
                           return (
                             <div
                               key={'cell-' + i + '-' + j}
-                              className="flex h-[50px] items-center justify-center text-xs"
+                              className={'flex items-center justify-center text-xs ' + cellSizeClass}
                               style={{ backgroundColor: bg, color: cellTextColor }}
                               data-testid={'heatmap-cell-' + i + '-' + j}
                             >

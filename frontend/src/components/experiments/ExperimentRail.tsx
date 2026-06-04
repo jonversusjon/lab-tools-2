@@ -164,7 +164,7 @@ export default function ExperimentRail() {
             <div className="text-[10px] font-medium uppercase tracking-wide text-foreground-subtle">
               Panel spectra
             </div>
-            <div className="truncate text-sm font-semibold text-foreground" title={panelName || undefined}>
+            <div className="truncate text-xs font-semibold text-foreground" title={panelName || undefined}>
               {panelName || 'Untitled panel'}
             </div>
           </div>
@@ -277,15 +277,15 @@ function SpectralRailContent({ active }: { active: ActivePanelBlock }) {
   )
 
   return (
-    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
+    <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-2 text-xs">
         {!instrument ? (
-          <p className="text-sm text-foreground-muted">
+          <p className="text-xs text-foreground-muted">
             Select an instrument on this panel to see its spectra and spillover.
           </p>
         ) : (
           <>
-            <div className="rounded border border-border bg-elevated p-3">
-              <div className="mb-2 text-xs font-semibold text-foreground">
+            <div className="rounded border border-border bg-elevated p-2">
+              <div className="mb-2 text-[11px] font-semibold text-foreground">
                 Panel Spectra
                 <span className="ml-1 font-normal text-foreground-subtle">
                   ({model.activeTargets.length} fluorophore{model.activeTargets.length !== 1 ? 's' : ''})
@@ -296,12 +296,14 @@ function SpectralRailContent({ active }: { active: ActivePanelBlock }) {
                 activeTargets={model.activeTargets}
                 allFluorophoresForScoring={allFluorophoresForScoring}
                 activeDetectors={model.activeDetectors}
+                compact
               />
             </div>
             <SpilloverHeatmap
               labels={model.spillover.labels}
               matrix={model.spillover.matrix}
               missingSpectraWarnings={model.missingSpectraWarnings}
+              compact
             />
           </>
         )}

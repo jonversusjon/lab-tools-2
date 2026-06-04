@@ -297,21 +297,24 @@ function LaserSpectraChart({
 
   const options = {
     responsive: true,
+    // Compact (rail) mode lets the fixed-height container define a square /
+    // taller-than-wide footprint instead of Chart.js's default 2:1 landscape.
+    maintainAspectRatio: !compact,
     animation: false as const,
     scales: {
       x: {
         type: 'linear' as const,
         min: 400,
         max: 850,
-        ticks: { stepSize: 50, color: tickColor },
-        title: { display: true, text: 'Wavelength (nm)', color: tickColor },
+        ticks: { stepSize: 50, color: tickColor, font: { size: axisFontSize } },
+        title: { display: true, text: 'Wavelength (nm)', color: tickColor, font: { size: axisFontSize } },
         grid: { color: gridColor },
       },
       y: {
         min: 0,
         max: 1,
-        ticks: { stepSize: 0.25, color: tickColor },
-        title: { display: true, text: 'Relative Yield', color: tickColor },
+        ticks: { stepSize: 0.25, color: tickColor, font: { size: axisFontSize } },
+        title: { display: true, text: 'Relative Yield', color: tickColor, font: { size: axisFontSize } },
         grid: { color: gridColor },
       },
     },
@@ -322,7 +325,13 @@ function LaserSpectraChart({
     plugins: {
       annotation: { annotations },
       legend: {
-        labels: { color: legendColor, usePointStyle: true },
+        labels: {
+          color: legendColor,
+          usePointStyle: true,
+          font: { size: legendFontSize },
+          boxWidth: compact ? 8 : 40,
+          padding: compact ? 6 : 10,
+        },
       },
       tooltip: {
         callbacks: {
@@ -339,7 +348,7 @@ function LaserSpectraChart({
   }
 
   return (
-    <div className="h-56 w-full">
+    <div className={compact ? 'h-80 w-full' : 'h-56 w-full'}>
       <Line data={{ datasets }} options={options} />
     </div>
   )
