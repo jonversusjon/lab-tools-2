@@ -198,7 +198,7 @@ export default function SpectraViewer({
     scales: {
       x: {
         type: 'linear' as const,
-        min: 350,
+        min: 300,
         max: 850,
         ticks: { stepSize: 50, color: tickColor },
         title: { display: true, text: 'Wavelength (nm)', color: tickColor },

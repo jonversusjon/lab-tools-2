@@ -203,7 +203,10 @@ export function buildPanelSpectralModel(params: {
     }
   }
 
-  // Spillover matrix
+  // Spillover matrix. Built by walking `activeTargets` (which preserves the
+  // target-table order) and picking up each assigned row, rather than the raw
+  // `assignmentList`, so reordering the target table reorders the matrix
+  // rows/columns to match.
   let spillover: { labels: string[]; matrix: (number | null)[][] } = {
     labels: [],
     matrix: [],
@@ -221,9 +224,10 @@ export function buildPanelSpectralModel(params: {
       detectorMidpoint: number
       detectorWidth: number
     }> = []
-    for (const a of assignmentList) {
-      const fl = allFluorophoresForScoring.find((f) => f.id === a.fluorophore_id)
-      const det = detectorMap.get(a.detector_id)
+    for (const t of activeTargets) {
+      if (!t.detector_id) continue
+      const fl = allFluorophoresForScoring.find((f) => f.id === t.fluorophore_id)
+      const det = detectorMap.get(t.detector_id)
       if (!fl || !det) continue
       if (!fl.has_spectra || !fl.spectra?.EM?.length) {
         missingSpectraWarnings.push(fl.name)

@@ -186,9 +186,19 @@ export default function PanelSpectraByLaser({
               <span className="text-xs text-foreground-subtle">
                 ({excitedCount} fluorophore{excitedCount !== 1 ? 's' : ''})
               </span>
-              <span className="ml-auto text-xs text-foreground-subtle">
-                {isCollapsed ? '\u25B6' : '\u25BC'}
-              </span>
+              <svg
+                className="ml-auto h-3.5 w-3.5 shrink-0 text-foreground-subtle transition-transform duration-150"
+                style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </button>
             {!isCollapsed && (
               <div className={'border-t border-border pb-3 ' + (compact ? 'px-2' : 'px-3')}>
@@ -374,7 +384,7 @@ function LaserSpectraChart({
     scales: {
       x: {
         type: 'linear' as const,
-        min: 400,
+        min: 300,
         max: 850,
         ticks: { stepSize: 50, color: tickColor, font: { size: axisFontSize } },
         title: { display: true, text: 'Wavelength (nm)', color: tickColor, font: { size: axisFontSize } },

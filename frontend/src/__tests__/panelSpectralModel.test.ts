@@ -217,6 +217,33 @@ describe('buildPanelSpectralModel', () => {
     expect(model.spillover.matrix[1][1]).toBe(1)
   })
 
+  it('orders spillover labels by target-table order, not assignment order', () => {
+    // Assignments are supplied PE-first, but the targets list CD3→Alexa,
+    // CD4→PE. The matrix must follow the target order.
+    const assignments = [
+      assignment({ id: 'a2', antibody_id: 'ab-b', fluorophore_id: 'fl-b', detector_id: 'det-585' }),
+      assignment({ id: 'a1', antibody_id: 'ab-a', fluorophore_id: 'fl-a', detector_id: 'det-530' }),
+    ]
+    const model = buildPanelSpectralModel({
+      instrument,
+      targets: [target({ id: 't1', antibody_id: 'ab-a' }), target({ id: 't2', antibody_id: 'ab-b' })],
+      assignments,
+      allFluorophoresForScoring,
+      rowFluorophoreMap: new Map([['ab-a', 'fl-a'], ['ab-b', 'fl-b']]),
+    })
+    expect(model.spillover.labels).toEqual(['Alexa 488', 'PE'])
+
+    // Reversing the target order reverses the matrix labels.
+    const reordered = buildPanelSpectralModel({
+      instrument,
+      targets: [target({ id: 't2', antibody_id: 'ab-b' }), target({ id: 't1', antibody_id: 'ab-a' })],
+      assignments,
+      allFluorophoresForScoring,
+      rowFluorophoreMap: new Map([['ab-a', 'fl-a'], ['ab-b', 'fl-b']]),
+    })
+    expect(reordered.spillover.labels).toEqual(['PE', 'Alexa 488'])
+  })
+
   it('returns an empty spillover when spectra are not ready', () => {
     const model = buildPanelSpectralModel({
       instrument,
